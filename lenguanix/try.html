@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LenguaNix - Learn Languages by Reading</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PapaParse for parsing Google Sheet CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#20B2AA', // Light Sea Green
+                        brandDark: '#198F89',
+                        brandLight: '#E6F7F6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions */
+        .view-transition { transition: opacity 0.3s ease; }
+        .hidden-view { display: none !important; opacity: 0; }
+        .active-view { display: flex !important; opacity: 1; }
+        
+        /* Tab scrolling hide scrollbar */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Interactive element tap highlight removal for mobile */
+        * { -webkit-tap-highlight-color: transparent; }
+        
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Highlight classes for currently spoken sentences */
+        .spoken-highlight {
+            background-color: rgba(32, 178, 170, 0.15);
+            border-left: 4px solid #20B2AA;
+            padding-left: 8px;
+            transition: all 0.3s ease;
+        }
+
+        /* Popover transition */
+        #word-translation-popover {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Pulse recording indicator */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .recording-active {
+            animation: pulse-ring 1.5s infinite;
+            background-color: #dc2626 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen text-gray-900 font-sans">
+
+    <!-- Global Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-brand z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="loader mb-4"></div>
+        <p class="text-white font-bold text-lg animate-pulse">Loading Content...</p>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Responsive App Container -->
+    <div id="app-container" class="w-full min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
+        
+        <!-- ==================== VIEW: ONBOARDING ==================== -->
+        <div id="view-onboarding" class="flex-col w-full min-h-screen p-6 items-center justify-center bg-brand text-white hidden-view">
+            <div class="max-w-md w-full mx-auto flex flex-col items-center">
+                <i data-lucide="book-open" class="w-24 h-24 mb-6"></i>
+                <h1 class="text-5xl font-bold mb-2 text-center">LenguaNix</h1>
+                <p class="text-xl text-brand-100 mb-12 text-center">Master languages through reading.</p>
+                
+                <div class="w-full bg-white text-gray-800 rounded-3xl p-8 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Choose your language</h2>
+                    <div id="language-selection-list" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW: HOME ==================== -->
+        <div id="view-home" class="flex-col w-full min-h-screen hidden-view relative">
+            <!-- Header -->
+            <header class="bg-white pt-8 sm:pt-12 pb-4 shadow-sm sticky top-0 z-20">
+                <div class="max-w-7xl mx-auto px-6 flex justify-between items-center w-full">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="book-open" class="text-brand w-7 h-7 sm:w-8 sm:h-8"></i>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">LenguaNix</h1>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <button onclick="navigate('library')" class="p-2 sm:p-3 bg-brandLight text-brand rounded-full hover:bg-brand hover:text-white transition flex items-center gap-1.5 font-bold text-xs sm:text-sm px-3 sm:px-4 shadow-sm" title="My Library">
+                            <i data-lucide="bookmark" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            <span class="hidden sm:inline">Library</span>
+                        </button>
+                        <button onclick="navigate('settings')" class="p-2 sm:p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition" title="Settings">
+                            <i data-lucide="settings" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-700"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Search and Filter Module -->
+            <div class="bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm sticky top-[76px] sm:top-[88px] z-10 py-3">
+                <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-4 items-stretch md:items-center w-full">
+                    <!-- Search Input -->
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                        <input id="search-input" oninput="triggerFilters()" type="text" placeholder="Search titles, vocab or contents..." class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all text-sm">
+                    </div>
+
+                    <!-- Level Select Container -->
+                    <div class="flex gap-2 items-center overflow-x-auto hide-scrollbar shrink-0 py-1" id="level-filters">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Dialect Select Dropdown -->
+                    <div class="relative shrink-0">
+                        <select id="dialect-filter" onchange="triggerFilters()" class="appearance-none bg-gray-50 border border-gray-200 rounded-2xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand cursor-pointer">
+                            <option value="All">All Dialects</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content List -->
+            <div class="flex-1 w-full max-w-7xl mx-auto p-6">
+                <div id="article-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Articles populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW: ARTICLE ==================== -->
+        <div id="view-article" class="flex-col w-full min-h-screen bg-white hidden-view relative">
+            
+            <div class="fixed top-4 left-4 right-4 sm:top-8 sm:left-8 sm:right-8 z-30 flex justify-between items-center pointer-events-none">
+                <button onclick="stopSpeech(); navigate('home')" class="pointer-events-auto p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-gray-800 hover:bg-gray-100 hover:scale-105 transition-all">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <button id="article-fav-btn" onclick="toggleFavoriteCurrentArticle()" class="pointer-events-auto p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-amber-500 hover:bg-amber-50 hover:scale-105 transition-all flex items-center justify-center">
+                    <i data-lucide="star" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Cover Image -->
+            <div class="w-full h-64 md:h-80 lg:h-96 bg-gray-900 relative shrink-0">
+                <img id="article-cover" src="" alt="Cover" class="w-full h-full object-cover opacity-80">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+                <div class="absolute bottom-6 left-6 right-6 max-w-4xl mx-auto w-full">
+                    <span id="article-level-badge" class="inline-block bg-brand text-white text-sm font-bold px-3 py-1 rounded-lg mb-3 shadow-sm"></span>
+                    <h2 id="article-title" class="text-white font-black text-3xl sm:text-4xl md:text-5xl leading-tight drop-shadow-lg"></h2>
+                </div>
+            </div>
+
+            <!-- Audio Toolbar Player -->
+            <div class="bg-brandLight border-b border-brand/20 py-3.5 px-6 sticky top-[0px] z-30 shadow-inner">
+                <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="p-2 bg-brand text-white rounded-full"><i data-lucide="headphones" class="w-4 h-4"></i></span>
+                        <div>
+                            <p class="text-sm font-extrabold text-brandDark">ElevenLabs Premium Audio</p>
+                            <p class="text-xs text-gray-500">Listen with ultra-realistic AI voice</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="playEntireArticle()" class="px-4 py-2 bg-brand text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-brandDark transition active:scale-95 shadow">
+                            <i data-lucide="play" class="w-4 h-4"></i> Listen Full Article
+                        </button>
+                        <button id="tts-stop-btn" onclick="stopSpeech()" class="px-4 py-2 bg-gray-200 text-gray-600 rounded-xl text-sm font-bold hidden items-center gap-2 hover:bg-gray-300 transition active:scale-95">
+                            <i data-lucide="square" class="w-4 h-4"></i> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Container -->
+            <div class="bg-white border-b border-gray-200 sticky top-[72px] sm:top-[76px] z-20 shadow-sm">
+                <div class="max-w-4xl mx-auto flex w-full">
+                    <button onclick="switchTab('historia')" class="tab-btn flex-1 py-4 text-sm sm:text-base font-bold border-b-4 text-brand border-brand transition-colors" data-tab="historia">Historia</button>
+                    <button onclick="switchTab('shadowing')" class="tab-btn flex-1 py-4 text-sm sm:text-base font-bold border-b-4 text-gray-500 border-transparent hover:text-gray-800 transition-colors flex items-center justify-center gap-1.5" data-tab="shadowing">
+                        <i data-lucide="mic" class="w-4 h-4"></i> Shadowing
+                    </button>
+                    <button onclick="switchTab('palabras')" class="tab-btn flex-1 py-4 text-sm sm:text-base font-bold border-b-4 text-gray-500 border-transparent hover:text-gray-800 transition-colors" data-tab="palabras">Palabras</button>
+                    <button onclick="switchTab('gramatica')" class="tab-btn flex-1 py-4 text-sm sm:text-base font-bold border-b-4 text-gray-500 border-transparent hover:text-gray-800 transition-colors" data-tab="gramatica">Gramática</button>
+                </div>
+            </div>
+
+            <!-- Tab Contents Wrapper -->
+            <div class="flex-1 w-full bg-gray-50 pb-20">
+                <div class="max-w-4xl mx-auto w-full p-6 sm:p-8 lg:p-12" id="tab-content-area">
+                    
+                    <!-- Tab: Historia -->
+                    <div id="tab-historia" class="tab-content space-y-6">
+                        <!-- Populated by JS with clickable interactive words -->
+                    </div>
+
+                    <!-- Tab: Shadowing Practice (Replaces old Examen/Test) -->
+                    <div id="tab-shadowing" class="tab-content hidden space-y-6">
+                        <div class="bg-white p-6 sm:p-10 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                            
+                            <!-- Sentence Header Counter and Nav Buttons -->
+                            <div class="w-full flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+                                <span id="shadowing-counter" class="text-xs sm:text-sm font-black text-brand bg-brandLight px-4 py-1.5 rounded-full uppercase tracking-wider">
+                                    Sentence 1 of 1
+                                </span>
+                                <div class="flex gap-2">
+                                    <button onclick="prevShadowingSentence()" id="shadowing-prev-btn" class="p-2.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition">
+                                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                                    </button>
+                                    <button onclick="nextShadowingSentence()" id="shadowing-next-btn" class="p-2.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition">
+                                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Target Sentence Box -->
+                            <div class="mb-6 w-full max-w-2xl">
+                                <h3 id="shadowing-target-text" class="text-2xl sm:text-3xl font-black text-gray-900 mb-4 leading-snug">
+                                    Loading sentence...
+                                </h3>
+                                
+                                <!-- Toggle Sentence Meaning -->
+                                <button onclick="toggleShadowingTranslation()" class="text-xs font-extrabold text-brand hover:text-brandDark inline-flex items-center gap-1.5 mb-3 bg-brand/10 px-3 py-1.5 rounded-xl transition">
+                                    <i data-lucide="languages" class="w-4 h-4"></i> <span id="shadowing-trans-toggle-label">Show Meaning</span>
+                                </button>
+                                <p id="shadowing-translation-text" class="text-gray-600 font-semibold italic hidden bg-gray-50 p-4 rounded-2xl border border-gray-100 text-base max-w-xl mx-auto shadow-inner leading-relaxed">
+                                </p>
+                            </div>
+
+                            <!-- Controls: Listen ElevenLabs & Mic Record Aloud -->
+                            <div class="flex flex-wrap items-center justify-center gap-4 mb-8 w-full">
+                                <button onclick="listenShadowingSentence()" class="px-6 py-3.5 bg-brandLight text-brand hover:bg-brand hover:text-white font-extrabold rounded-2xl transition flex items-center gap-2 shadow-sm active:scale-95">
+                                    <i data-lucide="volume-2" class="w-5 h-5"></i> Listen (ElevenLabs)
+                                </button>
+
+                                <button id="shadowing-mic-btn" onclick="toggleShadowingRecording()" class="px-7 py-3.5 bg-red-500 hover:bg-red-600 text-white font-extrabold rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95">
+                                    <i data-lucide="mic" class="w-5 h-5"></i> <span id="shadowing-mic-label">Read Aloud</span>
+                                </button>
+                            </div>
+
+                            <!-- Recognition Speech Output & Assessment Badge -->
+                            <div id="shadowing-feedback-box" class="w-full max-w-xl p-5 rounded-2xl border hidden transition-all">
+                                <p class="text-xs font-black uppercase tracking-wider mb-2 text-gray-400">Speech Recognition Result:</p>
+                                <p id="shadowing-heard-text" class="text-lg font-bold text-gray-800 mb-4 italic">"..."</p>
+                                <div id="shadowing-status-badge" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Palabras -->
+                    <div id="tab-palabras" class="tab-content hidden">
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-100" id="vocab-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Tab: Gramatica -->
+                    <div id="tab-gramatica" class="tab-content hidden space-y-6">
+                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                            <h3 id="grammar-title" class="text-2xl font-black text-brand mb-4"></h3>
+                            <p id="grammar-explanation" class="text-gray-700 mb-8 text-lg leading-relaxed"></p>
+                            <div class="bg-brand/5 p-6 rounded-2xl border border-brand/10">
+                                <h4 class="text-sm font-black text-brand uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i data-lucide="lightbulb" class="w-4 h-4"></i> Ejemplos / Examples
+                                </h4>
+                                <ul id="grammar-examples" class="space-y-3 list-none text-gray-800 font-medium text-lg">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW: SETTINGS ==================== -->
+        <div id="view-settings" class="flex-col w-full min-h-screen bg-gray-50 hidden-view">
+            <header class="bg-white pt-8 pb-4 border-b border-gray-200 shadow-sm sticky top-0 z-10">
+                <div class="max-w-3xl mx-auto px-6 w-full flex items-center relative">
+                    <button onclick="navigate('home')" class="p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition absolute left-6">
+                        <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
+                    </button>
+                    <h1 class="flex-1 text-center text-2xl font-bold text-gray-800">Settings</h1>
+                </div>
+            </header>
+            
+            <div class="p-6 w-full max-w-3xl mx-auto mt-6 space-y-6">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                    <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">Learning Language</h2>
+                    <div id="settings-language-list" class="space-y-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VIEW: LIBRARY ==================== -->
+        <div id="view-library" class="flex-col w-full min-h-screen bg-gray-50 hidden-view">
+            <header class="bg-white pt-8 pb-4 border-b border-gray-200 shadow-sm sticky top-0 z-20">
+                <div class="max-w-4xl mx-auto px-6 w-full flex items-center justify-between">
+                    <button onclick="navigate('home')" class="p-2.5 bg-gray-100 rounded-full hover:bg-gray-200 transition">
+                        <i data-lucide="arrow-left" class="w-5 h-5 text-gray-700"></i>
+                    </button>
+                    <h1 class="text-2xl font-black text-gray-800 flex items-center gap-2">
+                        <i data-lucide="bookmark" class="w-6 h-6 text-brand"></i> My Library
+                    </h1>
+                    <div class="w-9"></div>
+                </div>
+                
+                <!-- Library Sub-tabs -->
+                <div class="max-w-4xl mx-auto px-6 mt-4 flex border-t border-gray-100 pt-2">
+                    <button onclick="switchLibraryTab('articles')" id="lib-tab-articles" class="lib-tab-btn flex-1 py-3 text-center font-bold border-b-2 border-brand text-brand text-sm sm:text-base transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="star" class="w-4 h-4"></i> Favorite Articles (<span id="fav-articles-count">0</span>)
+                    </button>
+                    <button onclick="switchLibraryTab('words')" id="lib-tab-words" class="lib-tab-btn flex-1 py-3 text-center font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800 text-sm sm:text-base transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="book-marked" class="w-4 h-4"></i> Saved Words (<span id="saved-words-count">0</span>)
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 max-w-4xl w-full mx-auto p-6">
+                <!-- Sub-View: Favorite Articles -->
+                <div id="lib-content-articles" class="space-y-6">
+                    <div id="fav-articles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Sub-View: Saved Words -->
+                <div id="lib-content-words" class="hidden space-y-4">
+                    <!-- Quick Add Word Bar -->
+                    <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3">
+                        <input id="quick-add-word-input" type="text" placeholder="Type a word in target language..." class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand">
+                        <button onclick="handleQuickAddWord()" class="px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-2xl hover:bg-brandDark transition flex items-center justify-center gap-2 shrink-0">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Add & Auto-Translate
+                        </button>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                        <input id="saved-words-search" oninput="renderSavedWordsList()" type="text" placeholder="Search saved words or translations..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand shadow-sm">
+                    </div>
+                    <div id="saved-words-list" class="bg-white rounded-3xl shadow-sm border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Clickable Interactive Word Popover Portal -->
+    <div id="word-translation-popover" class="fixed z-50 bg-white shadow-2xl rounded-2xl border border-gray-200 p-5 w-80 max-w-[90vw] hidden flex-col transition-all duration-200" style="top: 0; left: 0;">
+        <div class="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 mb-3">
+            <div class="flex items-center gap-2">
+                <span id="popover-original-word" class="font-extrabold text-brand text-xl block truncate max-w-[150px]">Word</span>
+                <span id="popover-pos-label" class="text-[10px] font-bold text-gray-500 uppercase bg-gray-100 px-2 py-0.5 rounded-full">word</span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+                <button id="popover-pronounce-btn" class="p-2 bg-brandLight text-brand rounded-full hover:bg-brand hover:text-white transition" title="Pronounce">
+                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+                <button onclick="closePopover()" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition" title="Close">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading State Spinner -->
+        <div id="popover-loading" class="flex flex-col items-center py-6 gap-2">
+            <div class="animate-spin rounded-full h-6 w-6 border-2 border-brand border-t-transparent"></div>
+            <p class="text-xs text-gray-400 font-medium">Fetching translation...</p>
+        </div>
+
+        <!-- Translated Content -->
+        <div id="popover-content" class="hidden flex-col space-y-3">
+            <div class="bg-brandLight/50 p-3 rounded-xl border border-brand/10">
+                <div class="flex items-center justify-between mb-1">
+                    <span id="popover-lang-badge" class="text-[10px] font-extrabold text-brandDark uppercase tracking-wider">TRANSLATION</span>
+                </div>
+                <p id="popover-translation-text" class="text-lg font-bold text-gray-800 leading-snug"></p>
+            </div>
+            <p id="popover-definition-text" class="text-xs text-gray-500 italic bg-gray-50 p-2.5 rounded-lg border border-gray-100 leading-relaxed"></p>
+            <button onclick="addToTraining()" class="w-full py-2.5 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brandDark transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add to Vocabulary List
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- Google Sheet Data Integration ---
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1ivTmY1ppvnc6gNfcaiOhdRyo4aoNrxbEpIeAneVSL6Q/export?format=csv';
+        
+        // ElevenLabs API configuration
+        const ELEVENLABS_API_KEY = "sk_7d4dd995a7047ec65ede329a221742ca487cdff8d7695a6f";
+
+        // Multilingual-optimized Voice Mapping
+        const voiceMapping = {
+            'Spanish': 'ErXwobaYi3019Dkyg5Vj',   // Antoni
+            'Turkish': 'EXAVITQu4vr4xnSDxMaL',   // Callum
+            'German': 'bIHbv24MWmeRgasZH58X',    // Gigi
+            'French': 'VR6AewstmifGH4RyplTh',    // Pascal
+            'Italian': 'pMsXgTfHhN28t81gZ3f9',   // Giovanni
+            'English': 'ErXwobaYi3019Dkyg5Vj',   // Antoni
+            'Portuguese': 'piTKgcLEGmPE4eJmZXwL', // Camila
+            'Russian': 'JBFqnCBsd6RMkjVDRZzb',   // George
+            'Japanese': 'ThT5KcBeYPX3keUQqHPh',  // Domi
+            'Chinese': 'XB0fDUnXU5POK6P2xJ6k',   // Matilda
+            'Arabic': 'ZQe5CZNOzWizKVn5Ta2y'     // Multi-Arabic
+        };
+
+        // Language mapping for translation, dictionaries, and speech recognition
+        const langConfig = {
+            'Spanish': { code: 'es', sttCode: 'es-ES', target: 'en' },
+            'English': { code: 'en', sttCode: 'en-US', target: 'es' },
+            'German': { code: 'de', sttCode: 'de-DE', target: 'en' },
+            'French': { code: 'fr', sttCode: 'fr-FR', target: 'en' },
+            'Italian': { code: 'it', sttCode: 'it-IT', target: 'en' },
+            'Turkish': { code: 'tr', sttCode: 'tr-TR', target: 'en' },
+            'Arabic': { code: 'ar', sttCode: 'ar-SA', target: 'en' },
+            'Portuguese': { code: 'pt', sttCode: 'pt-PT', target: 'en' },
+            'Russian': { code: 'ru', sttCode: 'ru-RU', target: 'en' },
+            'Japanese': { code: 'ja', sttCode: 'ja-JP', target: 'en' },
+            'Chinese': { code: 'zh', sttCode: 'zh-CN', target: 'en' }
+        };
+
+        let spreadsheetData = [];
+        let availableLanguages = [];
+        let availableLevels = ['All', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+        
+        let currentAudioElement = null;
+        let isSpeakingEntire = false;
+        let spokenSentenceIndex = -1;
+        let originalArticleSentences = [];
+        let isPopoverPinned = false;
+
+        // Shadowing state
+        let shadowingCurrentIndex = 0;
+        let shadowingSentences = [];
+        let shadowingTranslations = {};
+        let isRecordingShadowing = false;
+        let speechRecognitionInstance = null;
+
+        let appState = {
+            currentView: 'onboarding',
+            selectedLanguage: localStorage.getItem('lenguanix_selected_language') || null,
+            levelFilter: 'All',
+            currentArticle: null,
+            favorites: JSON.parse(localStorage.getItem('lenguanix_favorites') || '[]'),
+            savedWords: JSON.parse(localStorage.getItem('lenguanix_saved_words') || '[]')
+        };
+
+        // --- Favorites & Vocabulary LocalStorage Management ---
+        function isFavorite(articleId) {
+            return appState.favorites.includes(articleId);
+        }
+
+        function toggleFavorite(articleId, event) {
+            if (event) event.stopPropagation();
+
+            const idx = appState.favorites.indexOf(articleId);
+            if (idx > -1) {
+                appState.favorites.splice(idx, 1);
+                showToast("Removed article from favorites.");
+            } else {
+                appState.favorites.push(articleId);
+                showToast("Added article to favorites! ⭐");
+            }
+
+            localStorage.setItem('lenguanix_favorites', JSON.stringify(appState.favorites));
+            
+            if (appState.currentView === 'home') triggerFilters();
+            if (appState.currentView === 'article' && appState.currentArticle && appState.currentArticle.id === articleId) {
+                updateArticleFavButton();
+            }
+            if (appState.currentView === 'library') renderLibrary();
+        }
+
+        function toggleFavoriteCurrentArticle() {
+            if (appState.currentArticle) {
+                toggleFavorite(appState.currentArticle.id);
+            }
+        }
+
+        function updateArticleFavButton() {
+            const btn = document.getElementById('article-fav-btn');
+            if (!btn || !appState.currentArticle) return;
+            const fav = isFavorite(appState.currentArticle.id);
+            if (fav) {
+                btn.innerHTML = `<i data-lucide="star" class="w-6 h-6 fill-amber-500 text-amber-500"></i>`;
+            } else {
+                btn.innerHTML = `<i data-lucide="star" class="w-6 h-6 text-gray-400"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function isWordSaved(word) {
+            return appState.savedWords.some(item => item.word.toLowerCase() === word.toLowerCase());
+        }
+
+        async function translateTextWithGoogle(text, fromLangName, toLangName = 'English') {
+            if (!text || !text.trim()) return '';
+            const srcConfig = langConfig[fromLangName] || { code: 'auto' };
+            const tgtConfig = langConfig[toLangName] || { code: 'en' };
+            const srcCode = srcConfig.code || 'auto';
+            const tgtCode = tgtConfig.target || tgtConfig.code || 'en';
+
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${srcCode}&tl=${tgtCode}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data[0]) {
+                        return data[0].map(item => item[0]).join('').trim();
+                    }
+                }
+            } catch (err) {
+                console.warn("Google Translate API call failed:", err);
+            }
+            return '';
+        }
+
+        async function saveWordToLibrary(word, meaning, lang) {
+            const wordLang = lang || appState.selectedLanguage || 'Spanish';
+            if (isWordSaved(word)) {
+                showToast(`"${word}" is already in your library.`);
+                return;
+            }
+
+            let finalMeaning = meaning;
+            if (!finalMeaning || finalMeaning === '-' || finalMeaning === 'Saved term' || finalMeaning.trim() === '') {
+                showToast(`Translating "${word}" with Google Translate...`);
+                finalMeaning = await translateTextWithGoogle(word, wordLang);
+                if (!finalMeaning) finalMeaning = 'Saved term';
+            }
+
+            appState.savedWords.push({
+                id: Date.now(),
+                word: word,
+                meaning: finalMeaning,
+                lang: wordLang,
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('lenguanix_saved_words', JSON.stringify(appState.savedWords));
+            showToast(`Saved "${word}" (${finalMeaning}) to library! 📚`);
+
+            if (appState.currentView === 'article') {
+                populatePalabrasTab(appState.currentArticle);
+            }
+            if (appState.currentView === 'library') {
+                renderLibrary();
+            }
+        }
+
+        async function handleQuickAddWord() {
+            const input = document.getElementById('quick-add-word-input');
+            if (!input) return;
+            const word = input.value.trim();
+            if (!word) {
+                showToast("Please enter a word to add.");
+                return;
+            }
+            input.value = '';
+            await saveWordToLibrary(word, '', appState.selectedLanguage);
+        }
+
+        function removeWordFromLibrary(word, event) {
+            if (event) event.stopPropagation();
+            appState.savedWords = appState.savedWords.filter(item => item.word.toLowerCase() !== word.toLowerCase());
+            localStorage.setItem('lenguanix_saved_words', JSON.stringify(appState.savedWords));
+            showToast(`Removed "${word}" from library.`);
+
+            if (appState.currentView === 'library') {
+                renderLibrary();
+            }
+            if (appState.currentView === 'article' && appState.currentArticle) {
+                populatePalabrasTab(appState.currentArticle);
+            }
+        }
+
+        function addToTraining() {
+            const word = document.getElementById('popover-original-word').textContent;
+            const meaning = document.getElementById('popover-translation-text').textContent;
+            saveWordToLibrary(word, meaning, appState.selectedLanguage);
+        }
+
+        // --- Library Rendering and Navigation ---
+        function switchLibraryTab(tab) {
+            document.querySelectorAll('.lib-tab-btn').forEach(btn => {
+                btn.classList.replace('border-brand', 'border-transparent');
+                btn.classList.replace('text-brand', 'text-gray-500');
+            });
+
+            const activeBtn = document.getElementById(`lib-tab-${tab}`);
+            if (activeBtn) {
+                activeBtn.classList.replace('border-transparent', 'border-brand');
+                activeBtn.classList.replace('text-gray-500', 'text-brand');
+            }
+
+            if (tab === 'articles') {
+                document.getElementById('lib-content-articles').classList.remove('hidden');
+                document.getElementById('lib-content-words').classList.add('hidden');
+            } else {
+                document.getElementById('lib-content-articles').classList.add('hidden');
+                document.getElementById('lib-content-words').classList.remove('hidden');
+                renderSavedWordsList();
+            }
+        }
+
+        function renderLibrary() {
+            document.getElementById('fav-articles-count').textContent = appState.favorites.length;
+            document.getElementById('saved-words-count').textContent = appState.savedWords.length;
+
+            const favGrid = document.getElementById('fav-articles-grid');
+            const favArticles = spreadsheetData.filter(item => appState.favorites.includes(item.id));
+
+            if (favArticles.length === 0) {
+                favGrid.innerHTML = `
+                    <div class="col-span-full py-16 text-center bg-white rounded-3xl border border-gray-100 p-8">
+                        <i data-lucide="star" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                        <p class="text-gray-500 font-bold text-lg mb-1">No favorite articles saved yet</p>
+                        <p class="text-gray-400 text-sm">Click the star icon on any article to add it to your library.</p>
+                    </div>
+                `;
+            } else {
+                favGrid.innerHTML = favArticles.map(article => `
+                    <div onclick="openArticle(${article.id})" class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-xl transition-all group flex flex-col h-full relative">
+                        <div class="h-44 bg-gray-200 relative overflow-hidden shrink-0">
+                            <img src="${article.cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <button onclick="toggleFavorite(${article.id}, event)" class="absolute top-3 right-3 p-2 bg-white/90 rounded-full shadow hover:bg-white text-amber-500 transition">
+                                <i data-lucide="star" class="w-4 h-4 fill-amber-500"></i>
+                            </button>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col">
+                            <span class="text-xs font-black text-brand uppercase tracking-wider mb-1">${article.language} (${article.level})</span>
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight mb-2 group-hover:text-brand transition-colors">${article.title}</h3>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderSavedWordsList();
+            lucide.createIcons();
+        }
+
+        function renderSavedWordsList() {
+            const query = (document.getElementById('saved-words-search')?.value || '').toLowerCase().trim();
+            const container = document.getElementById('saved-words-list');
+            
+            let filteredWords = appState.savedWords;
+            if (query) {
+                filteredWords = filteredWords.filter(w => 
+                    w.word.toLowerCase().includes(query) || 
+                    w.meaning.toLowerCase().includes(query)
+                );
+            }
+
+            if (filteredWords.length === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center text-gray-400">
+                        <i data-lucide="book-open" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
+                        <p class="font-medium">${query ? 'No matching saved words.' : 'Your saved vocabulary library is empty.'}</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = filteredWords.map(item => `
+                <div class="p-5 hover:bg-gray-50 transition-colors flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <button onclick="speakSingleText('${item.word.replace(/'/g, "\\'")}', '${item.lang}')" class="p-2.5 bg-brandLight text-brand rounded-full hover:bg-brand hover:text-white transition" title="Pronounce">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                        </button>
+                        <div>
+                            <p class="font-extrabold text-gray-900 text-lg">${item.word}</p>
+                            <p class="text-xs text-gray-400 font-semibold">${item.lang} • Saved ${item.date || ''}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-brand font-bold bg-brand/10 px-3 py-1 rounded-full text-sm">${item.meaning}</span>
+                        <button onclick="removeWordFromLibrary('${item.word.replace(/'/g, "\\'")}', event)" class="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition" title="Remove from library">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function navigate(viewName) {
+            window.scrollTo(0, 0); 
+            stopSpeech();
+            closePopover();
+            if (isRecordingShadowing) stopShadowingRecording();
+
+            document.querySelectorAll('#app-container > div').forEach(el => {
+                el.classList.remove('active-view');
+                el.classList.add('hidden-view');
+            });
+            
+            const targetView = document.getElementById(`view-${viewName}`);
+            if (targetView) {
+                targetView.classList.remove('hidden-view');
+                targetView.classList.add('active-view');
+                appState.currentView = viewName;
+            }
+
+            if (viewName === 'home') renderHome();
+            if (viewName === 'settings') renderSettings();
+            if (viewName === 'library') renderLibrary();
+            
+            lucide.createIcons();
+        }
+
+        function fetchSheetData() {
+            return new Promise((resolve, reject) => {
+                Papa.parse(SHEET_CSV_URL, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        try {
+                            spreadsheetData = processRawData(results.data);
+                            availableLanguages = [...new Set(spreadsheetData.map(item => item.language).filter(Boolean))];
+                            resolve();
+                        } catch(e) {
+                            reject(e);
+                        }
+                    },
+                    error: function(err) {
+                        reject(err);
+                    }
+                });
+            });
+        }
+
+        function processRawData(rows) {
+            let processed = [];
+            let idCounter = 1;
+            
+            for (let row of rows) {
+                if (!row.Language || !row.Title) continue;
+
+                const contentText = (row.Content || "").replace(/\r/g, "");
+                const contentArray = contentText.split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l !== '')
+                    .map(l => ({ text: l }));
+
+                const vocabText = (row['Main Vocab'] || "").replace(/\r/g, "");
+                const vocabArray = vocabText.split('\n').map(l => l.trim()).filter(l => l).map(l => {
+                    let parts = l.split('=');
+                    return { 
+                        word: parts[0] ? parts[0].trim() : l, 
+                        meaning: parts[1] ? parts[1].trim() : '' 
+                    };
+                });
+
+                const grammarText = (row.Grammar || "").replace(/\r/g, "");
+                const grammarLines = grammarText.split('\n').map(l => l.trim()).filter(l => l);
+                let grammarObj = { title: "Grammar Notes", explanation: "", examples: [] };
+                
+                if (grammarLines.length > 0) {
+                    grammarObj.title = grammarLines[0].replace(/:$/, ''); 
+                    let isExampleSection = false;
+                    
+                    for (let i = 1; i < grammarLines.length; i++) {
+                        let line = grammarLines[i];
+                        if (line.toLowerCase().includes('examples:')) {
+                            isExampleSection = true;
+                            continue;
+                        }
+                        if (isExampleSection) {
+                            grammarObj.examples.push(line);
+                        } else {
+                            grammarObj.explanation += line + " ";
+                        }
+                    }
+                }
+
+                processed.push({
+                    id: idCounter++,
+                    language: row.Language.trim(),
+                    level: (row.Level || "A1").trim(),
+                    dialect: (row.Dialect || "").trim(),
+                    title: row.Title.trim(),
+                    cover: row.Cover || "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1000&q=80",
+                    content: contentArray,
+                    vocab: vocabArray,
+                    grammar: grammarObj
+                });
+            }
+            return processed;
+        }
+
+        function selectLanguage(lang) {
+            appState.selectedLanguage = lang;
+            localStorage.setItem('lenguanix_selected_language', lang);
+            appState.levelFilter = 'All'; 
+            navigate('home');
+        }
+
+        function renderOnboarding() {
+            const listEl = document.getElementById('language-selection-list');
+            if (availableLanguages.length === 0) {
+                 listEl.innerHTML = `<p class="text-center text-gray-500 py-4">No languages found in the database.</p>`;
+                 return;
+            }
+
+            listEl.innerHTML = availableLanguages.map(lang => `
+                <button onclick="selectLanguage('${lang}')" 
+                        class="w-full text-left p-5 rounded-2xl border-2 border-gray-100 hover:border-brand hover:bg-brand/5 hover:shadow-md transition-all flex justify-between items-center group">
+                    <span class="font-bold text-xl text-gray-800">${lang}</span>
+                    <i data-lucide="chevron-right" class="text-gray-400 group-hover:text-brand w-6 h-6"></i>
+                </button>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderHome() {
+            if (!appState.selectedLanguage) return;
+
+            const langData = spreadsheetData.filter(item => item.language === appState.selectedLanguage);
+            
+            const dialectsInLang = [...new Set(langData.map(item => item.dialect).filter(Boolean))];
+            const dialectSelect = document.getElementById('dialect-filter');
+            dialectSelect.innerHTML = '<option value="All">All Dialects</option>';
+            dialectsInLang.forEach(dialect => {
+                dialectSelect.innerHTML += `<option value="${dialect}">${dialect}</option>`;
+            });
+
+            const levelsInLang = [...new Set(langData.map(item => item.level))];
+            const filterEl = document.getElementById('level-filters');
+            const displayLevels = ['All', ...availableLevels.filter(lvl => levelsInLang.includes(lvl) || lvl === 'All')];
+            
+            filterEl.innerHTML = displayLevels.map(level => `
+                <button onclick="setLevelFilter('${level}')" 
+                        class="px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap
+                        ${appState.levelFilter === level 
+                            ? 'bg-brand border-brand text-white shadow-md' 
+                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}">
+                    ${level}
+                </button>
+            `).join('');
+
+            triggerFilters();
+        }
+
+        function setLevelFilter(level) {
+            appState.levelFilter = level;
+            const buttons = document.querySelectorAll('#level-filters button');
+            buttons.forEach(btn => {
+                if (btn.innerText.trim() === level) {
+                    btn.className = "px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap bg-brand border-brand text-white shadow-md";
+                } else {
+                    btn.className = "px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100";
+                }
+            });
+            triggerFilters();
+        }
+
+        function triggerFilters() {
+            const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            const chosenDialect = document.getElementById('dialect-filter').value;
+            
+            let filtered = spreadsheetData.filter(item => item.language === appState.selectedLanguage);
+
+            if (appState.levelFilter !== 'All') {
+                filtered = filtered.filter(item => item.level === appState.levelFilter);
+            }
+
+            if (chosenDialect !== 'All') {
+                filtered = filtered.filter(item => item.dialect === chosenDialect);
+            }
+
+            if (searchQuery !== '') {
+                filtered = filtered.filter(item => {
+                    const matchesTitle = item.title.toLowerCase().includes(searchQuery);
+                    const matchesContent = item.content.some(c => c.text.toLowerCase().includes(searchQuery));
+                    const matchesVocab = item.vocab.some(v => v.word.toLowerCase().includes(searchQuery) || v.meaning.toLowerCase().includes(searchQuery));
+                    return matchesTitle || matchesContent || matchesVocab;
+                });
+            }
+
+            const listEl = document.getElementById('article-list');
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-400 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                        <i data-lucide="search-code" class="w-16 h-16 mb-4 opacity-50 text-brand"></i>
+                        <p class="text-lg font-semibold">No results match your current filter parameters.</p>
+                    </div>`;
+            } else {
+                listEl.innerHTML = filtered.map(article => {
+                    const fav = isFavorite(article.id);
+                    return `
+                    <div onclick="openArticle(${article.id})" class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col h-full relative">
+                        <div class="h-48 sm:h-56 bg-gray-200 relative overflow-hidden shrink-0">
+                            <img src="${article.cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <button onclick="toggleFavorite(${article.id}, event)" class="absolute top-4 left-4 p-2.5 bg-white/90 backdrop-blur rounded-full shadow-md hover:bg-white transition text-amber-500 z-10" title="Bookmark article">
+                                <i data-lucide="star" class="w-4 h-4 ${fav ? 'fill-amber-500 text-amber-500' : 'text-gray-400'}"></i>
+                            </button>
+                            <div class="absolute top-4 right-4 bg-brand/90 backdrop-blur text-white text-xs font-black px-3 py-1.5 rounded-lg shadow-sm tracking-wider">
+                                ${article.level}
+                            </div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <h3 class="font-extrabold text-gray-900 text-xl leading-tight mb-2 group-hover:text-brand transition-colors">${article.title}</h3>
+                            <p class="text-sm font-medium text-gray-500 flex items-center gap-1.5 mt-auto pt-4 border-t border-gray-50">
+                                <i data-lucide="globe" class="w-4 h-4 text-brand"></i> ${article.dialect || 'Standard'}
+                            </p>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+            lucide.createIcons();
+        }
+
+        function renderSettings() {
+            const listEl = document.getElementById('settings-language-list');
+            listEl.innerHTML = availableLanguages.map(lang => `
+                <button onclick="selectLanguage('${lang}')" 
+                        class="w-full text-left p-4 rounded-2xl border-2 transition-all flex justify-between items-center
+                        ${appState.selectedLanguage === lang ? 'border-brand bg-brand/5 text-brand shadow-sm' : 'border-gray-100 hover:bg-gray-50 text-gray-700'}">
+                    <span class="font-bold text-lg">${lang}</span>
+                    ${appState.selectedLanguage === lang ? '<i data-lucide="check-circle-2" class="w-6 h-6"></i>' : ''}
+                </button>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openArticle(id) {
+            const article = spreadsheetData.find(a => a.id === id);
+            if (!article) return;
+            
+            appState.currentArticle = article;
+            originalArticleSentences = article.content.map(c => c.text);
+
+            document.getElementById('article-cover').src = article.cover;
+            document.getElementById('article-title').textContent = article.title;
+            document.getElementById('article-level-badge').textContent = article.level;
+
+            updateArticleFavButton();
+            populateHistoriaTab(article);
+            populateShadowingTab(article);
+            populatePalabrasTab(article);
+            populateGramaticaTab(article);
+
+            navigate('article');
+            switchTab('historia'); 
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.dataset.tab === tabId) {
+                    btn.classList.replace('text-gray-500', 'text-brand');
+                    btn.classList.replace('border-transparent', 'border-brand');
+                } else {
+                    btn.classList.replace('text-brand', 'text-gray-500');
+                    btn.classList.replace('border-brand', 'border-transparent');
+                }
+            });
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                if(content.id === `tab-${tabId}`) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function generateInteractiveSentence(sentenceText, sentenceIndex) {
+            const tokens = sentenceText.split(/(\s+|[,.\/#!$%\^&\*;:{}=\-_`~()?¿¡"“’'”])/g);
+            const spanHTML = tokens.map(token => {
+                if (!token.trim()) return token; 
+                if (/^[,.\/#!$%\^&\*;:{}=\-_`~()?¿¡"“’'”]+$/.test(token)) {
+                    return `<span class="text-gray-400 font-normal">${token}</span>`; 
+                }
+                const cleanedWord = token.replace(/[^\p{L}]/gu, '');
+                if (!cleanedWord) return token;
+
+                const safeWord = cleanedWord.replace(/'/g, "\\'");
+                return `<span onclick="handleWordClick(event, '${safeWord}')"
+                              class="interactive-word border-b border-dashed border-gray-300 hover:border-brand hover:text-brand hover:bg-brand/10 px-0.5 rounded cursor-pointer transition-all duration-150 font-semibold text-gray-800" 
+                              data-word="${cleanedWord}">${token}</span>`;
+            }).join('');
+
+            return `
+                <div id="sentence-block-${sentenceIndex}" class="p-3 rounded-2xl flex items-start gap-3 transition-colors duration-200">
+                    <button onclick="speakSentence(${sentenceIndex})" class="mt-1 p-2 bg-gray-100 hover:bg-brandLight hover:text-brand text-gray-500 rounded-full shrink-0 transition" title="Listen phrase">
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                    </button>
+                    <div class="flex-1">
+                        <p class="text-xl sm:text-2xl leading-relaxed">${spanHTML}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function populateHistoriaTab(article) {
+            const container = document.getElementById('tab-historia');
+            container.innerHTML = article.content.map((sentence, idx) => 
+                generateInteractiveSentence(sentence.text, idx)
+            ).join('');
+            lucide.createIcons();
+        }
+
+        // ==================== SHADOWING PRACTICE FEATURE ====================
+        function populateShadowingTab(article) {
+            shadowingSentences = article.content.map(c => c.text).filter(t => t.trim().length > 0);
+            shadowingCurrentIndex = 0;
+            shadowingTranslations = {};
+            if (isRecordingShadowing) stopShadowingRecording();
+            updateShadowingCard();
+        }
+
+        function updateShadowingCard() {
+            if (shadowingSentences.length === 0) {
+                document.getElementById('shadowing-target-text').textContent = "No sentences available for shadowing.";
+                return;
+            }
+
+            const currentSentence = shadowingSentences[shadowingCurrentIndex];
+            
+            document.getElementById('shadowing-counter').textContent = `Sentence ${shadowingCurrentIndex + 1} of ${shadowingSentences.length}`;
+            document.getElementById('shadowing-target-text').textContent = currentSentence;
+            
+            // Reset translation view
+            const transTextEl = document.getElementById('shadowing-translation-text');
+            const toggleBtnLabel = document.getElementById('shadowing-trans-toggle-label');
+            transTextEl.classList.add('hidden');
+            toggleBtnLabel.textContent = "Show Meaning";
+
+            if (shadowingTranslations[shadowingCurrentIndex]) {
+                transTextEl.textContent = shadowingTranslations[shadowingCurrentIndex];
+            } else {
+                transTextEl.textContent = "Loading translation...";
+            }
+
+            // Reset feedback display
+            const feedbackBox = document.getElementById('shadowing-feedback-box');
+            feedbackBox.classList.add('hidden');
+
+            // Button state
+            document.getElementById('shadowing-prev-btn').disabled = (shadowingCurrentIndex === 0);
+            document.getElementById('shadowing-next-btn').disabled = (shadowingCurrentIndex === shadowingSentences.length - 1);
+
+            lucide.createIcons();
+        }
+
+        function prevShadowingSentence() {
+            if (shadowingCurrentIndex > 0) {
+                if (isRecordingShadowing) stopShadowingRecording();
+                shadowingCurrentIndex--;
+                updateShadowingCard();
+            }
+        }
+
+        function nextShadowingSentence() {
+            if (shadowingCurrentIndex < shadowingSentences.length - 1) {
+                if (isRecordingShadowing) stopShadowingRecording();
+                shadowingCurrentIndex++;
+                updateShadowingCard();
+            }
+        }
+
+        async function toggleShadowingTranslation() {
+            const transTextEl = document.getElementById('shadowing-translation-text');
+            const toggleBtnLabel = document.getElementById('shadowing-trans-toggle-label');
+
+            if (!transTextEl.classList.contains('hidden')) {
+                transTextEl.classList.add('hidden');
+                toggleBtnLabel.textContent = "Show Meaning";
+                return;
+            }
+
+            transTextEl.classList.remove('hidden');
+            toggleBtnLabel.textContent = "Hide Meaning";
+
+            if (shadowingTranslations[shadowingCurrentIndex]) {
+                transTextEl.textContent = shadowingTranslations[shadowingCurrentIndex];
+                return;
+            }
+
+            const sentence = shadowingSentences[shadowingCurrentIndex];
+            const lang = appState.selectedLanguage || 'Spanish';
+            const config = langConfig[lang] || { code: 'es', target: 'en' };
+
+            let translation = "";
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${config.code}&tl=${config.target || 'en'}&dt=t&q=${encodeURIComponent(sentence)}`;
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data[0]) {
+                        translation = data[0].map(item => item[0]).join(' ');
+                    }
+                }
+            } catch (e) {
+                console.warn("Translation fallback...", e);
+            }
+
+            if (!translation) {
+                translation = sentence; // Fallback
+            }
+
+            shadowingTranslations[shadowingCurrentIndex] = translation;
+            transTextEl.textContent = translation;
+        }
+
+        function listenShadowingSentence() {
+            if (shadowingSentences.length === 0) return;
+            const currentSentence = shadowingSentences[shadowingCurrentIndex];
+            streamElevenLabsSpeech(currentSentence, appState.selectedLanguage);
+        }
+
+        function toggleShadowingRecording() {
+            if (isRecordingShadowing) {
+                stopShadowingRecording();
+            } else {
+                startShadowingRecording();
+            }
+        }
+
+        function startShadowingRecording() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast("Web Speech Recognition is not supported by this browser. Try Chrome/Edge.");
+                return;
+            }
+
+            const lang = appState.selectedLanguage || 'Spanish';
+            const config = langConfig[lang] || { sttCode: 'es-ES' };
+
+            stopSpeech(); // Stop any playing audio
+
+            try {
+                speechRecognitionInstance = new SpeechRecognition();
+                speechRecognitionInstance.lang = config.sttCode || 'es-ES';
+                speechRecognitionInstance.interimResults = true;
+                speechRecognitionInstance.continuous = false;
+
+                const micBtn = document.getElementById('shadowing-mic-btn');
+                const micLabel = document.getElementById('shadowing-mic-label');
+                const feedbackBox = document.getElementById('shadowing-feedback-box');
+                const heardTextEl = document.getElementById('shadowing-heard-text');
+                const statusBadge = document.getElementById('shadowing-status-badge');
+
+                micBtn.classList.add('recording-active');
+                micLabel.textContent = "Listening...";
+                
+                feedbackBox.classList.remove('hidden', 'bg-green-50', 'bg-amber-50', 'border-green-200', 'border-amber-200');
+                feedbackBox.classList.add('bg-gray-50', 'border-gray-200');
+                heardTextEl.textContent = "Listening to your voice...";
+                statusBadge.innerHTML = `<span class="text-gray-500 font-bold animate-pulse">Speak now...</span>`;
+
+                isRecordingShadowing = true;
+
+                speechRecognitionInstance.onresult = (event) => {
+                    let transcript = "";
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+
+                    heardTextEl.textContent = `"${transcript}"`;
+
+                    if (event.results[0].isFinal) {
+                        evaluateShadowingSpeech(transcript, shadowingSentences[shadowingCurrentIndex]);
+                        stopShadowingRecording();
+                    }
+                };
+
+                speechRecognitionInstance.onerror = (e) => {
+                    console.warn("Speech recognition error:", e.error);
+                    stopShadowingRecording();
+                    if (e.error !== 'no-speech') {
+                        showToast("Microphone error: " + e.error);
+                    }
+                };
+
+                speechRecognitionInstance.onend = () => {
+                    if (isRecordingShadowing) {
+                        stopShadowingRecording();
+                    }
+                };
+
+                speechRecognitionInstance.start();
+
+            } catch (err) {
+                console.error("Failed to start mic:", err);
+                stopShadowingRecording();
+                showToast("Could not access microphone.");
+            }
+        }
+
+        function stopShadowingRecording() {
+            isRecordingShadowing = false;
+            if (speechRecognitionInstance) {
+                try { speechRecognitionInstance.stop(); } catch(e){}
+                speechRecognitionInstance = null;
+            }
+
+            const micBtn = document.getElementById('shadowing-mic-btn');
+            const micLabel = document.getElementById('shadowing-mic-label');
+            if (micBtn && micLabel) {
+                micBtn.classList.remove('recording-active');
+                micLabel.textContent = "Read Aloud";
+            }
+        }
+
+        function evaluateShadowingSpeech(spokenText, targetText) {
+            const feedbackBox = document.getElementById('shadowing-feedback-box');
+            const statusBadge = document.getElementById('shadowing-status-badge');
+
+            // Normalize strings for comparison (remove punctuation, lower case)
+            const cleanSpoken = spokenText.toLowerCase().replace(/[^\p{L}\s]/gu, '').trim();
+            const cleanTarget = targetText.toLowerCase().replace(/[^\p{L}\s]/gu, '').trim();
+
+            const spokenWords = cleanSpoken.split(/\s+/).filter(Boolean);
+            const targetWords = cleanTarget.split(/\s+/).filter(Boolean);
+
+            if (targetWords.length === 0) return;
+
+            // Calculate word match overlap percentage
+            let matchedCount = 0;
+            spokenWords.forEach(w => {
+                if (targetWords.includes(w)) matchedCount++;
+            });
+
+            const accuracy = matchedCount / Math.max(targetWords.length, spokenWords.length);
+            const isMatch = accuracy >= 0.55 || cleanSpoken === cleanTarget;
+
+            feedbackBox.classList.remove('hidden', 'bg-gray-50', 'border-gray-200');
+
+            if (isMatch) {
+                feedbackBox.classList.add('bg-green-50', 'border-green-200');
+                statusBadge.className = "inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-sm bg-green-500 text-white shadow-sm";
+                statusBadge.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Excellent! Perfect match. Moving to next...`;
+
+                showToast("Great pronunciation! 🎉");
+                lucide.createIcons();
+
+                // Auto-advance after 1.5 seconds if correct
+                setTimeout(() => {
+                    if (shadowingCurrentIndex < shadowingSentences.length - 1) {
+                        nextShadowingSentence();
+                    }
+                }, 1600);
+
+            } else {
+                feedbackBox.classList.add('bg-amber-50', 'border-amber-200');
+                statusBadge.className = "inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-sm bg-amber-500 text-white shadow-sm";
+                statusBadge.innerHTML = `<i data-lucide="rotate-ccw" class="w-5 h-5"></i> Almost! Listen and try again.`;
+                lucide.createIcons();
+            }
+        }
+
+        function handleWordClick(event, word) {
+            event.stopPropagation();
+            isPopoverPinned = true;
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            const targetX = rect.left + window.scrollX;
+            const targetY = rect.top + window.scrollY;
+            const targetHeight = rect.height;
+
+            triggerWordPopover(targetX, targetY, targetHeight, word);
+        }
+
+        function triggerWordPopover(targetLeft, targetTop, targetHeight, word) {
+            const popover = document.getElementById('word-translation-popover');
+            
+            document.getElementById('popover-original-word').textContent = word;
+            document.getElementById('popover-pos-label').textContent = '...'; 
+            
+            document.getElementById('popover-loading').classList.remove('hidden');
+            document.getElementById('popover-content').classList.add('hidden');
+            document.getElementById('popover-content').style.display = 'none';
+            
+            popover.classList.remove('hidden');
+            popover.classList.add('flex');
+            
+            const popoverWidth = 320; 
+            let topPosition = targetTop + targetHeight + 8;
+            let leftPosition = targetLeft - 20;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            if (leftPosition + popoverWidth > windowWidth - 16) {
+                leftPosition = windowWidth - popoverWidth - 16;
+            }
+            if (leftPosition < 16) {
+                leftPosition = 16;
+            }
+
+            if (topPosition + 220 > window.scrollY + windowHeight) {
+                topPosition = Math.max(10, targetTop - 230);
+            }
+
+            popover.style.top = `${topPosition}px`;
+            popover.style.left = `${leftPosition}px`;
+
+            document.getElementById('popover-pronounce-btn').onclick = () => speakSingleText(word, appState.selectedLanguage);
+
+            fetchWordData(word);
+        }
+
+        function closePopover() {
+            const popover = document.getElementById('word-translation-popover');
+            if (popover) {
+                popover.classList.add('hidden');
+                popover.classList.remove('flex');
+            }
+            isPopoverPinned = false;
+        }
+
+        document.addEventListener('click', (e) => {
+            const popover = document.getElementById('word-translation-popover');
+            if (popover && !popover.classList.contains('hidden')) {
+                if (!popover.contains(e.target) && !e.target.classList.contains('interactive-word')) {
+                    closePopover();
+                }
+            }
+        });
+
+        async function fetchWordData(word) {
+            const lang = appState.selectedLanguage || 'Spanish';
+            const config = langConfig[lang] || { code: 'es', target: 'en' };
+            const srcLang = config.code;
+            const tgtLang = config.target || 'en';
+
+            document.getElementById('popover-lang-badge').textContent = `${lang.toUpperCase()} ➔ ${tgtLang.toUpperCase()}`;
+
+            let translation = '';
+            let pos = 'word';
+
+            try {
+                const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${srcLang}&tl=${tgtLang}&dt=t&dt=bd&q=${encodeURIComponent(word)}`;
+                const response = await fetch(gtxUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data[0] && data[0][0] && data[0][0][0]) {
+                        translation = data[0][0][0].trim();
+                    }
+                    if (data[1] && data[1][0] && data[1][0][0]) {
+                        pos = data[1][0][0];
+                    }
+                }
+            } catch (err) {
+                console.warn("Google GTX Translation fallback initiated...", err);
+            }
+
+            if (!translation) {
+                translation = "Translation unavailable";
+            }
+
+            document.getElementById('popover-translation-text').textContent = translation;
+            document.getElementById('popover-pos-label').textContent = pos;
+            document.getElementById('popover-definition-text').textContent = `Definition in context: "${word}" (${lang})`;
+
+            document.getElementById('popover-loading').classList.add('hidden');
+            document.getElementById('popover-content').classList.remove('hidden');
+            document.getElementById('popover-content').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "bg-gray-800 text-white font-bold text-sm px-4 py-3 rounded-xl shadow-lg transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2 z-50";
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-brand"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.replace('opacity-0', 'opacity-100');
+                toast.classList.replace('translate-y-2', 'translate-y-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.replace('opacity-100', 'opacity-0');
+                toast.classList.replace('translate-y-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function streamElevenLabsSpeech(text, languageName, onEndCallback = null) {
+            const config = langConfig[languageName] || { code: 'es' };
+            const voiceId = voiceMapping[languageName] || 'ErXwobaYi3019Dkyg5Vj'; 
+            const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "xi-api-key": ELEVENLABS_API_KEY
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: "eleven_multilingual_v2", 
+                        voice_settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.75
+                        }
+                    })
+                });
+                
+                if (!response.ok) throw new Error("ElevenLabs quota limit or API issue");
+                
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                if (currentAudioElement) {
+                    currentAudioElement.pause();
+                }
+                currentAudioElement = new Audio(audioUrl);
+                
+                if (onEndCallback) {
+                    currentAudioElement.onended = onEndCallback;
+                    currentAudioElement.onerror = () => onEndCallback();
+                }
+                currentAudioElement.play();
+            } catch (error) {
+                console.warn("ElevenLabs TTS Error (fallback triggered):", error.message);
+                speakWithBrowserTTS(text, config.code, onEndCallback);
+            }
+        }
+
+        function speakWithBrowserTTS(text, langCode, onEndCallback = null) {
+            if (!('speechSynthesis' in window)) {
+                showToast("This browser does not support text-to-speech.");
+                if (onEndCallback) onEndCallback();
+                return;
+            }
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = langCode;
+
+            const voices = window.speechSynthesis.getVoices();
+            const selectedVoice = voices.find(v => v.lang.startsWith(langCode));
+            if (selectedVoice) utterance.voice = selectedVoice;
+
+            if (onEndCallback) {
+                utterance.onend = onEndCallback;
+                utterance.onerror = () => onEndCallback();
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakSingleText(text, languageName) {
+            streamElevenLabsSpeech(text, languageName);
+        }
+
+        function speakSentence(index) {
+            stopSpeech();
+            const text = originalArticleSentences[index];
+            
+            const block = document.getElementById(`sentence-block-${index}`);
+            if (block) block.classList.add('spoken-highlight');
+
+            streamElevenLabsSpeech(text, appState.selectedLanguage, () => {
+                if (block) block.classList.remove('spoken-highlight');
+            });
+        }
+
+        function playEntireArticle() {
+            if (!originalArticleSentences.length) return;
+            stopSpeech();
+
+            isSpeakingEntire = true;
+            spokenSentenceIndex = 0;
+            document.getElementById('tts-stop-btn').classList.replace('hidden', 'flex');
+            
+            speakSequentialLoop();
+        }
+
+        function speakSequentialLoop() {
+            if (!isSpeakingEntire || spokenSentenceIndex >= originalArticleSentences.length) {
+                stopSpeech();
+                return;
+            }
+
+            if (spokenSentenceIndex > 0) {
+                const prevBlock = document.getElementById(`sentence-block-${spokenSentenceIndex - 1}`);
+                if (prevBlock) prevBlock.classList.remove('spoken-highlight');
+            }
+
+            const currentBlock = document.getElementById(`sentence-block-${spokenSentenceIndex}`);
+            if (currentBlock) {
+                currentBlock.classList.add('spoken-highlight');
+                currentBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            const text = originalArticleSentences[spokenSentenceIndex];
+
+            streamElevenLabsSpeech(text, appState.selectedLanguage, () => {
+                if (currentBlock) currentBlock.classList.remove('spoken-highlight');
+                if (isSpeakingEntire) {
+                    spokenSentenceIndex++;
+                    speakSequentialLoop();
+                }
+            });
+        }
+
+        function stopSpeech() {
+            isSpeakingEntire = false;
+            
+            if (currentAudioElement) {
+                currentAudioElement.pause();
+                currentAudioElement = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            
+            document.querySelectorAll('[id^="sentence-block-"]').forEach(el => {
+                el.classList.remove('spoken-highlight');
+            });
+            
+            const stopBtn = document.getElementById('tts-stop-btn');
+            if (stopBtn) stopBtn.classList.replace('flex', 'hidden');
+        }
+
+        function populatePalabrasTab(article) {
+            const container = document.getElementById('vocab-list');
+            if (!article.vocab || article.vocab.length === 0) {
+                 container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">No vocabulary words list available.</div>`;
+                 return;
+            }
+
+            container.innerHTML = article.vocab.map((item, idx) => {
+                const saved = isWordSaved(item.word);
+                const hasMeaning = item.meaning && item.meaning.trim() !== '' && item.meaning !== '-';
+                const displayMeaning = hasMeaning ? item.meaning : 'Translating...';
+
+                return `
+                <div class="p-6 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <button onclick="speakSingleText('${item.word.replace(/'/g, "\\'")}', appState.selectedLanguage)" class="p-2 bg-gray-100 hover:bg-brandLight hover:text-brand text-gray-500 rounded-full shrink-0 transition" title="Pronounce">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                        </button>
+                        <span class="font-black text-xl text-gray-900">${item.word}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="vocab-meaning-${idx}" class="text-brand font-medium text-lg bg-brand/10 px-4 py-1.5 rounded-full inline-block sm:block w-fit ${hasMeaning ? '' : 'animate-pulse'}">${displayMeaning}</span>
+                        <button id="vocab-save-btn-${idx}" onclick="saveWordToLibrary('${item.word.replace(/'/g, "\\'")}', '${(item.meaning || '').replace(/'/g, "\\'")}', appState.selectedLanguage)" class="p-2 rounded-full border border-gray-200 hover:bg-brandLight hover:text-brand text-gray-500 transition" title="Save word to library">
+                            <i data-lucide="bookmark" class="w-4 h-4 ${saved ? 'fill-brand text-brand' : ''}"></i>
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons();
+
+            // Auto-translate untranslated vocabulary words using Google Translate API
+            article.vocab.forEach(async (item, idx) => {
+                const hasMeaning = item.meaning && item.meaning.trim() !== '' && item.meaning !== '-';
+                if (!hasMeaning) {
+                    const translated = await translateTextWithGoogle(item.word, appState.selectedLanguage);
+                    if (translated) {
+                        item.meaning = translated;
+                        const meaningEl = document.getElementById(`vocab-meaning-${idx}`);
+                        if (meaningEl) {
+                            meaningEl.textContent = translated;
+                            meaningEl.classList.remove('animate-pulse');
+                        }
+                        const saveBtn = document.getElementById(`vocab-save-btn-${idx}`);
+                        if (saveBtn) {
+                            saveBtn.setAttribute('onclick', `saveWordToLibrary('${item.word.replace(/'/g, "\\'")}', '${translated.replace(/'/g, "\\'")}', appState.selectedLanguage)`);
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateGramaticaTab(article) {
+            document.getElementById('grammar-title').textContent = article.grammar.title || 'Grammar';
+            
+            const expEl = document.getElementById('grammar-explanation');
+            if (article.grammar.explanation) {
+                expEl.textContent = article.grammar.explanation;
+                expEl.style.display = 'block';
+            } else {
+                expEl.style.display = 'none';
+            }
+            
+            const examplesContainer = document.getElementById('grammar-examples');
+            if (article.grammar.examples.length > 0) {
+                examplesContainer.innerHTML = article.grammar.examples.map(ex => `
+                    <li class="flex items-start gap-3">
+                        <i data-lucide="check" class="w-5 h-5 text-brand shrink-0 mt-0.5"></i>
+                        <span>${ex}</span>
+                    </li>
+                `).join('');
+                examplesContainer.parentElement.style.display = 'block';
+                lucide.createIcons();
+            } else {
+                examplesContainer.parentElement.style.display = 'none';
+            }
+        }
+
+        async function initApp() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            try {
+                await fetchSheetData();
+                renderOnboarding();
+                
+                // Automatically open saved language view if present
+                const savedLang = localStorage.getItem('lenguanix_selected_language');
+                if (savedLang && availableLanguages.includes(savedLang)) {
+                    appState.selectedLanguage = savedLang;
+                    navigate('home');
+                } else {
+                    navigate('onboarding');
+                }
+            } catch (err) {
+                console.error("Failed to initialize:", err);
+                showToast("Failed to load content. Please check connection.");
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+            initApp();
+        });
+    </script>
+</body>
+</html>
