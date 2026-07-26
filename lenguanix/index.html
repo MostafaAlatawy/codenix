@@ -354,6 +354,14 @@
 
                 <!-- Sub-View: Saved Words -->
                 <div id="lib-content-words" class="hidden space-y-4">
+                    <!-- Quick Add Word Bar -->
+                    <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3">
+                        <input id="quick-add-word-input" type="text" placeholder="Type a word in target language..." class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand">
+                        <button onclick="handleQuickAddWord()" class="px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-2xl hover:bg-brandDark transition flex items-center justify-center gap-2 shrink-0">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Add & Auto-Translate
+                        </button>
+                    </div>
+
                     <div class="relative mb-4">
                         <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
                         <input id="saved-words-search" oninput="renderSavedWordsList()" type="text" placeholder="Search saved words or translations..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand shadow-sm">
@@ -462,7 +470,7 @@
 
         let appState = {
             currentView: 'onboarding',
-            selectedLanguage: null,
+            selectedLanguage: localStorage.getItem('lenguanix_selected_language') || null,
             levelFilter: 'All',
             currentArticle: null,
             favorites: JSON.parse(localStorage.getItem('lenguanix_favorites') || '[]'),
@@ -517,21 +525,51 @@
             return appState.savedWords.some(item => item.word.toLowerCase() === word.toLowerCase());
         }
 
-        function saveWordToLibrary(word, meaning, lang) {
-            const wordLang = lang || appState.selectedLanguage || 'Spanish';
-            if (!isWordSaved(word)) {
-                appState.savedWords.push({
-                    id: Date.now(),
-                    word: word,
-                    meaning: meaning || 'Saved term',
-                    lang: wordLang,
-                    date: new Date().toLocaleDateString()
-                });
-                localStorage.setItem('lenguanix_saved_words', JSON.stringify(appState.savedWords));
-                showToast(`Saved "${word}" to word library! 📚`);
-            } else {
-                showToast(`"${word}" is already in your library.`);
+        async function translateTextWithGoogle(text, fromLangName, toLangName = 'English') {
+            if (!text || !text.trim()) return '';
+            const srcConfig = langConfig[fromLangName] || { code: 'auto' };
+            const tgtConfig = langConfig[toLangName] || { code: 'en' };
+            const srcCode = srcConfig.code || 'auto';
+            const tgtCode = tgtConfig.target || tgtConfig.code || 'en';
+
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${srcCode}&tl=${tgtCode}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data[0]) {
+                        return data[0].map(item => item[0]).join('').trim();
+                    }
+                }
+            } catch (err) {
+                console.warn("Google Translate API call failed:", err);
             }
+            return '';
+        }
+
+        async function saveWordToLibrary(word, meaning, lang) {
+            const wordLang = lang || appState.selectedLanguage || 'Spanish';
+            if (isWordSaved(word)) {
+                showToast(`"${word}" is already in your library.`);
+                return;
+            }
+
+            let finalMeaning = meaning;
+            if (!finalMeaning || finalMeaning === '-' || finalMeaning === 'Saved term' || finalMeaning.trim() === '') {
+                showToast(`Translating "${word}" with Google Translate...`);
+                finalMeaning = await translateTextWithGoogle(word, wordLang);
+                if (!finalMeaning) finalMeaning = 'Saved term';
+            }
+
+            appState.savedWords.push({
+                id: Date.now(),
+                word: word,
+                meaning: finalMeaning,
+                lang: wordLang,
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('lenguanix_saved_words', JSON.stringify(appState.savedWords));
+            showToast(`Saved "${word}" (${finalMeaning}) to library! 📚`);
 
             if (appState.currentView === 'article') {
                 populatePalabrasTab(appState.currentArticle);
@@ -539,6 +577,18 @@
             if (appState.currentView === 'library') {
                 renderLibrary();
             }
+        }
+
+        async function handleQuickAddWord() {
+            const input = document.getElementById('quick-add-word-input');
+            if (!input) return;
+            const word = input.value.trim();
+            if (!word) {
+                showToast("Please enter a word to add.");
+                return;
+            }
+            input.value = '';
+            await saveWordToLibrary(word, '', appState.selectedLanguage);
         }
 
         function removeWordFromLibrary(word, event) {
@@ -773,6 +823,7 @@
 
         function selectLanguage(lang) {
             appState.selectedLanguage = lang;
+            localStorage.setItem('lenguanix_selected_language', lang);
             appState.levelFilter = 'All'; 
             navigate('home');
         }
@@ -1506,13 +1557,16 @@
 
         function populatePalabrasTab(article) {
             const container = document.getElementById('vocab-list');
-            if (article.vocab.length === 0) {
+            if (!article.vocab || article.vocab.length === 0) {
                  container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">No vocabulary words list available.</div>`;
                  return;
             }
 
-            container.innerHTML = article.vocab.map(item => {
+            container.innerHTML = article.vocab.map((item, idx) => {
                 const saved = isWordSaved(item.word);
+                const hasMeaning = item.meaning && item.meaning.trim() !== '' && item.meaning !== '-';
+                const displayMeaning = hasMeaning ? item.meaning : 'Translating...';
+
                 return `
                 <div class="p-6 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
@@ -1522,14 +1576,34 @@
                         <span class="font-black text-xl text-gray-900">${item.word}</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <span class="text-brand font-medium text-lg bg-brand/10 px-4 py-1.5 rounded-full inline-block sm:block w-fit">${item.meaning || '-'}</span>
-                        <button onclick="saveWordToLibrary('${item.word.replace(/'/g, "\\'")}', '${item.meaning.replace(/'/g, "\\'")}', appState.selectedLanguage)" class="p-2 rounded-full border border-gray-200 hover:bg-brandLight hover:text-brand text-gray-500 transition" title="Save word to library">
+                        <span id="vocab-meaning-${idx}" class="text-brand font-medium text-lg bg-brand/10 px-4 py-1.5 rounded-full inline-block sm:block w-fit ${hasMeaning ? '' : 'animate-pulse'}">${displayMeaning}</span>
+                        <button id="vocab-save-btn-${idx}" onclick="saveWordToLibrary('${item.word.replace(/'/g, "\\'")}', '${(item.meaning || '').replace(/'/g, "\\'")}', appState.selectedLanguage)" class="p-2 rounded-full border border-gray-200 hover:bg-brandLight hover:text-brand text-gray-500 transition" title="Save word to library">
                             <i data-lucide="bookmark" class="w-4 h-4 ${saved ? 'fill-brand text-brand' : ''}"></i>
                         </button>
                     </div>
                 </div>
             `}).join('');
             lucide.createIcons();
+
+            // Auto-translate untranslated vocabulary words using Google Translate API
+            article.vocab.forEach(async (item, idx) => {
+                const hasMeaning = item.meaning && item.meaning.trim() !== '' && item.meaning !== '-';
+                if (!hasMeaning) {
+                    const translated = await translateTextWithGoogle(item.word, appState.selectedLanguage);
+                    if (translated) {
+                        item.meaning = translated;
+                        const meaningEl = document.getElementById(`vocab-meaning-${idx}`);
+                        if (meaningEl) {
+                            meaningEl.textContent = translated;
+                            meaningEl.classList.remove('animate-pulse');
+                        }
+                        const saveBtn = document.getElementById(`vocab-save-btn-${idx}`);
+                        if (saveBtn) {
+                            saveBtn.setAttribute('onclick', `saveWordToLibrary('${item.word.replace(/'/g, "\\'")}', '${translated.replace(/'/g, "\\'")}', appState.selectedLanguage)`);
+                        }
+                    }
+                }
+            });
         }
 
         function populateGramaticaTab(article) {
@@ -1563,7 +1637,15 @@
             try {
                 await fetchSheetData();
                 renderOnboarding();
-                navigate('onboarding');
+                
+                // Automatically open saved language view if present
+                const savedLang = localStorage.getItem('lenguanix_selected_language');
+                if (savedLang && availableLanguages.includes(savedLang)) {
+                    appState.selectedLanguage = savedLang;
+                    navigate('home');
+                } else {
+                    navigate('onboarding');
+                }
             } catch (err) {
                 console.error("Failed to initialize:", err);
                 showToast("Failed to load content. Please check connection.");
