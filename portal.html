@@ -121,6 +121,7 @@
     </style>
 </head>
 <body class="dark">
+    <!-- Custom Cursor Pointer -->
     <div id="custom-cursor"></div>
 
     <nav class="sticky top-0 z-50 backdrop-blur-md border-b border-white/5 bg-slate-900/40 dark:bg-slate-950/40">
@@ -383,6 +384,22 @@
         let parsedNotifications = [];
         let parsedMessages = [];
 
+        /**
+         * Cleans image URLs fetched from Google Sheets.
+         * Strips stray '">, quotation marks, formulas, and extra trailing HTML characters.
+         */
+        function cleanImageUrl(url) {
+            if (!url) return '';
+            let cleaned = url.toString().trim();
+            // Remove Google Sheets =IMAGE(...) syntax if present
+            cleaned = cleaned.replace(/^=IMAGE\((["']?)(.*?)\1\)$/i, '$2');
+            // Remove <img src="..."> tags if raw html was pasted
+            cleaned = cleaned.replace(/^<img[^>]*src=["']?([^"'>]+)["']?[^>]*>/i, '$1');
+            // Remove stray quotation marks, >, and '>
+            cleaned = cleaned.replace(/['">]+$/g, '').replace(/^['">]+/g, '');
+            return cleaned.trim();
+        }
+
         // Exact Fallback Layout matching your spreadsheet structure
         const FALLBACK_SECTIONS = {
             "New": [
@@ -420,7 +437,7 @@
         // Intelligently parse media URLs
         function getEmbeddableMediaHTML(url) {
             if (!url || url === '#') return '';
-            url = url.trim();
+            url = cleanImageUrl(url);
 
             const driveReg = /drive\.google\.com\/(?:file\/d\/([^\/\?&]+)|open\?id=([^\/\?&]+))/;
             const driveMatch = url.match(driveReg);
@@ -480,7 +497,7 @@
                     // Notifications Row (Col A == "Notifications")
                     if (sectionType.toLowerCase() === 'notifications') {
                         const title = getValue(1).toString().trim();
-                        const link = getValue(2).toString().trim();
+                        const link = cleanImageUrl(getValue(2).toString());
                         if (title) parsedNotifications.push({ title, link });
                         return;
                     }
@@ -488,7 +505,7 @@
                     // Messages Row (Col A == "Messages")
                     if (sectionType.toLowerCase() === 'messages') {
                         const title = getValue(1).toString().trim();
-                        const link = getValue(2).toString().trim();
+                        const link = cleanImageUrl(getValue(2).toString());
                         if (title) parsedMessages.push({ title, mediaUrl: link });
                         return;
                     }
@@ -497,7 +514,7 @@
                         parsedGrouped[sectionType] = [];
                     }
 
-                    // Reading Column Sets matching image:
+                    // Reading Column Sets:
                     // Set 1: Col B (Tool), Col C (Link), Col D (Image) -> idx 1, 2, 3
                     // Set 2: Col E (Tool2), Col F (Link2), Col G (Image2) -> idx 4, 5, 6
                     // Set 3: Col H (Tool3), Col I (Link3), Col J (Image3) -> idx 7, 8, 9
@@ -507,21 +524,21 @@
                         tools.push({
                             name: getValue(1).toString().trim(),
                             link: getValue(2).toString().trim(),
-                            image: getValue(3).toString().trim()
+                            image: cleanImageUrl(getValue(3).toString())
                         });
                     }
                     if (getValue(4)) {
                         tools.push({
                             name: getValue(4).toString().trim(),
                             link: getValue(5).toString().trim(),
-                            image: getValue(6).toString().trim()
+                            image: cleanImageUrl(getValue(6).toString())
                         });
                     }
                     if (getValue(7)) {
                         tools.push({
                             name: getValue(7).toString().trim(),
                             link: getValue(8).toString().trim(),
-                            image: getValue(9).toString().trim()
+                            image: cleanImageUrl(getValue(9).toString())
                         });
                     }
 
@@ -668,24 +685,32 @@
 
         function getSvgFallback(toolName) {
             const lowerName = toolName.toLowerCase();
+            let pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />`;
+
             if (lowerName.includes('sube') || lowerName.includes('dale') || lowerName.includes('image')) {
-                return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`;
+                pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />`;
+            } else if (lowerName.includes('nix') || lowerName.includes('ai') || lowerName.includes('speak')) {
+                pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />`;
+            } else if (lowerName.includes('qr')) {
+                pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-6v-3m6 3h-2m-2 0h-2m-4-6h2m-2 4h2m-2 4h2m10-8h2m-2 4h2" />`;
+            } else if (lowerName.includes('service') || lowerName.includes('feedback') || lowerName.includes('blog')) {
+                pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />`;
             }
-            if (lowerName.includes('nix') || lowerName.includes('ai') || lowerName.includes('speak')) {
-                return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`;
+            return `<svg xmlns="http://www.w3.org/2000/svg" class="h-[35px] w-[35px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">${pathContent}</svg>`;
+        }
+
+        // Global image error handler preventing string breaking
+        function handleToolImageError(imgElement, toolName) {
+            imgElement.onerror = null;
+            if (imgElement.parentElement) {
+                imgElement.parentElement.innerHTML = getSvgFallback(decodeURIComponent(toolName));
             }
-            if (lowerName.includes('qr')) {
-                return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-6v-3m6 3h-2m-2 0h-2m-4-6h2m-2 4h2m-2 4h2m10-8h2m-2 4h2" /></svg>`;
-            }
-            if (lowerName.includes('service') || lowerName.includes('feedback') || lowerName.includes('blog')) {
-                return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>`;
-            }
-            return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>`;
         }
 
         function getToolIconHTML(tool) {
-            if (tool.image && tool.image.trim() !== '') {
-                return `<img src="${tool.image}" alt="${tool.name}" class="h-6 w-6 object-contain" onerror="this.outerHTML='${getSvgFallback(tool.name)}'">`;
+            const cleanedUrl = cleanImageUrl(tool.image);
+            if (cleanedUrl && cleanedUrl !== '') {
+                return `<img src="${cleanedUrl}" alt="${tool.name}" class="h-[35px] w-[35px] object-contain rounded-md" onerror="handleToolImageError(this, '${encodeURIComponent(tool.name)}')">`;
             }
             return getSvgFallback(tool.name);
         }
@@ -719,7 +744,7 @@
                                 return `
                                     <div onclick="window.location.href='${tool.link}'" class="glass-card p-6 rounded-[2rem] bg-slate-900/40 border border-white/5 cursor-pointer group flex items-start gap-4 hover:border-purple-500/30">
                                         <!-- Tool Icon Box -->
-                                        <div class="p-3 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 flex items-center justify-center">
+                                        <div class="p-2.5 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 flex items-center justify-center">
                                             ${getToolIconHTML(tool)}
                                         </div>
                                         
