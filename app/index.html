@@ -265,57 +265,25 @@
                         </div>
                     </div>
 
-                    <!-- Hero Visual Right (App Poster) -->
+                    <!-- Hero Visual Right (App Logo Showcase) -->
                     <div class="lg:col-span-5 flex justify-center">
                         <div class="relative w-full max-w-md group">
                             <!-- Glow Backdrop -->
                             <div class="absolute -inset-1 bg-gradient-to-r from-emerald-600 via-cyan-500 to-indigo-600 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition duration-500 animate-pulse-slow"></div>
                             
-                            <!-- Poster Container -->
-                            <div class="relative rounded-3xl glass-panel-glow p-3.5 overflow-hidden border border-slate-700/80">
-                                <!-- Top Bar Controls Decorative -->
-                                <div class="flex items-center justify-between pb-3 px-2 border-b border-slate-800/80 mb-3">
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
-                                        <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
-                                        <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
-                                    </div>
-                                    <span class="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
-                                        <i class="fa-brands fa-android"></i> codenix_android_v2.4.apk
-                                    </span>
-                                    <button onclick="toggleLightbox()" class="text-slate-400 hover:text-white text-xs" title="Expand Poster">
-                                        <i class="fa-solid fa-expand"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Poster Image Element -->
-                                <div class="relative rounded-2xl overflow-hidden bg-slate-950 aspect-[4/5] flex items-center justify-center cursor-pointer group/img" onclick="toggleLightbox()">
-                                    <img id="hero-poster-img" 
-                                         src="https://chatgpt.com/backend-api/estuary/content?id=file_0000000003c481f4bc77cbf67253ff31&ts=496125&p=fs&cid=1&sig=f5dcd800bce16420cb302e522fac11219174950f3f19c0baac8895cdc3547ab8&v=0" 
-                                         alt="Codenix Android App Poster" 
-                                         class="w-full h-full object-cover rounded-2xl group-hover/img:scale-105 transition-transform duration-500"
-                                         onerror="handleImageError(this, 'poster');">
-                                    
-                                    <!-- Image Overlay Hover -->
-                                    <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                        <div class="w-12 h-12 rounded-full bg-emerald-600/90 text-white flex items-center justify-center shadow-lg">
-                                            <i class="fa-solid fa-magnifying-glass-plus text-lg"></i>
-                                        </div>
-                                        <span class="text-xs font-semibold text-white bg-slate-900/80 px-3 py-1 rounded-full">Click to Enlarge Poster</span>
+                            <!-- Logo Showcase Container -->
+                            <div class="relative rounded-3xl glass-panel-glow p-8 overflow-hidden border border-slate-700/80 flex flex-col items-center text-center space-y-6">
+                                <div class="w-32 h-32 rounded-3xl bg-gradient-to-tr from-brand-600 to-cyan-400 p-[2px] shadow-2xl shadow-brand-500/40 group-hover:scale-105 transition-transform duration-300">
+                                    <div class="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center overflow-hidden">
+                                        <img src="/app.png" alt="Codenix Android App Logo" class="w-full h-full object-cover" onerror="handleImageError(this, 'logo');">
                                     </div>
                                 </div>
-
-                                <!-- Poster Footer Information -->
-                                <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400 px-1">
-                                    <div class="flex items-center gap-2">
-                                        <img src="/app.png" 
-                                             class="w-5 h-5 rounded-md object-cover" 
-                                             onerror="handleImageError(this, 'logo');" alt="Thumb">
-                                        <span class="font-semibold text-slate-200">Android Workspace</span>
-                                    </div>
-                                    <span class="text-emerald-400 font-mono flex items-center gap-1">
-                                        <i class="fa-solid fa-circle text-[8px]"></i> Ready to Install APK
-                                    </span>
+                                <div class="space-y-2">
+                                    <h3 class="text-xl font-extrabold text-white font-mono tracking-tight">CODENIX APK</h3>
+                                    <p class="text-xs text-slate-300">Official Android IDE & Workspace</p>
+                                </div>
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400">
+                                    <i class="fa-solid fa-circle text-[8px]"></i> v2.4.0 Verified Package
                                 </div>
                             </div>
                         </div>
@@ -569,84 +537,70 @@
             </div>
         </section>
 
-        <!-- Frequently Asked Questions -->
-        <section id="faq" class="py-16 bg-slate-900/30 border-t border-slate-800/60">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <div class="text-center mb-12 space-y-2">
-                    <h2 class="text-xs font-bold font-mono tracking-widest text-emerald-400 uppercase">Android Support & FAQs</h2>
-                    <p class="text-3xl font-extrabold text-white">Frequently Asked Questions</p>
+        <!-- Logo Showcase Preview Section -->
+        <section id="poster-preview" class="py-16 bg-slate-900/40 border-y border-slate-800/60">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    
+                    <div class="lg:col-span-6 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs font-mono font-semibold">
+                            <i class="fa-solid fa-shield-halved"></i> OFFICIAL ANDROID RELEASE
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Pure Mobile Developer Power</h2>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Codenix is built specifically for Android power users who want an uncompromising code editing environment right in their pocket.
+                        </p>
+
+                        <div class="space-y-4 pt-2">
+                            <div class="flex items-start gap-4 p-4 rounded-2xl glass-panel">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-sliders"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Adaptive Design Matrix</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Fully dynamic viewport adjustment whether running on smartphone screens, tablets, or foldable devices.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4 p-4 rounded-2xl glass-panel">
+                                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-laptop-code"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Developer Friendly Experience</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Built by programmers for programmers with ergonomics and clean UI at its core.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6 flex justify-center">
+                        <div class="relative w-full max-w-sm">
+                            <div class="glass-panel p-8 rounded-3xl shadow-2xl border border-slate-700/80 flex flex-col items-center text-center space-y-6">
+                                <div class="relative w-36 h-36 rounded-3xl bg-gradient-to-tr from-brand-600 to-cyan-400 p-[2px] shadow-2xl shadow-emerald-500/20">
+                                    <div class="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center overflow-hidden">
+                                        <img src="/app.png" alt="Codenix Logo" class="w-full h-full object-cover" onerror="handleImageError(this, 'logo');">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <h4 class="text-lg font-bold text-white">Codenix Official App</h4>
+                                    <p class="text-xs font-mono text-emerald-400">Android APK Package v2.4.0</p>
+                                </div>
+                                <a href="https://drive.google.com/file/d/1VyEnabwYYM7cYxPicRzaXSaYt6l3Fw-u/view?usp=sharing" target="_blank" rel="noopener noreferrer" 
+                                   class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+                                    <i class="fa-brands fa-android"></i> Download APK Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-
-                <div class="space-y-4">
-                    <!-- FAQ 1 -->
-                    <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-                        <button onclick="toggleFaq(1)" class="w-full p-5 text-left font-semibold text-white flex items-center justify-between gap-4 hover:bg-slate-800/50 transition-colors">
-                            <span>Is Codenix Android APK safe to install?</span>
-                            <i id="faq-icon-1" class="fa-solid fa-chevron-down text-emerald-400 text-xs transition-transform duration-300"></i>
-                        </button>
-                        <div id="faq-ans-1" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-slate-800/50 pt-3">
-                            Yes! Every Codenix APK release build is compiled directly from verified source code and scanned thoroughly with VirusTotal. It contains zero malware or unwanted telemetry.
-                        </div>
-                    </div>
-
-                    <!-- FAQ 2 -->
-                    <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-                        <button onclick="toggleFaq(2)" class="w-full p-5 text-left font-semibold text-white flex items-center justify-between gap-4 hover:bg-slate-800/50 transition-colors">
-                            <span>What are the minimum Android system requirements?</span>
-                            <i id="faq-icon-2" class="fa-solid fa-chevron-down text-emerald-400 text-xs transition-transform duration-300"></i>
-                        </button>
-                        <div id="faq-ans-2" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-slate-800/50 pt-3">
-                            Codenix runs on Android 8.0 (Oreo) or higher. For optimal performance, we recommend 3GB RAM or higher and at least 100MB of free storage space.
-                        </div>
-                    </div>
-
-                    <!-- FAQ 3 -->
-                    <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-                        <button onclick="toggleFaq(3)" class="w-full p-5 text-left font-semibold text-white flex items-center justify-between gap-4 hover:bg-slate-800/50 transition-colors">
-                            <span>Why is the file hosted on Google Drive?</span>
-                            <i id="faq-icon-3" class="fa-solid fa-chevron-down text-emerald-400 text-xs transition-transform duration-300"></i>
-                        </button>
-                        <div id="faq-ans-3" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-slate-800/50 pt-3">
-                            We host our official APK package binaries on Google Drive high-speed global servers to ensure high download speeds, reliability, and security for Android users worldwide.
-                        </div>
-                    </div>
-
-                    <!-- FAQ 4 -->
-                    <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-                        <button onclick="toggleFaq(4)" class="w-full p-5 text-left font-semibold text-white flex items-center justify-between gap-4 hover:bg-slate-800/50 transition-colors">
-                            <span>How do I update the app in the future?</span>
-                            <i id="faq-icon-4" class="fa-solid fa-chevron-down text-emerald-400 text-xs transition-transform duration-300"></i>
-                        </button>
-                        <div id="faq-ans-4" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-400 leading-relaxed border-t border-slate-800/50 pt-3">
-                            Codenix contains an in-app version update detector. When a new APK version is released, you will receive a notification to download and overwrite-update seamlessly.
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </section>
-    </main>
 
-    <!-- Footer -->
-    <footer class="glass-panel border-t border-slate-800/80 py-10 relative z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex items-center gap-3">
-                <img src="/app.png" 
-                     class="w-8 h-8 rounded-lg object-cover" 
-                     onerror="handleImageError(this, 'logo');" alt="Footer Logo">
-                <span class="font-bold font-mono text-white text-base">CODENIX FOR ANDROID</span>
-                <span class="text-xs text-slate-400">© 2026 Codenix Inc. All rights reserved.</span>
-            </div>
-
-            <div class="flex items-center gap-6 text-xs text-slate-400">
-                <a href="https://drive.google.com/file/d/1VyEnabwYYM7cYxPicRzaXSaYt6l3Fw-u/view?usp=sharing" target="_blank" class="hover:text-emerald-400 transition-colors">Google Drive APK Link</a>
-                <a href="#features" class="hover:text-emerald-400 transition-colors">Features</a>
-                <a href="#installation" class="hover:text-emerald-400 transition-colors">APK Guide</a>
-            </div>
-        </div>
-    </footer>
-
+        <!-- Dedicated Download Center Section -->
+        <section id="download" class="py-20 relative">
+<!-- ... new file content omitted / cleaned up ... -->
     <!-- QR CODE MODAL -->
     <div id="qr-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity">
         <div class="glass-panel-glow max-w-sm w-full p-6 rounded-3xl text-center space-y-4 border border-emerald-500/40 relative">
@@ -674,21 +628,6 @@
         </div>
     </div>
 
-    <!-- LIGHTBOX MODAL FOR APP POSTER -->
-    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-lg hidden items-center justify-center p-4" onclick="toggleLightbox()">
-        <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center" onclick="event.stopPropagation()">
-            <button onclick="toggleLightbox()" class="absolute -top-12 right-0 text-slate-300 hover:text-white text-2xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <img id="lightbox-img" 
-                 src="https://chatgpt.com/backend-api/estuary/content?id=file_0000000003c481f4bc77cbf67253ff31&ts=496125&p=fs&cid=1&sig=f5dcd800bce16420cb302e522fac11219174950f3f19c0baac8895cdc3547ab8&v=0" 
-                 alt="Codenix Poster Enlarged" 
-                 class="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-slate-700"
-                 onerror="handleImageError(this, 'poster');">
-            <p class="text-xs text-slate-400 mt-3 font-mono">Codenix Official Showcase Graphic Poster</p>
-        </div>
-    </div>
-
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-notification" class="fixed bottom-6 right-6 z-50 glass-panel border border-brand-500/50 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300">
         <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
@@ -704,10 +643,6 @@
                 img.onerror = null;
                 // Generate a sleek SVG data URI fallback for the Android logo
                 img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><rect width='100' height='100' rx='20' fill='%23059669'/><path d='M30 35L15 50L30 65' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><path d='M70 35L85 50L70 65' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><path d='M58 28L42 72' stroke='%2334d399' stroke-width='8' stroke-linecap='round'/></svg>";
-            } else if (type === 'poster') {
-                img.onerror = null;
-                // Generate a sleek placeholder card for poster fallback
-                img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1000' fill='none'><rect width='800' height='1000' fill='%230f172a'/><rect x='40' y='40' width='720' height='920' rx='24' fill='%231e293b' stroke='%23059669' stroke-width='4'/><text x='400' y='450' fill='white' font-family='sans-serif' font-size='48' font-weight='bold' text-anchor='middle'>CODENIX ANDROID</text><text x='400' y='520' fill='%2334d399' font-family='sans-serif' font-size='28' text-anchor='middle'>Official APK Workspace</text><rect x='250' y='600' width='300' height='70' rx='16' fill='%23059669'/><text x='400' y='645' fill='white' font-family='sans-serif' font-size='22' font-weight='bold' text-anchor='middle'>Download APK</text></svg>";
             }
         }
 
@@ -766,13 +701,6 @@
         // Track download click
         function trackDownload() {
             showToast('Redirecting to Google Drive APK download...');
-        }
-
-        // Modal Lightbox Toggle
-        function toggleLightbox() {
-            const modal = document.getElementById('lightbox-modal');
-            modal.classList.toggle('hidden');
-            modal.classList.toggle('flex');
         }
 
         // QR Code Modal Toggle
