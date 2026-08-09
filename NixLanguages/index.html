@@ -33,19 +33,19 @@
                 </div>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <div class="hidden sm:flex items-center bg-slate-100 px-3 py-1.5 rounded-full text-xs font-medium text-slate-700">
+            <div class="flex items-center space-x-3">
+                <button onclick="app.fetchGoogleSheetData()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5" title="Refresh data from Google Sheet">
+                    <i id="sync-icon" class="fa-solid fa-rotate"></i>
+                    <span class="hidden sm:inline">Sync Sheet</span>
+                </button>
+                <div class="hidden md:flex items-center bg-slate-100 px-3 py-1.5 rounded-full text-xs font-medium text-slate-700">
                     <i class="fa-solid fa-chart-pie mr-2 text-indigo-600"></i>
-                    <span>TOTAL PROGRESS: <strong id="total-progress-pct" class="text-indigo-600">0%</strong></span>
+                    <span>PROGRESS: <strong id="total-progress-pct" class="text-indigo-600">0%</strong></span>
                 </div>
                 <button onclick="app.showSkillsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
                     <i class="fa-solid fa-award text-amber-500"></i>
                     <span class="hidden sm:inline">My Skills</span>
                 </button>
-                <div id="sync-status" class="text-xs text-slate-400 flex items-center space-x-1" title="Data Source Status">
-                    <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-pulse"></i>
-                    <span class="hidden md:inline">Synced</span>
-                </div>
             </div>
         </div>
     </header>
@@ -84,275 +84,221 @@
     </div>
 
     <script>
-        // Default Fallback Dataset (Structured like the Codenix Academy / Google Sheet backend)
-        const DEFAULT_COURSES = [
-            {
-                id: "spanish-101",
-                title: "Spanish for Beginners",
-                category: "Languages",
-                level: "Beginner",
-                description: "Master conversational Spanish from scratch with Codenix interactive grammar and audio lessons.",
-                icon: "fa-earth-americas",
-                color: "bg-amber-500",
-                modules: [
-                    {
-                        id: "sp-m1",
-                        title: "Module 1: Greetings & Introductions",
-                        duration: "15 min read",
-                        lessons: [
-                            {
-                                id: "sp-l1",
-                                title: "1. Basic Greetings (Hola & Buenos Días)",
-                                duration: "00:04:30",
-                                type: "reading",
-                                content: `
-                                    <h2 class="text-2xl font-bold mb-4 text-slate-800">Lesson 1: Basic Spanish Greetings</h2>
-                                    <p class="text-slate-600 mb-4">Welcome to your first Spanish lesson with Codenix! In Spanish, greetings change depending on the time of day and how formal the situation is.</p>
-                                    
-                                    <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-xl my-6">
-                                        <h4 class="font-bold text-indigo-900 mb-2">Key Vocabulary:</h4>
-                                        <ul class="space-y-2 text-indigo-800">
-                                            <li><strong>Hola</strong> - Hello (Informal) <button onclick="app.speak('Hola', 'es-ES')" class="ml-2 text-xs bg-indigo-200 hover:bg-indigo-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Buenos días</strong> - Good morning <button onclick="app.speak('Buenos días', 'es-ES')" class="ml-2 text-xs bg-indigo-200 hover:bg-indigo-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Buenas tardes</strong> - Good afternoon <button onclick="app.speak('Buenas tardes', 'es-ES')" class="ml-2 text-xs bg-indigo-200 hover:bg-indigo-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>¿Cómo estás?</strong> - How are you? <button onclick="app.speak('¿Cómo estás?', 'es-ES')" class="ml-2 text-xs bg-indigo-200 hover:bg-indigo-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                        </ul>
-                                    </div>
-                                    <p class="text-slate-600">Practice saying these phrases out loud using the listen buttons above!</p>
-                                `,
-                                quiz: {
-                                    question: "How do you say 'Good morning' in Spanish?",
-                                    options: ["Buenas noches", "Buenos días", "Hola amigo", "Buenas tardes"],
-                                    correct: 1
-                                }
-                            },
-                            {
-                                id: "sp-l2",
-                                title: "2. Introducing Yourself",
-                                duration: "00:06:15",
-                                type: "reading",
-                                content: `
-                                    <h2 class="text-2xl font-bold mb-4 text-slate-800">Lesson 2: Introducing Yourself</h2>
-                                    <p class="text-slate-600 mb-4">Learning how to introduce yourself is essential for making friends in Spanish-speaking countries.</p>
-                                    <div class="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-xl my-6">
-                                        <h4 class="font-bold text-emerald-900 mb-2">Useful Phrases:</h4>
-                                        <ul class="space-y-2 text-emerald-800">
-                                            <li><strong>Me llamo...</strong> - My name is... <button onclick="app.speak('Me llamo Juan', 'es-ES')" class="ml-2 text-xs bg-emerald-200 hover:bg-emerald-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Mucho gusto</strong> - Nice to meet you <button onclick="app.speak('Mucho gusto', 'es-ES')" class="ml-2 text-xs bg-emerald-200 hover:bg-emerald-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Soy de...</strong> - I am from... <button onclick="app.speak('Soy de México', 'es-ES')" class="ml-2 text-xs bg-emerald-200 hover:bg-emerald-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                        </ul>
-                                    </div>
-                                `,
-                                quiz: {
-                                    question: "What does 'Mucho gusto' mean?",
-                                    options: ["See you later", "Nice to meet you", "Good night", "Thank you"],
-                                    correct: 1
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        id: "sp-m2",
-                        title: "Module 2: Essential Verbs & Everyday Life",
-                        duration: "20 min read",
-                        lessons: [
-                            {
-                                id: "sp-l3",
-                                title: "1. The verb 'Ser' (To Be)",
-                                duration: "00:08:00",
-                                type: "reading",
-                                content: `
-                                    <h2 class="text-2xl font-bold mb-4 text-slate-800">Lesson 1: The Verb 'Ser'</h2>
-                                    <p class="text-slate-600 mb-4">The verb 'Ser' is used for permanent characteristics, identity, and origin.</p>
-                                    <div class="bg-slate-100 p-4 rounded-xl my-4">
-                                        <table class="w-full text-left text-sm">
-                                            <tr><th class="pb-2">Pronoun</th><th class="pb-2">Conjugation</th></tr>
-                                            <tr><td>Yo (I)</td><td>soy</td></tr>
-                                            <tr><td>Tú (You)</td><td>eres</td></tr>
-                                            <tr><td>Él / Ella (He / She)</td><td>es</td></tr>
-                                        </table>
-                                    </div>
-                                `,
-                                quiz: {
-                                    question: "What is the correct conjugation of 'Ser' for 'Yo' (I)?",
-                                    options: ["eres", "es", "somos", "soy"],
-                                    correct: 3
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                id: "italian-101",
-                title: "Italiano Facile",
-                category: "Languages",
-                level: "Beginner",
-                description: "Discover the beauty of the Italian language with immersive lessons on food, travel, and culture.",
-                icon: "fa-pizza-slice",
-                color: "bg-emerald-500",
-                modules: [
-                    {
-                        id: "it-m1",
-                        title: "Module 1: Ciao Italia!",
-                        duration: "12 min read",
-                        lessons: [
-                            {
-                                id: "it-l1",
-                                title: "1. Italian Greetings & Courtesies",
-                                duration: "00:05:00",
-                                type: "reading",
-                                content: `
-                                    <h2 class="text-2xl font-bold mb-4 text-slate-800">Lesson 1: Italian Greetings</h2>
-                                    <p class="text-slate-600 mb-4">Start speaking Italian instantly with these welcoming greetings.</p>
-                                    <div class="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-xl my-6">
-                                        <ul class="space-y-2 text-emerald-900">
-                                            <li><strong>Ciao</strong> - Hello / Hi <button onclick="app.speak('Ciao', 'it-IT')" class="ml-2 text-xs bg-emerald-200 hover:bg-emerald-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Buongiorno</strong> - Good morning <button onclick="app.speak('Buongiorno', 'it-IT')" class="ml-2 text-xs bg-emerald-200 hover:bg-emerald-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Grazie mille</strong> - Thank you very much <button onclick="app.speak('Grazie mille', 'it-IT')" class="ml-2 text-xs bg-emerald-200 hover:bg-emerald-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                        </ul>
-                                    </div>
-                                `,
-                                quiz: {
-                                    question: "How do you say 'Thank you very much' in Italian?",
-                                    options: ["Prego", "Grazie mille", "Buona sera", "Arrivederci"],
-                                    correct: 1
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                id: "english-pro",
-                title: "English Professional Mastery",
-                category: "Languages",
-                level: "Intermediate",
-                description: "Enhance your career with advanced business English vocabulary, idioms, and workplace communication.",
-                icon: "fa-briefcase",
-                color: "bg-blue-600",
-                modules: [
-                    {
-                        id: "en-m1",
-                        title: "Module 1: Workplace Email Etiquette",
-                        duration: "18 min read",
-                        lessons: [
-                            {
-                                id: "en-l1",
-                                title: "1. Professional Opening & Closing Statements",
-                                duration: "00:07:20",
-                                type: "reading",
-                                content: `
-                                    <h2 class="text-2xl font-bold mb-4 text-slate-800">Lesson 1: Business Email Openings</h2>
-                                    <p class="text-slate-600 mb-4">First impressions in corporate communication matter. Learn how to address clients and colleagues politely.</p>
-                                    <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-xl my-6">
-                                        <ul class="space-y-2 text-blue-900">
-                                            <li><strong>"I hope this email finds you well."</strong> - Standard polite opening.</li>
-                                            <li><strong>"Dear [Name],"</strong> - Formal greeting.</li>
-                                            <li><strong>"Best regards,"</strong> - Professional closing.</li>
-                                        </ul>
-                                    </div>
-                                `,
-                                quiz: {
-                                    question: "Which of these is a professional email closing?",
-                                    options: ["See ya", "Best regards,", "Cheers mate", "Bye bye"],
-                                    correct: 1
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                id: "french-101",
-                title: "French Express",
-                category: "Languages",
-                level: "Beginner",
-                description: "Learn essential French phrasing for travel, dining, and casual conversations.",
-                icon: "fa-wine-glass",
-                color: "bg-rose-500",
-                modules: [
-                    {
-                        id: "fr-m1",
-                        title: "Module 1: Paris Travel Basics",
-                        duration: "15 min read",
-                        lessons: [
-                            {
-                                id: "fr-l1",
-                                title: "1. Polite Expressions (Bonjour & Merci)",
-                                duration: "00:05:00",
-                                type: "reading",
-                                content: `
-                                    <h2 class="text-2xl font-bold mb-4 text-slate-800">Lesson 1: French Courtesy</h2>
-                                    <p class="text-slate-600 mb-4">In France, always start any interaction with 'Bonjour'!</p>
-                                    <div class="bg-rose-50 border-l-4 border-rose-600 p-4 rounded-r-xl my-6">
-                                        <ul class="space-y-2 text-rose-900">
-                                            <li><strong>Bonjour</strong> - Hello <button onclick="app.speak('Bonjour', 'fr-FR')" class="ml-2 text-xs bg-rose-200 hover:bg-rose-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>S'il vous plaît</strong> - Please <button onclick="app.speak('S\'il vous plaît', 'fr-FR')" class="ml-2 text-xs bg-rose-200 hover:bg-rose-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                            <li><strong>Merci beaucoup</strong> - Thank you very much <button onclick="app.speak('Merci beaucoup', 'fr-FR')" class="ml-2 text-xs bg-rose-200 hover:bg-rose-300 px-2 py-1 rounded"><i class="fa-solid fa-volume-high"></i> Listen</button></li>
-                                        </ul>
-                                    </div>
-                                `,
-                                quiz: {
-                                    question: "How do you say 'Please' in French?",
-                                    options: ["Merci", "Bonjour", "S'il vous plaît", "Au revoir"],
-                                    correct: 2
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        ];
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1dOkJHqCwF4N6j083iZqFqOV1H061E0bM7-6BmKl4N38/export?format=csv';
+
+        // Fallback dataset supporting HTML markup inside Lesson Content
+        const DEFAULT_SHEET_CSV = `Language,Level,Unit,Unit cover,Lesson Number,Lesson Name,lesson Cover,Lesson Content,Video ( optional ),test name,test content,Answer
+Spanish,A1,Unit 1 : Hola !,https://placehold.co/600x400/3b82f6/white?text=Unit+1+Hola,Lesson 1,Say : "Hello",https://placehold.co/600x400/f97316/white?text=Lesson+1,"<h3 class='text-xl font-bold text-slate-900 mb-3'>👋 Common Spanish Greetings</h3><p class='mb-4 text-slate-700'>In Spanish, greetings change depending on the time of day. Always start with a friendly <strong>Hola!</strong></p><ul class='list-disc pl-5 space-y-2 text-slate-700 mb-4'><li><strong>Buenos días:</strong> Good morning</li><li><strong>Buenas tardes:</strong> Good afternoon</li><li><strong>Buenas noches:</strong> Good night</li></ul>",https://www.youtube.com/embed/dQw4w9WgXcQ,Knowledge Check,What is the correct greeting for the morning? a) Buenas noches b) Buenos días c) Hallo,b
+Spanish,A1,Unit 1 : Hola !,https://placehold.co/600x400/3b82f6/white?text=Unit+1+Hola,Lesson 2,Introducing Yourself,https://placehold.co/600x400/10b981/white?text=Lesson+2,"<h3 class='text-xl font-bold text-slate-900 mb-3'>🤝 Making Introductions</h3><p class='mb-4 text-slate-700'>Learn how to introduce yourself politely when meeting new native speakers.</p><div class='bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl mb-4 text-indigo-900 font-medium'>Me llamo Juan. Mucho gusto! (My name is Juan. Nice to meet you!)</div>",,Quick Quiz,What does 'Mucho gusto' mean? a) See you later b) Nice to meet you c) Good night,b
+Italian,A1,Unit 1 : Ciao Italia !,https://placehold.co/600x400/10b981/white?text=Ciao+Italia,Lesson 1,Italian Greetings,https://placehold.co/600x400/6366f1/white?text=Lesson+1,"<h3 class='text-xl font-bold text-slate-900 mb-3'>🍕 Welcome to Italy</h3><p class='mb-4 text-slate-700'>Start speaking Italian instantly with <strong>Ciao</strong> and <strong>Buongiorno</strong>.</p>",,Test 1,How do you say Thank you in Italian? a) Prego b) Grazie mille c) Arrivederci,b
+English,B1,Unit 1 : Business Emails,https://placehold.co/600x400/2563eb/white?text=Business+Emails,Lesson 1,Professional Openings,https://placehold.co/600x400/0ea5e9/white?text=Lesson+1,"<h3 class='text-xl font-bold text-slate-900 mb-3'>💼 Professional Email Openings</h3><p class='mb-4 text-slate-700'>Master corporate correspondence with polite phrases like <em>'I hope this email finds you well.'</em></p>",,,Check Understanding,Which of these is a professional email closing? a) See ya b) Best regards c) Cheers,b`;
 
         class NixLanguagesApp {
             constructor() {
-                this.courses = DEFAULT_COURSES;
-                this.userProgress = JSON.parse(localStorage.getItem('nix_languages_progress')) || {}; // { lessonId: true }
+                this.courses = [];
+                this.userProgress = JSON.parse(localStorage.getItem('nix_languages_progress')) || {};
                 this.currentView = 'catalog'; // 'catalog' or 'lesson'
                 this.activeCourseId = null;
                 this.activeLessonId = null;
                 this.searchQuery = '';
                 this.selectedCategory = 'All';
 
-                this.initGoogleSheetData();
+                this.initData();
             }
 
-            async initGoogleSheetData() {
-                // Try fetching live from Google Sheet CSV or JSON Feed if accessible
-                const sheetUrl = 'https://docs.google.com/spreadsheets/d/1dOkJHqCwF4N6j083iZqFqOV1H061E0bM7-6BmKl4N38/gviz/tq?tqx=out:json';
+            async initData() {
+                await this.fetchGoogleSheetData(true);
+            }
+
+            async fetchGoogleSheetData(isSilent = false) {
+                const syncIcon = document.getElementById('sync-icon');
+                if (syncIcon) syncIcon.classList.add('fa-spin');
+
                 try {
-                    // We attempt a lightweight fetch. If CORS blocks or offline, fallback to DEFAULT_COURSES is seamless.
-                    const response = await fetch(sheetUrl);
-                    if (response.ok) {
-                        const text = await response.text();
-                        // Google gviz returns javascript wrapper. Parse it:
-                        const jsonStr = text.substring(47).slice(0, -2);
-                        const data = JSON.parse(jsonStr);
-                        if (data && data.table && data.table.rows && data.table.rows.length > 0) {
-                            // If sheet has custom courses, we could parse them, else keep default rich set
-                            document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-pulse"></i><span class="hidden md:inline">Synced with Sheet</span>';
-                        }
-                    }
+                    const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const csvText = await response.text();
+                    this.parseCSVAndBuildCatalog(csvText);
+                    if (!isSilent) this.showToast('Successfully synced with Google Sheet!');
                 } catch (e) {
-                    // Fallback is already loaded
-                    document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span class="hidden md:inline">Online (Codenix)</span>';
+                    console.warn('Using offline CSV fallback due to CORS/Network:', e);
+                    this.parseCSVAndBuildCatalog(DEFAULT_SHEET_CSV);
+                    if (!isSilent) this.showToast('Loaded local fallback data (Sheet sync offline).', true);
+                } finally {
+                    if (syncIcon) syncIcon.classList.remove('fa-spin');
+                    this.render();
+                    this.updateTotalProgress();
                 }
-                this.render();
-                this.updateTotalProgress();
             }
 
-            speak(text, lang) {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = lang || 'es-ES';
-                    utterance.rate = 0.9;
-                    window.speechSynthesis.speak(utterance);
-                    this.showToast(`Playing audio pronunciation...`);
-                } else {
-                    this.showToast('Speech synthesis not supported in this browser.');
+            // Robust CSV parser supporting multi-line quoted fields with HTML content
+            parseCSVAndBuildCatalog(csvText) {
+                const rows = [];
+                let currentRow = [];
+                let currentField = '';
+                let inQuotes = false;
+
+                for (let i = 0; i < csvText.length; i++) {
+                    const char = csvText[i];
+                    const nextChar = csvText[i + 1];
+
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            currentField += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        currentRow.push(currentField.trim());
+                        currentField = '';
+                    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                        if (char === '\r' && nextChar === '\n') {
+                            i++;
+                        }
+                        currentRow.push(currentField.trim());
+                        if (currentRow.length > 1 || currentRow[0] !== '') {
+                            rows.push(currentRow);
+                        }
+                        currentRow = [];
+                        currentField = '';
+                    } else {
+                        currentField += char;
+                    }
                 }
+                if (currentField !== '' || currentRow.length > 0) {
+                    currentRow.push(currentField.trim());
+                    rows.push(currentRow);
+                }
+
+                const result = [];
+                // Skip header row (index 0)
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.length >= 8 && row[0]) {
+                        result.push({
+                            language: row[0] || 'General',
+                            level: row[1] || 'A1',
+                            unit: row[2] || 'Unit 1',
+                            unitCover: row[3] || 'https://placehold.co/600x400/3b82f6/white?text=Unit',
+                            lessonNumber: row[4] || 'Lesson 1',
+                            lessonName: row[5] || 'Lesson',
+                            lessonCover: row[6] || 'https://placehold.co/600x400/10b981/white?text=Lesson',
+                            lessonContent: row[7] || '',
+                            video: row[8] || '',
+                            testName: row[9] || 'Knowledge Check',
+                            testContent: row[10] || '',
+                            answer: (row[11] || 'a').toLowerCase().trim()
+                        });
+                    }
+                }
+
+                // Group rows into hierarchical Courses -> Modules -> Lessons
+                const courseMap = {};
+                result.forEach((item, idx) => {
+                    const courseKey = `${item.language}-${item.level}`.toLowerCase().replace(/\s+/g, '-');
+                    if (!courseMap[courseKey]) {
+                        courseMap[courseKey] = {
+                            id: courseKey,
+                            title: `${item.language} (${item.level})`,
+                            category: 'Languages',
+                            level: item.level,
+                            description: `Master ${item.language} at ${item.level} level with interactive Codenix lessons.`,
+                            icon: this.getIconForLanguage(item.language),
+                            color: this.getColorForLanguage(item.language),
+                            modulesMap: {}
+                        };
+                    }
+
+                    const course = courseMap[courseKey];
+                    const unitName = item.unit;
+                    if (!course.modulesMap[unitName]) {
+                        course.modulesMap[unitName] = {
+                            id: `${courseKey}-m-${Object.keys(course.modulesMap).length + 1}`,
+                            title: unitName,
+                            cover: item.unitCover,
+                            duration: '15 min read',
+                            lessons: []
+                        };
+                    }
+
+                    const lessonId = `${courseKey}-l-${idx + 1}`;
+                    
+                    // Parse test/quiz data
+                    let quizData = null;
+                    if (item.testContent && item.testContent.trim() !== '') {
+                        quizData = this.parseTestContent(item.testName, item.testContent, item.answer);
+                    } else {
+                        quizData = {
+                            title: "Knowledge Check",
+                            question: `What is the key takeaway from "${item.lessonName}"?`,
+                            options: ["Review lesson material", "Skip to next unit", "Practice pronunciation"],
+                            correct: 0
+                        };
+                    }
+
+                    course.modulesMap[unitName].lessons.push({
+                        id: lessonId,
+                        title: `${item.lessonNumber}: ${item.lessonName}`,
+                        duration: '00:05:00',
+                        cover: item.lessonCover,
+                        type: 'reading',
+                        content: item.lessonContent,
+                        video: item.video,
+                        quiz: quizData
+                    });
+                });
+
+                this.courses = Object.values(courseMap).map(c => {
+                    c.modules = Object.values(c.modulesMap);
+                    delete c.modulesMap;
+                    return c;
+                });
+            }
+
+            parseTestContent(testName, testContentStr, correctAnswerLetter) {
+                const parts = testContentStr.split(/([a-d]\))/);
+                const question = parts[0] ? parts[0].trim() : testContentStr;
+                const options = [];
+                
+                for (let i = 1; i < parts.length; i += 2) {
+                    const optText = parts[i+1] ? parts[i+1].trim() : '';
+                    options.push(optText);
+                }
+
+                if (options.length === 0) {
+                    options.push("Option A", "Option B", "Option C");
+                }
+
+                const correctMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
+                const correctIdx = correctMap[correctAnswerLetter] !== undefined ? correctMap[correctAnswerLetter] : 0;
+
+                return {
+                    title: testName || 'Knowledge Check',
+                    question: question,
+                    options: options,
+                    correct: correctIdx
+                };
+            }
+
+            getIconForLanguage(lang) {
+                const l = lang.toLowerCase();
+                if (l.includes('spanish')) return 'fa-earth-americas';
+                if (l.includes('italian')) return 'fa-pizza-slice';
+                if (l.includes('french')) return 'fa-wine-glass';
+                if (l.includes('english')) return 'fa-briefcase';
+                if (l.includes('german')) return 'fa-beer-mug-empty';
+                return 'fa-language';
+            }
+
+            getColorForLanguage(lang) {
+                const l = lang.toLowerCase();
+                if (l.includes('spanish')) return 'bg-amber-500';
+                if (l.includes('italian')) return 'bg-emerald-500';
+                if (l.includes('french')) return 'bg-rose-500';
+                if (l.includes('english')) return 'bg-blue-600';
+                if (l.includes('german')) return 'bg-indigo-600';
+                return 'bg-purple-600';
             }
 
             showToast(msg, isError = false) {
@@ -397,7 +343,8 @@
                     });
                 });
                 const pct = totalL === 0 ? 0 : Math.round((compL / totalL) * 100);
-                document.getElementById('total-progress-pct').innerText = pct + '%';
+                const el = document.getElementById('total-progress-pct');
+                if (el) el.innerText = pct + '%';
             }
 
             toggleLessonComplete(lessonId, event) {
@@ -433,6 +380,7 @@
 
             submitQuiz(lessonId, correctIndex, selectedIndex) {
                 const resultDiv = document.getElementById(`quiz-result-${lessonId}`);
+                if (!resultDiv) return;
                 if (selectedIndex === correctIndex) {
                     resultDiv.innerHTML = `<div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-sm font-semibold flex items-center"><i class="fa-solid fa-circle-check text-emerald-600 mr-2"></i> Correct! Great job mastering this concept.</div>`;
                     if (!this.userProgress[lessonId]) {
@@ -448,6 +396,7 @@
             showSkillsModal() {
                 const modal = document.getElementById('skills-modal');
                 const content = document.getElementById('skills-content');
+                if (!modal || !content) return;
                 
                 let html = '';
                 this.courses.forEach(c => {
@@ -482,6 +431,7 @@
 
             render() {
                 const container = document.getElementById('app-container');
+                if (!container) return;
                 if (this.currentView === 'catalog') {
                     container.innerHTML = this.renderCatalogHTML();
                 } else {
@@ -501,7 +451,7 @@
                         <!-- Hero Section -->
                         <div class="mb-8">
                             <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Explore Language Courses</h1>
-                            <p class="text-slate-500 text-sm sm:text-base">Master global languages at your own pace with Codenix free professional courses.</p>
+                            <p class="text-slate-500 text-sm sm:text-base">Loaded live from your Google Sheet database. Master global languages at your own pace.</p>
                         </div>
 
                         <!-- Search & Filter Bar -->
@@ -513,8 +463,8 @@
                             <div class="sm:w-48">
                                 <select onchange="app.selectedCategory = this.value; app.render();" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer">
                                     <option value="All" ${this.selectedCategory === 'All' ? 'selected' : ''}>All Levels</option>
-                                    <option value="Beginner" ${this.selectedCategory === 'Beginner' ? 'selected' : ''}>Beginner</option>
-                                    <option value="Intermediate" ${this.selectedCategory === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+                                    <option value="A1" ${this.selectedCategory === 'A1' ? 'selected' : ''}>A1 Beginner</option>
+                                    <option value="B1" ${this.selectedCategory === 'B1' ? 'selected' : ''}>B1 Intermediate</option>
                                 </select>
                             </div>
                         </div>
@@ -571,7 +521,7 @@
 
                 return `
                     <div class="flex-1 flex flex-col md:flex-row overflow-hidden bg-white">
-                        <!-- Left Sidebar: Course Curriculum (matching image layout) -->
+                        <!-- Left Sidebar: Course Curriculum -->
                         <div class="w-full md:w-80 border-r border-slate-200 bg-slate-50 flex flex-col h-full">
                             <div class="p-4 border-b border-slate-200 bg-white">
                                 <button onclick="app.showCatalog()" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center mb-2">
@@ -623,34 +573,48 @@
                                 </div>
                             </div>
 
-                            <!-- Content Area with Tabs & Material -->
+                            <!-- Content Area -->
                             <div class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10 max-w-4xl">
                                 <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm">
-                                    <!-- Lesson Content -->
-                                    <div class="prose max-w-none">
+                                    
+                                    <!-- Optional Video Embed if found in Google Sheet -->
+                                    ${activeLesson.video ? `
+                                        <div class="mb-6 rounded-2xl overflow-hidden aspect-video bg-slate-900 shadow-lg">
+                                            <iframe src="${activeLesson.video}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                                        </div>
+                                    ` : ''}
+
+                                    <!-- Lesson Cover Image if found -->
+                                    ${activeLesson.cover ? `
+                                        <div class="mb-6 rounded-2xl overflow-hidden h-48 sm:h-64 bg-slate-100 border border-slate-200">
+                                            <img src="${activeLesson.cover}" alt="Lesson Cover" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                        </div>
+                                    ` : ''}
+
+                                    <!-- Full HTML Lesson Content -->
+                                    <div class="prose max-w-none text-slate-700 leading-relaxed text-base mb-10">
                                         ${activeLesson.content}
                                     </div>
 
-                                    <!-- Interactive Knowledge Check Quiz -->
-                                    ${activeLesson.quiz ? `
-                                        <div class="mt-10 pt-8 border-t border-slate-200">
-                                            <div class="bg-indigo-50/60 rounded-2xl p-6 border border-indigo-100">
-                                                <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center">
-                                                    <i class="fa-solid fa-circle-question mr-2 text-indigo-600"></i> Knowledge Check
-                                                </h3>
-                                                <p class="text-slate-700 font-medium mb-4">${activeLesson.quiz.question}</p>
-                                                <div class="space-y-2 mb-4">
-                                                    ${activeLesson.quiz.options.map((opt, idx) => `
-                                                        <label class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300 transition">
-                                                            <input type="radio" name="quiz-${activeLesson.id}" value="${idx}" onchange="app.submitQuiz('${activeLesson.id}', ${activeLesson.quiz.correct}, ${idx})" class="text-indigo-600 focus:ring-indigo-500">
-                                                            <span class="text-slate-800 text-sm font-medium">${opt}</span>
-                                                        </label>
-                                                    `).join('')}
-                                                </div>
-                                                <div id="quiz-result-${activeLesson.id}"></div>
+                                    <!-- Guaranteed Test / Knowledge Check after Every Lesson -->
+                                    <div class="pt-8 border-t border-slate-200">
+                                        <div class="bg-indigo-50/60 rounded-2xl p-6 border border-indigo-100">
+                                            <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center">
+                                                <i class="fa-solid fa-circle-question mr-2 text-indigo-600"></i> ${activeLesson.quiz.title}
+                                            </h3>
+                                            <p class="text-slate-700 font-medium mb-4">${activeLesson.quiz.question}</p>
+                                            <div class="space-y-2 mb-4">
+                                                ${activeLesson.quiz.options.map((opt, idx) => `
+                                                    <label class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300 transition">
+                                                        <input type="radio" name="quiz-${activeLesson.id}" value="${idx}" onchange="app.submitQuiz('${activeLesson.id}', ${activeLesson.quiz.correct}, ${idx})" class="text-indigo-600 focus:ring-indigo-500">
+                                                        <span class="text-slate-800 text-sm font-medium">${opt}</span>
+                                                    </label>
+                                                `).join('')}
                                             </div>
+                                            <div id="quiz-result-${activeLesson.id}"></div>
                                         </div>
-                                    ` : ''}
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
