@@ -1,385 +1,438 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NixLanguages - Powered by Codenix</title>
-    <!-- Tailwind CSS CDN -->
+    <title>NixLanguages Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .lesson-html-content h1 { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; }
+        .lesson-html-content h2 { font-size: 1.4rem; font-weight: 700; color: #334155; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .lesson-html-content h3 { font-size: 1.15rem; font-weight: 600; color: #475569; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+        .lesson-html-content p { margin-bottom: 1rem; color: #475569; line-height: 1.7; }
+        .lesson-html-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #475569; }
+        .lesson-html-content ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; color: #475569; }
+        .lesson-html-content li { margin-bottom: 0.35rem; }
+        .lesson-html-content strong { color: #0f172a; font-weight: 700; }
+        .lesson-html-content blockquote { border-left: 4px solid #6366f1; padding-left: 1rem; margin: 1rem 0; color: #4f46e5; font-style: italic; }
     </style>
 </head>
-<body class="h-full bg-slate-50 text-slate-900 flex flex-col">
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
     <!-- Top Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.showCatalog()">
-                <div class="bg-indigo-600 text-white p-2 rounded-xl flex items-center justify-center font-bold shadow-md shadow-indigo-200">
-                    <i class="fa-solid fa-code text-lg"></i>
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.goHome()">
+                <div class="w-11 h-11 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-language"></i>
                 </div>
                 <div>
-                    <span class="text-xl font-bold tracking-tight text-slate-900">NIX<span class="text-indigo-600">LANGUAGES</span></span>
-                    <span class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Powered by Codenix</span>
+                    <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">NixLanguages</span>
+                    <span class="block text-xs font-medium text-slate-400">Powered by Codenix</span>
                 </div>
             </div>
-            
-            <div class="flex items-center space-x-3">
-                <button onclick="app.fetchGoogleSheetData()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5" title="Refresh data from Google Sheet">
-                    <i id="sync-icon" class="fa-solid fa-rotate"></i>
-                    <span class="hidden sm:inline">Sync Sheet</span>
+
+            <div class="flex items-center space-x-4">
+                <!-- Sync / Refresh Sheet Button -->
+                <button onclick="app.fetchSheetData(true)" id="refresh-btn" class="flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm">
+                    <i class="fa-solid fa-rotate" id="refresh-icon"></i>
+                    <span class="hidden sm:inline">Sync Google Sheet</span>
                 </button>
-                <div class="hidden md:flex items-center bg-slate-100 px-3 py-1.5 rounded-full text-xs font-medium text-slate-700">
-                    <i class="fa-solid fa-chart-pie mr-2 text-indigo-600"></i>
-                    <span>PROGRESS: <strong id="total-progress-pct" class="text-indigo-600">0%</strong></span>
+
+                <!-- Total Progress Badge -->
+                <div class="hidden md:flex items-center space-x-2 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span id="header-progress" class="text-xs font-bold text-slate-700">TOTAL PROGRESS: 0%</span>
                 </div>
-                <button onclick="app.showSkillsModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
-                    <i class="fa-solid fa-award text-amber-500"></i>
-                    <span class="hidden sm:inline">My Skills</span>
+
+                <!-- Skills / Profile Modal Trigger -->
+                <button onclick="app.showSkillsModal()" class="flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition shadow-md">
+                    <i class="fa-solid fa-award text-amber-400"></i>
+                    <span>My Skills</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main App Container -->
-    <main id="app-container" class="flex-1 flex flex-col overflow-hidden">
-        <!-- Dynamic views will be injected here -->
+    <!-- Main Content Area -->
+    <main id="app-container" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Rendered dynamically via JavaScript -->
     </main>
 
     <!-- Skills Modal -->
-    <div id="skills-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-slate-900 flex items-center">
-                    <i class="fa-solid fa-medal text-amber-500 mr-2 text-2xl"></i> My Language Skills & Badges
-                </h3>
-                <button onclick="app.closeSkillsModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+    <div id="skills-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6 transform transition-all">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">Your Learning Stats</h3>
+                        <p class="text-xs text-slate-500">Codenix Academy Certification Tracker</p>
+                    </div>
+                </div>
+                <button onclick="app.closeSkillsModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div id="skills-content" class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                <!-- Injected via JS -->
+
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-700">Completed Lessons</span>
+                    <span id="modal-completed-count" class="text-lg font-bold text-indigo-600">0 / 0</span>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-700">Overall Course Progress</span>
+                    <span id="modal-percent" class="text-lg font-bold text-emerald-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                    <div id="modal-progress-bar" class="bg-gradient-to-r from-indigo-600 to-emerald-500 h-full w-0 transition-all duration-500"></div>
+                </div>
             </div>
-            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-                <button onclick="app.closeSkillsModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">
-                    Close
-                </button>
-            </div>
+
+            <button onclick="app.closeSkillsModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold text-sm transition shadow-lg shadow-indigo-600/20">
+                Continue Learning
+            </button>
         </div>
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3">
-        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toast-msg" class="text-sm font-medium">Notification message</span>
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 transform translate-y-24 opacity-0 transition-all duration-300">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">Notification message</span>
     </div>
 
     <script>
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1dOkJHqCwF4N6j083iZqFqOV1H061E0bM7-6BmKl4N38/export?format=csv';
-
-        // Fallback dataset supporting HTML markup inside Lesson Content
-        const DEFAULT_SHEET_CSV = `Language,Level,Unit,Unit cover,Lesson Number,Lesson Name,lesson Cover,Lesson Content,Video ( optional ),test name,test content,Answer
-Spanish,A1,Unit 1 : Hola !,https://placehold.co/600x400/3b82f6/white?text=Unit+1+Hola,Lesson 1,Say : "Hello",https://placehold.co/600x400/f97316/white?text=Lesson+1,"<h3 class='text-xl font-bold text-slate-900 mb-3'>👋 Common Spanish Greetings</h3><p class='mb-4 text-slate-700'>In Spanish, greetings change depending on the time of day. Always start with a friendly <strong>Hola!</strong></p><ul class='list-disc pl-5 space-y-2 text-slate-700 mb-4'><li><strong>Buenos días:</strong> Good morning</li><li><strong>Buenas tardes:</strong> Good afternoon</li><li><strong>Buenas noches:</strong> Good night</li></ul>",https://www.youtube.com/embed/dQw4w9WgXcQ,Knowledge Check,What is the correct greeting for the morning? a) Buenas noches b) Buenos días c) Hallo,b
-Spanish,A1,Unit 1 : Hola !,https://placehold.co/600x400/3b82f6/white?text=Unit+1+Hola,Lesson 2,Introducing Yourself,https://placehold.co/600x400/10b981/white?text=Lesson+2,"<h3 class='text-xl font-bold text-slate-900 mb-3'>🤝 Making Introductions</h3><p class='mb-4 text-slate-700'>Learn how to introduce yourself politely when meeting new native speakers.</p><div class='bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl mb-4 text-indigo-900 font-medium'>Me llamo Juan. Mucho gusto! (My name is Juan. Nice to meet you!)</div>",,Quick Quiz,What does 'Mucho gusto' mean? a) See you later b) Nice to meet you c) Good night,b
-Italian,A1,Unit 1 : Ciao Italia !,https://placehold.co/600x400/10b981/white?text=Ciao+Italia,Lesson 1,Italian Greetings,https://placehold.co/600x400/6366f1/white?text=Lesson+1,"<h3 class='text-xl font-bold text-slate-900 mb-3'>🍕 Welcome to Italy</h3><p class='mb-4 text-slate-700'>Start speaking Italian instantly with <strong>Ciao</strong> and <strong>Buongiorno</strong>.</p>",,Test 1,How do you say Thank you in Italian? a) Prego b) Grazie mille c) Arrivederci,b
-English,B1,Unit 1 : Business Emails,https://placehold.co/600x400/2563eb/white?text=Business+Emails,Lesson 1,Professional Openings,https://placehold.co/600x400/0ea5e9/white?text=Lesson+1,"<h3 class='text-xl font-bold text-slate-900 mb-3'>💼 Professional Email Openings</h3><p class='mb-4 text-slate-700'>Master corporate correspondence with polite phrases like <em>'I hope this email finds you well.'</em></p>",,,Check Understanding,Which of these is a professional email closing? a) See ya b) Best regards c) Cheers,b`;
-
         class NixLanguagesApp {
             constructor() {
+                this.sheetUrl = 'https://docs.google.com/spreadsheets/d/1dOkJHqCwF4N6j083iZqFqOV1H061E0bM7-6BmKl4N38/export?format=csv';
                 this.courses = [];
-                this.userProgress = JSON.parse(localStorage.getItem('nix_languages_progress')) || {};
-                this.currentView = 'catalog'; // 'catalog' or 'lesson'
-                this.activeCourseId = null;
+                this.activeCourseKey = null;
                 this.activeLessonId = null;
                 this.searchQuery = '';
-                this.selectedCategory = 'All';
+                this.subjectFilter = 'All Languages';
+                this.userProgress = JSON.parse(localStorage.getItem('nix_languages_progress') || '{}');
+                this.loading = true;
 
-                this.initData();
+                this.init();
             }
 
-            async initData() {
-                await this.fetchGoogleSheetData(true);
+            async init() {
+                await this.fetchSheetData(false);
             }
 
-            async fetchGoogleSheetData(isSilent = false) {
-                const syncIcon = document.getElementById('sync-icon');
-                if (syncIcon) syncIcon.classList.add('fa-spin');
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                const msgSpan = document.getElementById('toast-message');
+                msgSpan.textContent = msg;
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-24', 'opacity-0');
+                }, 3500);
+            }
+
+            async fetchSheetData(isManualRefresh = false) {
+                const refreshIcon = document.getElementById('refresh-icon');
+                if (refreshIcon) refreshIcon.classList.add('animate-spin');
 
                 try {
-                    const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                    const response = await fetch(this.sheetUrl);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const csvText = await response.text();
-                    this.parseCSVAndBuildCatalog(csvText);
-                    if (!isSilent) this.showToast('Successfully synced with Google Sheet!');
-                } catch (e) {
-                    console.warn('Using offline CSV fallback due to CORS/Network:', e);
-                    this.parseCSVAndBuildCatalog(DEFAULT_SHEET_CSV);
-                    if (!isSilent) this.showToast('Loaded local fallback data (Sheet sync offline).', true);
-                } finally {
-                    if (syncIcon) syncIcon.classList.remove('fa-spin');
-                    this.render();
-                    this.updateTotalProgress();
+                    this.parseCSV(csvText);
+                    this.loading = false;
+                    if (isManualRefresh) this.showToast('Google Sheet synced successfully!');
+                } catch (error) {
+                    console.warn('Failed to fetch Google Sheet directly (CORS or network), using offline fallback data.', error);
+                    this.loadFallbackData();
+                    this.loading = false;
+                    if (isManualRefresh) this.showToast('Synced from local cache (CORS restriction fallback).');
                 }
+
+                if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                this.render();
+                this.updateTotalProgress();
             }
 
-            // Robust CSV parser supporting multi-line quoted fields with HTML content
-            parseCSVAndBuildCatalog(csvText) {
-                const rows = [];
-                let currentRow = [];
-                let currentField = '';
+            parseCSV(text) {
+                const lines = [];
+                let row = [];
                 let inQuotes = false;
-
-                for (let i = 0; i < csvText.length; i++) {
-                    const char = csvText[i];
-                    const nextChar = csvText[i + 1];
-
+                let currentVal = '';
+                
+                // Robust CSV parser supporting commas inside quotes and multiline
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    const nextChar = text[i+1];
+                    
                     if (char === '"') {
                         if (inQuotes && nextChar === '"') {
-                            currentField += '"';
+                            currentVal += '"';
                             i++;
                         } else {
                             inQuotes = !inQuotes;
                         }
                     } else if (char === ',' && !inQuotes) {
-                        currentRow.push(currentField.trim());
-                        currentField = '';
+                        row.push(currentVal.trim());
+                        currentVal = '';
                     } else if ((char === '\r' || char === '\n') && !inQuotes) {
-                        if (char === '\r' && nextChar === '\n') {
-                            i++;
-                        }
-                        currentRow.push(currentField.trim());
-                        if (currentRow.length > 1 || currentRow[0] !== '') {
-                            rows.push(currentRow);
-                        }
-                        currentRow = [];
-                        currentField = '';
+                        if (char === '\r' && nextChar === '\n') { i++; }
+                        row.push(currentVal.trim());
+                        if (row.some(cell => cell !== '')) lines.push(row);
+                        row = [];
+                        currentVal = '';
                     } else {
-                        currentField += char;
+                        currentVal += char;
                     }
                 }
-                if (currentField !== '' || currentRow.length > 0) {
-                    currentRow.push(currentField.trim());
-                    rows.push(currentRow);
+                if (currentVal !== '' || row.length > 0) {
+                    row.push(currentVal.trim());
+                    if (row.some(cell => cell !== '')) lines.push(row);
                 }
 
-                const result = [];
-                // Skip header row (index 0)
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    if (row.length >= 8 && row[0]) {
-                        result.push({
-                            language: row[0] || 'General',
-                            level: row[1] || 'A1',
-                            unit: row[2] || 'Unit 1',
-                            unitCover: row[3] || 'https://placehold.co/600x400/3b82f6/white?text=Unit',
-                            lessonNumber: row[4] || 'Lesson 1',
-                            lessonName: row[5] || 'Lesson',
-                            lessonCover: row[6] || 'https://placehold.co/600x400/10b981/white?text=Lesson',
-                            lessonContent: row[7] || '',
-                            video: row[8] || '',
-                            testName: row[9] || 'Knowledge Check',
-                            testContent: row[10] || '',
-                            answer: (row[11] || 'a').toLowerCase().trim()
-                        });
-                    }
+                if (lines.length <= 1) {
+                    this.loadFallbackData();
+                    return;
                 }
 
-                // Group rows into hierarchical Courses -> Modules -> Lessons
+                const headers = lines[0].map(h => h.toLowerCase().trim());
+                
+                const colMap = {
+                    language: headers.findIndex(h => h.includes('language')),
+                    level: headers.findIndex(h => h.includes('level')),
+                    unit: headers.findIndex(h => h.includes('unit') && !h.includes('cover')),
+                    unitCover: headers.findIndex(h => h.includes('unit cover')),
+                    lessonNum: headers.findIndex(h => h.includes('lesson number')),
+                    lessonName: headers.findIndex(h => h.includes('lesson name')),
+                    lessonContent: headers.findIndex(h => h.includes('lesson content')),
+                    video: headers.findIndex(h => h.includes('video')),
+                    testName: headers.findIndex(h => h.includes('test name')),
+                    testContent: headers.findIndex(h => h.includes('test content')),
+                    answer: headers.findIndex(h => h.includes('answer'))
+                };
+
                 const courseMap = {};
-                result.forEach((item, idx) => {
-                    const courseKey = `${item.language}-${item.level}`.toLowerCase().replace(/\s+/g, '-');
+
+                for (let i = 1; i < lines.length; i++) {
+                    const r = lines[i];
+                    if (!r || r.length === 0) continue;
+
+                    const getCol = (idx) => (idx !== -1 && r[idx] !== undefined) ? r[idx] : '';
+
+                    const lang = getCol(colMap.language) || 'General Language';
+                    const level = getCol(colMap.level) || 'Beginner';
+                    const unitName = getCol(colMap.unit) || 'Unit 1: Fundamentals';
+                    const unitCover = getCol(colMap.unitCover) || 'https://placehold.co/600x400/6366f1/ffffff?text=' + encodeURIComponent(lang);
+                    const lessonNum = getCol(colMap.lessonNum) || `Lesson ${i}`;
+                    const lessonName = getCol(colMap.lessonName) || `Lesson ${i}`;
+                    const lessonContent = getCol(colMap.lessonContent) || `<p>Welcome to ${lessonName}. Explore and practice.</p>`;
+                    const video = getCol(colMap.video);
+                    const testName = getCol(colMap.testName) || 'Knowledge Check';
+                    const testContent = getCol(colMap.testContent) || 'What is the key takeaway? - a) Option A - b) Option B';
+                    const answer = getCol(colMap.answer) || 'a';
+
+                    const courseKey = lang.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
                     if (!courseMap[courseKey]) {
                         courseMap[courseKey] = {
-                            id: courseKey,
-                            title: `${item.language} (${item.level})`,
-                            category: 'Languages',
-                            level: item.level,
-                            description: `Master ${item.language} at ${item.level} level with interactive Codenix lessons.`,
-                            icon: this.getIconForLanguage(item.language),
-                            color: this.getColorForLanguage(item.language),
+                            key: courseKey,
+                            title: lang,
+                            category: level,
+                            cover: unitCover,
                             modulesMap: {}
                         };
                     }
 
                     const course = courseMap[courseKey];
-                    const unitName = item.unit;
                     if (!course.modulesMap[unitName]) {
                         course.modulesMap[unitName] = {
-                            id: `${courseKey}-m-${Object.keys(course.modulesMap).length + 1}`,
                             title: unitName,
-                            cover: item.unitCover,
-                            duration: '15 min read',
+                            cover: unitCover,
                             lessons: []
                         };
                     }
 
-                    const lessonId = `${courseKey}-l-${idx + 1}`;
-                    
-                    // Parse test/quiz data
-                    let quizData = null;
-                    if (item.testContent && item.testContent.trim() !== '') {
-                        quizData = this.parseTestContent(item.testName, item.testContent, item.answer);
-                    } else {
-                        quizData = {
-                            title: "Knowledge Check",
-                            question: `What is the key takeaway from "${item.lessonName}"?`,
-                            options: ["Review lesson material", "Skip to next unit", "Practice pronunciation"],
-                            correct: 0
-                        };
-                    }
+                    const lessonId = `${courseKey}-l-${i}`;
+                    const quizData = this.parseTestContent(testName, testContent, answer);
 
                     course.modulesMap[unitName].lessons.push({
                         id: lessonId,
-                        title: `${item.lessonNumber}: ${item.lessonName}`,
+                        title: `${lessonNum}: ${lessonName}`,
                         duration: '00:05:00',
-                        cover: item.lessonCover,
                         type: 'reading',
-                        content: item.lessonContent,
-                        video: item.video,
+                        content: lessonContent,
+                        video: video,
                         quiz: quizData
                     });
-                });
+                }
 
                 this.courses = Object.values(courseMap).map(c => {
                     c.modules = Object.values(c.modulesMap);
                     delete c.modulesMap;
                     return c;
                 });
-            }
 
-            parseTestContent(testName, testContentStr, correctAnswerLetter) {
-                const parts = testContentStr.split(/([a-d]\))/);
-                const question = parts[0] ? parts[0].trim() : testContentStr;
-                const options = [];
-                
-                for (let i = 1; i < parts.length; i += 2) {
-                    const optText = parts[i+1] ? parts[i+1].trim() : '';
-                    options.push(optText);
+                if (this.courses.length === 0) {
+                    this.loadFallbackData();
                 }
-
-                if (options.length === 0) {
-                    options.push("Option A", "Option B", "Option C");
-                }
-
-                const correctMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
-                const correctIdx = correctMap[correctAnswerLetter] !== undefined ? correctMap[correctAnswerLetter] : 0;
-
-                return {
-                    title: testName || 'Knowledge Check',
-                    question: question,
-                    options: options,
-                    correct: correctIdx
-                };
             }
 
-            getIconForLanguage(lang) {
-                const l = lang.toLowerCase();
-                if (l.includes('spanish')) return 'fa-earth-americas';
-                if (l.includes('italian')) return 'fa-pizza-slice';
-                if (l.includes('french')) return 'fa-wine-glass';
-                if (l.includes('english')) return 'fa-briefcase';
-                if (l.includes('german')) return 'fa-beer-mug-empty';
-                return 'fa-language';
+            loadFallbackData() {
+                this.courses = [
+                    {
+                        key: 'spanish',
+                        title: 'Spanish',
+                        category: 'A1',
+                        cover: 'https://placehold.co/600x400/f97316/ffffff?text=Spanish+Course',
+                        modules: [
+                            {
+                                title: 'Unit 1 : Hola !',
+                                cover: 'https://placehold.co/600x400/f97316/ffffff?text=Unit+1',
+                                lessons: [
+                                    {
+                                        id: 'spanish-l-1',
+                                        title: 'Lesson 1: Say : "Hello"',
+                                        duration: '00:05:00',
+                                        content: '<h1>Welcome to Spanish Basics</h1><p><strong>Hola</strong> is the standard greeting in Spanish. It is used in both formal and informal contexts.</p><ul><li>Hola, ¿cómo estás? (Hello, how are you?)</li><li>Buenos días (Good morning)</li></ul>',
+                                        video: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+                                        quiz: [
+                                            {
+                                                title: 'Check it !',
+                                                question: 'Hello is ..... ?',
+                                                options: ['Buenos Noches', 'Buenas Noches', 'Hola', 'Hallo'],
+                                                correct: 2
+                                            },
+                                            {
+                                                title: 'Check it !',
+                                                question: 'How do you say Good Morning in Spanish? - a) Hola - b) Buenos días - c) Adiós - d) Gracias',
+                                                options: ['Hola', 'Buenos días', 'Adiós', 'Gracias'],
+                                                correct: 1
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        key: 'italian',
+                        title: 'Italian',
+                        category: 'A1',
+                        cover: 'https://placehold.co/600x400/10b981/ffffff?text=Italian+Course',
+                        modules: [
+                            {
+                                title: 'Unit 1 : Ciao !',
+                                cover: 'https://placehold.co/600x400/10b981/ffffff?text=Italian+Unit+1',
+                                lessons: [
+                                    {
+                                        id: 'italian-l-1',
+                                        title: 'Lesson 1: Introduction to Italian Greetings',
+                                        duration: '00:05:00',
+                                        content: '<h1>Italian Greetings</h1><p>Learn how to greet people in Italy with <strong>Ciao</strong> and <strong>Buongiorno</strong>.</p>',
+                                        video: '',
+                                        quiz: [
+                                            {
+                                                title: 'Quick Check',
+                                                question: 'What does Ciao mean? - a) Goodbye / Hello - b) Thank you - c) Please - d) Water',
+                                                options: ['Goodbye / Hello', 'Thank you', 'Please', 'Water'],
+                                                correct: 0
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ];
             }
 
-            getColorForLanguage(lang) {
-                const l = lang.toLowerCase();
-                if (l.includes('spanish')) return 'bg-amber-500';
-                if (l.includes('italian')) return 'bg-emerald-500';
-                if (l.includes('french')) return 'bg-rose-500';
-                if (l.includes('english')) return 'bg-blue-600';
-                if (l.includes('german')) return 'bg-indigo-600';
-                return 'bg-purple-600';
-            }
+            parseTestContent(testName, testContentStr, correctAnswerLetterStr) {
+                // Split test content by '-' supporting multiple questions
+                const rawBlocks = testContentStr.split(/\s*-\s*/);
+                const questionsList = [];
+                // Split answers by '-' as well as spaces/commas so every question gets its corresponding answer
+                const answersArr = (correctAnswerLetterStr || 'a').toLowerCase().split(/\s*-\s*|[\s,]+/);
 
-            showToast(msg, isError = false) {
-                const toast = document.getElementById('toast');
-                const toastMsg = document.getElementById('toast-msg');
-                const toastIcon = document.getElementById('toast-icon');
-                toastMsg.innerText = msg;
-                if (isError) {
-                    toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400';
-                } else {
-                    toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
-                }
-                toast.classList.remove('translate-y-20', 'opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('translate-y-20', 'opacity-0');
-                }, 3000);
-            }
+                rawBlocks.forEach((block, qIdx) => {
+                    if (!block.trim()) return;
+                    const parts = block.split(/([a-d]\))/i);
+                    const questionText = parts[0] ? parts[0].trim() : block;
+                    const options = [];
+                    for (let i = 1; i < parts.length; i += 2) {
+                        const optText = parts[i+1] ? parts[i+1].trim() : '';
+                        options.push(optText);
+                    }
+                    if (options.length === 0) {
+                        options.push("Option A", "Option B", "Option C", "Option D");
+                    }
+                    
+                    const ansLetter = (answersArr[qIdx] || answersArr[0] || 'a').toLowerCase().trim();
+                    const correctMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
+                    const correctIdx = correctMap[ansLetter] !== undefined ? correctMap[ansLetter] : 0;
 
-            calculateCourseProgress(courseId) {
-                const course = this.courses.find(c => c.id === courseId);
-                if (!course) return 0;
-                let totalLessons = 0;
-                let completedLessons = 0;
-                course.modules.forEach(m => {
-                    m.lessons.forEach(l => {
-                        totalLessons++;
-                        if (this.userProgress[l.id]) completedLessons++;
+                    questionsList.push({
+                        title: testName || 'Knowledge Check',
+                        question: questionText,
+                        options: options,
+                        correct: correctIdx
                     });
                 });
-                return totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
-            }
 
-            updateTotalProgress() {
-                let totalL = 0;
-                let compL = 0;
-                this.courses.forEach(c => {
-                    c.modules.forEach(m => {
-                        m.lessons.forEach(l => {
-                            totalL++;
-                            if (this.userProgress[l.id]) compL++;
-                        });
+                if (questionsList.length === 0) {
+                    questionsList.push({
+                        title: testName || 'Knowledge Check',
+                        question: testContentStr,
+                        options: ["Option A", "Option B"],
+                        correct: 0
                     });
-                });
-                const pct = totalL === 0 ? 0 : Math.round((compL / totalL) * 100);
-                const el = document.getElementById('total-progress-pct');
-                if (el) el.innerText = pct + '%';
+                }
+
+                return questionsList;
             }
 
-            toggleLessonComplete(lessonId, event) {
-                if (event) event.stopPropagation();
-                this.userProgress[lessonId] = !this.userProgress[lessonId];
-                localStorage.setItem('nix_languages_progress', JSON.stringify(this.userProgress));
-                this.updateTotalProgress();
-                this.render();
-                this.showToast(this.userProgress[lessonId] ? 'Lesson marked as completed!' : 'Lesson marked as incomplete.');
-            }
-
-            selectCourse(courseId) {
-                this.activeCourseId = courseId;
-                const course = this.courses.find(c => c.id === courseId);
-                if (course && course.modules[0] && course.modules[0].lessons[0]) {
+            selectCourse(courseKey) {
+                this.activeCourseKey = courseKey;
+                const course = this.courses.find(c => c.key === courseKey);
+                if (course && course.modules.length > 0 && course.modules[0].lessons.length > 0) {
                     this.activeLessonId = course.modules[0].lessons[0].id;
                 }
-                this.currentView = 'lesson';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.render();
+            }
+
+            goHome() {
+                this.activeCourseKey = null;
+                this.activeLessonId = null;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 this.render();
             }
 
             selectLesson(lessonId) {
                 this.activeLessonId = lessonId;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 this.render();
             }
 
-            showCatalog() {
-                this.currentView = 'catalog';
-                this.activeCourseId = null;
-                this.activeLessonId = null;
+            setSearchQuery(q) {
+                this.searchQuery = q;
                 this.render();
             }
 
-            submitQuiz(lessonId, correctIndex, selectedIndex) {
-                const resultDiv = document.getElementById(`quiz-result-${lessonId}`);
+            setSubjectFilter(subj) {
+                this.subjectFilter = subj;
+                this.render();
+            }
+
+            submitQuiz(lessonId, qIdx, correctIndex, selectedIndex) {
+                const resultDiv = document.getElementById(`quiz-result-${lessonId}-${qIdx}`);
                 if (!resultDiv) return;
                 if (selectedIndex === correctIndex) {
                     resultDiv.innerHTML = `<div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-sm font-semibold flex items-center"><i class="fa-solid fa-circle-check text-emerald-600 mr-2"></i> Correct! Great job mastering this concept.</div>`;
@@ -393,36 +446,37 @@ English,B1,Unit 1 : Business Emails,https://placehold.co/600x400/2563eb/white?te
                 }
             }
 
-            showSkillsModal() {
-                const modal = document.getElementById('skills-modal');
-                const content = document.getElementById('skills-content');
-                if (!modal || !content) return;
-                
-                let html = '';
+            updateTotalProgress() {
+                let totalLessons = 0;
+                let completedLessons = 0;
+
                 this.courses.forEach(c => {
-                    const prog = this.calculateCourseProgress(c.id);
-                    html += `
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="${c.color} text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold">
-                                    <i class="fa-solid ${c.icon}"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-sm">${c.title}</h4>
-                                    <span class="text-xs text-slate-500">${c.level} • ${c.category}</span>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-sm font-bold text-indigo-600">${prog}%</span>
-                                <div class="w-24 bg-slate-200 h-2 rounded-full overflow-hidden mt-1">
-                                    <div class="bg-indigo-600 h-full rounded-full transition-all" style="width: ${prog}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    c.modules.forEach(m => {
+                        m.lessons.forEach(l => {
+                            totalLessons++;
+                            if (this.userProgress[l.id]) completedLessons++;
+                        });
+                    });
                 });
-                content.innerHTML = html;
-                modal.classList.remove('hidden');
+
+                const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+                
+                const headerProg = document.getElementById('header-progress');
+                if (headerProg) headerProg.textContent = `TOTAL PROGRESS: ${percent}%`;
+
+                const modalCompleted = document.getElementById('modal-completed-count');
+                if (modalCompleted) modalCompleted.textContent = `${completedLessons} / ${totalLessons}`;
+
+                const modalPercent = document.getElementById('modal-percent');
+                if (modalPercent) modalPercent.textContent = `${percent}%`;
+
+                const modalBar = document.getElementById('modal-progress-bar');
+                if (modalBar) modalBar.style.width = `${percent}%`;
+            }
+
+            showSkillsModal() {
+                this.updateTotalProgress();
+                document.getElementById('skills-modal').classList.remove('hidden');
             }
 
             closeSkillsModal() {
@@ -432,194 +486,213 @@ English,B1,Unit 1 : Business Emails,https://placehold.co/600x400/2563eb/white?te
             render() {
                 const container = document.getElementById('app-container');
                 if (!container) return;
-                if (this.currentView === 'catalog') {
-                    container.innerHTML = this.renderCatalogHTML();
-                } else {
-                    container.innerHTML = this.renderLessonHTML();
+
+                if (this.loading) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-28 space-y-4">
+                            <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                            <p class="text-slate-600 font-medium">Loading languages & courses from Google Sheet...</p>
+                        </div>
+                    `;
+                    return;
                 }
-            }
 
-            renderCatalogHTML() {
-                const filtered = this.courses.filter(c => {
-                    const matchesSearch = c.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || c.description.toLowerCase().includes(this.searchQuery.toLowerCase());
-                    const matchesCat = this.selectedCategory === 'All' || c.level === this.selectedCategory || c.category === this.selectedCategory;
-                    return matchesSearch && matchesCat;
-                });
-
-                return `
-                    <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 max-w-7xl mx-auto w-full">
-                        <!-- Hero Section -->
-                        <div class="mb-8">
-                            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Explore Language Courses</h1>
-                            <p class="text-slate-500 text-sm sm:text-base">Loaded live from your Google Sheet database. Master global languages at your own pace.</p>
-                        </div>
-
-                        <!-- Search & Filter Bar -->
-                        <div class="flex flex-col sm:flex-row gap-4 mb-8">
-                            <div class="relative flex-1">
-                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                                <input type="text" id="course-search" value="${this.searchQuery}" oninput="app.searchQuery = this.value; app.render();" placeholder="Search languages, topics, grammar..." class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
-                            </div>
-                            <div class="sm:w-48">
-                                <select onchange="app.selectedCategory = this.value; app.render();" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer">
-                                    <option value="All" ${this.selectedCategory === 'All' ? 'selected' : ''}>All Levels</option>
-                                    <option value="A1" ${this.selectedCategory === 'A1' ? 'selected' : ''}>A1 Beginner</option>
-                                    <option value="B1" ${this.selectedCategory === 'B1' ? 'selected' : ''}>B1 Intermediate</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Course Cards Grid -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            ${filtered.map(c => {
-                                const progress = this.calculateCourseProgress(c.id);
-                                return `
-                                    <div onclick="app.selectCourse('${c.id}')" class="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-indigo-200 transition duration-300 cursor-pointer flex flex-col justify-between group">
-                                        <div>
-                                            <div class="flex items-center justify-between mb-4">
-                                                <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">${c.level}</span>
-                                                <div class="${c.color} text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold shadow-md">
-                                                    <i class="fa-solid ${c.icon}"></i>
-                                                </div>
-                                            </div>
-                                            <h3 class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition mb-2">${c.title}</h3>
-                                            <p class="text-slate-500 text-sm mb-6 line-clamp-2">${c.description}</p>
-                                        </div>
-                                        <div>
-                                            <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
-                                                <span>PROGRESS</span>
-                                                <span>${progress}%</span>
-                                            </div>
-                                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                                <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            renderLessonHTML() {
-                const course = this.courses.find(c => c.id === this.activeCourseId);
-                if (!course) return '';
-
-                let activeLesson = null;
-                course.modules.forEach(m => {
-                    m.lessons.forEach(l => {
-                        if (l.id === this.activeLessonId) activeLesson = l;
+                if (!this.activeCourseKey) {
+                    // Render Course Catalog
+                    const filteredCourses = this.courses.filter(c => {
+                        const matchesSearch = c.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchesSubj = this.subjectFilter === 'All Languages' || c.title.toLowerCase() === this.subjectFilter.toLowerCase();
+                        return matchesSearch && matchesSubj;
                     });
-                });
-                if (!activeLesson && course.modules[0]?.lessons[0]) {
-                    activeLesson = course.modules[0].lessons[0];
-                    this.activeLessonId = activeLesson.id;
-                }
 
-                const isCompleted = this.userProgress[activeLesson.id] || false;
+                    const uniqueSubjects = ['All Languages', ...new Set(this.courses.map(c => c.title))];
 
-                return `
-                    <div class="flex-1 flex flex-col md:flex-row overflow-hidden bg-white">
-                        <!-- Left Sidebar: Course Curriculum -->
-                        <div class="w-full md:w-80 border-r border-slate-200 bg-slate-50 flex flex-col h-full">
-                            <div class="p-4 border-b border-slate-200 bg-white">
-                                <button onclick="app.showCatalog()" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center mb-2">
-                                    <i class="fa-solid fa-chevron-left mr-1.5"></i> CATALOG
-                                </button>
-                                <h2 class="font-bold text-slate-900 text-lg">${course.title}</h2>
-                                <span class="inline-block mt-1 bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded font-medium">${course.level}</span>
+                    container.innerHTML = `
+                        <div class="space-y-8">
+                            <!-- Hero Header -->
+                            <div class="space-y-3 pt-4">
+                                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Explore Language Courses</h1>
+                                <p class="text-slate-500 text-base">Master new languages at your own pace with Codenix Academy.</p>
                             </div>
 
-                            <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
-                                ${course.modules.map((m, mIdx) => `
-                                    <div>
-                                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">${m.title}</h4>
-                                        <div class="space-y-1.5">
-                                            ${m.lessons.map(l => {
-                                                const isSelected = l.id === this.activeLessonId;
-                                                const done = this.userProgress[l.id];
-                                                return `
-                                                    <div onclick="app.selectLesson('${l.id}')" class="flex items-center justify-between p-3 rounded-xl text-sm cursor-pointer transition ${isSelected ? 'bg-indigo-50 text-indigo-900 font-semibold border border-indigo-200 shadow-sm' : 'hover:bg-slate-200/60 text-slate-700'}">
-                                                        <div class="flex items-center space-x-3 overflow-hidden">
-                                                            <button onclick="app.toggleLessonComplete('${l.id}', event)" class="w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-white hover:border-slate-400'}">
-                                                                ${done ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
-                                                            </button>
-                                                            <span class="truncate">${l.title}</span>
-                                                        </div>
-                                                        <span class="text-[11px] text-slate-400 ml-2 shrink-0"><i class="fa-regular fa-clock mr-1"></i>${l.duration}</span>
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Main Lesson Content Viewer -->
-                        <div class="flex-1 flex flex-col overflow-hidden bg-white">
-                            <!-- Lesson Top Header Bar -->
-                            <div class="border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white shadow-sm gap-4">
-                                <div>
-                                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Codenix Learning Studio</span>
-                                    <h1 class="text-xl font-bold text-slate-900">${activeLesson.title}</h1>
+                            <!-- Search & Filter Bar -->
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                                <div class="relative flex-grow max-w-md">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </span>
+                                    <input type="text" placeholder="Search languages..." value="${this.searchQuery}" oninput="app.setSearchQuery(this.value)" class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-sm shadow-sm transition">
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <button onclick="app.toggleLessonComplete('${activeLesson.id}')" class="px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2 ${isCompleted ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-slate-900 text-white hover:bg-slate-800'}">
-                                        <i class="fa-solid ${isCompleted ? 'fa-circle-check text-emerald-600' : 'fa-check'}"></i>
-                                        <span>${isCompleted ? 'Completed' : 'Mark as Complete'}</span>
-                                    </button>
+                                    <select onchange="app.setSubjectFilter(this.value)" class="bg-white border border-slate-200 px-4 py-3 rounded-2xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm cursor-pointer">
+                                        ${uniqueSubjects.map(s => `<option value="${s}" ${s === this.subjectFilter ? 'selected' : ''}>${s}</option>`).join('')}
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- Content Area -->
-                            <div class="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10 max-w-4xl">
-                                <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm">
-                                    
-                                    <!-- Optional Video Embed if found in Google Sheet -->
+                            <!-- Courses Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                ${filteredCourses.map(course => {
+                                    let totalLessons = 0;
+                                    let completedLessons = 0;
+                                    course.modules.forEach(m => {
+                                        m.lessons.forEach(l => {
+                                            totalLessons++;
+                                            if (this.userProgress[l.id]) completedLessons++;
+                                        });
+                                    });
+                                    const progPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+                                    return `
+                                        <div onclick="app.selectCourse('${course.key}')" class="bg-white rounded-3xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-indigo-300 transition cursor-pointer flex flex-col group">
+                                            <div class="h-48 overflow-hidden relative bg-slate-100">
+                                                <img src="${course.cover}" alt="${course.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/600x400/6366f1/ffffff?text=${encodeURIComponent(course.title)}'">
+                                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-bold text-indigo-600 shadow-sm">
+                                                    ${course.category}
+                                                </div>
+                                            </div>
+                                            <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+                                                <div class="space-y-1">
+                                                    <h3 class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition">${course.title}</h3>
+                                                    <p class="text-xs text-slate-500">${course.modules.length} Unit(s) • ${totalLessons} Lessons</p>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <div class="flex justify-between text-xs font-semibold">
+                                                        <span class="text-slate-500">PROGRESS</span>
+                                                        <span class="text-indigo-600">${progPercent}%</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: ${progPercent}%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Render Course Detail / Lesson Workspace View
+                    const course = this.courses.find(c => c.key === this.activeCourseKey);
+                    if (!course) { this.goHome(); return; }
+
+                    let activeLesson = null;
+                    let activeModule = null;
+                    for (const m of course.modules) {
+                        for (const l of m.lessons) {
+                            if (l.id === this.activeLessonId) {
+                                activeLesson = l;
+                                activeModule = m;
+                                break;
+                            }
+                        }
+                        if (activeLesson) break;
+                    }
+
+                    if (!activeLesson && course.modules.length > 0 && course.modules[0].lessons.length > 0) {
+                        activeLesson = course.modules[0].lessons[0];
+                        activeModule = course.modules[0];
+                        this.activeLessonId = activeLesson.id;
+                    }
+
+                    container.innerHTML = `
+                        <div class="space-y-6">
+                            <!-- Back Button & Course Header -->
+                            <div class="flex items-center justify-between">
+                                <button onclick="app.goHome()" class="flex items-center space-x-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-sm">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                    <span>Back to Catalog</span>
+                                </button>
+                                <span class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">${course.title} (${course.category})</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                <!-- Left Sidebar: Units & Lessons -->
+                                <div class="lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-6 space-y-6 shadow-sm h-fit sticky top-28">
+                                    <div class="space-y-1">
+                                        <h2 class="text-lg font-bold text-slate-900">${course.title} Syllabus</h2>
+                                        <p class="text-xs text-slate-500">Select a lesson to start learning</p>
+                                    </div>
+
+                                    <div class="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
+                                        ${course.modules.map((mod, mIdx) => `
+                                            <div class="space-y-2">
+                                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">${mod.title}</h4>
+                                                <div class="space-y-1.5">
+                                                    ${mod.lessons.map(lesson => {
+                                                        const isSelected = lesson.id === activeLesson?.id;
+                                                        const isCompleted = this.userProgress[lesson.id];
+                                                        return `
+                                                            <div onclick="app.selectLesson('${lesson.id}')" class="flex items-center justify-between p-3 rounded-2xl cursor-pointer transition border ${isSelected ? 'bg-indigo-50 border-indigo-200 text-indigo-900 shadow-sm' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'}">
+                                                                <div class="flex items-center space-x-3 overflow-hidden">
+                                                                    <div class="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-emerald-100 text-emerald-600' : isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'} text-xs font-bold">
+                                                                        ${isCompleted ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-book-open"></i>'}
+                                                                    </div>
+                                                                    <span class="text-sm font-semibold truncate">${lesson.title}</span>
+                                                                </div>
+                                                                <span class="text-xs font-medium text-slate-400 ml-2">${lesson.duration}</span>
+                                                            </div>
+                                                        `;
+                                                    }).join('')}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                                <!-- Right Main Workspace: Lesson Content & Quizzes -->
+                                <div class="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 space-y-8 shadow-sm">
+                                    <div class="border-b border-slate-100 pb-6 space-y-2">
+                                        <div class="flex items-center space-x-2 text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                                            <span>${activeModule?.title || 'Unit'}</span>
+                                            <span>•</span>
+                                            <span>5 min read</span>
+                                        </div>
+                                        <h1 class="text-2xl sm:text-3xl font-black text-slate-900">${activeLesson.title}</h1>
+                                    </div>
+
+                                    <!-- Optional Video Embed if available -->
                                     ${activeLesson.video ? `
-                                        <div class="mb-6 rounded-2xl overflow-hidden aspect-video bg-slate-900 shadow-lg">
+                                        <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-md">
                                             <iframe src="${activeLesson.video}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                                         </div>
                                     ` : ''}
 
-                                    <!-- Lesson Cover Image if found -->
-                                    ${activeLesson.cover ? `
-                                        <div class="mb-6 rounded-2xl overflow-hidden h-48 sm:h-64 bg-slate-100 border border-slate-200">
-                                            <img src="${activeLesson.cover}" alt="Lesson Cover" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                                        </div>
-                                    ` : ''}
-
-                                    <!-- Full HTML Lesson Content -->
-                                    <div class="prose max-w-none text-slate-700 leading-relaxed text-base mb-10">
+                                    <!-- Lesson Content (HTML supported) -->
+                                    <div class="lesson-html-content prose max-w-none">
                                         ${activeLesson.content}
                                     </div>
 
-                                    <!-- Guaranteed Test / Knowledge Check after Every Lesson -->
+                                    <!-- Guaranteed Test / Knowledge Check with Multiple Questions separated by '-' -->
                                     <div class="pt-8 border-t border-slate-200">
-                                        <div class="bg-indigo-50/60 rounded-2xl p-6 border border-indigo-100">
-                                            <h3 class="text-lg font-bold text-indigo-900 mb-3 flex items-center">
-                                                <i class="fa-solid fa-circle-question mr-2 text-indigo-600"></i> ${activeLesson.quiz.title}
+                                        <div class="bg-indigo-50/60 rounded-3xl p-6 sm:p-8 border border-indigo-100 space-y-6">
+                                            <h3 class="text-lg font-bold text-indigo-900 flex items-center">
+                                                <i class="fa-solid fa-circle-question mr-2 text-indigo-600"></i> ${activeLesson.quiz[0]?.title || 'Knowledge Check'}
                                             </h3>
-                                            <p class="text-slate-700 font-medium mb-4">${activeLesson.quiz.question}</p>
-                                            <div class="space-y-2 mb-4">
-                                                ${activeLesson.quiz.options.map((opt, idx) => `
-                                                    <label class="flex items-center space-x-3 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300 transition">
-                                                        <input type="radio" name="quiz-${activeLesson.id}" value="${idx}" onchange="app.submitQuiz('${activeLesson.id}', ${activeLesson.quiz.correct}, ${idx})" class="text-indigo-600 focus:ring-indigo-500">
-                                                        <span class="text-slate-800 text-sm font-medium">${opt}</span>
-                                                    </label>
-                                                `).join('')}
-                                            </div>
-                                            <div id="quiz-result-${activeLesson.id}"></div>
+                                            
+                                            ${activeLesson.quiz.map((q, qIdx) => `
+                                                <div class="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm space-y-4">
+                                                    <p class="text-slate-800 font-semibold text-sm sm:text-base"><span class="text-indigo-600 mr-1.5 font-bold">Q${qIdx + 1}.</span> ${q.question}</p>
+                                                    <div class="space-y-2.5">
+                                                        ${q.options.map((opt, optIdx) => `
+                                                            <label class="flex items-center space-x-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer hover:border-indigo-300 transition">
+                                                                <input type="radio" name="quiz-${activeLesson.id}-${qIdx}" value="${optIdx}" onchange="app.submitQuiz('${activeLesson.id}', ${qIdx}, ${q.correct}, ${optIdx})" class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                                                <span class="text-slate-800 text-sm font-medium">${opt}</span>
+                                                            </label>
+                                                        `).join('')}
+                                                    </div>
+                                                    <div id="quiz-result-${activeLesson.id}-${qIdx}"></div>
+                                                </div>
+                                            `).join('')}
                                         </div>
                                     </div>
 
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
         }
 
