@@ -315,17 +315,17 @@
                     `);
                 } else if (msg.type === 'CONTROL_GRANTED') {
                     document.getElementById('control-active-banner').classList.remove('hidden');
-                    showModal("Access Granted", "You now have remote control access. Click or move your mouse over the remote screen to interact.", "fa-solid fa-shield-halved text-emerald-400");
+                    showModal("Access Granted", "You now have remote control access. Move your mouse or click over the remote screen to show your pointer to the host.", "fa-solid fa-shield-halved text-emerald-400");
                 } else if (msg.type === 'CONTROL_DENIED') {
                     showModal("Access Denied", "The host denied your remote control request.", "fa-solid fa-ban text-rose-400");
                 } else if (isHost) {
-                    // Handle remote control inputs on Host side
+                    // Handle remote control pointer/clicks on Host side (using local-video since host is broadcasting)
                     const remoteCursor = document.getElementById('remote-cursor');
                     const clickRipple = document.getElementById('click-ripple');
-                    const videoEl = document.getElementById('remote-video');
+                    const videoEl = document.getElementById('local-video');
                     const rect = videoEl.getBoundingClientRect();
 
-                    if (msg.x !== undefined && msg.y !== undefined) {
+                    if (msg.x !== undefined && msg.y !== undefined && rect.width > 0 && rect.height > 0) {
                         const px = msg.x * rect.width;
                         const py = msg.y * rect.height;
                         remoteCursor.style.left = `${px}px`;
@@ -336,7 +336,7 @@
                             clickRipple.style.left = `${px}px`;
                             clickRipple.style.top = `${py}px`;
                             clickRipple.classList.remove('hidden');
-                            setTimeout(() => clickRipple.classList.add('hidden'), 500);
+                            setTimeout(() => clickripple.classList.add('hidden'), 500);
                         }
                     }
                 }
@@ -360,8 +360,21 @@
                 return;
             }
 
+            // Check if getDisplayMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                showModal("Not Supported", "Screen sharing is not supported in this browser or requires an HTTPS secure connection.", "fa-solid fa-triangle-exclamation text-rose-400");
+                return;
+            }
+
             try {
-                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                // Request entire screen sharing
+                try {
+                    localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                } catch (audioErr) {
+                    // Fallback to video-only if audio capture is restricted on mobile
+                    localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                }
+
                 const localVideo = document.getElementById('local-video');
                 localVideo.srcObject = localStream;
                 localVideo.classList.remove('hidden');
@@ -372,7 +385,7 @@
                 document.getElementById('display-room-code').innerText = currentRoomId;
                 document.getElementById('role-badge').innerText = 'Host';
                 document.getElementById('btn-request-control').classList.add('hidden');
-                document.getElementById('waiting-text').innerText = 'Waiting for viewer to join room ' + currentRoomId + '...';
+                document.getElementById('waiting-text').innerText = 'Waiting for participant to join room ' + currentRoomId + '...';
                 
                 document.getElementById('view-mode-select').classList.add('hidden');
                 document.getElementById('view-room').classList.remove('hidden');
@@ -417,7 +430,7 @@
 
             } catch (err) {
                 console.error("Error starting share:", err);
-                showModal("Sharing Error", "Could not start screen sharing. Permission denied or not supported.", "fa-solid fa-triangle-exclamation text-rose-400");
+                showModal("Sharing Notice", "Screen sharing permission was cancelled or blocked by your browser/device settings. On mobile, ensure you select 'Entire Screen' when prompted.", "fa-solid fa-triangle-exclamation text-amber-400");
             }
         };
 
