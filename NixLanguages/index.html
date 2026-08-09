@@ -119,6 +119,7 @@
                 this.activeLessonId = null;
                 this.searchQuery = '';
                 this.subjectFilter = 'All Languages';
+                this.syllabusOpen = true; // Toggle state for syllabus bar
                 this.userProgress = JSON.parse(localStorage.getItem('nix_languages_progress') || '{}');
                 this.loading = true;
 
@@ -312,7 +313,7 @@
                                             },
                                             {
                                                 title: 'Check it !',
-                                                question: 'How do you say Good Morning in Spanish? - a) Hola - b) Buenos días - c) Adiós - d) Gracias',
+                                                question: 'How do you say Good Morning in Spanish?',
                                                 options: ['Hola', 'Buenos días', 'Adiós', 'Gracias'],
                                                 correct: 1
                                             }
@@ -341,7 +342,7 @@
                                         quiz: [
                                             {
                                                 title: 'Quick Check',
-                                                question: 'What does Ciao mean? - a) Goodbye / Hello - b) Thank you - c) Please - d) Water',
+                                                question: 'What does Ciao mean?',
                                                 options: ['Goodbye / Hello', 'Thank you', 'Please', 'Water'],
                                                 correct: 0
                                             }
@@ -404,6 +405,7 @@
                 if (course && course.modules.length > 0 && course.modules[0].lessons.length > 0) {
                     this.activeLessonId = course.modules[0].lessons[0].id;
                 }
+                this.syllabusOpen = true; // reset syllabus open on course select
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 this.render();
             }
@@ -418,6 +420,11 @@
             selectLesson(lessonId) {
                 this.activeLessonId = lessonId;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.render();
+            }
+
+            toggleSyllabus() {
+                this.syllabusOpen = !this.syllabusOpen;
                 this.render();
             }
 
@@ -598,21 +605,32 @@
 
                     container.innerHTML = `
                         <div class="space-y-6">
-                            <!-- Back Button & Course Header -->
-                            <div class="flex items-center justify-between">
-                                <button onclick="app.goHome()" class="flex items-center space-x-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-sm">
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                    <span>Back to Catalog</span>
-                                </button>
+                            <!-- Back Button & Course Header with Toggle Syllabus Bar Button -->
+                            <div class="flex items-center justify-between flex-wrap gap-3">
+                                <div class="flex items-center space-x-3">
+                                    <button onclick="app.goHome()" class="flex items-center space-x-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-sm">
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                        <span>Back to Catalog</span>
+                                    </button>
+                                    <button onclick="app.toggleSyllabus()" class="flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold transition border border-indigo-200 shadow-sm">
+                                        <i class="fa-solid fa-list-ul"></i>
+                                        <span>${this.syllabusOpen ? 'Hide Syllabus Bar' : 'Show Syllabus Bar'}</span>
+                                    </button>
+                                </div>
                                 <span class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">${course.title} (${course.category})</span>
                             </div>
 
                             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                <!-- Left Sidebar: Units & Lessons -->
-                                <div class="lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-6 space-y-6 shadow-sm h-fit sticky top-28">
-                                    <div class="space-y-1">
-                                        <h2 class="text-lg font-bold text-slate-900">${course.title} Syllabus</h2>
-                                        <p class="text-xs text-slate-500">Select a lesson to start learning</p>
+                                <!-- Left Sidebar: Units & Lessons (Collapsible Syllabus Bar) -->
+                                <div class="${this.syllabusOpen ? 'block' : 'hidden'} lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-6 space-y-6 shadow-sm h-fit sticky top-28 transition-all duration-300">
+                                    <div class="flex items-center justify-between">
+                                        <div class="space-y-1">
+                                            <h2 class="text-lg font-bold text-slate-900">${course.title} Syllabus</h2>
+                                            <p class="text-xs text-slate-500">Select a lesson to start learning</p>
+                                        </div>
+                                        <button onclick="app.toggleSyllabus()" class="text-slate-400 hover:text-slate-600 lg:hidden p-1">
+                                            <i class="fa-solid fa-xmark text-lg"></i>
+                                        </button>
                                     </div>
 
                                     <div class="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
@@ -642,7 +660,7 @@
                                 </div>
 
                                 <!-- Right Main Workspace: Lesson Content & Quizzes -->
-                                <div class="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 space-y-8 shadow-sm">
+                                <div class="${this.syllabusOpen ? 'lg:col-span-8' : 'lg:col-span-12'} bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 space-y-8 shadow-sm transition-all duration-300">
                                     <div class="border-b border-slate-100 pb-6 space-y-2">
                                         <div class="flex items-center space-x-2 text-xs font-bold text-indigo-600 uppercase tracking-wider">
                                             <span>${activeModule?.title || 'Unit'}</span>
@@ -664,7 +682,7 @@
                                         ${activeLesson.content}
                                     </div>
 
-                                    <!-- Guaranteed Test / Knowledge Check with Multiple Questions separated by '-' -->
+                                    <!-- Knowledge Check with Multiple Questions separated by '-' -->
                                     <div class="pt-8 border-t border-slate-200">
                                         <div class="bg-indigo-50/60 rounded-3xl p-6 sm:p-8 border border-indigo-100 space-y-6">
                                             <h3 class="text-lg font-bold text-indigo-900 flex items-center">
