@@ -356,11 +356,11 @@
             }
 
             parseTestContent(testName, testContentStr, correctAnswerLetterStr) {
-                // Split test content by '-' supporting multiple questions
+                // Split test content where every '-' is a new question block
                 const rawBlocks = testContentStr.split(/\s*-\s*/);
                 const questionsList = [];
-                // Split answers by '-' as well as spaces/commas so every question gets its corresponding answer
-                const answersArr = (correctAnswerLetterStr || 'a').toLowerCase().split(/\s*-\s*|[\s,]+/);
+                // Split answers where every '-' is the answer for the corresponding question
+                const answersArr = correctAnswerLetterStr.split(/\s*-\s*/);
 
                 rawBlocks.forEach((block, qIdx) => {
                     if (!block.trim()) return;
@@ -375,9 +375,10 @@
                         options.push("Option A", "Option B", "Option C", "Option D");
                     }
                     
-                    const ansLetter = (answersArr[qIdx] || answersArr[0] || 'a').toLowerCase().trim();
+                    const ansStr = (answersArr[qIdx] !== undefined ? answersArr[qIdx] : answersArr[0] || 'a').toLowerCase().trim();
                     const correctMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
-                    const correctIdx = correctMap[ansLetter] !== undefined ? correctMap[ansLetter] : 0;
+                    // If answer is a letter like 'c', map it; otherwise try to match option text or default to 0
+                    const correctIdx = correctMap[ansStr] !== undefined ? correctMap[ansStr] : 0;
 
                     questionsList.push({
                         title: testName || 'Knowledge Check',
@@ -435,6 +436,19 @@
 
             setSubjectFilter(subj) {
                 this.subjectFilter = subj;
+                this.render();
+            }
+
+            completeLesson(lessonId) {
+                if (this.userProgress[lessonId]) {
+                    delete this.userProgress[lessonId];
+                    this.showToast('Lesson marked as incomplete.');
+                } else {
+                    this.userProgress[lessonId] = true;
+                    this.showToast('Lesson completed successfully! 🎉');
+                }
+                localStorage.setItem('nix_languages_progress', JSON.stringify(this.userProgress));
+                this.updateTotalProgress();
                 this.render();
             }
 
@@ -603,6 +617,8 @@
                         this.activeLessonId = activeLesson.id;
                     }
 
+                    const isCurrentCompleted = this.userProgress[activeLesson.id];
+
                     container.innerHTML = `
                         <div class="space-y-6">
                             <!-- Back Button & Course Header with Toggle Syllabus Bar Button -->
@@ -680,6 +696,20 @@
                                     <!-- Lesson Content (HTML supported) -->
                                     <div class="lesson-html-content prose max-w-none">
                                         ${activeLesson.content}
+                                    </div>
+
+                                    <!-- Complete Lesson Action Bar -->
+                                    <div class="pt-6 border-t border-slate-100 flex items-center justify-between flex-wrap gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                                        <div>
+                                            ${isCurrentCompleted ? 
+                                                `<span class="inline-flex items-center text-emerald-700 font-bold text-sm bg-emerald-100 px-4 py-2 rounded-xl"><i class="fa-solid fa-circle-check mr-2"></i> Lesson Completed</span>` :
+                                                `<span class="inline-flex items-center text-slate-600 font-medium text-sm">Finish reading and testing to complete</span>`
+                                            }
+                                        </div>
+                                        <button onclick="app.completeLesson('${activeLesson.id}')" class="flex items-center space-x-2 ${isCurrentCompleted ? 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'} px-6 py-3 rounded-xl font-bold text-sm transition">
+                                            <i class="fa-solid ${isCurrentCompleted ? 'fa-rotate-left' : 'fa-check'}"></i>
+                                            <span>${isCurrentCompleted ? 'Mark as Incomplete' : 'Complete Lesson'}</span>
+                                        </button>
                                     </div>
 
                                     <!-- Knowledge Check with Multiple Questions separated by '-' -->
