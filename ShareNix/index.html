@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareNix - Screen Share & Remote Access</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
+
+    <header class="w-full border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center">
+                <i class="fa-solid fa-display text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">ShareNix</h1>
+                <p class="text-xs text-slate-400">Secure Screen Share & Remote Access</p>
+            </div>
+        </div>
+        <div id="connection-status" class="flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-xs font-medium text-slate-300">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" id="status-dot"></span>
+            <span id="status-text">Connecting to Firebase...</span>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center items-center">
+        
+        <!-- Mode Selection View -->
+        <div id="view-mode-select" class="w-full max-w-4xl space-y-8 animate-fadeIn">
+            <div class="text-center space-y-3">
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Choose Your Sharing Mode</h2>
+                <p class="text-slate-400 max-w-xl mx-auto">Share your mobile or laptop screen instantly with peer-to-peer WebRTC streaming and interactive remote access requests.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <!-- Share Screen Card (Host) -->
+                <div class="glass-panel p-8 rounded-2xl hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between group shadow-xl">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-laptop-code"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Share My Screen</h3>
+                        <p class="text-slate-400 text-sm mb-6">Broadcast your mobile or laptop screen to another device and accept remote access control requests.</p>
+                    </div>
+                    <button onclick="startHosting()" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+                        <span>Start Sharing</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Join Screen Card (Viewer) -->
+                <div class="glass-panel p-8 rounded-2xl hover:border-cyan-500/50 transition-all duration-300 flex flex-col justify-between group shadow-xl">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-eye"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Join & View Screen</h3>
+                        <p class="text-slate-400 text-sm mb-6">Enter a room code to view another device's screen and request remote control access.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <input type="text" id="input-room-code" placeholder="Enter 6-digit Room Code" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono text-center tracking-widest text-lg">
+                        <button onclick="joinRoom()" class="w-full py-3 px-4 bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-xl shadow-lg shadow-cyan-600/30 transition-all flex items-center justify-center space-x-2">
+                            <span>Join Session</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-room" class="w-full max-w-5xl hidden flex-col space-y-6">
+            <!-- Room Info & Controls Header -->
+            <div class="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 flex items-center space-x-2">
+                        <span class="text-xs text-slate-400">Room Code:</span>
+                        <span id="display-room-code" class="font-mono font-bold text-indigo-400 text-lg">------</span>
+                        <button onclick="copyRoomCode()" class="text-slate-400 hover:text-white p-1" title="Copy Room Code">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                    </div>
+                    <div id="role-badge" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        Host
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button id="btn-request-control" onclick="requestControl()" class="hidden px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-amber-600/20 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-hand"></i>
+                        <span id="control-btn-text">Request Remote Access</span>
+                    </button>
+                    <button onclick="leaveRoom()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-rose-600/20 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-phone-slash"></i>
+                        <span>End Session</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Display Box -->
+            <div class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex items-center justify-center">
+                <video id="remote-video" autoplay playsinline class="w-full h-full object-contain"></video>
+                <video id="local-video" autoplay playsinline muted class="absolute bottom-4 right-4 w-48 aspect-video object-cover rounded-xl border-2 border-slate-700 shadow-lg hidden"></video>
+                
+                <!-- Waiting Overlay -->
+                <div id="waiting-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center space-y-4">
+                    <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p id="waiting-text" class="text-slate-300 font-medium">Waiting for participant to join...</p>
+                </div>
+
+                <!-- Remote Control Indicator -->
+                <div id="control-active-banner" class="absolute top-4 left-4 bg-emerald-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg hidden flex items-center space-x-1.5">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Remote Control Active</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="custom-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel max-w-md w-full p-6 rounded-2xl shadow-2xl space-y-4 text-center">
+            <div id="modal-icon" class="w-14 h-14 mx-auto rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3 id="modal-title" class="text-xl font-bold text-white">Notification</h3>
+            <p id="modal-message" class="text-slate-300 text-sm">Message content goes here...</p>
+            <div id="modal-actions" class="flex space-x-3 pt-2">
+                <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-all">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+
+        // Your personal Firebase configuration & app ID
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sharenix-production';
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-x-aZQJge1oGkv2jCTm3LmA2T8JEBvb0",
+            authDomain: "sharenix-762b8.firebaseapp.com",
+            projectId: "sharenix-762b8",
+            storageBucket: "sharenix-762b8.firebasestorage.app",
+            messagingSenderId: "682034256486",
+            appId: "1:682034256486:web:7a52a32446c396e5d2eba7",
+            measurementId: "G-5YM4NZPPZW"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+
+        let app, db, auth, analytics, currentUser;
+        let peerConnection = null;
+        let localStream = null;
+        let dataChannel = null;
+        let currentRoomId = null;
+        let isHost = false;
+        let unsubscribeRoom = null;
+
+        const iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        // Initialize Firebase
+        async function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                analytics = getAnalytics(app);
+
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (tokenErr) {
+                        console.warn("Custom token sign-in failed due to project mismatch, falling back to anonymous auth:", tokenErr);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+                currentUser = auth.currentUser;
+                
+                document.getElementById('status-dot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+                document.getElementById('status-text').innerText = 'Connected to Firebase (sharenix-762b8)';
+            } catch (err) {
+                console.error("Firebase init error:", err);
+                document.getElementById('status-dot').className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                document.getElementById('status-text').innerText = 'Firebase Connection Error';
+            }
+        }
+        initFirebase();
+
+        // Custom Modal UI helper
+        window.showModal = function(title, message, iconClass = 'fa-solid fa-bell', actionsHtml = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerHTML = `<i class="${iconClass}"></i>`;
+            
+            const actionsContainer = document.getElementById('modal-actions');
+            if (actionsHtml) {
+                actionsContainer.innerHTML = actionsHtml;
+            } else {
+                actionsContainer.innerHTML = `<button onclick="closeModal()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all">OK</button>`;
+            }
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        window.copyRoomCode = function() {
+            navigator.clipboard.writeText(currentRoomId);
+            showModal("Copied", "Room code copied to clipboard!", "fa-solid fa-check text-emerald-400");
+        }
+
+        function createPeerConnection(roomId) {
+            if (peerConnection) return peerConnection;
+            peerConnection = new RTCPeerConnection(iceServers);
+
+            peerConnection.ontrack = (event) => {
+                console.log("Received remote track");
+                const remoteVideo = document.getElementById('remote-video');
+                if (remoteVideo.srcObject !== event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                    document.getElementById('waiting-overlay').classList.add('hidden');
+                }
+            };
+
+            peerConnection.onicecandidate = async (event) => {
+                if (event.candidate) {
+                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'shareNixRooms', roomId);
+                    const roomSnap = await getDoc(roomRef);
+                    if (roomSnap.exists()) {
+                        const data = roomSnap.data();
+                        const candidates = isHost ? (data.hostCandidates || []) : (data.viewerCandidates || []);
+                        candidates.push(JSON.stringify(event.candidate));
+                        if (isHost) {
+                            await updateDoc(roomRef, { hostCandidates: candidates });
+                        } else {
+                            await updateDoc(roomRef, { viewerCandidates: candidates });
+                        }
+                    }
+                }
+            };
+
+            if (isHost) {
+                dataChannel = peerConnection.createDataChannel("sharenix-control");
+                setupDataChannel();
+            } else {
+                peerConnection.ondatachannel = (event) => {
+                    dataChannel = event.channel;
+                    setupDataChannel();
+                };
+            }
+
+            return peerConnection;
+        }
+
+        function setupDataChannel() {
+            dataChannel.onopen = () => { console.log("Data channel open"); };
+            dataChannel.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'REQUEST_CONTROL') {
+                    showModal("Remote Access Request", "A viewer is requesting remote control access to your screen.", "fa-solid fa-hand-holding", `
+                        <button onclick="denyControl()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-all">Deny</button>
+                        <button onclick="allowControl()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-all">Allow</button>
+                    `);
+                } else if (msg.type === 'CONTROL_GRANTED') {
+                    document.getElementById('control-active-banner').classList.remove('hidden');
+                    showModal("Access Granted", "You now have remote control access.", "fa-solid fa-shield-halved text-emerald-400");
+                } else if (msg.type === 'CONTROL_DENIED') {
+                    showModal("Access Denied", "The host denied your remote control request.", "fa-solid fa-ban text-rose-400");
+                } else if (msg.type === 'SIMULATE_CLICK' && isHost) {
+                    console.log("Remote click received at:", msg.x, msg.y);
+                }
+            };
+        }
+
+        window.startHosting = async function() {
+            if (!auth.currentUser) {
+                showModal("Authentication Error", "Please wait for connection verification.", "fa-solid fa-triangle-exclamation text-amber-400");
+                return;
+            }
+
+            try {
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                const localVideo = document.getElementById('local-video');
+                localVideo.srcObject = localStream;
+                localVideo.classList.remove('hidden');
+
+                currentRoomId = Math.floor(100000 + Math.random() * 900000).toString();
+                isHost = true;
+
+                document.getElementById('display-room-code').innerText = currentRoomId;
+                document.getElementById('role-badge').innerText = 'Host';
+                document.getElementById('btn-request-control').classList.add('hidden');
+                document.getElementById('waiting-text').innerText = 'Waiting for viewer to join room ' + currentRoomId + '...';
+                
+                document.getElementById('view-mode-select').classList.add('hidden');
+                document.getElementById('view-room').classList.remove('hidden');
+                document.getElementById('view-room').classList.add('flex');
+
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'shareNixRooms', currentRoomId);
+                await setDoc(roomRef, {
+                    hostId: currentUser.uid,
+                    createdAt: Date.now(),
+                    status: 'waiting',
+                    hostCandidates: [],
+                    viewerCandidates: []
+                });
+
+                const pc = createPeerConnection(currentRoomId);
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+                localStream.getVideoTracks()[0].onended = () => {
+                    leaveRoom();
+                };
+
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                await updateDoc(roomRef, { offer: JSON.stringify(offer), status: 'offered' });
+
+                unsubscribeRoom = onSnapshot(roomRef, async (snapshot) => {
+                    const data = snapshot.data();
+                    if (!data) return;
+
+                    if (data.answer && !pc.currentRemoteDescription) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.answer)));
+                    }
+
+                    if (data.viewerCandidates) {
+                        for (let cStr of data.viewerCandidates) {
+                            try {
+                                await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(cStr)));
+                            } catch (e) {}
+                        }
+                    }
+                });
+
+            } catch (err) {
+                console.error("Error starting share:", err);
+                showModal("Sharing Error", "Could not start screen sharing. Permission denied or not supported.", "fa-solid fa-triangle-exclamation text-rose-400");
+            }
+        };
+
+        window.joinRoom = async function() {
+            const roomCodeInput = document.getElementById('input-room-code').value.trim();
+            if (roomCodeInput.length !== 6) {
+                showModal("Invalid Code", "Please enter a valid 6-digit room code.", "fa-solid fa-triangle-exclamation text-amber-400");
+                return;
+            }
+
+            currentRoomId = roomCodeInput;
+            isHost = false;
+
+            document.getElementById('display-room-code').innerText = currentRoomId;
+            document.getElementById('role-badge').innerText = 'Viewer';
+            document.getElementById('btn-request-control').classList.remove('hidden');
+            document.getElementById('waiting-text').innerText = 'Connecting to host stream...';
+
+            document.getElementById('view-mode-select').classList.add('hidden');
+            document.getElementById('view-room').classList.remove('hidden');
+            document.getElementById('view-room').classList.add('flex');
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'shareNixRooms', currentRoomId);
+            const roomSnap = await getDoc(roomRef);
+
+            if (!roomSnap.exists()) {
+                showModal("Room Not Found", "The room code entered does not exist or has expired.", "fa-solid fa-triangle-exclamation text-rose-400");
+                leaveRoom();
+                return;
+            }
+
+            const data = roomSnap.data();
+            const pc = createPeerConnection(currentRoomId);
+
+            await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.offer)));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            await updateDoc(roomRef, { answer: JSON.stringify(answer), status: 'answered' });
+
+            if (data.hostCandidates) {
+                for (let cStr of data.hostCandidates) {
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(cStr)));
+                    } catch (e) {}
+                }
+            }
+
+            unsubscribeRoom = onSnapshot(roomRef, async (snapshot) => {
+                const sData = snapshot.data();
+                if (!sData) return;
+                if (sData.hostCandidates) {
+                    for (let cStr of sData.hostCandidates) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(cStr)));
+                        } catch (e) {}
+                    }
+                }
+            });
+        };
+
+        window.requestControl = function() {
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify({ type: 'REQUEST_CONTROL' }));
+                showModal("Request Sent", "Waiting for host approval to control screen...", "fa-solid fa-paper-plane text-cyan-400");
+            } else {
+                showModal("Connection Error", "Data channel not ready yet. Please wait.", "fa-solid fa-triangle-exclamation text-amber-400");
+            }
+        };
+
+        window.allowControl = function() {
+            closeModal();
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify({ type: 'CONTROL_GRANTED' }));
+                document.getElementById('control-active-banner').classList.remove('hidden');
+                document.getElementById('control-active-banner').innerHTML = `<i class="fa-solid fa-shield-halved"></i><span>Viewer Controlling Screen</span>`;
+            }
+        };
+
+        window.denyControl = function() {
+            closeModal();
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify({ type: 'CONTROL_DENIED' }));
+            }
+        };
+
+        window.leaveRoom = function() {
+            if (unsubscribeRoom) unsubscribeRoom();
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            if (dataChannel) {
+                dataChannel.close();
+                dataChannel = null;
+            }
+
+            currentRoomId = null;
+            isHost = false;
+
+            document.getElementById('remote-video').srcObject = null;
+            document.getElementById('local-video').srcObject = null;
+            document.getElementById('local-video').classList.add('hidden');
+            document.getElementById('waiting-overlay').classList.remove('hidden');
+            document.getElementById('waiting-text').innerText = 'Waiting for participant to join...';
+            document.getElementById('control-active-banner').classList.add('hidden');
+
+            document.getElementById('view-room').classList.add('hidden');
+            document.getElementById('view-room').classList.remove('flex');
+            document.getElementById('view-mode-select').classList.remove('hidden');
+        };
+
+        document.getElementById('remote-video').addEventListener('click', (e) => {
+            if (!isHost && dataChannel && dataChannel.readyState === 'open' && !document.getElementById('control-active-banner').classList.contains('hidden')) {
+                const rect = e.target.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                dataChannel.send(JSON.stringify({ type: 'SIMULATE_CLICK', x, y }));
+            }
+        });
+    </script>
+</body>
+</html>
