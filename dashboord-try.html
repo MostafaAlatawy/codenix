@@ -180,23 +180,9 @@
 
         <!-- Recent Chats List (Scrollable) -->
         <div id="recentChatsList" class="flex-1 overflow-y-auto space-y-1 pr-1 text-sm">
-          <!-- Populated dynamically or mockup defaults matching the prompt screenshot -->
-          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs flex justify-between items-center group" onclick="loadChat(1)">
-            <span class="truncate">Soft Skills Graphic Design</span>
-            <i class="fa-solid fa-xmark text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 text-xs"></i>
-          </button>
-          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(2)">
-            <span class="truncate" dir="rtl">تعديل صورة بتنسيق دائري</span>
-          </button>
-          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(3)">
-            <span class="truncate">Aprendiendo turco</span>
-          </button>
-          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(4)">
-            <span class="truncate">lo que sea معنى</span>
-          </button>
-          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(5)">
-            <span class="truncate" dir="rtl">ترجمة مهمة تحليل الزوار</span>
-          </button>
+          <div id="emptyRecents" class="text-xs text-gray-400 dark:text-gray-500 px-3 py-2 italic text-center">
+            No recent conversations
+          </div>
         </div>
 
       </div>
@@ -206,10 +192,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3 overflow-hidden cursor-pointer" onclick="toggleProfileMenu()">
             <div id="userAvatar" class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border-2 border-purple-400">
-              MA
+              <i class="fa-solid fa-user text-xs"></i>
             </div>
             <div class="truncate text-left">
-              <div id="userName" class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">Mostafa Alatawy</div>
+              <div id="userName" class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">User</div>
               <div id="userPlan" class="text-[11px] text-gray-500 dark:text-gray-400" data-i18n="free">Free</div>
             </div>
           </div>
@@ -341,9 +327,9 @@
           <textarea id="promptInput" rows="1" placeholder="Pregunta lo que quieras" data-i18n-placeholder="askAnything" class="flex-1 bg-transparent border-none outline-none resize-none text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 py-2 max-h-32 scrollbar-none"></textarea>
 
           <!-- Thinking / Active Model Badge Button ("Pensar" from screenshot) -->
-          <button id="thinkingBadge" onclick="toggleModelDropdown()" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-dark-border text-gray-700 dark:text-gray-300 text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 transition">
+          <button id="thinkingBadge" onclick="toggleThinkingMode()" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 ring-2 ring-purple-500 text-xs font-medium transition">
             <i class="fa-solid fa-brain text-purple-600 dark:text-purple-400 text-xs"></i>
-            <span data-i18n="thinking">Pensar</span>
+            <span id="thinkingLabel" data-i18n="thinking">Pensar</span>
           </button>
 
           <!-- Voice Mic Input Button -->
@@ -397,10 +383,10 @@
             </div>
             <div>
               <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
-                <span>Activepieces Workflow Endpoint</span>
-                <span class="text-[10px] bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">Connected</span>
+                <span>Activepieces Nix 4 Sync Webhook</span>
+                <span class="text-[10px] bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">Synchronous (/sync)</span>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Executes multi-step webhooks and backend AI flows dynamically via Nix 4.</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Executes synchronous workflows with a 30s timeout window. Returns output JSON format: <code>{"answer": "{{step_1['output']}}"}</code>.</p>
             </div>
           </div>
           <button class="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition">Configured</button>
@@ -469,7 +455,7 @@
     /* Global Application State */
     const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
-    const ACTIVEPIECES_WEBHOOK = 'https://cloud.activepieces.com/api/v1/webhooks/Ii1yODdziX0kTcago92vT';
+    const ACTIVEPIECES_WEBHOOK = 'https://cloud.activepieces.com/api/v1/webhooks/Ii1yODdziX0kTcago92vT/sync';
 
     let supabaseClient = null;
     let selectedModel = 'woai'; // 'woai' or 'nix4'
@@ -477,6 +463,7 @@
     let currentLang = 'en';
     let isSpeechRecording = false;
     let recognition = null;
+    let isThinkingEnabled = true;
 
     /* Multi-language Dictionary */
     const i18n = {
@@ -667,9 +654,21 @@
       if (modelKey === 'woai') {
         label.innerText = 'WoAI (Puter JS)';
       } else {
-        label.innerText = 'Nix 4 (Activepieces)';
+        label.innerText = 'Nix 4 (Activepieces /sync)';
       }
       toggleModelDropdown();
+    }
+
+    function toggleThinkingMode() {
+      isThinkingEnabled = !isThinkingEnabled;
+      const badge = document.getElementById('thinkingBadge');
+      if (isThinkingEnabled) {
+        badge.classList.remove('opacity-50');
+        badge.classList.add('ring-2', 'ring-purple-500');
+      } else {
+        badge.classList.add('opacity-50');
+        badge.classList.remove('ring-2', 'ring-purple-500');
+      }
     }
 
     function setImageMode(mode) {
@@ -833,26 +832,66 @@
 
     /* Nix 4 Engine (Activepieces Webhook Integration) */
     async function callNix4Activepieces(prompt, msgId) {
+      const container = document.getElementById(msgId);
+      
+      // If thinking is enabled, show thinking animation preview
+      if (isThinkingEnabled && container) {
+        container.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center space-x-2 text-purple-600 dark:text-purple-400 text-xs font-semibold">
+              <i class="fa-solid fa-brain fa-spin"></i>
+              <span>Nix 4 is thinking & processing Activepieces flow...</span>
+            </div>
+            <div class="text-[11px] text-gray-400 italic">Expecting response from webhook within 30s timeout...</div>
+          </div>
+        `;
+      }
+
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         const response = await fetch(ACTIVEPIECES_WEBHOOK, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
           body: JSON.stringify({
             query: prompt,
             model: 'Nix 4',
+            thinking: isThinkingEnabled,
             timestamp: new Date().toISOString()
           })
         });
 
+        clearTimeout(timeoutId);
+
+        if (response.status === 408) {
+          updateBotMessage(msgId, `⏱️ **408 Request Timeout**\nThe response took longer than 30 seconds. If you expect a response from this webhook, make sure to add a **Webhook Step** with the **Return Response** action to your Activepieces flow returning \`{ "answer": "{{step_1['output']}}" }\`.`);
+          return;
+        }
+
         if (response.ok) {
           const data = await response.json().catch(() => null);
-          const text = data?.response || data?.message || data?.text || 'Webhook executed successfully in Activepieces flow.';
-          updateBotMessage(msgId, `**[Nix 4 Activepieces Response]**\n\n${text}`);
+          
+          // Parse JSON payload format: { "answer": "{{step_1['output']}}" }
+          if (data && data.answer) {
+            updateBotMessage(msgId, data.answer);
+          } else if (data && (data.response || data.message || data.text)) {
+            updateBotMessage(msgId, data.response || data.message || data.text);
+          } else if (data) {
+            updateBotMessage(msgId, typeof data === 'string' ? data : JSON.stringify(data, null, 2));
+          } else {
+            updateBotMessage(msgId, `**[Nix 4 Response]**\n\nWorkflow executed successfully.`);
+          }
         } else {
-          updateBotMessage(msgId, `**[Nix 4 Flow Active]**\n\nSuccessfully triggered Activepieces Webhook at endpoint:\n\`${ACTIVEPIECES_WEBHOOK}\`\n\nWorkflow executed with status code: **${response.status}**.`);
+          updateBotMessage(msgId, `⚠️ **Activepieces Error (${response.status})**\nIf you expect a response from this webhook, add \`/sync\` to the end of the URL. If it takes more than 30 seconds, it will return a 408 Request Timeout response. To return data, add a Webhook step to your flow with the Return Response action returning:\n\`\`\`json\n{\n  "answer": "{{step_1['output']}}"\n}\n\`\`\``);
         }
       } catch (err) {
-        updateBotMessage(msgId, `**[Nix 4 Activepieces Flow]**\n\nWebhook triggered for prompt: *"${prompt}"*.\n\n*Status*: Request sent to Activepieces Cloud.`);
+        if (err.name === 'AbortError') {
+          updateBotMessage(msgId, `⏱️ **408 Request Timeout (30s exceeded)**\nThe request took longer than 30 seconds. To return data from Activepieces, add a **Webhook step** to your flow with the **Return Response** action returning:\n\`\`\`json\n{\n  "answer": "{{step_1['output']}}"\n}\n\`\`\``);
+        } else {
+          updateBotMessage(msgId, `⚠️ **Activepieces Flow Connection Error**:\n${err.message || err}`);
+        }
       }
     }
 
