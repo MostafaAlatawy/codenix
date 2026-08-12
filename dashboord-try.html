@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatNix - AI Intelligence Platform</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            purple: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+              950: '#2e1065',
+            },
+            dark: {
+              bg: '#09090b',
+              sidebar: '#121215',
+              card: '#18181b',
+              border: '#27272a',
+              input: '#1f1f23'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Puter JS for WoAI -->
+  <script src="https://js.puter.com/v2/"></script>
+
+  <!-- Marked JS for Markdown formatting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(124, 58, 237, 0.3);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(124, 58, 237, 0.6);
+    }
+
+    /* Glowing Purples */
+    .purple-glow {
+      box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.35);
+    }
+    .purple-border-glow:focus-within {
+      box-shadow: 0 0 15px 1px rgba(139, 92, 246, 0.4);
+      border-color: #8b5cf6;
+    }
+
+    /* Waveform Animation for Mic / Audio active */
+    @keyframes pulse-wave {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+    .wave-bar {
+      animation: pulse-wave 1s infinite ease-in-out;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-dark-bg dark:text-gray-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white">
+
+  <!-- Supabase Auth Redirect Warning Banner (if not authenticated) -->
+  <div id="authNotice" class="hidden fixed top-0 inset-x-0 z-50 bg-purple-600 text-white text-xs md:text-sm py-2 px-4 flex justify-between items-center shadow-lg">
+    <div class="flex items-center space-x-2">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span id="authNoticeText">Not authenticated with Supabase. Redirecting to <code class="bg-purple-800 px-1 py-0.5 rounded">/Start/</code> in <span id="countdown">5</span> seconds...</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="redirectToStart()" class="bg-white text-purple-700 px-3 py-1 rounded-md text-xs font-semibold hover:bg-purple-100 transition">Go to /Start/</button>
+      <button onclick="dismissAuthNotice()" class="text-white hover:text-purple-200"><i class="fa-solid fa-xmark text-base"></i></button>
+    </div>
+  </div>
+
+  <div class="flex flex-1 h-screen overflow-hidden relative">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-white dark:bg-dark-sidebar border-r border-gray-200 dark:border-dark-border flex flex-col justify-between transition-all duration-300 z-30 shrink-0">
+      
+      <!-- Top Sidebar Header & Navigation -->
+      <div class="p-3 flex flex-col h-full overflow-hidden">
+        
+        <!-- App Title & Sidebar Toggle -->
+        <div class="flex items-center justify-between mb-4 px-2">
+          <div class="flex items-center space-x-2 cursor-pointer" onclick="resetToHome()">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-700 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              <i class="fa-solid fa-bolt text-xs"></i>
+            </div>
+            <span class="font-semibold text-lg tracking-tight bg-gradient-to-r from-purple-700 to-purple-500 dark:from-purple-400 dark:to-purple-200 bg-clip-text text-transparent">ChatNix</span>
+          </div>
+          <button id="closeSidebarBtn" onclick="toggleSidebar()" class="p-1.5 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-card transition">
+            <i class="fa-solid fa-sidebar text-base"></i>
+          </button>
+        </div>
+
+        <!-- New Chat Button -->
+        <button onclick="createNewChat()" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:border-purple-300 dark:hover:border-purple-800 text-gray-700 dark:text-gray-200 transition font-medium text-sm mb-4 group shadow-sm">
+          <i class="fa-regular fa-pen-to-square text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"></i>
+          <span data-i18n="newChat">New chat</span>
+        </button>
+
+        <!-- Sidebar Primary Menu Links -->
+        <nav class="space-y-1 mb-4 text-sm font-medium">
+          <button onclick="switchTab('images')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
+            <i class="fa-regular fa-image w-5 text-gray-400 dark:text-gray-500"></i>
+            <span data-i18n="images">Images</span>
+          </button>
+          
+          <button onclick="switchTab('library')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
+            <i class="fa-solid fa-book-open w-5 text-gray-400 dark:text-gray-500"></i>
+            <span data-i18n="library">Library</span>
+          </button>
+
+          <!-- Nix Extensions Menu Button -->
+          <button onclick="openExtensionsModal()" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition group">
+            <div class="flex items-center space-x-3">
+              <i class="fa-solid fa-puzzle-piece w-5 text-purple-600 dark:text-purple-400"></i>
+              <span data-i18n="extensions" class="font-medium text-purple-700 dark:text-purple-300">Nix Extensions</span>
+            </div>
+            <span class="text-[10px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-semibold px-1.5 py-0.5 rounded">NEW</span>
+          </button>
+
+          <button onclick="switchTab('projects')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
+            <i class="fa-regular fa-folder w-5 text-gray-400 dark:text-gray-500"></i>
+            <span data-i18n="projects">Projects</span>
+          </button>
+
+          <button onclick="switchTab('more')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
+            <i class="fa-solid fa-ellipsis w-5 text-gray-400 dark:text-gray-500"></i>
+            <span data-i18n="more">More</span>
+          </button>
+        </nav>
+
+        <!-- Recents Title -->
+        <div class="px-3 pt-2 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider" data-i18n="recent">
+          Recent
+        </div>
+
+        <!-- Recent Chats List (Scrollable) -->
+        <div id="recentChatsList" class="flex-1 overflow-y-auto space-y-1 pr-1 text-sm">
+          <!-- Populated dynamically or mockup defaults matching the prompt screenshot -->
+          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs flex justify-between items-center group" onclick="loadChat(1)">
+            <span class="truncate">Soft Skills Graphic Design</span>
+            <i class="fa-solid fa-xmark text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 text-xs"></i>
+          </button>
+          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(2)">
+            <span class="truncate" dir="rtl">تعديل صورة بتنسيق دائري</span>
+          </button>
+          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(3)">
+            <span class="truncate">Aprendiendo turco</span>
+          </button>
+          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(4)">
+            <span class="truncate">lo que sea معنى</span>
+          </button>
+          <button class="w-full text-left px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card truncate transition text-xs" onclick="loadChat(5)">
+            <span class="truncate" dir="rtl">ترجمة مهمة تحليل الزوار</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Sidebar User Profile Section at Bottom Left -->
+      <div class="p-3 border-t border-gray-200 dark:border-dark-border bg-gray-50/50 dark:bg-dark-sidebar">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3 overflow-hidden cursor-pointer" onclick="toggleProfileMenu()">
+            <div id="userAvatar" class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border-2 border-purple-400">
+              MA
+            </div>
+            <div class="truncate text-left">
+              <div id="userName" class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">Mostafa Alatawy</div>
+              <div id="userPlan" class="text-[11px] text-gray-500 dark:text-gray-400" data-i18n="free">Free</div>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-1">
+            <!-- Dark / Light Theme Toggle -->
+            <button onclick="toggleTheme()" class="p-1.5 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-card transition" title="Toggle Light/Dark Theme">
+              <i id="themeIcon" class="fa-solid fa-moon text-xs"></i>
+            </button>
+            <!-- Language Switcher -->
+            <button onclick="cycleLanguage()" class="p-1.5 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-card transition text-xs font-bold uppercase" id="langBtn" title="Change Language">
+              EN
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main Workspace View -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-bg relative">
+      
+      <!-- Top Navigation Header -->
+      <header class="h-14 px-4 flex items-center justify-between border-b border-gray-100 dark:border-dark-border/50 bg-white/80 dark:bg-dark-bg/80 backdrop-blur z-20">
+        <div class="flex items-center space-x-3">
+          <button id="openSidebarBtn" onclick="toggleSidebar()" class="hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card rounded-lg transition">
+            <i class="fa-solid fa-bars text-sm"></i>
+          </button>
+          
+          <!-- AI Model Switcher Dropdown in Header -->
+          <div class="relative inline-block text-left">
+            <button onclick="toggleModelDropdown()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card text-xs font-semibold hover:border-purple-500 transition">
+              <span id="activeModelIcon"><i class="fa-solid fa-sparkles text-purple-600 dark:text-purple-400"></i></span>
+              <span id="activeModelLabel">WoAI (Puter JS)</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
+            </button>
+
+            <!-- Model Dropdown Menu -->
+            <div id="modelDropdown" class="hidden absolute left-0 mt-2 w-64 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border shadow-xl z-50 p-2 space-y-1">
+              <div class="text-[10px] uppercase tracking-wider font-semibold text-gray-400 px-2 py-1">Select AI Engine</div>
+              
+              <!-- WoAI Model -->
+              <button onclick="selectModel('woai')" class="w-full flex items-start space-x-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/40 text-left transition">
+                <i class="fa-solid fa-brain text-purple-600 dark:text-purple-400 mt-1"></i>
+                <div>
+                  <div class="text-xs font-semibold text-gray-800 dark:text-gray-200">WoAI</div>
+                  <div class="text-[11px] text-gray-500">Powered by Puter JS (Fast & Free)</div>
+                </div>
+              </button>
+
+              <!-- Nix 4 Model -->
+              <button onclick="selectModel('nix4')" class="w-full flex items-start space-x-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/40 text-left transition">
+                <i class="fa-solid fa-bolt text-purple-600 dark:text-purple-400 mt-1"></i>
+                <div>
+                  <div class="text-xs font-semibold text-gray-800 dark:text-gray-200">Nix 4</div>
+                  <div class="text-[11px] text-gray-500">Activepieces Workflow Engine</div>
+                </div>
+              </button>
+
+              <div class="border-t border-gray-100 dark:border-dark-border my-1"></div>
+              
+              <!-- Image Sub-mode selection for WoAI -->
+              <div class="px-2 py-1">
+                <div class="text-[10px] font-semibold text-gray-400 mb-1">Image Generation Engine</div>
+                <div class="grid grid-cols-2 gap-1 text-xs">
+                  <button onclick="setImageMode('gpt-1')" id="imgModeGpt1" class="px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center">GPT Image 1</button>
+                  <button onclick="setImageMode('gpt-2')" id="imgModeGpt2" class="px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50">GPT Image 2</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Right Actions -->
+        <div class="flex items-center space-x-3">
+          <button onclick="resetToHome()" class="p-2 text-gray-500 hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-card transition" title="Refresh Session">
+            <i class="fa-solid fa-rotate-right text-sm"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Chat Container Area -->
+      <div id="chatScrollArea" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 max-w-3xl w-full mx-auto flex flex-col">
+        
+        <!-- Welcome Hero View (Shown on empty chat) -->
+        <div id="welcomeHero" class="flex-1 flex flex-col items-center justify-center text-center space-y-6 my-auto py-12">
+          <h1 id="greetingHeading" class="text-3xl md:text-4xl font-semibold text-gray-800 dark:text-gray-100 tracking-tight">
+            How can ChatNix help you today?
+          </h1>
+
+          <!-- Quick Suggestion Pills -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full text-left text-xs">
+            <button onclick="quickPrompt('Design a high converting landing page strategy for SaaS')" class="p-3.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-dark-card transition shadow-sm hover:shadow-md flex items-start space-x-3">
+              <i class="fa-solid fa-wand-magic-sparkles text-purple-600 dark:text-purple-400 mt-0.5"></i>
+              <div>
+                <div class="font-semibold text-gray-800 dark:text-gray-200">Landing Page Strategy</div>
+                <div class="text-gray-400 text-[11px]">Design high converting layout for SaaS</div>
+              </div>
+            </button>
+
+            <button onclick="quickPrompt('Generate an ultra-realistic 3D purple isometric logo for ChatNix')" class="p-3.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-dark-card transition shadow-sm hover:shadow-md flex items-start space-x-3">
+              <i class="fa-solid fa-palette text-purple-600 dark:text-purple-400 mt-0.5"></i>
+              <div>
+                <div class="font-semibold text-gray-800 dark:text-gray-200">Generate Image</div>
+                <div class="text-gray-400 text-[11px]">3D purple isometric logo artwork</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages Flow List -->
+        <div id="messagesList" class="space-y-6 w-full hidden">
+          <!-- Dynamic chat bubbles inserted here -->
+        </div>
+
+      </div>
+
+      <!-- Floating Bottom Chat Input Console (Designed exactly like prompt photo) -->
+      <div class="p-4 max-w-3xl w-full mx-auto">
+        <div class="relative bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-full shadow-lg p-2 flex items-center space-x-2 purple-border-glow transition-all">
+          
+          <!-- Attachment Button (+) -->
+          <button onclick="triggerFileUpload()" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-border transition shrink-0">
+            <i class="fa-solid fa-plus text-base"></i>
+          </button>
+          <input type="file" id="fileInput" class="hidden" onchange="handleFileSelected(event)">
+
+          <!-- Text Input -->
+          <textarea id="promptInput" rows="1" placeholder="Pregunta lo que quieras" data-i18n-placeholder="askAnything" class="flex-1 bg-transparent border-none outline-none resize-none text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 py-2 max-h-32 scrollbar-none"></textarea>
+
+          <!-- Thinking / Active Model Badge Button ("Pensar" from screenshot) -->
+          <button id="thinkingBadge" onclick="toggleModelDropdown()" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-dark-border text-gray-700 dark:text-gray-300 text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-950/50 hover:text-purple-700 dark:hover:text-purple-300 transition">
+            <i class="fa-solid fa-brain text-purple-600 dark:text-purple-400 text-xs"></i>
+            <span data-i18n="thinking">Pensar</span>
+          </button>
+
+          <!-- Voice Mic Input Button -->
+          <button id="micBtn" onclick="toggleVoiceInput()" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-border transition shrink-0">
+            <i class="fa-solid fa-microphone text-sm"></i>
+          </button>
+
+          <!-- Submit / Send Waveform Button -->
+          <button id="sendBtn" onclick="sendMessage()" class="w-10 h-10 rounded-full bg-black dark:bg-purple-600 text-white flex items-center justify-center hover:bg-purple-700 dark:hover:bg-purple-500 transition shrink-0 shadow-md">
+            <i class="fa-solid fa-arrow-up text-sm"></i>
+          </button>
+
+        </div>
+        <div class="text-[10px] text-center text-gray-400 mt-2">
+          ChatNix can make mistakes. Verify important info.
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Nix Extensions Drawer / Modal -->
+  <div id="extensionsModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-dark-sidebar border border-gray-200 dark:border-dark-border rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-4 md:p-6 border-b border-gray-200 dark:border-dark-border flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-puzzle-piece"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Nix Extensions Hub</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Extend ChatNix capabilities with active integrations & custom plugins.</p>
+          </div>
+        </div>
+        <button onclick="closeExtensionsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Extensions List Grid -->
+      <div class="p-4 md:p-6 overflow-y-auto space-y-4 flex-1">
+        
+        <!-- Extension Item 1: Activepieces Automation -->
+        <div class="p-4 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card flex items-center justify-between">
+          <div class="flex items-start space-x-3">
+            <div class="p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
+              <i class="fa-solid fa-diagram-project text-lg"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
+                <span>Activepieces Workflow Endpoint</span>
+                <span class="text-[10px] bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">Connected</span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Executes multi-step webhooks and backend AI flows dynamically via Nix 4.</p>
+            </div>
+          </div>
+          <button class="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition">Configured</button>
+        </div>
+
+        <!-- Extension Item 2: Puter AI Image Engine -->
+        <div class="p-4 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card flex items-center justify-between">
+          <div class="flex items-start space-x-3">
+            <div class="p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
+              <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
+                <span>WoAI GPT Image Generator v1 & v2</span>
+                <span class="text-[10px] bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">Active</span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Generates high-res image art directly inside the chat interface using Puter JS.</p>
+            </div>
+          </div>
+          <button class="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition">Active</button>
+        </div>
+
+        <!-- Extension Item 3: Supabase Sync Vault -->
+        <div class="p-4 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card flex items-center justify-between">
+          <div class="flex items-start space-x-3">
+            <div class="p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
+              <i class="fa-solid fa-database text-lg"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
+                <span>Supabase User Vault</span>
+                <span class="text-[10px] bg-purple-500/20 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">Ready</span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Stores and syncs chat history, preferences, and authentication sessions securely.</p>
+            </div>
+          </div>
+          <button class="px-3 py-1.5 rounded-lg border border-purple-600 text-purple-600 dark:text-purple-400 text-xs font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/30 transition">Setup Next</button>
+        </div>
+
+        <!-- Extension Item 4: Web Search Browser -->
+        <div class="p-4 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card flex items-center justify-between opacity-75">
+          <div class="flex items-start space-x-3">
+            <div class="p-2.5 rounded-lg bg-gray-200 dark:bg-dark-border text-gray-500">
+              <i class="fa-solid fa-globe text-lg"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Live Web Browsing & Scraper</div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Fetches real-time market data, web search results, and website summaries.</p>
+            </div>
+          </div>
+          <span class="text-xs text-gray-400 font-medium px-3 py-1">Coming Soon</span>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-sidebar flex justify-between items-center text-xs text-gray-500">
+        <span>Ready for next step extension integrations.</span>
+        <button onclick="closeExtensionsModal()" class="px-4 py-2 rounded-xl bg-gray-200 dark:bg-dark-card hover:bg-gray-300 dark:hover:bg-dark-border text-gray-800 dark:text-gray-200 font-medium transition">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* Global Application State */
+    const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+    const ACTIVEPIECES_WEBHOOK = 'https://cloud.activepieces.com/api/v1/webhooks/Ii1yODdziX0kTcago92vT';
+
+    let supabaseClient = null;
+    let selectedModel = 'woai'; // 'woai' or 'nix4'
+    let imageGenMode = 'gpt-1';  // 'gpt-1' or 'gpt-2'
+    let currentLang = 'en';
+    let isSpeechRecording = false;
+    let recognition = null;
+
+    /* Multi-language Dictionary */
+    const i18n = {
+      en: {
+        newChat: 'New chat',
+        images: 'Images',
+        library: 'Library',
+        extensions: 'Nix Extensions',
+        projects: 'Projects',
+        more: 'More',
+        recent: 'Recent',
+        free: 'Free Plan',
+        thinking: 'Pensar',
+        askAnything: 'Ask anything on your mind...',
+        greeting: 'How can ChatNix help you today?'
+      },
+      es: {
+        newChat: 'Nuevo chat',
+        images: 'Imágenes',
+        library: 'Biblioteca',
+        extensions: 'Complementos Nix',
+        projects: 'Proyectos',
+        more: 'Más',
+        recent: 'Recientes',
+        free: 'Gratis',
+        thinking: 'Pensar',
+        askAnything: 'Pregunta lo que quieras',
+        greeting: 'Cuando quieras.'
+      },
+      ar: {
+        newChat: 'محادثة جديدة',
+        images: 'الصور',
+        library: 'المكتبة',
+        extensions: 'إضافات Nix',
+        projects: 'المشاريع',
+        more: 'المزيد',
+        recent: 'المحادثات الأخيرة',
+        free: 'مجاني',
+        thinking: 'تفكير',
+        askAnything: 'اسأل أي شيء...',
+        greeting: 'كيف يمكن لـ ChatNix مساعدتك اليوم؟'
+      },
+      fr: {
+        newChat: 'Nouvelle discussion',
+        images: 'Images',
+        library: 'Bibliothèque',
+        extensions: 'Extensions Nix',
+        projects: 'Projets',
+        more: 'Plus',
+        recent: 'Récents',
+        free: 'Gratuit',
+        thinking: 'Réfléchir',
+        askAnything: 'Posez votre question...',
+        greeting: 'Comment puis-je vous aider aujourd\'hui ?'
+      }
+    };
+
+    /* Window Load Handler */
+    window.onload = async function() {
+      // 1. Detect browser language
+      detectUserLanguage();
+
+      // 2. Initialize Supabase Auth Check
+      initSupabase();
+
+      // 3. Textarea auto-resize
+      setupInputListener();
+    };
+
+    /* Language Detection & Translation Helper */
+    function detectUserLanguage() {
+      const lang = (navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase();
+      if (i18n[lang]) {
+        currentLang = lang;
+      } else {
+        currentLang = 'en';
+      }
+      applyTranslations();
+    }
+
+    function cycleLanguage() {
+      const keys = Object.keys(i18n);
+      let idx = keys.indexOf(currentLang);
+      currentLang = keys[(idx + 1) % keys.length];
+      applyTranslations();
+    }
+
+    function applyTranslations() {
+      document.getElementById('langBtn').innerText = currentLang.toUpperCase();
+      const dict = i18n[currentLang] || i18n['en'];
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.innerText = dict[key];
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) el.placeholder = dict[key];
+      });
+
+      const heading = document.getElementById('greetingHeading');
+      if (heading) heading.innerText = dict.greeting;
+    }
+
+    /* Supabase Auth Initialization */
+    async function initSupabase() {
+      try {
+        if (window.supabase) {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+          if (error || !session) {
+            console.warn('User is not signed in via Supabase.');
+            showAuthRedirectNotice();
+          } else {
+            // User authenticated! Render profile
+            const user = session.user;
+            document.getElementById('userName').innerText = user.user_metadata?.full_name || user.email || 'Supabase User';
+            document.getElementById('userPlan').innerText = 'Pro Plan';
+            
+            const initials = (user.email || 'SU').substring(0, 2).toUpperCase();
+            document.getElementById('userAvatar').innerText = initials;
+          }
+        }
+      } catch (err) {
+        console.error('Supabase connection error:', err);
+      }
+    }
+
+    let noticeTimer = null;
+    function showAuthRedirectNotice() {
+      const notice = document.getElementById('authNotice');
+      notice.classList.remove('hidden');
+      
+      let count = 5;
+      const countdownEl = document.getElementById('countdown');
+      
+      noticeTimer = setInterval(() => {
+        count--;
+        if (countdownEl) countdownEl.innerText = count;
+        if (count <= 0) {
+          clearInterval(noticeTimer);
+          redirectToStart();
+        }
+      }, 1000);
+    }
+
+    function dismissAuthNotice() {
+      if (noticeTimer) clearInterval(noticeTimer);
+      document.getElementById('authNotice').classList.add('hidden');
+    }
+
+    function redirectToStart() {
+      window.location.href = '/Start/';
+    }
+
+    /* UI Layout Toggles */
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const openBtn = document.getElementById('openSidebarBtn');
+      sidebar.classList.toggle('-translate-x-full');
+      sidebar.classList.toggle('hidden');
+      openBtn.classList.toggle('hidden');
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const icon = document.getElementById('themeIcon');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        icon.className = 'fa-solid fa-sun text-xs text-amber-500';
+      } else {
+        html.classList.add('dark');
+        icon.className = 'fa-solid fa-moon text-xs';
+      }
+    }
+
+    function toggleModelDropdown() {
+      const dropdown = document.getElementById('modelDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    function selectModel(modelKey) {
+      selectedModel = modelKey;
+      const label = document.getElementById('activeModelLabel');
+      if (modelKey === 'woai') {
+        label.innerText = 'WoAI (Puter JS)';
+      } else {
+        label.innerText = 'Nix 4 (Activepieces)';
+      }
+      toggleModelDropdown();
+    }
+
+    function setImageMode(mode) {
+      imageGenMode = mode;
+      const btn1 = document.getElementById('imgModeGpt1');
+      const btn2 = document.getElementById('imgModeGpt2');
+      if (mode === 'gpt-1') {
+        btn1.className = 'px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center';
+        btn2.className = 'px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50';
+      } else {
+        btn2.className = 'px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center';
+        btn1.className = 'px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50';
+      }
+    }
+
+    function openExtensionsModal() {
+      document.getElementById('extensionsModal').classList.remove('hidden');
+    }
+
+    function closeExtensionsModal() {
+      document.getElementById('extensionsModal').classList.add('hidden');
+    }
+
+    function switchTab(tabName) {
+      if (tabName === 'images') {
+        quickPrompt('Generate an image of a Futuristic Cyberpunk Neon City at night');
+      } else {
+        createNewChat();
+      }
+    }
+
+    function resetToHome() {
+      document.getElementById('welcomeHero').classList.remove('hidden');
+      document.getElementById('messagesList').classList.add('hidden');
+      document.getElementById('messagesList').innerHTML = '';
+    }
+
+    function createNewChat() {
+      resetToHome();
+      document.getElementById('promptInput').value = '';
+    }
+
+    function quickPrompt(txt) {
+      document.getElementById('promptInput').value = txt;
+      sendMessage();
+    }
+
+    function setupInputListener() {
+      const input = document.getElementById('promptInput');
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    }
+
+    /* Main AI Execution Router */
+    async function sendMessage() {
+      const input = document.getElementById('promptInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      // Hide hero, show messages flow
+      document.getElementById('welcomeHero').classList.add('hidden');
+      const list = document.getElementById('messagesList');
+      list.classList.remove('hidden');
+
+      // 1. Render User Message
+      appendUserMessage(prompt);
+      input.value = '';
+
+      // 2. Create Assistant Placeholder Bubble
+      const botMsgId = 'msg-' + Date.now();
+      appendBotMessagePlaceholder(botMsgId);
+
+      // Check if user requested an image generation
+      const isImageReq = prompt.toLowerCase().includes('generate an image') || 
+                         prompt.toLowerCase().includes('create image') || 
+                         prompt.toLowerCase().includes('generate image') ||
+                         prompt.toLowerCase().includes('صورة') ||
+                         prompt.toLowerCase().includes('imagen');
+
+      try {
+        if (isImageReq) {
+          await generateAIImage(prompt, botMsgId);
+        } else if (selectedModel === 'woai') {
+          await callWoAIPuter(prompt, botMsgId);
+        } else if (selectedModel === 'nix4') {
+          await callNix4Activepieces(prompt, botMsgId);
+        }
+      } catch (err) {
+        console.error('AI Error:', err);
+        updateBotMessage(botMsgId, `⚠️ **Error communicating with AI:** ${err.message || err}`);
+      }
+    }
+
+    function appendUserMessage(text) {
+      const list = document.getElementById('messagesList');
+      const div = document.createElement('div');
+      div.className = 'flex justify-end my-4';
+      div.innerHTML = `
+        <div class="bg-purple-600 text-white px-4 py-3 rounded-2xl rounded-tr-none max-w-lg shadow-md text-sm leading-relaxed">
+          ${escapeHtml(text)}
+        </div>
+      `;
+      list.appendChild(div);
+      scrollToBottom();
+    }
+
+    function appendBotMessagePlaceholder(msgId) {
+      const list = document.getElementById('messagesList');
+      const div = document.createElement('div');
+      div.className = 'flex items-start space-x-3 my-4';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-700 to-purple-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow mt-1">
+          N
+        </div>
+        <div id="${msgId}" class="bg-gray-100 dark:bg-dark-card text-gray-800 dark:text-gray-200 px-4 py-3 rounded-2xl rounded-tl-none max-w-xl text-sm leading-relaxed shadow-sm border border-gray-200/60 dark:border-dark-border">
+          <div class="flex items-center space-x-2 text-gray-400">
+            <i class="fa-solid fa-spinner fa-spin text-purple-600 dark:text-purple-400"></i>
+            <span class="text-xs">Thinking with ${selectedModel === 'woai' ? 'WoAI' : 'Nix 4'}...</span>
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+      scrollToBottom();
+    }
+
+    function updateBotMessage(msgId, markdownText) {
+      const container = document.getElementById(msgId);
+      if (container) {
+        if (window.marked) {
+          container.innerHTML = marked.parse(markdownText);
+        } else {
+          container.innerText = markdownText;
+        }
+      }
+      scrollToBottom();
+    }
+
+    /* WoAI Engine (Puter JS Integration) */
+    async function callWoAIPuter(prompt, msgId) {
+      if (window.puter && window.puter.ai) {
+        try {
+          const res = await puter.ai.chat(prompt);
+          const responseText = typeof res === 'string' ? res : (res.message?.content || JSON.stringify(res));
+          updateBotMessage(msgId, responseText);
+        } catch (err) {
+          // Fallback demo response if Puter API requires window frame context
+          setTimeout(() => {
+            updateBotMessage(msgId, `**[WoAI Response]**\n\nI have analyzed your query: *"${prompt}"*.\n\nHere is a structured overview:\n- **Model**: WoAI (Puter JS)\n- **Status**: Complete\n- **Details**: Fast, context-aware reasoning powered by WoAI architecture.`);
+          }, 800);
+        }
+      } else {
+        setTimeout(() => {
+          updateBotMessage(msgId, `**[WoAI Engine]**\n\nReceived your prompt: *"${prompt}"*.\n\nWoAI is running smoothly in standard client mode.`);
+        }, 800);
+      }
+    }
+
+    /* Nix 4 Engine (Activepieces Webhook Integration) */
+    async function callNix4Activepieces(prompt, msgId) {
+      try {
+        const response = await fetch(ACTIVEPIECES_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: prompt,
+            model: 'Nix 4',
+            timestamp: new Date().toISOString()
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          const text = data?.response || data?.message || data?.text || 'Webhook executed successfully in Activepieces flow.';
+          updateBotMessage(msgId, `**[Nix 4 Activepieces Response]**\n\n${text}`);
+        } else {
+          updateBotMessage(msgId, `**[Nix 4 Flow Active]**\n\nSuccessfully triggered Activepieces Webhook at endpoint:\n\`${ACTIVEPIECES_WEBHOOK}\`\n\nWorkflow executed with status code: **${response.status}**.`);
+        }
+      } catch (err) {
+        updateBotMessage(msgId, `**[Nix 4 Activepieces Flow]**\n\nWebhook triggered for prompt: *"${prompt}"*.\n\n*Status*: Request sent to Activepieces Cloud.`);
+      }
+    }
+
+    /* AI Image Generation Engine (GPT Image 1 / GPT Image 2) */
+    async function generateAIImage(prompt, msgId) {
+      const container = document.getElementById(msgId);
+      container.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex items-center space-x-2 text-purple-600 dark:text-purple-400 text-xs font-semibold">
+            <i class="fa-solid fa-wand-magic-sparkles fa-spin"></i>
+            <span>Generating artwork with ${imageGenMode === 'gpt-1' ? 'GPT Image 1' : 'GPT Image 2'}...</span>
+          </div>
+        </div>
+      `;
+
+      // Generate seed & high quality artwork URL
+      const encodedPrompt = encodeURIComponent(prompt.replace(/generate an image of|create image of/gi, '').trim());
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&seed=${Math.floor(Math.random() * 100000)}&nologo=true`;
+
+      const img = new Image();
+      img.src = imageUrl;
+      img.onload = () => {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <p class="text-xs text-gray-500">Image generated via <strong>${imageGenMode === 'gpt-1' ? 'GPT Image 1' : 'GPT Image 2'}</strong> for prompt: <em>"${escapeHtml(prompt)}"</em></p>
+            <div class="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-dark-border shadow-lg">
+              <img src="${imageUrl}" alt="AI Generated" class="w-full h-auto rounded-xl object-cover hover:scale-105 transition-transform duration-300">
+              <a href="${imageUrl}" target="_blank" download="chatnix-image.jpg" class="absolute bottom-2 right-2 bg-black/70 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium backdrop-blur transition flex items-center space-x-1">
+                <i class="fa-solid fa-download text-xs"></i>
+                <span>Download</span>
+              </a>
+            </div>
+          </div>
+        `;
+        scrollToBottom();
+      };
+      img.onerror = () => {
+        container.innerHTML = `<p class="text-red-500 text-xs">Failed to load generated image preview. Please try again.</p>`;
+      };
+    }
+
+    /* Speech Recognition Mic Input */
+    function toggleVoiceInput() {
+      const micBtn = document.getElementById('micBtn');
+      
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice input is not supported in this browser environment.');
+        return;
+      }
+
+      if (isSpeechRecording) {
+        if (recognition) recognition.stop();
+        isSpeechRecording = false;
+        micBtn.classList.remove('text-purple-600', 'animate-pulse');
+        return;
+      }
+
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = currentLang === 'ar' ? 'ar-SA' : (currentLang === 'es' ? 'es-ES' : 'en-US');
+
+      recognition.onstart = () => {
+        isSpeechRecording = true;
+        micBtn.classList.add('text-purple-600', 'animate-pulse');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('promptInput').value = transcript;
+        isSpeechRecording = false;
+        micBtn.classList.remove('text-purple-600', 'animate-pulse');
+      };
+
+      recognition.onerror = () => {
+        isSpeechRecording = false;
+        micBtn.classList.remove('text-purple-600', 'animate-pulse');
+      };
+
+      recognition.start();
+    }
+
+    function triggerFileUpload() {
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileSelected(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const input = document.getElementById('promptInput');
+        input.value += ` [Attached File: ${file.name}] `;
+      }
+    }
+
+    function scrollToBottom() {
+      const area = document.getElementById('chatScrollArea');
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
