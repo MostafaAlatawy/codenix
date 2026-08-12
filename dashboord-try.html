@@ -642,19 +642,42 @@
       try {
         if (window.supabase) {
           supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-          const { data: { session } } = await supabaseClient.auth.getSession();
-          if (!session) {
+          
+          // Initial session check
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+          if (error || !session) {
             showAuthRedirectNotice();
           } else {
-            const user = session.user;
-            document.getElementById('userName').innerText = user.user_metadata?.full_name || user.email || 'Supabase User';
-            document.getElementById('userPlan').innerText = 'Pro Plan';
-            document.getElementById('userAvatar').innerText = (user.email || 'SU').substring(0, 2).toUpperCase();
+            handleAuthenticatedUser(session.user);
           }
+
+          // Listen for auth state changes
+          supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+              showAuthRedirectNotice();
+            } else if (session?.user) {
+              handleAuthenticatedUser(session.user);
+            }
+          });
+        } else {
+          console.warn('Supabase SDK not loaded.');
+          showAuthRedirectNotice();
         }
       } catch (err) {
-        console.warn('Supabase status:', err);
+        console.warn('Supabase auth initialization error:', err);
+        showAuthRedirectNotice();
       }
+    }
+
+    function handleAuthenticatedUser(user) {
+      dismissAuthNotice();
+      const userNameEl = document.getElementById('userName');
+      const userAvatarEl = document.getElementById('userAvatar');
+      const userPlanEl = document.getElementById('userPlan');
+
+      if (userNameEl) userNameEl.innerText = 'User Account';
+      if (userPlanEl) userPlanEl.innerText = 'Authenticated';
+      if (userAvatarEl) userAvatarEl.innerHTML = '<i class="fa-solid fa-user-check text-xs"></i>';
     }
 
     let noticeTimer = null;
