@@ -47,6 +47,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
+  <!-- Puter.js SDK for Serverless AI & Image Generation -->
+  <script src="https://js.puter.com/v2/"></script>
+
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -103,6 +106,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-dark-bg dark:text-gray-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white">
 
+  <!-- Authentication Alert Banner -->
   <div id="authNotice" class="hidden fixed top-0 inset-x-0 z-50 bg-purple-600 text-white text-xs md:text-sm py-2 px-4 flex justify-between items-center shadow-lg">
     <div class="flex items-center space-x-2">
       <i class="fa-solid fa-triangle-exclamation"></i>
@@ -142,6 +146,7 @@
           <span data-i18n="newChat">New chat</span>
         </button>
 
+        <!-- Sidebar Clean Navigation Bar (Extensions Hub handles sub-apps) -->
         <nav class="space-y-1 mb-4 text-sm font-medium">
           <button onclick="switchTab('images')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
             <i class="fa-regular fa-image w-5 text-purple-500"></i>
@@ -153,25 +158,13 @@
             <span data-i18n="library">Library</span>
           </button>
 
-          <!-- Nix Extensions Menu Button -->
+          <!-- Nix Extensions Hub (All tools like Clock & SubeAI hosted inside) -->
           <button onclick="openExtensionsModal()" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition group">
             <div class="flex items-center space-x-3">
               <i class="fa-solid fa-puzzle-piece w-5 text-purple-600 dark:text-purple-400"></i>
               <span data-i18n="extensions" class="font-semibold text-purple-700 dark:text-purple-300">Nix Extensions</span>
             </div>
-            <span class="text-[10px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-semibold px-1.5 py-0.5 rounded-full">NEW</span>
-          </button>
-
-          <!-- Nix Clock & Timer Direct Button -->
-          <button onclick="openClockExtension()" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
-            <i class="fa-solid fa-clock w-5 text-amber-500"></i>
-            <span>Nix Clock & Timer</span>
-          </button>
-
-          <!-- SubeAI Extension Direct Button -->
-          <button onclick="openSubeAIModal()" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
-            <i class="fa-solid fa-layer-group w-5 text-blue-500"></i>
-            <span>SubeAI Portal</span>
+            <span class="text-[10px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-semibold px-1.5 py-0.5 rounded-full">HUB</span>
           </button>
 
           <button onclick="switchTab('more')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-card transition">
@@ -192,6 +185,7 @@
 
       </div>
 
+      <!-- User Profile & Theme Bar -->
       <div class="p-3 border-t border-gray-200 dark:border-dark-border bg-gray-50/50 dark:bg-dark-sidebar">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3 overflow-hidden">
@@ -230,19 +224,19 @@
           <div class="relative inline-block text-left">
             <button onclick="toggleModelDropdown()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card text-xs font-semibold hover:border-purple-500 transition">
               <span id="activeModelIcon"><i class="fa-solid fa-sparkles text-purple-600 dark:text-purple-400"></i></span>
-              <span id="activeModelLabel">Gemini AI Engine</span>
+              <span id="activeModelLabel">WoAI Engine (Puter.js)</span>
               <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
             </button>
 
             <!-- Model Dropdown Menu -->
             <div id="modelDropdown" class="hidden absolute left-0 mt-2 w-64 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border shadow-xl z-50 p-2 space-y-1">
-              <div class="text-[10px] uppercase tracking-wider font-semibold text-gray-400 px-2 py-1">Select AI Engine</div>
+              <div class="text-[10px] uppercase tracking-wider font-semibold text-gray-400 px-2 py-1">Select Text / Chat Engine</div>
               
               <button onclick="selectModel('gemini')" class="w-full flex items-start space-x-3 p-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/40 text-left transition">
                 <i class="fa-solid fa-brain text-purple-600 dark:text-purple-400 mt-1"></i>
                 <div>
-                  <div class="text-xs font-semibold text-gray-800 dark:text-gray-200">Gemini AI Engine</div>
-                  <div class="text-[11px] text-gray-500">Fast, grounded & high quality</div>
+                  <div class="text-xs font-semibold text-gray-800 dark:text-gray-200">WoAI (Puter JS / Gemini)</div>
+                  <div class="text-[11px] text-gray-500">Free, keyless AI & Puter.js integration</div>
                 </div>
               </button>
 
@@ -250,17 +244,19 @@
                 <i class="fa-solid fa-bolt text-purple-600 dark:text-purple-400 mt-1"></i>
                 <div>
                   <div class="text-xs font-semibold text-gray-800 dark:text-gray-200">Nix 4 Webhook</div>
-                  <div class="text-[11px] text-gray-500">Activepieces Workflow Sync</div>
+                  <div class="text-[11px] text-gray-500">Activepieces Synchronous Sync</div>
                 </div>
               </button>
 
               <div class="border-t border-gray-100 dark:border-dark-border my-1"></div>
               
               <div class="px-2 py-1">
-                <div class="text-[10px] font-semibold text-gray-400 mb-1">Image Generation API</div>
-                <div class="grid grid-cols-2 gap-1 text-xs">
-                  <button onclick="setImageMode('imagen-4')" id="imgModeGpt1" class="px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center">Imagen 4</button>
-                  <button onclick="setImageMode('pollinations')" id="imgModeGpt2" class="px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50">Pollinations</button>
+                <div class="text-[10px] font-semibold text-gray-400 mb-1">Puter.js Image Generation Models</div>
+                <div class="grid grid-cols-2 gap-1 text-[11px]">
+                  <button onclick="setImageMode('openai/gpt-image-2')" id="imgModeGpt2" class="px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center">GPT Image 2</button>
+                  <button onclick="setImageMode('google/imagen-4.0-fast')" id="imgModeGpt1" class="px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50">Imagen 4</button>
+                  <button onclick="setImageMode('openai/gpt-image-1.5')" id="imgModeGpt15" class="px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50">GPT Image 1.5</button>
+                  <button onclick="setImageMode('x-ai/grok-imagine-image')" id="imgModeGrok" class="px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50">Grok Imagine</button>
                 </div>
               </div>
             </div>
@@ -268,8 +264,8 @@
         </div>
 
         <div class="flex items-center space-x-2">
-          <!-- Active Clock Widget Quick Button -->
-          <button onclick="openClockExtension()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card text-xs text-gray-700 dark:text-gray-300 font-mono hover:border-amber-500 transition">
+          <!-- Active Clock Time Header Display -->
+          <button onclick="openClockExtension()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card text-xs text-gray-700 dark:text-gray-300 font-mono hover:border-amber-500 transition" title="Open Nix Clock">
             <i class="fa-regular fa-clock text-amber-500"></i>
             <span id="headerLiveClock">00:00:00</span>
           </button>
@@ -292,19 +288,19 @@
           </h1>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full text-left text-xs">
-            <button onclick="quickPrompt('/image A hyper-realistic isometric purple cyberpunk city floating in space')" class="p-3.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-dark-card transition shadow-sm hover:shadow-md flex items-start space-x-3">
+            <button onclick="quickPrompt('/image A futuristic glowing purple city in space')" class="p-3.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-dark-card transition shadow-sm hover:shadow-md flex items-start space-x-3">
               <i class="fa-solid fa-palette text-purple-600 dark:text-purple-400 mt-0.5 text-base"></i>
               <div>
-                <div class="font-semibold text-gray-800 dark:text-gray-200">Generate Image Artwork</div>
-                <div class="text-gray-400 text-[11px]">Type /image or click Wand to create images</div>
+                <div class="font-semibold text-gray-800 dark:text-gray-200">Puter.js AI Image Generator</div>
+                <div class="text-gray-400 text-[11px]">Type /image or click Wand to generate free AI artwork</div>
               </div>
             </button>
 
-            <button onclick="quickPrompt('Set a timer for 5 minutes')" class="p-3.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:border-amber-400 dark:hover:border-amber-600 bg-white dark:bg-dark-card transition shadow-sm hover:shadow-md flex items-start space-x-3">
-              <i class="fa-solid fa-stopwatch text-amber-500 mt-0.5 text-base"></i>
+            <button onclick="openExtensionsModal()" class="p-3.5 rounded-2xl border border-gray-200 dark:border-dark-border hover:border-amber-400 dark:hover:border-amber-600 bg-white dark:bg-dark-card transition shadow-sm hover:shadow-md flex items-start space-x-3">
+              <i class="fa-solid fa-puzzle-piece text-amber-500 mt-0.5 text-base"></i>
               <div>
-                <div class="font-semibold text-gray-800 dark:text-gray-200">Nix Clock & Timer</div>
-                <div class="text-gray-400 text-[11px]">Set timers, alarms or countdowns automatically</div>
+                <div class="font-semibold text-gray-800 dark:text-gray-200">Nix Extensions Hub</div>
+                <div class="text-gray-400 text-[11px]">Launch Nix Clock, Timers, or SubeAI Portal</div>
               </div>
             </button>
           </div>
@@ -323,7 +319,7 @@
         <div id="activeModeBanner" class="hidden mb-2 px-3 py-1.5 rounded-xl bg-purple-100 dark:bg-purple-950/80 border border-purple-300 dark:border-purple-800 text-xs text-purple-700 dark:text-purple-300 flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-wand-magic-sparkles text-purple-600 dark:text-purple-400"></i>
-            <span><strong>Image Generation Mode Active</strong> — Enter image prompt or description</span>
+            <span><strong>Puter.js Image Generation Active</strong> — Enter your image description</span>
           </div>
           <button onclick="disableImageMode()" class="hover:text-purple-900 dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -370,6 +366,7 @@
 
   </div>
 
+  <!-- Nix Extensions Hub Modal -->
   <div id="extensionsModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-dark-sidebar border border-gray-200 dark:border-dark-border rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
       
@@ -380,7 +377,7 @@
           </div>
           <div>
             <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Nix Extensions Hub</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Extend ChatNix capabilities with interactive tools & sub-apps.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Launch integrated modules and sub-applications from this section.</p>
           </div>
         </div>
         <button onclick="closeExtensionsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-lg">
@@ -399,12 +396,12 @@
             <div>
               <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
                 <span>Nix Clock & Timer Tool</span>
-                <span class="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">Interactive</span>
+                <span class="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">Interactive Widget</span>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Allows the user or AI model to set countdown timers, alarms, and stopwatches directly in chat or popup.</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Set countdown timers, stopwatches, or pomodoros directly in chat or popup widget.</p>
             </div>
           </div>
-          <button onclick="closeExtensionsModal(); openClockExtension();" class="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition shadow">Open Clock</button>
+          <button onclick="closeExtensionsModal(); openClockExtension();" class="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition shadow">Launch Clock</button>
         </div>
 
         <!-- Extension 2: SubeAI Platform Embed -->
@@ -416,41 +413,42 @@
             <div>
               <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
                 <span>SubeAI Portal Integration</span>
-                <span class="text-[10px] bg-blue-500/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">Embed Web</span>
+                <span class="text-[10px] bg-blue-500/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">Embedded Web</span>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Embeds the <code>/subeai/</code> interface directly inside ChatNix workspace iframe.</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Embeds and opens the <code>/subeai/</code> application workspace inside ChatNix frame.</p>
             </div>
           </div>
           <button onclick="closeExtensionsModal(); openSubeAIModal();" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition shadow">Launch /subeai/</button>
         </div>
 
-        <!-- Extension 3: Activepieces Sync -->
-        <div class="p-4 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card flex items-center justify-between">
+        <!-- Extension 3: Puter.js Serverless AI -->
+        <div class="p-4 rounded-xl border border-purple-500/30 bg-purple-500/5 dark:bg-purple-950/20 flex items-center justify-between">
           <div class="flex items-start space-x-3">
-            <div class="p-2.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
-              <i class="fa-solid fa-diagram-project text-lg"></i>
+            <div class="p-2.5 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-400">
+              <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
             </div>
             <div>
               <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center space-x-2">
-                <span>Activepieces Workflow Sync</span>
-                <span class="text-[10px] bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">Active</span>
+                <span>Puter.js Image AI Engine</span>
+                <span class="text-[10px] bg-purple-500/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">Free / Keyless</span>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Executes synchronous workflows with a 30s timeout window via Activepieces webhook.</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Zero API keys required. Access GPT Image 2, Imagen 4, and Grok Imagine models.</p>
             </div>
           </div>
-          <button class="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition">Configured</button>
+          <button onclick="closeExtensionsModal(); toggleImageMode();" class="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition shadow">Open Image AI</button>
         </div>
 
       </div>
 
       <div class="p-4 border-t border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-sidebar flex justify-between items-center text-xs text-gray-500">
-        <span>ChatNix Modular Extensions</span>
+        <span>ChatNix Extensions Section</span>
         <button onclick="closeExtensionsModal()" class="px-4 py-2 rounded-xl bg-gray-200 dark:bg-dark-card hover:bg-gray-300 dark:hover:bg-dark-border text-gray-800 dark:text-gray-200 font-medium transition">Close</button>
       </div>
 
     </div>
   </div>
 
+  <!-- Clock & Timer Modal -->
   <div id="clockModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-dark-sidebar border border-amber-500/30 rounded-2xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden">
       
@@ -474,7 +472,7 @@
 
         <div class="border-t border-gray-200 dark:border-dark-border"></div>
 
-        <!-- Interactive Countdown Timer Controls -->
+        <!-- Countdown Timer Controls -->
         <div class="space-y-4">
           <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">Set Countdown Timer</div>
           
@@ -487,7 +485,7 @@
             <button onclick="setTimerInput(1)" class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border hover:bg-amber-500/20 text-gray-700 dark:text-gray-300 font-medium">1 min</button>
             <button onclick="setTimerInput(5)" class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border hover:bg-amber-500/20 text-gray-700 dark:text-gray-300 font-medium">5 min</button>
             <button onclick="setTimerInput(15)" class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border hover:bg-amber-500/20 text-gray-700 dark:text-gray-300 font-medium">15 min</button>
-            <button onclick="setTimerInput(25)" class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border hover:bg-amber-500/20 text-gray-700 dark:text-gray-300 font-medium">25 min (Pomodoro)</button>
+            <button onclick="setTimerInput(25)" class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border hover:bg-amber-500/20 text-gray-700 dark:text-gray-300 font-medium">25 min</button>
           </div>
 
           <button onclick="startTimerFromModal()" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm transition shadow-md flex items-center justify-center space-x-2">
@@ -501,6 +499,7 @@
     </div>
   </div>
 
+  <!-- SubeAI Embed Modal -->
   <div id="subeAIModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col p-2 md:p-6">
     <div class="bg-white dark:bg-dark-sidebar border border-blue-500/30 rounded-2xl w-full h-full flex flex-col shadow-2xl overflow-hidden">
       
@@ -531,17 +530,16 @@
         </div>
       </div>
 
-      <!-- SubeAI Embedded Web Frame -->
+      <!-- SubeAI Embedded Frame -->
       <div class="flex-1 bg-black relative">
         <iframe id="subeAIFrame" src="/subeai/" class="w-full h-full border-none" onerror="handleSubeAiError()"></iframe>
         
-        <!-- Fallback view if path /subeai/ is not found or local dev -->
         <div id="subeAIFallback" class="hidden absolute inset-0 bg-dark-bg/95 flex flex-col items-center justify-center text-center p-6 space-y-4">
           <div class="w-16 h-16 rounded-2xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-3xl">
             <i class="fa-solid fa-network-wired"></i>
           </div>
           <h4 class="text-xl font-bold text-gray-200">SubeAI Embed Preview</h4>
-          <p class="text-xs text-gray-400 max-w-md">Targeting endpoint <code>/subeai/</code>. Ensure your web server or endpoint serves the SubeAI application at this route.</p>
+          <p class="text-xs text-gray-400 max-w-md">Targeting endpoint <code>/subeai/</code>. Ensure your web server serves the SubeAI app at this route.</p>
           <button onclick="reloadSubeAIIframe()" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition">Retry Loading Frame</button>
         </div>
       </div>
@@ -550,21 +548,18 @@
   </div>
 
   <script>
-    /* Global Application State */
     const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
     const ACTIVEPIECES_WEBHOOK = 'https://cloud.activepieces.com/api/v1/webhooks/Ii1yODdziX0kTcago92vT/sync';
 
     let supabaseClient = null;
-    let selectedModel = 'gemini'; // 'gemini' or 'nix4'
-    let imageGenMode = 'imagen-4';  // 'imagen-4' or 'pollinations'
+    let selectedModel = 'gemini'; // 'gemini' (WoAI) or 'nix4'
+    let imageGenMode = 'openai/gpt-image-2'; // Puter.js model identifier
     let currentLang = 'en';
     let isSpeechRecording = false;
     let recognition = null;
     let isThinkingEnabled = true;
     let isImageModeExplicit = false;
-
-    let activeTimerInterval = null;
 
     /* Multi-language Dictionary */
     const i18n = {
@@ -594,7 +589,6 @@
       }
     };
 
-    /* Window Load Handler */
     window.onload = function() {
       detectUserLanguage();
       initSupabase();
@@ -644,7 +638,6 @@
       if (heading) heading.innerText = dict.greeting;
     }
 
-    /* Supabase Initialization */
     async function initSupabase() {
       try {
         if (window.supabase) {
@@ -718,7 +711,7 @@
       selectedModel = modelKey;
       const label = document.getElementById('activeModelLabel');
       if (modelKey === 'gemini') {
-        label.innerText = 'Gemini AI Engine';
+        label.innerText = 'WoAI Engine (Puter.js)';
       } else {
         label.innerText = 'Nix 4 Webhook';
       }
@@ -768,15 +761,8 @@
 
     function setImageMode(mode) {
       imageGenMode = mode;
-      const btn1 = document.getElementById('imgModeGpt1');
-      const btn2 = document.getElementById('imgModeGpt2');
-      if (mode === 'imagen-4') {
-        btn1.className = 'px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center';
-        btn2.className = 'px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50';
-      } else {
-        btn2.className = 'px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-medium text-center';
-        btn1.className = 'px-2 py-1 rounded bg-gray-100 dark:bg-dark-border text-gray-600 dark:text-gray-400 text-center hover:bg-purple-50';
-      }
+      showToast(`Selected Puter.js Image Model: ${mode}`);
+      toggleModelDropdown();
     }
 
     /* Modal Navigation Helpers */
@@ -871,7 +857,7 @@
 
       const lowerPrompt = prompt.toLowerCase();
 
-      // Detection 1: Timer Command
+      // Timer Command Detection
       if (lowerPrompt.startsWith('/timer') || lowerPrompt.includes('set a timer for') || lowerPrompt.includes('set timer for')) {
         let mins = 5;
         const match = lowerPrompt.match(/(\d+)\s*(m|min|minutes)?/);
@@ -881,7 +867,7 @@
         return;
       }
 
-      // Detection 2: Image Generation Command
+      // Image Generation Detection
       const isImageReq = lowerPrompt.startsWith('/image') ||
                          lowerPrompt.startsWith('generate an image of') ||
                          lowerPrompt.startsWith('generate image of') ||
@@ -893,15 +879,15 @@
 
       try {
         if (isImageReq) {
-          const cleanPrompt = prompt.replace(/^(\/image|generate an image of|generate image of|create an image of|create image of)/i, '').trim() || 'A futuristic isometric purple AI dashboard';
+          const cleanPrompt = prompt.replace(/^(\/image|generate an image of|generate image of|create an image of|create image of)/i, '').trim() || 'A peaceful mountain landscape at sunset';
           await generateAIImage(cleanPrompt, botMsgId);
         } else if (selectedModel === 'gemini') {
-          await callGeminiAPI(prompt, botMsgId);
+          await callWoAIPuterJS(prompt, botMsgId);
         } else if (selectedModel === 'nix4') {
           await callNix4Activepieces(prompt, botMsgId);
         }
       } catch (err) {
-        console.error('AI Error:', err);
+        console.error('AI Processing Error:', err);
         updateBotMessage(botMsgId, `⚠️ **Error processing query:** ${err.message || err}`);
       }
     }
@@ -950,8 +936,19 @@
       scrollToBottom();
     }
 
-    async function callGeminiAPI(prompt, msgId) {
-      const apiKey = ""; // Runtime automatically provides key in Canvas
+    async function callWoAIPuterJS(prompt, msgId) {
+      try {
+        if (window.puter && window.puter.ai && window.puter.ai.chat) {
+          const response = await puter.ai.chat(prompt);
+          updateBotMessage(msgId, typeof response === 'string' ? response : (response?.message?.content || JSON.stringify(response)));
+          return;
+        }
+      } catch (err) {
+        console.warn("Puter.js chat error, trying direct API:", err);
+      }
+
+      // Fallback response for WoAI
+      const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
       try {
@@ -961,7 +958,7 @@
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             systemInstruction: {
-              parts: [{ text: "You are ChatNix AI, a helpful, precise, and polite AI assistant. Answer clearly with markdown formatting." }]
+              parts: [{ text: "You are ChatNix AI, a helpful, precise, and polite assistant. Answer clearly with markdown." }]
             }
           })
         });
@@ -971,10 +968,10 @@
           const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
           updateBotMessage(msgId, text);
         } else {
-          updateBotMessage(msgId, `**[ChatNix AI]**\nI'm ready to assist you with: *"${escapeHtml(prompt)}"*.\n\nEverything is operational!`);
+          updateBotMessage(msgId, `**[ChatNix WoAI]**\nI'm ready to assist you with: *"${escapeHtml(prompt)}"*.\n\nAll systems running smoothly!`);
         }
       } catch (err) {
-        updateBotMessage(msgId, `**[ChatNix AI]**\nI analyzed: *"${escapeHtml(prompt)}"*.\n\nHow else can I assist you today?`);
+        updateBotMessage(msgId, `**[ChatNix WoAI]**\nI received: *"${escapeHtml(prompt)}"*.\n\nHow else can I help you today?`);
       }
     }
 
@@ -985,9 +982,9 @@
           <div class="space-y-2">
             <div class="flex items-center space-x-2 text-purple-600 dark:text-purple-400 text-xs font-semibold">
               <i class="fa-solid fa-brain fa-spin"></i>
-              <span>Nix 4 processing Activepieces workflow...</span>
+              <span>Nix 4 active workflow thinking...</span>
             </div>
-            <div class="text-[11px] text-gray-400 italic">Executing webhook query...</div>
+            <div class="text-[11px] text-gray-400 italic">Connecting to Activepieces sync endpoint...</div>
           </div>
         `;
       }
@@ -996,7 +993,6 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        // Safe fetch without modifying Origin or standard forbidden headers
         const response = await fetch(ACTIVEPIECES_WEBHOOK, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1011,7 +1007,7 @@
         clearTimeout(timeoutId);
 
         if (response.status === 408) {
-          updateBotMessage(msgId, `⏱️ **408 Request Timeout**\nTook longer than 30s. Ensure your Activepieces flow returns JSON format: \`{ "answer": "{{step_1['output']}}" }\`.`);
+          updateBotMessage(msgId, `⏱️ **408 Request Timeout**\nExceeded 30 seconds. Ensure your Activepieces flow returns JSON format: \`{ "answer": "{{step_1['output']}}" }\`.`);
           return;
         }
 
@@ -1024,16 +1020,16 @@
           } else if (data) {
             updateBotMessage(msgId, typeof data === 'string' ? data : JSON.stringify(data, null, 2));
           } else {
-            updateBotMessage(msgId, `**[Nix 4 Response]**\nWorkflow executed successfully.`);
+            updateBotMessage(msgId, `**[Nix 4 Sync]**\nWorkflow executed successfully.`);
           }
         } else {
-          updateBotMessage(msgId, `⚠️ **Activepieces Error (${response.status})**\nWebhook call returned non-200 response code.`);
+          updateBotMessage(msgId, `⚠️ **Activepieces Sync Error (${response.status})**\nWebhook returned a non-200 status code.`);
         }
       } catch (err) {
         if (err.name === 'AbortError') {
           updateBotMessage(msgId, `⏱️ **408 Request Timeout (30s exceeded)**\nWebhook timed out.`);
         } else {
-          updateBotMessage(msgId, `⚠️ **Nix 4 Sync Error**: ${err.message || err}`);
+          updateBotMessage(msgId, `⚠️ **Nix 4 Error**: ${err.message || err}`);
         }
       }
     }
@@ -1044,38 +1040,28 @@
         <div class="space-y-2">
           <div class="flex items-center space-x-2 text-purple-600 dark:text-purple-400 text-xs font-semibold">
             <i class="fa-solid fa-wand-magic-sparkles fa-spin"></i>
-            <span>Generating artwork with ${imageGenMode === 'imagen-4' ? 'Imagen 4' : 'Pollinations AI'}...</span>
+            <span>Generating artwork with Puter.js (${imageGenMode})...</span>
           </div>
         </div>
       `;
 
       let generatedImgUrl = '';
 
-      if (imageGenMode === 'imagen-4') {
-        try {
-          const apiKey = "";
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              instances: [{ prompt: prompt }],
-              parameters: { sampleCount: 1 }
-            })
-          });
-
-          if (response.ok) {
-            const res = await response.json();
-            if (res.predictions && res.predictions[0]?.bytesBase64Encoded) {
-              generatedImgUrl = `data:image/png;base64,${res.predictions[0].bytesBase64Encoded}`;
-            }
+      // 1. Try Puter.js serverless image generation
+      try {
+        if (window.puter && window.puter.ai && window.puter.ai.txt2img) {
+          const imgElement = await puter.ai.txt2img(prompt, { model: imageGenMode });
+          if (imgElement && imgElement.src) {
+            generatedImgUrl = imgElement.src;
+          } else if (typeof imgElement === 'string') {
+            generatedImgUrl = imgElement;
           }
-        } catch (e) {
-          console.warn('Imagen 4 fallback to Pollinations:', e);
         }
+      } catch (e) {
+        console.warn('Puter.js image gen exception, proceeding to fallback:', e);
       }
 
-      // Fallback to high-definition Pollinations if needed
+      // 2. Pollinations AI Fallback Engine
       if (!generatedImgUrl) {
         const encodedPrompt = encodeURIComponent(prompt);
         generatedImgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&seed=${Math.floor(Math.random() * 100000)}&nologo=true`;
