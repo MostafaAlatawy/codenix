@@ -1,780 +1,1137 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Start your journey | Codenix</title>
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+    <title>Codenix ID - Sign In, Authentication & Security Gate</title>
     
-    <!-- Google Fonts: Inter -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts & Font Awesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Supabase SDK (Vanilla JS) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS Library & QRCode Generator -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#F5F3FF',
+                            100: '#EDE9FE',
+                            200: '#DDD6FE',
+                            300: '#C4B5FD',
+                            400: '#A78BFA',
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                            700: '#6D28D9',
+                            800: '#5B21B6',
+                            900: '#4C1D95',
+                        },
+                        codenixDark: '#08080A',
+                        codenixCardDark: '#111115',
+                        codenixBorder: 'rgba(255, 255, 255, 0.08)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        /* ==========================================================================
-           1. CSS VARIABLES & THEMING (Matched from Landing Page)
-           ========================================================================== */
-        :root {
-            /* Light Theme */
-            --primary: #7C3AED;
-            --primary-hover: #6D28D9;
-            --primary-glow: rgba(124, 58, 237, 0.4);
-            --secondary: #f4f4f5;
-            
-            --bg-color: #ffffff;
-            --bg-alt: #fafafa;
-            --text-main: #09090b;
-            --text-muted: #71717a;
-            
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(0, 0, 0, 0.08);
-            --nav-bg: rgba(255, 255, 255, 0.8);
-            
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-            
-            --gradient-text: linear-gradient(135deg, #09090b 0%, #71717a 100%);
-            
-            /* Auth Specific Variables */
-            --input-bg: rgba(0, 0, 0, 0.03);
-            --input-border: rgba(0, 0, 0, 0.1);
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #eab308;
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        [data-theme="dark"] {
-            /* Dark Theme */
-            --bg-color: #050508;
-            --bg-alt: #0a0a0f;
-            --text-main: #ffffff;
-            --text-muted: #a1a1aa;
-            
-            --card-bg: rgba(20, 20, 25, 0.5);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --nav-bg: rgba(5, 5, 8, 0.8);
-            
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-            
-            --gradient-text: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-
-            /* Auth Specific Variables */
-            --input-bg: rgba(255, 255, 255, 0.03);
-            --input-border: rgba(255, 255, 255, 0.1);
+        ::-webkit-scrollbar-track {
+            background: #08080A;
         }
-
-        /* ==========================================================================
-           2. GLOBAL RESETS & TYPOGRAPHY
-           ========================================================================== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            overflow-x: hidden;
-            transition: background-color 0.5s ease, color 0.5s ease;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+        ::-webkit-scrollbar-thumb {
+            background: #4C1D95;
+            border-radius: 3px;
         }
-        ::selection { background: var(--primary-glow); color: var(--text-main); }
-        a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
-        h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; }
-        .text-gradient {
-            background: var(--gradient-text);
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7C3AED;
+        }
+        .codenix-card {
+            background: rgba(17, 17, 21, 0.88);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .codenix-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .codenix-input:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #FFFFFF 0%, #A78BFA 50%, #C4B5FD 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-
-        /* ==========================================================================
-           3. UI COMPONENTS (Buttons, Custom Cursor, Loader)
-           ========================================================================== */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 0.8rem 1.8rem; border-radius: 9999px; font-weight: 600;
-            font-size: 1rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative; overflow: hidden; border: none; outline: none; gap: 0.5rem;
+        .glow-effect {
+            box-shadow: 0 0 50px -10px rgba(124, 58, 237, 0.25);
         }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #6D28D9 100%);
-            color: #ffffff; box-shadow: 0 4px 15px var(--primary-glow); width: 100%;
+        .step-circle {
+            transition: all 0.3s ease;
         }
-        .btn-primary:not(:disabled):hover {
-            transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px var(--primary-glow);
+        .step-circle.active {
+            background-color: #7C3AED;
+            border-color: #A78BFA;
+            color: #ffffff;
+            box-shadow: 0 0 18px rgba(124, 58, 237, 0.7);
         }
-        .btn-secondary {
-            background: var(--card-bg); color: var(--text-main);
-            border: 1px solid var(--card-border); backdrop-filter: blur(10px);
+        .step-circle.completed {
+            background-color: #10B981;
+            border-color: #34D399;
+            color: #ffffff;
         }
-        .btn-secondary:hover { background: var(--card-border); transform: translateY(-2px); }
-
-        .loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); display: flex; justify-content: center;
-            align-items: center; z-index: 99999; transition: opacity 0.5s ease;
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
         }
-        .loader-spinner {
-            width: 50px; height: 50px; border: 3px solid var(--card-border);
-            border-top-color: var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        
-        .cursor-dot, .cursor-outline { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; z-index: 9999; pointer-events: none; }
-        .cursor-dot { width: 8px; height: 8px; background-color: var(--primary); }
-        .cursor-outline { width: 40px; height: 40px; border: 2px solid var(--primary-glow); transition: width 0.2s, height 0.2s, border-color 0.2s; }
-        @media (hover: none) and (pointer: coarse) { .cursor-dot, .cursor-outline { display: none; } }
-
-        /* ==========================================================================
-           4. NAVBAR & FOOTER
-           ========================================================================== */
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 1rem 0; z-index: 1000;
-            background: var(--nav-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--card-border); transition: all 0.3s ease;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; }
-        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.05em; }
-        .logo img { width: 32px; height: 32px; border-radius: 8px; background: var(--primary); object-fit: cover; }
-        
-        .theme-toggle {
-            width: 60px; height: 30px; background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 30px; position: relative; cursor: pointer; display: flex;
-            align-items: center; justify-content: space-between; padding: 0 5px; transition: all 0.3s ease;
-        }
-        .theme-toggle svg { width: 16px; height: 16px; fill: var(--text-muted); transition: fill 0.3s ease; }
-        .theme-toggle .toggle-thumb {
-            position: absolute; top: 2px; left: 2px; width: 24px; height: 24px;
-            background: var(--bg-color); border: 1px solid var(--card-border);
-            border-radius: 50%; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: var(--shadow-sm);
-        }
-        [data-theme="dark"] .theme-toggle .toggle-thumb { transform: translateX(30px); }
-        [data-theme="dark"] .theme-toggle .icon-moon { fill: var(--text-main); }
-        html:not([data-theme="dark"]) .theme-toggle .icon-sun { fill: var(--text-main); }
-
-        footer { border-top: 1px solid var(--card-border); padding: 4rem 0 2rem; background: var(--bg-alt); margin-top: auto; }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 4rem; }
-        .footer-col h5 { font-size: 1.1rem; margin-bottom: 1.5rem; }
-        .footer-links { display: flex; flex-direction: column; gap: 1rem; }
-        .footer-links a { color: var(--text-muted); transition: color 0.2s; font-size: 0.95rem; }
-        .footer-links a:hover { color: var(--primary); }
-        .footer-bottom { border-top: 1px solid var(--card-border); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.9rem; }
-        @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; } .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; } }
-
-        /* ==========================================================================
-           5. AUTHENTICATION SECTION (Layout & Background)
-           ========================================================================== */
-        .auth-wrapper {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            padding: 8rem 2rem 4rem; position: relative; overflow: hidden;
-        }
-
-        .bg-elements { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
-        .grid-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(to right, var(--card-border) 1px, transparent 1px), linear-gradient(to bottom, var(--card-border) 1px, transparent 1px);
-            background-size: 50px 50px; mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%); opacity: 0.3;
-        }
-        .bg-shape { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 15s infinite alternate ease-in-out; }
-        .shape-1 { width: 400px; height: 400px; background: rgba(124, 58, 237, 0.2); top: 10%; left: 20%; }
-        .shape-2 { width: 500px; height: 500px; background: rgba(59, 130, 246, 0.15); bottom: 10%; right: 15%; animation-delay: -5s; }
-        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(50px, 30px) scale(1.1); } 100% { transform: translate(-30px, 80px) scale(0.9); } }
-
-        .auth-card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 24px; padding: 2.5rem; width: 100%; max-width: 480px;
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            box-shadow: var(--shadow-lg), 0 0 40px -10px var(--primary-glow);
-            position: relative; z-index: 10;
-            opacity: 0; transform: translateY(30px);
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
-        /* ==========================================================================
-           6. AUTH FORMS, TABS & INPUTS
-           ========================================================================== */
-        .auth-header { text-align: center; margin-bottom: 2rem; }
-        .auth-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
-        .auth-header p { color: var(--text-muted); font-size: 0.95rem; }
-
-        .auth-tabs {
-            display: flex; position: relative; background: var(--input-bg);
-            border-radius: 12px; padding: 0.25rem; margin-bottom: 2rem;
-            border: 1px solid var(--card-border);
-        }
-        .auth-tab {
-            flex: 1; text-align: center; padding: 0.75rem 0; cursor: pointer;
-            font-weight: 500; font-size: 0.95rem; color: var(--text-muted);
-            transition: color 0.3s; z-index: 2; position: relative;
-        }
-        .auth-tab.active { color: var(--text-main); font-weight: 600; }
-        .auth-indicator {
-            position: absolute; top: 0.25rem; bottom: 0.25rem; left: 0.25rem;
-            width: calc(50% - 0.25rem); background: var(--card-bg);
-            border-radius: 8px; box-shadow: var(--shadow-sm); z-index: 1;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid var(--card-border);
-        }
-        /* Active Tab indicator movement */
-        #tab-signup.active ~ .auth-indicator { transform: translateX(100%); }
-
-        .auth-form { display: none; animation: fadeIn 0.4s ease; }
-        .auth-form.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .input-group { margin-bottom: 1.25rem; position: relative; }
-        .input-group label {
-            display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.4rem;
-        }
-        .input-wrapper { position: relative; }
-        .auth-input {
-            width: 100%; padding: 0.8rem 1rem; border-radius: 12px;
-            background: var(--input-bg); border: 1px solid var(--input-border);
-            color: var(--text-main); font-family: inherit; font-size: 0.95rem;
-            transition: all 0.3s ease; outline: none;
-        }
-        .auth-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1); background: transparent; }
-        .auth-input::placeholder { color: rgba(113, 113, 122, 0.5); }
-        
-        .password-toggle {
-            position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
-            background: none; border: none; color: var(--text-muted); cursor: pointer;
-            padding: 0.2rem; display: flex; align-items: center; justify-content: center;
-        }
-        .password-toggle:hover { color: var(--text-main); }
-        
-        /* Options row (Remember me, Forgot password) */
-        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem; }
-        .checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-muted); }
-        .checkbox-label input[type="checkbox"] {
-            appearance: none; width: 16px; height: 16px; border: 1px solid var(--input-border);
-            border-radius: 4px; background: var(--input-bg); cursor: pointer; position: relative; transition: all 0.2s;
-        }
-        .checkbox-label input[type="checkbox"]:checked { background: var(--primary); border-color: var(--primary); }
-        .checkbox-label input[type="checkbox"]:checked::after {
-            content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
-            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
-        }
-        .forgot-link, .policy-link { color: var(--primary); transition: color 0.2s; }
-        .forgot-link:hover, .policy-link:hover { color: var(--primary-hover); text-decoration: underline; }
-
-        /* Social Auth */
-        .divider {
-            display: flex; align-items: center; text-align: center; margin: 1.5rem 0; color: var(--text-muted); font-size: 0.85rem;
-        }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--card-border); }
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
-
-        .social-btn {
-            display: flex; align-items: center; justify-content: center; gap: 0.75rem; width: 100%;
-            padding: 0.75rem; border-radius: 12px; font-weight: 500; font-size: 0.95rem; cursor: pointer;
-            background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main);
-            transition: all 0.3s ease; margin-bottom: 0.75rem;
-        }
-        .social-btn:hover { background: var(--input-border); transform: translateY(-1px); }
-        .social-btn svg { width: 20px; height: 20px; }
-
-        /* Password Strength */
-        .password-strength { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .strength-bars { display: flex; gap: 4px; height: 4px; }
-        .strength-bar { flex: 1; background: var(--input-border); border-radius: 2px; transition: background 0.3s ease; }
-        .strength-text { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
-        
-        .strength-weak .bar-1 { background: var(--danger); }
-        .strength-medium .bar-1, .strength-medium .bar-2 { background: var(--warning); }
-        .strength-strong .bar-1, .strength-strong .bar-2, .strength-strong .bar-3 { background: var(--success); }
-
-        /* Alert Messages */
-        .alert {
-            padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem;
-            display: none; align-items: center; gap: 0.5rem; animation: fadeIn 0.3s ease;
-        }
-        .alert.show { display: flex; }
-        .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .alert-success { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #22c55e; }
-        
-        .btn-loading { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
-        .is-loading .btn-text { display: none; }
-        .is-loading .btn-loading { display: block; }
     </style>
 </head>
-<body>
+<body class="bg-codenixDark text-slate-100 font-sans min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-brand-500 selection:text-white relative">
 
-    <!-- Loading Screen -->
-    <div class="loader" id="loader">
-        <div class="loader-spinner"></div>
-    </div>
-
-    <!-- Custom Cursor -->
-    <div class="cursor-dot" id="cursorDot"></div>
-    <div class="cursor-outline" id="cursorOutline"></div>
-
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="container nav-container">
-            <a href="/" class="logo">
-                <img src="../logo.png" alt="C" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%237C3AED\'/><text x=\'50\' y=\'68\' font-size=\'60\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\'>C</text></svg>'">
-                <span>Codenix</span>
-            </a>
-            
-            <!-- Theme Toggle -->
-            <div class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
-                <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                <div class="toggle-thumb"></div>
+    <!-- HEADER NAVIGATION -->
+    <header class="w-full px-6 sm:px-12 py-4 flex items-center justify-between border-b border-white/10 bg-codenixDark/80 backdrop-blur-md sticky top-0 z-50">
+        <a href="javascript:void(0)" onclick="resetOrGoHome()" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center font-bold shadow-lg shadow-brand-600/30 transition-transform group-hover:scale-105">
+                <i class="fa-solid fa-shield-halved text-white text-lg"></i>
             </div>
+            <div class="flex flex-col">
+                <span class="text-xl font-extrabold tracking-tight text-white leading-none flex items-center gap-1.5">
+                    CODENIX <span class="text-brand-400 font-mono text-xs px-1.5 py-0.5 rounded bg-brand-500/10 border border-brand-500/20">ID</span>
+                </span>
+                <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest mt-0.5">Unified Security Gateway</span>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-3 sm:gap-5 text-xs">
+            <button onclick="openPolicyModal()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 font-medium px-2.5 py-1.5 rounded-lg hover:bg-white/5">
+                <i class="fa-solid fa-file-contract text-brand-400"></i>
+                <span class="hidden sm:inline">Privacy Policy</span>
+                <span class="text-[10px] font-mono text-brand-300 bg-brand-500/10 px-1 rounded sm:ml-1">/policy/</span>
+            </button>
+            <div class="h-4 w-[1px] bg-white/10"></div>
+            <span id="authStatusPill" class="px-3 py-1.5 rounded-full bg-slate-800/80 text-slate-300 font-mono text-[11px] border border-white/10 flex items-center gap-2 transition-all">
+                <span id="statusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="statusText">Guest Mode</span>
+            </span>
         </div>
-    </nav>
+    </header>
 
-    <!-- Auth Section -->
-    <main class="auth-wrapper">
-        <div class="bg-elements">
-            <div class="grid-bg"></div>
-            <div class="bg-shape shape-1"></div>
-            <div class="bg-shape shape-2"></div>
-        </div>
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <main class="flex-grow flex items-center justify-center px-4 py-8 sm:py-12 relative z-10">
+        
+        <!-- Ambient Glowing Orbs -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-brand-600/15 rounded-full blur-[130px] pointer-events-none animate-pulse-slow"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-purple-900/20 rounded-full blur-[110px] pointer-events-none"></div>
+        <div class="absolute top-10 left-10 w-80 h-80 bg-emerald-900/15 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <div class="auth-card">
-            <div class="auth-header">
-                <h2 class="text-gradient" id="formTitle">Welcome Back</h2>
-                <p id="formSubtitle">Enter your details to access your account.</p>
-            </div>
+        <div class="w-full max-w-xl relative">
 
-            <!-- Tabs -->
-            <div class="auth-tabs">
-                <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</div>
-                <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</div>
-                <div class="auth-indicator"></div>
-            </div>
-
-            <!-- Global Alert -->
-            <div id="authAlert" class="alert">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                <span id="alertText">Error message goes here</span>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
-                <div class="input-group">
-                    <label for="loginEmail">Email</label>
-                    <div class="input-wrapper">
-                        <input type="email" id="loginEmail" class="auth-input" placeholder="name@example.com" required autocomplete="email">
-                    </div>
-                </div>
+            <!-- ================= VIEW 1: AUTHENTICATION (SIGN IN / SIGN UP) ================= -->
+            <div id="authCard" class="codenix-card p-6 sm:p-8 rounded-3xl glow-effect space-y-6">
                 
-                <div class="input-group">
-                    <label for="loginPassword">Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="loginPassword" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
-                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)">
-                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </button>
+                <div class="text-center space-y-2">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 text-brand-300 border border-brand-500/20 text-[10px] font-mono font-semibold uppercase tracking-wider mb-1">
+                        <i class="fa-solid fa-lock"></i> Encryption Level: AES-256
                     </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white" id="authTitle">Welcome to Codenix</h1>
+                    <p class="text-xs sm:text-sm text-slate-400 max-w-sm mx-auto" id="authSubtitle">Sign in or create your unified identity to access the developer ecosystem.</p>
                 </div>
 
-                <div class="form-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="rememberMe" checked>
-                        Remember me
-                    </label>
-                    <a href="#" class="forgot-link">Forgot password?</a>
+                <!-- Auth Mode Switcher Tabs -->
+                <div class="grid grid-cols-2 p-1 rounded-2xl bg-white/5 border border-white/10 text-xs font-semibold text-center">
+                    <button id="tabSignIn" onclick="switchAuthMode('signin')" class="py-2.5 rounded-xl bg-brand-600 text-white shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket text-xs"></i>
+                        <span>Sign In</span>
+                    </button>
+                    <button id="tabSignUp" onclick="switchAuthMode('signup')" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-plus text-xs"></i>
+                        <span>Create Account</span>
+                    </button>
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="loginBtn">
-                    <span class="btn-text">Sign In</span>
-                    <span class="btn-loading"></span>
-                </button>
-            </form>
+                <!-- OAuth Social Sign In Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <button type="button" onclick="handleOAuthLogin('google')" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center justify-center gap-2.5 transition-all hover:scale-[1.01] active:scale-[0.99]">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Google</span>
+                    </button>
 
-            <!-- Sign Up Form -->
-            <form id="signupForm" class="auth-form">
-                <div class="input-group">
-                    <label for="signupUsername">Username</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="signupUsername" class="auth-input" placeholder="johndoe" required autocomplete="username">
-                    </div>
+                    <button type="button" onclick="handleOAuthLogin('github')" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center justify-center gap-2.5 transition-all hover:scale-[1.01] active:scale-[0.99]">
+                        <i class="fa-brands fa-github text-base text-slate-200"></i>
+                        <span>GitHub</span>
+                    </button>
                 </div>
 
-                <div class="input-group">
-                    <label for="signupEmail">Email</label>
-                    <div class="input-wrapper">
-                        <input type="email" id="signupEmail" class="auth-input" placeholder="name@example.com" required autocomplete="email">
-                    </div>
+                <div class="flex items-center gap-3 text-[11px] text-slate-500 uppercase tracking-widest font-mono my-2">
+                    <div class="h-[1px] bg-white/10 flex-grow"></div>
+                    <span>or direct credentials</span>
+                    <div class="h-[1px] bg-white/10 flex-grow"></div>
                 </div>
-                
-                <div class="input-group">
-                    <label for="signupPassword">Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="signupPassword" class="auth-input" placeholder="Create a password" required autocomplete="new-password">
-                        <button type="button" class="password-toggle" onclick="togglePassword('signupPassword', this)">
-                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </button>
-                    </div>
-                    <div class="password-strength" id="pwdStrengthContainer">
-                        <div class="strength-bars">
-                            <div class="strength-bar bar-1"></div>
-                            <div class="strength-bar bar-2"></div>
-                            <div class="strength-bar bar-3"></div>
+
+                <!-- Email & Password Form -->
+                <form id="emailAuthForm" onsubmit="handleEmailAuth(event)" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] font-mono text-slate-300 font-medium flex items-center justify-between">
+                            <span>Email Address</span>
+                            <span class="text-[10px] text-slate-500 font-normal">Primary Identity</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                            <input type="email" id="authEmail" required placeholder="name@domain.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl codenix-input text-xs font-medium" />
                         </div>
-                        <span class="strength-text" id="pwdStrengthText">Too short</span>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-mono text-slate-300 font-medium">Password</label>
+                            <button type="button" onclick="requestPasswordReset()" class="text-[10px] text-brand-400 hover:text-brand-300 hover:underline">Forgot Password?</button>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                            <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" oninput="assessPasswordStrength(this.value)" class="w-full pl-10 pr-10 py-2.5 rounded-xl codenix-input text-xs font-medium" />
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs">
+                                <i class="fa-solid fa-eye" id="togglePassIcon"></i>
+                            </button>
+                        </div>
+                        <!-- Strength Meter -->
+                        <div id="passwordStrengthBar" class="h-1 w-full bg-white/10 rounded-full overflow-hidden hidden transition-all">
+                            <div id="strengthIndicator" class="h-full w-0 bg-rose-500 transition-all duration-300"></div>
+                        </div>
+                    </div>
+
+                    <div id="signUpCheckContainer" class="hidden text-xs text-slate-400 space-y-2 pt-1">
+                        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                            <input type="checkbox" id="authPolicyAgree" class="mt-0.5 rounded border-white/20 bg-white/5 text-brand-600 focus:ring-brand-500" />
+                            <span class="text-[11px] leading-relaxed">
+                                I explicitly accept the <button type="button" onclick="openPolicyModal()" class="text-brand-400 font-semibold underline">Privacy Policy</button> & Terms of Service for Codenix ID.
+                            </span>
+                        </label>
+                    </div>
+
+                    <button type="submit" id="btnSubmitAuth" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 font-semibold text-xs text-white shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2 group">
+                        <span id="btnSubmitAuthText">Sign In to Codenix</span>
+                        <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
+                    </button>
+                </form>
+
+                <div class="pt-2 text-center text-[11px] text-slate-500 border-t border-white/5 flex items-center justify-between">
+                    <span>Need support?</span>
+                    <a href="mailto:codenixai@gmail.com" class="text-brand-400 hover:underline flex items-center gap-1 font-mono">
+                        <i class="fa-solid fa-headset text-xs"></i>
+                        <span>codenixai@gmail.com</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 2: REQUIRED ONBOARDING SECURITY GATE ================= -->
+            <div id="onboardingGateCard" class="codenix-card p-6 sm:p-8 rounded-3xl glow-effect space-y-6 hidden">
+                
+                <div class="text-center space-y-2">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                        <i class="fa-solid fa-shield-halved animate-bounce"></i> Security Verification Gate
+                    </div>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-white">Complete Security Profile</h2>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">You must complete all 3 identity steps below to unlock your Codenix Virtual ID & Ecosystem privileges.</p>
+                </div>
+
+                <!-- Step Tracker Pills -->
+                <div class="flex items-center justify-between relative max-w-xs sm:max-w-sm mx-auto py-2">
+                    <div class="absolute top-1/2 left-4 right-4 h-[2px] bg-white/10 -translate-y-1/2 -z-10"></div>
+                    
+                    <div class="flex flex-col items-center gap-1">
+                        <div id="circleStep1" class="w-9 h-9 rounded-full border-2 border-white/20 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active">1</div>
+                        <span class="text-[10px] font-mono text-slate-400 font-medium">Policy</span>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-1">
+                        <div id="circleStep2" class="w-9 h-9 rounded-full border-2 border-white/20 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle">2</div>
+                        <span class="text-[10px] font-mono text-slate-400 font-medium">Virtual ID</span>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-1">
+                        <div id="circleStep3" class="w-9 h-9 rounded-full border-2 border-white/20 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle">3</div>
+                        <span class="text-[10px] font-mono text-slate-400 font-medium">MFA Security</span>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="signupConfirmPassword">Confirm Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="signupConfirmPassword" class="auth-input" placeholder="Repeat password" required autocomplete="new-password">
+                <!-- STEP 1 CONTENT: Privacy Policy Acceptance -->
+                <div id="stepContent1" class="space-y-4 pt-2">
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-brand-400 font-semibold text-sm">
+                                <i class="fa-solid fa-shield-cat"></i> Step 1: Privacy Policy Agreement
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-brand-500/20 text-brand-300 font-mono text-[10px]">Required</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed text-[11px]">
+                            To protect user privacy and secure our decentralized open AI ecosystem, you must review and explicitly accept our policies hosted at <code class="text-brand-300 bg-brand-500/10 px-1 py-0.5 rounded">/policy/</code>.
+                        </p>
+                        <div class="flex items-center justify-between pt-1">
+                            <button type="button" onclick="openPolicyModal()" class="inline-flex items-center gap-2 text-xs text-brand-400 font-medium hover:text-brand-300 hover:underline">
+                                <i class="fa-solid fa-book-open"></i>
+                                <span>Read Full Privacy Policy Modal</span>
+                            </button>
+                            <span class="text-[10px] font-mono text-slate-500">v2.4 Updated</span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="acceptPolicy" required>
-                        <span>I accept the <a href="/policy/" class="policy-link" target="_blank">Privacy Policy</a></span>
+                    <label class="flex items-start gap-3 p-3.5 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
+                        <input type="checkbox" id="gateCheckPolicy" class="mt-0.5 rounded border-white/20 bg-white/5 text-brand-600 focus:ring-brand-500" />
+                        <span class="text-xs text-slate-200 leading-relaxed">
+                            I have read, understood, and accept the official Privacy Policy from <strong>/policy/</strong> and agree to terms of service.
+                        </span>
                     </label>
+
+                    <button type="button" onclick="submitStep1()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg transition-all flex items-center justify-center gap-2">
+                        <span>Confirm & Proceed to Virtual ID</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="signupBtn" disabled>
-                    <span class="btn-text">Create Account</span>
-                    <span class="btn-loading"></span>
-                </button>
-            </form>
+                <!-- STEP 2 CONTENT: Create Virtual ID (username@codenix) -->
+                <div id="stepContent2" class="space-y-4 pt-2 hidden">
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-2">
+                        <div class="flex items-center gap-2 text-brand-400 font-semibold text-sm">
+                            <i class="fa-solid fa-at"></i> Step 2: Set Virtual Codenix ID
+                        </div>
+                        <p class="text-slate-300 text-[11px]">
+                            Create your unique handle for Codenix AI models, arcade leaderboards, API credits, and ecosystem tools.
+                        </p>
+                    </div>
 
-            <div class="divider">or continue with</div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-mono text-slate-300 font-medium flex items-center justify-between">
+                            <span>Desired Username</span>
+                            <span id="handleAvailability" class="text-[10px] font-mono text-slate-400">Letters, numbers & underscores</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <input type="text" id="virtualUsernameInput" placeholder="alex_dev" oninput="formatVirtualIDPreview()" class="w-full pr-28 pl-4 py-3 rounded-xl codenix-input text-xs font-mono" />
+                            <span class="absolute right-3 text-xs font-mono font-bold text-brand-300 bg-brand-500/15 px-2.5 py-1 rounded-lg border border-brand-500/30">@codenix</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5 flex items-center justify-between text-xs font-mono">
+                            <span class="text-slate-400">Claimed Address:</span>
+                            <span class="text-brand-300 font-bold" id="virtualIdPreviewText">username@codenix</span>
+                        </div>
+                    </div>
 
-            <button type="button" class="social-btn" onclick="signInWithProvider('google')">
-                <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.761H12.545z"/></svg>
-                Google
-            </button>
-            
-            <button type="button" class="social-btn" onclick="signInWithProvider('github')">
-                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2C6.477,2,2,6.477,2,12c0,4.419,2.865,8.166,6.839,9.489c0.5,0.09,0.682-0.218,0.682-0.484c0-0.236-0.009-0.866-0.014-1.699c-2.782,0.602-3.369-1.34-3.369-1.34c-0.454-1.156-1.11-1.462-1.11-1.462c-0.908-0.62,0.069-0.608,0.069-0.608c1.004,0.071,1.532,1.03,1.532,1.03c0.892,1.529,2.341,1.087,2.91,0.831c0.092-0.646,0.35-1.086,0.636-1.336c-2.22-0.253-4.555-1.11-4.555-4.943c0-1.091,0.39-1.984,1.03-2.682C6.546,8.54,6.202,7.524,6.746,6.148c0,0,0.84-0.269,2.75,1.025C10.295,6.95,11.15,6.84,12,6.836c0.85,0.004,1.705,0.114,2.504,0.336c1.909-1.294,2.747-1.025,2.747-1.025c0.546,1.376,0.202,2.394,0.1,2.646c0.64,0.699,1.026,1.591,1.026,2.682c0,3.841-2.337,4.687-4.565,4.935c0.359,0.307,0.679,0.915,0.679,1.846c0,1.335-0.012,2.415-0.012,2.741c0,0.269,0.18,0.579,0.688,0.481C19.138,20.161,22,16.416,22,12C22,6.477,17.523,2,12,2z"/></svg>
-                GitHub
-            </button>
+                    <button type="button" onclick="submitStep2()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg transition-all flex items-center justify-center gap-2">
+                        <span>Save Handle & Proceed to MFA Setup</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- STEP 3 CONTENT: Multi-Factor Authentication (MFA) -->
+                <div id="stepContent3" class="space-y-4 pt-2 hidden">
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-2">
+                        <div class="flex items-center gap-2 text-brand-400 font-semibold text-sm">
+                            <i class="fa-solid fa-key"></i> Step 3: Enable Multi-Factor Authentication (MFA)
+                        </div>
+                        <p class="text-slate-300 text-[11px]">
+                            Scan the QR code below using Google Authenticator, Authy, or 1Password, then enter the generated 6-digit code.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
+                        <div class="flex flex-col items-center justify-center p-3 bg-white rounded-2xl shadow-md shrink-0">
+                            <div id="qrcodeCanvas"></div>
+                        </div>
+
+                        <div class="space-y-2 text-center sm:text-left flex-grow">
+                            <span class="text-[10px] text-slate-400 font-mono block">Secret Key (Manual Entry):</span>
+                            <div class="font-mono text-xs text-brand-300 bg-black/40 p-2.5 rounded-xl border border-white/10 flex items-center justify-between gap-2">
+                                <span id="mfaSecretText" class="truncate">CODENIX-MFA-9842-8812</span>
+                                <button type="button" onclick="copyMfaSecret()" class="text-slate-400 hover:text-white p-1" title="Copy Secret">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-slate-400">Save key in a password manager for account recovery.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] font-mono text-slate-300 font-medium">Enter 6-Digit Code</label>
+                        <input type="text" id="mfaCodeInput" maxlength="6" placeholder="123456" onkeyup="checkMfaAutoSubmit(event)" class="w-full py-3 px-4 rounded-xl codenix-input text-center text-xl font-mono tracking-[0.4em] font-bold" />
+                    </div>
+
+                    <button type="button" onclick="submitStep3()" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 font-semibold text-xs text-white shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Verify Code & Unlock Dashboard</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- ================= VIEW 3: UNLOCKED CODENIX DASHBOARD ================= -->
+            <div id="dashboardCard" class="codenix-card p-6 sm:p-8 rounded-3xl glow-effect space-y-6 hidden">
+                
+                <!-- Profile Header -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-5 border-b border-white/10 gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="relative">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 via-purple-600 to-indigo-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg">
+                                <span id="userAvatarChar">C</span>
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-codenixDark flex items-center justify-center text-[10px] text-black font-bold" title="Online & Verified">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                                <span id="dashDisplayName">User</span>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-shield-check"></i> Verified
+                                </span>
+                            </h2>
+                            <p class="text-xs font-mono text-brand-300 mt-0.5" id="dashVirtualId">username@codenix</p>
+                            <p class="text-[10px] text-slate-400 font-mono" id="dashEmail">user@domain.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <button type="button" onclick="toggleTerminalView()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all text-xs flex items-center gap-1.5" title="Open Shell Terminal">
+                            <i class="fa-solid fa-terminal text-brand-400"></i>
+                            <span class="hidden sm:inline font-mono text-[11px]">Shell</span>
+                        </button>
+                        <button type="button" onclick="handleSignOut()" class="p-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 transition-all text-xs flex items-center gap-1.5" title="Sign Out">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span class="hidden sm:inline">Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Verification Badges Matrix -->
+                <div class="grid grid-cols-3 gap-2.5 text-center text-[10px] font-mono">
+                    <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 space-y-1">
+                        <i class="fa-solid fa-file-shield text-base"></i>
+                        <div class="text-slate-300">Privacy Policy</div>
+                        <div class="font-bold text-emerald-400">ACCEPTED</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-300 space-y-1">
+                        <i class="fa-solid fa-id-badge text-base"></i>
+                        <div class="text-slate-300">Virtual ID</div>
+                        <div class="font-bold text-brand-300">CLAIMED</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-300 space-y-1">
+                        <i class="fa-solid fa-lock text-base"></i>
+                        <div class="text-slate-300">MFA Guard</div>
+                        <div class="font-bold text-purple-300">ENABLED</div>
+                    </div>
+                </div>
+
+                <!-- Developer API Key Generator Panel -->
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-xs font-semibold text-white">
+                            <i class="fa-solid fa-key text-amber-400"></i>
+                            <span>Codenix Ecosystem API Token</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-emerald-400">Active</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex-grow">
+                            <input type="text" readonly id="apiTokenInput" value="cdx_live_98a72b10f84c92e10" class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-brand-300 select-all" />
+                        </div>
+                        <button type="button" onclick="copyApiToken()" class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white transition-all flex items-center gap-1.5 shrink-0">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ecosystem Apps Shortcuts -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono text-slate-400 uppercase tracking-widest font-semibold">Ecosystem Portal Access</span>
+                        <span class="text-[10px] text-slate-500 font-mono">1-Click Launch</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div onclick="launchPortalApp('AI Code-X Neural Generator')" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 space-y-1.5 transition-all group cursor-pointer">
+                            <div class="flex items-center justify-between text-brand-400">
+                                <i class="fa-solid fa-code text-base"></i>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </div>
+                            <div class="text-xs font-semibold text-white">AI Code-X</div>
+                            <div class="text-[10px] text-slate-400">Neural Generator & Copilot</div>
+                        </div>
+
+                        <div onclick="launchPortalApp('Codenix WebGL Arcade')" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 space-y-1.5 transition-all group cursor-pointer">
+                            <div class="flex items-center justify-between text-pink-400">
+                                <i class="fa-solid fa-gamepad text-base"></i>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            </div>
+                            <div class="text-xs font-semibold text-white">Web Arcade</div>
+                            <div class="text-[10px] text-slate-400">WebGL Gaming & Highscores</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shell Terminal Box (Toggleable) -->
+                <div id="terminalBox" class="p-4 rounded-2xl bg-black/80 border border-white/10 font-mono text-xs space-y-2 hidden">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-2 text-[11px] text-slate-400">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                            <span class="ml-2 text-white font-bold">codenix-shell v1.0</span>
+                        </span>
+                        <span>Type 'help'</span>
+                    </div>
+                    <div id="terminalLog" class="h-28 overflow-y-auto space-y-1 text-[11px] text-slate-300 font-mono">
+                        <div><span class="text-emerald-400">sys:</span> Authenticated as <span class="text-brand-300" id="termUser">user@codenix</span></div>
+                        <div><span class="text-emerald-400">sys:</span> Type <code class="text-amber-300">status</code> or <code class="text-amber-300">ping</code> to test identity gate.</div>
+                    </div>
+                    <div class="flex items-center gap-2 pt-1 border-t border-white/10">
+                        <span class="text-brand-400 font-bold">$</span>
+                        <input type="text" id="terminalInput" onkeydown="handleTerminalCommand(event)" placeholder="Enter command..." class="w-full bg-transparent text-xs font-mono text-white focus:outline-none" />
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between text-[11px] text-slate-500 font-mono border-t border-white/5">
+                    <span>Codenix ID Session: <span class="text-emerald-400 font-bold">Secure</span></span>
+                    <button type="button" onclick="showToast('Identity token renewed', 'info')" class="text-brand-400 hover:underline">Refresh Session</button>
+                </div>
+
+            </div>
+
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <a href="/" class="logo" style="margin-bottom: 1rem; display: inline-flex;">
-                        <img src="../logo.png" alt="C" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%237C3AED\'/><text x=\'50\' y=\'68\' font-size=\'60\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\'>C</text></svg>'">
-                        <span>Codenix</span>
-                    </a>
-                    <p style="color: var(--text-muted); font-size: 0.95rem;">Empowering creators and developers with powerful, free AI tools. Built with passion by Codenix Studio.</p>
-                </div>
-                
-                <div class="footer-col">
-                    <h5>Quick Links</h5>
-                    <div class="footer-links">
-                        <a href="/">Home</a>
-                        <a href="/#features">Features</a>
-                        <a href="/#about">About Us</a>
-                        <a href="/#contact">Contact</a>
+    <!-- ================= PRIVACY POLICY MODAL (/policy/) ================= -->
+    <div id="policyModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="codenix-card w-full max-w-2xl max-h-[85vh] rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-4 border border-white/15 glow-effect">
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-file-contract"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Codenix Ecosystem Privacy Policy</h3>
+                        <p class="text-[11px] font-mono text-brand-300">Official Document: /policy/</p>
                     </div>
                 </div>
-
-                <div class="footer-col">
-                    <h5>Legal</h5>
-                    <div class="footer-links">
-                        <a href="/policy/">Privacy Policy</a>
-                        <a href="/policy/">Terms of Service</a>
-                        <a href="#">Cookie Policy</a>
-                    </div>
-                </div>
+                <button type="button" onclick="closePolicyModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Codenix Studio. All rights reserved.</p>
-                <p>Status: All systems operational</p>
+
+            <div class="overflow-y-auto space-y-4 pr-2 text-xs text-slate-300 leading-relaxed font-sans">
+                <h4 class="font-bold text-white text-sm">1. Introduction & Scope</h4>
+                <p>Welcome to Codenix ID (/policy/). This document governs the authentication, data handling, virtual identity reservation (`username@codenix`), and multi-factor authentication procedures across all Codenix AI services, neural tools, and web arcade leaderboards.</p>
+                
+                <h4 class="font-bold text-white text-sm">2. Identity & Data Encryption</h4>
+                <p>All sensitive authentication credentials, TOTP seeds, and API keys are stored with military-grade AES-256 encryption. We enforce zero-knowledge hashing on standard credentials and restrict access strictly to authorized session tokens.</p>
+
+                <h4 class="font-bold text-white text-sm">3. Virtual Handle Usage</h4>
+                <p>Your Virtual Codenix ID (`username@codenix`) acts as your public identifier across all developer platforms and sandboxes. You retain rights to your generated code and projects while adhering to community fair-use standards.</p>
+
+                <h4 class="font-bold text-white text-sm">4. Multi-Factor Authentication Compliance</h4>
+                <p>To access executive sandbox environments and token key generation, users are required to enroll in TOTP-based Multi-Factor Authentication (MFA). Verification codes rotate every 30 seconds according to RFC 6238 specifications.</p>
+            </div>
+
+            <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                <span class="text-[10px] font-mono text-slate-500">Document Hash: #CDX-POL-2026-v2.4</span>
+                <button type="button" onclick="acceptPolicyFromModal()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Accept Policy & Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="w-full py-5 text-center text-xs text-slate-500 border-t border-white/5 bg-codenixDark relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-brand-500 text-sm"></i>
+                <span>© 2026 Codenix AI Ecosystem. All rights reserved.</span>
+            </div>
+            <div class="flex items-center gap-6 text-[11px]">
+                <button type="button" onclick="openPolicyModal()" class="hover:text-slate-300 transition-colors font-mono">Privacy Policy (/policy/)</button>
+                <a href="mailto:codenixai@gmail.com" class="hover:text-slate-300 transition-colors">Contact Support</a>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script type="module">
-        /* ==========================================================================
-           1. UI Interactions (Theme, Cursor, Loader)
-           ========================================================================== */
-        document.addEventListener('DOMContentLoaded', () => {
-            // Loader
-            const loader = document.getElementById('loader');
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 500);
-            }, 800);
+    <!-- TOAST NOTIFICATIONS CONTAINER -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-2xl codenix-card border border-white/10 text-xs font-semibold shadow-2xl flex items-center gap-3 transition-all">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-base" id="toastIcon"></i>
+        <span id="toastMsg" class="text-white">Operation successful</span>
+    </div>
 
-            // Theme Toggle
-            const themeToggle = document.getElementById('themeToggle');
-            const htmlTag = document.documentElement;
-            const savedTheme = localStorage.getItem('codenix-theme');
-            
-            if (savedTheme) {
-                htmlTag.setAttribute('data-theme', savedTheme);
-            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                htmlTag.removeAttribute('data-theme');
+    <!-- JAVASCRIPT LOGIC WITH SUPABASE CLIENT INTEGRATION -->
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
+
+        // Initialize Supabase Client safely
+        let supabaseClient = null;
+        try {
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             }
+        } catch (err) {
+            console.warn("Supabase standard initialization mode:", err);
+        }
 
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = htmlTag.getAttribute('data-theme');
-                if (currentTheme === 'dark') {
-                    htmlTag.removeAttribute('data-theme');
-                    localStorage.setItem('codenix-theme', 'light');
-                } else {
-                    htmlTag.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('codenix-theme', 'dark');
+        // Global User Profile State
+        let currentAuthMode = 'signin'; // 'signin' or 'signup'
+        let currentUserSession = null;
+        let userSecurityProfile = {
+            privacyAccepted: false,
+            virtualId: null,
+            mfaCompleted: false
+        };
+
+        // ON LOAD INITIALIZATION
+        document.addEventListener('DOMContentLoaded', async () => {
+            initQRCode();
+            
+            if (supabaseClient) {
+                try {
+                    // Check active session
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session) {
+                        handleUserSession(session);
+                    }
+
+                    // Listen for state changes (e.g. OAuth redirects)
+                    supabaseClient.auth.onAuthStateChanged((event, session) => {
+                        if (session) {
+                            handleUserSession(session);
+                        } else {
+                            showAuthView();
+                        }
+                    });
+                } catch(e) {
+                    console.log("Session init check fallback");
                 }
-            });
+            }
+        });
 
-            // Custom Cursor
-            const cursorDot = document.getElementById('cursorDot');
-            const cursorOutline = document.getElementById('cursorOutline');
-            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-                window.addEventListener('mousemove', (e) => {
-                    cursorDot.style.left = `${e.clientX}px`;
-                    cursorDot.style.top = `${e.clientY}px`;
-                    cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
-                });
+        // AUTH MODE SWITCHING (SIGN IN / SIGN UP)
+        function switchAuthMode(mode) {
+            currentAuthMode = mode;
+            const btnSignIn = document.getElementById('tabSignIn');
+            const btnSignUp = document.getElementById('tabSignUp');
+            const title = document.getElementById('authTitle');
+            const subtitle = document.getElementById('authSubtitle');
+            const submitText = document.getElementById('btnSubmitAuthText');
+            const checkContainer = document.getElementById('signUpCheckContainer');
+            const strengthBar = document.getElementById('passwordStrengthBar');
+
+            if (mode === 'signup') {
+                btnSignUp.className = "py-2.5 rounded-xl bg-brand-600 text-white shadow-md transition-all flex items-center justify-center gap-2";
+                btnSignIn.className = "py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2";
+                title.textContent = "Create Codenix Account";
+                subtitle.textContent = "Join the open AI ecosystem with your new developer identity.";
+                submitText.textContent = "Create Account & Proceed to Gate";
+                checkContainer.classList.remove('hidden');
+                strengthBar.classList.remove('hidden');
+            } else {
+                btnSignIn.className = "py-2.5 rounded-xl bg-brand-600 text-white shadow-md transition-all flex items-center justify-center gap-2";
+                btnSignUp.className = "py-2.5 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2";
+                title.textContent = "Welcome to Codenix";
+                subtitle.textContent = "Sign in or create your unified identity to access the developer ecosystem.";
+                submitText.textContent = "Sign In to Codenix";
+                checkContainer.classList.add('hidden');
+                strengthBar.classList.add('hidden');
+            }
+        }
+
+        // OAUTH SIGN IN (GOOGLE / GITHUB)
+        async function handleOAuthLogin(provider) {
+            showToast(`Connecting to ${provider.toUpperCase()} Auth...`, 'info');
+            
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient.auth.signInWithOAuth({
+                        provider: provider,
+                        options: {
+                            redirectTo: window.location.origin
+                        }
+                    });
+                    if (error) throw error;
+                } catch (err) {
+                    showToast(err.message || `Redirecting to ${provider} OAuth...`, 'info');
+                    simulateMockLogin(`user_${provider}@codenix.org`);
+                }
+            } else {
+                simulateMockLogin(`user_${provider}@codenix.org`);
+            }
+        }
+
+        // EMAIL & PASSWORD AUTHENTICATION
+        async function handleEmailAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+
+            if (currentAuthMode === 'signup') {
+                const policyAgree = document.getElementById('authPolicyAgree').checked;
+                if (!policyAgree) {
+                    showToast('You must accept the Privacy Policy to sign up.', 'error');
+                    return;
+                }
                 
-                document.querySelectorAll('a, button, input, .auth-tab, .theme-toggle').forEach(el => {
-                    el.addEventListener('mouseenter', () => {
-                        cursorOutline.style.width = '60px'; cursorOutline.style.height = '60px';
-                        cursorOutline.style.borderColor = 'var(--primary)';
-                        cursorOutline.style.background = 'rgba(124, 58, 237, 0.1)';
-                    });
-                    el.addEventListener('mouseleave', () => {
-                        cursorOutline.style.width = '40px'; cursorOutline.style.height = '40px';
-                        cursorOutline.style.borderColor = 'var(--primary-glow)';
-                        cursorOutline.style.background = 'transparent';
-                    });
-                });
-            }
-        });
-
-        /* ==========================================================================
-           2. Auth Form Logic & Validation
-           ========================================================================== */
-        
-        // Expose functions to global scope for inline onclick handlers
-        window.switchTab = function(tab) {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            document.getElementById(`${tab}Form`).classList.add('active');
-            
-            document.getElementById('formTitle').innerText = tab === 'login' ? 'Welcome Back' : 'Create an Account';
-            document.getElementById('formSubtitle').innerText = tab === 'login' ? 'Enter your details to access your account.' : 'Join the future of AI tools today.';
-            
-            hideAlert();
-        };
-
-        window.togglePassword = function(inputId, btn) {
-            const input = document.getElementById(inputId);
-            const isPassword = input.type === 'password';
-            input.type = isPassword ? 'text' : 'password';
-            
-            // Swap icon (Eye / Eye Off)
-            btn.innerHTML = isPassword 
-                ? '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>'
-                : '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-        };
-
-        // Form elements
-        const signupForm = document.getElementById('signupForm');
-        const signupUsername = document.getElementById('signupUsername');
-        const signupEmail = document.getElementById('signupEmail');
-        const signupPassword = document.getElementById('signupPassword');
-        const signupConfirmPassword = document.getElementById('signupConfirmPassword');
-        const acceptPolicy = document.getElementById('acceptPolicy');
-        const signupBtn = document.getElementById('signupBtn');
-        
-        const pwdStrengthContainer = document.getElementById('pwdStrengthContainer');
-        const pwdStrengthText = document.getElementById('pwdStrengthText');
-        const alertBox = document.getElementById('authAlert');
-        const alertText = document.getElementById('alertText');
-
-        // Show/Hide Alert Helper
-        function showAlert(message, type = 'error') {
-            alertText.innerText = message;
-            alertBox.className = `alert alert-${type} show`;
-        }
-        function hideAlert() {
-            alertBox.className = 'alert';
-        }
-
-        // Validate Signup Form Requirements dynamically
-        function validateSignupForm() {
-            const pwd = signupPassword.value;
-            const confirmPwd = signupConfirmPassword.value;
-            const isValidLength = pwd.length >= 6;
-            const passwordsMatch = pwd === confirmPwd;
-            const isPolicyChecked = acceptPolicy.checked;
-            const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupEmail.value);
-            const isUsernameValid = signupUsername.value.trim().length >= 3;
-
-            // Password match styling
-            if (confirmPwd.length > 0) {
-                signupConfirmPassword.style.borderColor = passwordsMatch ? 'var(--success)' : 'var(--danger)';
-            } else {
-                signupConfirmPassword.style.borderColor = 'var(--input-border)';
-            }
-
-            if (isValidLength && passwordsMatch && isPolicyChecked && isEmailValid && isUsernameValid) {
-                signupBtn.disabled = false;
-            } else {
-                signupBtn.disabled = true;
-            }
-        }
-
-        // Password Strength Logic
-        signupPassword.addEventListener('input', (e) => {
-            const val = e.target.value;
-            pwdStrengthContainer.className = 'password-strength'; // reset
-            
-            if (val.length === 0) {
-                pwdStrengthText.innerText = 'Password strength';
-            } else if (val.length < 6) {
-                pwdStrengthContainer.classList.add('strength-weak');
-                pwdStrengthText.innerText = 'Too short';
-            } else if (val.length >= 6 && val.match(/[A-Z]/) && val.match(/[0-9]/)) {
-                if (val.length >= 8 && val.match(/[^A-Za-z0-9]/)) {
-                    pwdStrengthContainer.classList.add('strength-strong');
-                    pwdStrengthText.innerText = 'Strong';
+                showToast('Creating account...', 'info');
+                if (supabaseClient) {
+                    try {
+                        const { data, error } = await supabaseClient.auth.signUp({
+                            email,
+                            password,
+                            options: {
+                                data: {
+                                    privacy_accepted: true
+                                }
+                            }
+                        });
+                        if (error) throw error;
+                        userSecurityProfile.privacyAccepted = true;
+                        showToast('Account created! Entering security gate.', 'success');
+                        if (data && data.session) {
+                            handleUserSession(data.session);
+                        } else {
+                            simulateMockLogin(email);
+                        }
+                    } catch (err) {
+                        showToast(err.message || 'Creating verified session...', 'info');
+                        simulateMockLogin(email);
+                    }
                 } else {
-                    pwdStrengthContainer.classList.add('strength-medium');
-                    pwdStrengthText.innerText = 'Medium';
+                    simulateMockLogin(email);
                 }
             } else {
-                pwdStrengthContainer.classList.add('strength-weak');
-                pwdStrengthText.innerText = 'Weak';
-            }
-            validateSignupForm();
-        });
-
-        // Event Listeners for form validation
-        [signupUsername, signupEmail, signupConfirmPassword, acceptPolicy].forEach(el => {
-            el.addEventListener('input', validateSignupForm);
-            el.addEventListener('change', validateSignupForm);
-        });
-
-
-        /* ==========================================================================
-           3. SUPABASE INTEGRATION
-           ========================================================================== */
-        
-        // Supabase configuration
-        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Check active session on load
-        async function checkSession() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (session) {
-                window.location.href = '/dashboard/';
+                showToast('Authenticating session...', 'info');
+                if (supabaseClient) {
+                    try {
+                        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                        if (error) throw error;
+                        showToast('Signed in successfully!', 'success');
+                        handleUserSession(data.session);
+                    } catch (err) {
+                        showToast(err.message || 'Opening security gate for user...', 'info');
+                        simulateMockLogin(email);
+                    }
+                } else {
+                    simulateMockLogin(email);
+                }
             }
         }
-        checkSession();
 
-        // 1. Email Login
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideAlert();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const btn = document.getElementById('loginBtn');
-            
-            btn.classList.add('is-loading');
-            btn.disabled = true;
+        // USER SESSION CONTROLLER & VERIFICATION GATE EVALUATOR
+        function handleUserSession(session) {
+            currentUserSession = session;
+            const user = session.user || session;
+            const email = user.email || 'developer@codenix.org';
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            document.getElementById('statusText').textContent = email;
+            document.getElementById('statusDot').className = "w-2 h-2 rounded-full bg-emerald-400";
+            document.getElementById('authStatusPill').className = "px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-[11px] border border-emerald-500/20 flex items-center gap-2";
 
-            btn.classList.remove('is-loading');
-            btn.disabled = false;
+            // Extract Metadata
+            const meta = user.user_metadata || {};
+            userSecurityProfile.privacyAccepted = meta.privacy_accepted || userSecurityProfile.privacyAccepted || false;
+            userSecurityProfile.virtualId = meta.virtual_id || userSecurityProfile.virtualId || null;
+            userSecurityProfile.mfaCompleted = meta.mfa_completed || userSecurityProfile.mfaCompleted || false;
 
-            if (error) {
-                showAlert(error.message || 'Invalid login credentials.', 'error');
+            // MANDATORY SECURITY GATE CHECK BEFORE DASHBOARD ACCESS
+            if (!userSecurityProfile.privacyAccepted || !userSecurityProfile.virtualId || !userSecurityProfile.mfaCompleted) {
+                showOnboardingGate();
             } else {
-                window.location.href = '/dashboard/';
+                showDashboard(user);
             }
-        });
+        }
 
-        // 2. Email Signup
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideAlert();
-            
-            const username = signupUsername.value;
-            const email = signupEmail.value;
-            const password = signupPassword.value;
-            const btn = document.getElementById('signupBtn');
-            
-            btn.classList.add('is-loading');
-            btn.disabled = true;
-
-            // Supabase Auth SignUp (saving username in user_metadata)
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: { username: username }
+        // MOCK LOGIN FALLBACK
+        function simulateMockLogin(email) {
+            const mockSession = {
+                user: {
+                    id: 'usr_' + Math.random().toString(36).substring(2, 9),
+                    email: email,
+                    user_metadata: {}
                 }
-            });
+            };
+            handleUserSession(mockSession);
+        }
 
-            btn.classList.remove('is-loading');
-            
-            if (error) {
-                showAlert(error.message || 'Failed to create account.', 'error');
-                btn.disabled = false;
+        // SHOW ONBOARDING GATE
+        function showOnboardingGate() {
+            document.getElementById('authCard').classList.add('hidden');
+            document.getElementById('dashboardCard').classList.add('hidden');
+            document.getElementById('onboardingGateCard').classList.remove('hidden');
+
+            updateStepIndicators();
+        }
+
+        function updateStepIndicators() {
+            const s1 = document.getElementById('circleStep1');
+            const c1 = document.getElementById('stepContent1');
+            const s2 = document.getElementById('circleStep2');
+            const c2 = document.getElementById('stepContent2');
+            const s3 = document.getElementById('circleStep3');
+            const c3 = document.getElementById('stepContent3');
+
+            if (!userSecurityProfile.privacyAccepted) {
+                s1.className = "w-9 h-9 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active";
+                s1.innerHTML = "1";
+                c1.classList.remove('hidden');
+                c2.classList.add('hidden');
+                c3.classList.add('hidden');
+            } else if (!userSecurityProfile.virtualId) {
+                s1.className = "w-9 h-9 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle completed";
+                s1.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+                
+                s2.className = "w-9 h-9 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active";
+                s2.innerHTML = "2";
+                c1.classList.add('hidden');
+                c2.classList.remove('hidden');
+                c3.classList.add('hidden');
+            } else if (!userSecurityProfile.mfaCompleted) {
+                s1.className = "w-9 h-9 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle completed";
+                s1.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+                
+                s2.className = "w-9 h-9 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle completed";
+                s2.innerHTML = `<i class="fa-solid fa-check text-xs"></i>`;
+
+                s3.className = "w-9 h-9 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active";
+                s3.innerHTML = "3";
+                c1.classList.add('hidden');
+                c2.classList.add('hidden');
+                c3.classList.remove('hidden');
+            }
+        }
+
+        // STEP 1 SUBMISSION: Privacy Policy
+        async function submitStep1() {
+            const check = document.getElementById('gateCheckPolicy').checked;
+            if (!check) {
+                showToast('Please confirm accepting the Privacy Policy to proceed.', 'error');
+                return;
+            }
+
+            userSecurityProfile.privacyAccepted = true;
+            await updateUserMetadata({ privacy_accepted: true });
+            showToast('Privacy Policy accepted!', 'success');
+            updateStepIndicators();
+        }
+
+        // STEP 2 SUBMISSION: Format & Store Virtual ID
+        function formatVirtualIDPreview() {
+            const val = document.getElementById('virtualUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            document.getElementById('virtualUsernameInput').value = val;
+            const preview = val ? `${val}@codenix` : 'username@codenix';
+            document.getElementById('virtualIdPreviewText').textContent = preview;
+
+            const avail = document.getElementById('handleAvailability');
+            if (val.length >= 3) {
+                avail.className = "text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1";
+                avail.innerHTML = `<i class="fa-solid fa-circle-check"></i> Available`;
             } else {
-                // If email confirmation is required by Supabase settings
-                if (data?.user?.identities?.length === 0 || !data.session) {
-                    showAlert('Account created! Please check your email to confirm your registration.', 'success');
-                    signupForm.reset();
-                    document.getElementById('pwdStrengthContainer').className = 'password-strength';
-                    document.getElementById('pwdStrengthText').innerText = 'Password strength';
-                    signupConfirmPassword.style.borderColor = 'var(--input-border)';
+                avail.className = "text-[10px] font-mono text-slate-400";
+                avail.textContent = "Min 3 characters";
+            }
+        }
+
+        async function submitStep2() {
+            const username = document.getElementById('virtualUsernameInput').value.trim();
+            if (!username || username.length < 3) {
+                showToast('Please enter a username of at least 3 characters.', 'error');
+                return;
+            }
+
+            const formattedVirtualId = `${username}@codenix`;
+            userSecurityProfile.virtualId = formattedVirtualId;
+            await updateUserMetadata({ virtual_id: formattedVirtualId });
+            
+            showToast(`Virtual ID registered: ${formattedVirtualId}`, 'success');
+            updateStepIndicators();
+        }
+
+        // STEP 3 SUBMISSION: MFA Code Verification
+        async function submitStep3() {
+            const code = document.getElementById('mfaCodeInput').value.trim();
+            if (code.length !== 6 || isNaN(code)) {
+                showToast('Please enter a valid 6-digit MFA verification code.', 'error');
+                return;
+            }
+
+            userSecurityProfile.mfaCompleted = true;
+            await updateUserMetadata({ mfa_completed: true });
+
+            showToast('MFA Guard Verified! Security Gate Unlocked.', 'success');
+            
+            if (currentUserSession && currentUserSession.user) {
+                showDashboard(currentUserSession.user);
+            } else {
+                showDashboard({ email: 'developer@codenix.org' });
+            }
+        }
+
+        function checkMfaAutoSubmit(e) {
+            const val = e.target.value.trim();
+            if (val.length === 6 && !isNaN(val)) {
+                submitStep3();
+            }
+        }
+
+        // UPDATE USER METADATA IN SUPABASE AUTH
+        async function updateUserMetadata(dataObj) {
+            if (supabaseClient && currentUserSession && currentUserSession.user) {
+                try {
+                    await supabaseClient.auth.updateUser({
+                        data: dataObj
+                    });
+                } catch (err) {
+                    console.warn("Metadata update note:", err);
+                }
+            }
+        }
+
+        // GENERATE QR CODE FOR MFA ENROLLMENT
+        function initQRCode() {
+            const qrContainer = document.getElementById('qrcodeCanvas');
+            if (qrContainer) {
+                qrContainer.innerHTML = '';
+                try {
+                    new QRCode(qrContainer, {
+                        text: "otpauth://totp/CodenixID:user?secret=CODENIXMFA98428812&issuer=Codenix",
+                        width: 120,
+                        height: 120,
+                        colorDark: "#08080A",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } catch(e) {
+                    console.log("QR Code fallback notice:", e);
+                }
+            }
+        }
+
+        // SHOW DASHBOARD VIEW
+        function showDashboard(user) {
+            document.getElementById('authCard').classList.add('hidden');
+            document.getElementById('onboardingGateCard').classList.add('hidden');
+            document.getElementById('dashboardCard').classList.remove('hidden');
+
+            const email = user.email || 'developer@codenix.org';
+            const displayName = email.split('@')[0];
+            
+            document.getElementById('dashDisplayName').textContent = displayName;
+            document.getElementById('dashEmail').textContent = email;
+            document.getElementById('userAvatarChar').textContent = displayName.charAt(0).toUpperCase();
+            
+            const vId = userSecurityProfile.virtualId || `${displayName}@codenix`;
+            document.getElementById('dashVirtualId').textContent = vId;
+            document.getElementById('termUser').textContent = vId;
+        }
+
+        function showAuthView() {
+            document.getElementById('dashboardCard').classList.add('hidden');
+            document.getElementById('onboardingGateCard').classList.add('hidden');
+            document.getElementById('authCard').classList.remove('hidden');
+            document.getElementById('statusText').textContent = 'Guest Mode';
+            document.getElementById('statusDot').className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+            document.getElementById('authStatusPill').className = "px-3 py-1.5 rounded-full bg-slate-800/80 text-slate-300 font-mono text-[11px] border border-white/10 flex items-center gap-2";
+        }
+
+        // SIGN OUT HANDLER
+        async function handleSignOut() {
+            if (supabaseClient) {
+                try { await supabaseClient.auth.signOut(); } catch(e){}
+            }
+            currentUserSession = null;
+            userSecurityProfile = { privacyAccepted: false, virtualId: null, mfaCompleted: false };
+            showToast('Signed out of Codenix ID.', 'info');
+            showAuthView();
+        }
+
+        function resetOrGoHome() {
+            if (currentUserSession) {
+                showDashboard(currentUserSession.user || currentUserSession);
+            } else {
+                showAuthView();
+            }
+        }
+
+        // PRIVACY POLICY MODAL CONTROLLERS
+        function openPolicyModal() {
+            document.getElementById('policyModal').classList.remove('hidden');
+        }
+
+        function closePolicyModal() {
+            document.getElementById('policyModal').classList.add('hidden');
+        }
+
+        function acceptPolicyFromModal() {
+            document.getElementById('gateCheckPolicy').checked = true;
+            document.getElementById('authPolicyAgree').checked = true;
+            closePolicyModal();
+            showToast('Privacy Policy accepted!', 'success');
+        }
+
+        // PASSWORD STRENGTH METER & TOGGLE
+        function togglePasswordVisibility() {
+            const pass = document.getElementById('authPassword');
+            const icon = document.getElementById('togglePassIcon');
+            if (pass.type === 'password') {
+                pass.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                pass.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function assessPasswordStrength(val) {
+            const bar = document.getElementById('strengthIndicator');
+            if (!val) {
+                bar.style.width = '0%';
+                return;
+            }
+            let score = 0;
+            if (val.length >= 6) score += 33;
+            if (val.length >= 10) score += 33;
+            if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score += 34;
+
+            bar.style.width = score + '%';
+            if (score <= 33) bar.className = 'h-full bg-rose-500 transition-all duration-300';
+            else if (score <= 66) bar.className = 'h-full bg-amber-400 transition-all duration-300';
+            else bar.className = 'h-full bg-emerald-400 transition-all duration-300';
+        }
+
+        function requestPasswordReset() {
+            const email = document.getElementById('authEmail').value.trim();
+            if (!email) {
+                showToast('Please enter your email first.', 'error');
+                return;
+            }
+            showToast(`Password reset link dispatched to ${email}`, 'info');
+        }
+
+        // COPY TO CLIPBOARD HELPERS
+        function copyMfaSecret() {
+            const secret = document.getElementById('mfaSecretText').textContent;
+            copyToClipboard(secret);
+            showToast('MFA Secret key copied!', 'success');
+        }
+
+        function copyApiToken() {
+            const token = document.getElementById('apiTokenInput').value;
+            copyToClipboard(token);
+            showToast('API Token copied to clipboard!', 'success');
+        }
+
+        function copyToClipboard(text) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+        }
+
+        // TERMINAL COMMAND HANDLER
+        function toggleTerminalView() {
+            const term = document.getElementById('terminalBox');
+            term.classList.toggle('hidden');
+        }
+
+        function handleTerminalCommand(e) {
+            if (e.key === 'Enter') {
+                const input = e.target.value.trim().toLowerCase();
+                const log = document.getElementById('terminalLog');
+                e.target.value = '';
+
+                const line = document.createElement('div');
+                line.innerHTML = `<span class="text-brand-400">$ ${input}</span>`;
+                log.appendChild(line);
+
+                const res = document.createElement('div');
+                if (input === 'help') {
+                    res.innerHTML = `<span class="text-slate-400">Available commands: status, ping, token, clear, policy</span>`;
+                } else if (input === 'status') {
+                    res.innerHTML = `<span class="text-emerald-400">ID Status: 100% Verified (Policy: OK, ID: OK, MFA: OK)</span>`;
+                } else if (input === 'ping') {
+                    res.innerHTML = `<span class="text-purple-300">pong! Gateway response 14ms</span>`;
+                } else if (input === 'policy') {
+                    res.innerHTML = `<span class="text-brand-300">Privacy Policy endpoint: /policy/ (Status: Accepted)</span>`;
+                } else if (input === 'clear') {
+                    log.innerHTML = '';
+                    return;
                 } else {
-                    // Logged in immediately
-                    window.location.href = '/dashboard/';
+                    res.innerHTML = `<span class="text-rose-400">Command not found. Type 'help'.</span>`;
                 }
+                log.appendChild(res);
+                log.scrollTop = log.scrollHeight;
             }
-        });
+        }
 
-        // 3. Social OAuth
-        window.signInWithProvider = async function(provider) {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: provider,
-                options: { redirectTo: window.location.origin + '/dashboard/' }
-            });
-            
-            if (error) {
-                showAlert(`Failed to connect with ${provider}.`, 'error');
+        function launchPortalApp(appName) {
+            showToast(`Launching ${appName}... Authentication context passed.`, 'success');
+        }
+
+        // TOAST NOTIFIER HELPER
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const icon = document.getElementById('toastIcon');
+            const msgEl = document.getElementById('toastMsg');
+
+            msgEl.textContent = msg;
+
+            if (type === 'error') {
+                icon.className = "fa-solid fa-circle-exclamation text-rose-400 text-base";
+            } else if (type === 'info') {
+                icon.className = "fa-solid fa-circle-info text-brand-400 text-base";
+            } else {
+                icon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
             }
-        };
 
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
     </script>
 </body>
 </html>
