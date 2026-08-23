@@ -143,7 +143,6 @@
 
             <!-- Header Section Navigation -->
             <nav class="hidden lg:flex items-center gap-7 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
-                <a href="#playground" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navPlayground">Playground</a>
                 <a href="#capabilities" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navCapabilities">Capabilities</a>
                 <a href="#web-arcade" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="catGames">Web Arcade</a>
                 <a href="#dev-suite" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="catDev">Dev Suite</a>
@@ -203,122 +202,15 @@
         </p>
 
         <!-- CTA Buttons -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-14">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
             <a href="/Start/" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-sm hover:opacity-90 hover:scale-[1.02] transition-all shadow-xl flex items-center justify-center gap-2">
                 <span data-i18n="btnTryCodenix">Get Started Free (/Start/)</span>
                 <i class="fa-solid fa-arrow-right text-xs"></i>
             </a>
-            <a href="#playground" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-slate-200/80 dark:bg-white/10 text-slate-800 dark:text-white font-semibold text-sm hover:bg-slate-300 dark:hover:bg-white/20 transition-all flex items-center justify-center gap-2">
-                <span data-i18n="btnExplore">Launch Live Playground</span>
+            <a href="#capabilities" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-slate-200/80 dark:bg-white/10 text-slate-800 dark:text-white font-semibold text-sm hover:bg-slate-300 dark:hover:bg-white/20 transition-all flex items-center justify-center gap-2">
+                <span data-i18n="btnExplore">Explore Ecosystem</span>
                 <i class="fa-solid fa-sparkles text-xs text-brand-400"></i>
             </a>
-        </div>
-
-        <!-- INTERACTIVE PLAYGROUND SHOWCASE (OpenAI + Codenix Mix) -->
-        <div id="playground" class="relative w-full max-w-4xl mx-auto rounded-3xl openai-card p-5 sm:p-7 overflow-hidden text-left border border-slate-200 dark:border-white/10 openai-glow">
-            
-            <!-- Playground Tabs Header -->
-            <div class="flex flex-wrap items-center justify-between pb-4 mb-5 border-b border-slate-200 dark:border-white/10 gap-3">
-                <div class="flex items-center gap-2 overflow-x-auto py-1">
-                    <button onclick="switchPlaygroundTab('code')" id="pgTabCode" class="px-3.5 py-1.5 rounded-full bg-brand-500 text-white font-mono text-xs font-semibold flex items-center gap-2 transition-all">
-                        <i class="fa-solid fa-code"></i> AI Code-X
-                    </button>
-                    <button onclick="switchPlaygroundTab('arcade')" id="pgTabArcade" class="px-3.5 py-1.5 rounded-full bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-mono text-xs font-semibold flex items-center gap-2 hover:bg-brand-500/20 transition-all">
-                        <i class="fa-solid fa-gamepad"></i> Web Arcade Mini
-                    </button>
-                    <button onclick="switchPlaygroundTab('media')" id="pgTabMedia" class="px-3.5 py-1.5 rounded-full bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-mono text-xs font-semibold flex items-center gap-2 hover:bg-brand-500/20 transition-all">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Visual Studio
-                    </button>
-                    <button onclick="switchPlaygroundTab('summary')" id="pgTabSummary" class="px-3.5 py-1.5 rounded-full bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-mono text-xs font-semibold flex items-center gap-2 hover:bg-brand-500/20 transition-all">
-                        <i class="fa-solid fa-file-invoice"></i> Doc Analytics
-                    </button>
-                </div>
-                <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                    <span>Codenix 3.0 Sandbox • Active</span>
-                </div>
-            </div>
-
-            <!-- Tab 1: AI Code-X Playground -->
-            <div id="pgContentCode" class="space-y-4 font-mono text-xs sm:text-sm">
-                <div class="flex items-center justify-between text-slate-400 text-[11px]">
-                    <span>PROMPT INTERFACE</span>
-                    <span class="text-brand-400">Model: Codenix-Code-v3</span>
-                </div>
-                <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/5 text-slate-800 dark:text-slate-200">
-                    <input type="text" id="demoCodePrompt" value="Generate a responsive WebGL shader animation script with Tailwind layout." class="w-full bg-transparent outline-none text-xs sm:text-sm font-mono text-slate-900 dark:text-white" />
-                </div>
-                <div class="flex justify-end">
-                    <button onclick="runDemoCodePrompt()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs flex items-center gap-2 transition-all">
-                        <i class="fa-solid fa-bolt"></i> Generate Output
-                    </button>
-                </div>
-                <div class="p-4 rounded-2xl bg-slate-950 text-emerald-400 font-mono text-xs overflow-x-auto border border-emerald-500/20 max-h-48 scrollbar-thin">
-                    <pre id="demoCodeOutput">// Codenix Neural Code Generation Engine
-function initCodenixShader(canvasId) {
-    const canvas = document.getElementById(canvasId);
-    const gl = canvas.getContext('webgl2');
-    console.log("Codenix Engine: Shader initialized at 120 FPS");
-    return { status: "Active", latency: "0ms", user: "Synced with /Start/" };
-}</pre>
-                </div>
-            </div>
-
-            <!-- Tab 2: Web Arcade Mini Canvas Game -->
-            <div id="pgContentArcade" class="hidden space-y-4">
-                <div class="flex items-center justify-between text-xs font-mono text-slate-400">
-                    <span>CODENIX MINI ARCADE • NEON SPACE DEFENDER</span>
-                    <div class="flex items-center gap-4">
-                        <span>SCORE: <strong id="arcadeScore" class="text-brand-400">0</strong></span>
-                        <button onclick="resetArcadeGame()" class="px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white text-[11px]">Restart</button>
-                    </div>
-                </div>
-                <div class="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-black border border-brand-500/30 flex items-center justify-center">
-                    <canvas id="heroArcadeCanvas" class="w-full h-full"></canvas>
-                    <div id="arcadeStartOverlay" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-4 text-center z-10">
-                        <i class="fa-solid fa-gamepad text-3xl text-brand-400 mb-2"></i>
-                        <h4 class="text-white font-bold text-sm">Play Codenix Mini Arcade</h4>
-                        <p class="text-slate-400 text-xs mb-3">Move mouse or drag to steer ship & auto-fire!</p>
-                        <button onclick="startArcadeGame()" class="px-5 py-2 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-all">
-                            Start Playing
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 3: Visual Studio Preview -->
-            <div id="pgContentMedia" class="hidden space-y-4 font-mono text-xs">
-                <div class="text-slate-400 text-[11px]">GENERATIVE ASSET PROMPT</div>
-                <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/5 text-slate-800 dark:text-slate-200">
-                    "Futuristic neon cyberpunk vector logo with obsidian geometry"
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                    <div class="h-24 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-900 flex items-center justify-center text-white font-bold text-xs p-2 text-center border border-purple-400/30">
-                        <i class="fa-solid fa-cube text-2xl mb-1 block"></i> Asset #1
-                    </div>
-                    <div class="h-24 rounded-2xl bg-gradient-to-br from-pink-600 to-rose-900 flex items-center justify-center text-white font-bold text-xs p-2 text-center border border-pink-400/30">
-                        <i class="fa-solid fa-shapes text-2xl mb-1 block"></i> Asset #2
-                    </div>
-                    <div class="h-24 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-900 flex items-center justify-center text-white font-bold text-xs p-2 text-center border border-cyan-400/30">
-                        <i class="fa-solid fa-microchip text-2xl mb-1 block"></i> Asset #3
-                    </div>
-                    <div class="h-24 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-900 flex items-center justify-center text-white font-bold text-xs p-2 text-center border border-emerald-400/30">
-                        <i class="fa-solid fa-atom text-2xl mb-1 block"></i> Asset #4
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 4: Doc Analytics -->
-            <div id="pgContentSummary" class="hidden space-y-4 font-mono text-xs">
-                <div class="text-slate-400 text-[11px]">SMART DATA PARSER</div>
-                <div class="p-4 rounded-2xl bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/5 space-y-2">
-                    <div class="text-emerald-400 font-bold">✓ Analysis Summary:</div>
-                    <p class="text-slate-600 dark:text-slate-300 font-sans text-xs">
-                        Processed 42kb document in 12ms. Extracted 8 key entities, 3 architecture diagrams, and zero security vulnerabilities. Synchronized with Codenix ID.
-                    </p>
-                </div>
-            </div>
-
         </div>
 
     </section>
@@ -695,7 +587,7 @@ function initCodenixShader(canvasId) {
                 <div class="space-y-3">
                     <h4 class="font-semibold text-slate-900 dark:text-white uppercase text-[11px] tracking-wider">Ecosystem</h4>
                     <ul class="space-y-2">
-                        <li><a href="#playground" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navPlayground">Playground</a></li>
+                        <li><a href="#capabilities" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navCapabilities">Capabilities</a></li>
                         <li><a href="#web-arcade" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="catGames">Web Arcade</a></li>
                         <li><a href="/Start/" class="hover:text-slate-900 dark:hover:text-white transition-colors">Codenix ID</a></li>
                     </ul>
