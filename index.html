@@ -1,1380 +1,1028 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta
-    name="description"
-    content="Use free AI chat, image generation, coding assistants, writing tools, and more with Codenix AI."
-    >
-    <title>Codenix | The Future of AI Tools</title>
-    <!-- Favicon placeholder using emoji as requested in prompt, wait - prompt said NO emojis. Using a generic SVG data URI -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
-    
-    <!-- Google Fonts: Inter -->
+    <title>Codenix - Next-Gen Free AI Tools, Games & Ecosystem</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#F5F3FF',
+                            100: '#EDE9FE',
+                            200: '#DDD6FE',
+                            300: '#C4B5FD',
+                            400: '#A78BFA',
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                            700: '#6D28D9',
+                            800: '#5B21B6',
+                            900: '#4C1D95',
+                            950: '#0B0914',
+                        },
+                        darkbg: '#050505',
+                        darkcard: '#0D0D0F',
+                        openaiDark: '#101014'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Tajawal', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+                        'shimmer': 'shimmer 2.5s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.03)' },
+                        },
+                        shimmer: {
+                            '100%': { transform: 'translateX(100%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* ==========================================================================
-           1. CSS VARIABLES & THEMING
-           ========================================================================== */
-        :root {
-            /* Light Theme Variables */
-            --primary: #7C3AED;
-            --primary-hover: #6D28D9;
-            --primary-glow: rgba(124, 58, 237, 0.4);
-            --secondary: #f4f4f5;
-            
-            --bg-color: #ffffff;
-            --bg-alt: #fafafa;
-            --text-main: #09090b;
-            --text-muted: #71717a;
-            
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(0, 0, 0, 0.08);
-            --nav-bg: rgba(255, 255, 255, 0.8);
-            
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-            
-            --gradient-text: linear-gradient(135deg, #09090b 0%, #71717a 100%);
-        }
-
-        [data-theme="dark"] {
-            /* Dark Theme Variables */
-            --bg-color: #050508;
-            --bg-alt: #0a0a0f;
-            --text-main: #ffffff;
-            --text-muted: #a1a1aa;
-            
-            --card-bg: rgba(20, 20, 25, 0.5);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --nav-bg: rgba(5, 5, 8, 0.8);
-            
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-            
-            --gradient-text: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-        }
-
-        /* ==========================================================================
-           2. GLOBAL RESETS & TYPOGRAPHY
-           ========================================================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            overflow-x: hidden;
-            transition: background-color 0.5s ease, color 0.5s ease;
-        }
-
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: var(--bg-color);
+            background: rgba(5, 5, 5, 0.8);
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
-            border-radius: 5px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-
-        /* Selection */
-        ::selection {
-            background: var(--primary-glow);
-            color: var(--text-main);
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        /* Typography */
-        h1, h2, h3, h4 {
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 1.2;
-        }
-
-        .text-gradient {
-            background: var(--gradient-text);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .text-primary-gradient {
-            background: linear-gradient(135deg, #7C3AED 0%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ==========================================================================
-           3. UI COMPONENTS
-           ========================================================================== */
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.8rem 1.8rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            border: none;
-            outline: none;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #6D28D9 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 25px var(--primary-glow);
-        }
-
-        .btn-secondary {
-            background: var(--card-bg);
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            background: var(--card-border);
-            transform: translateY(-2px);
-        }
-
-        /* Ripple Effect */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            background-color: rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-        }
-
-        @keyframes ripple {
-            to { transform: scale(4); opacity: 0; }
-        }
-
-        /* Badges */
-        .badge {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            background: rgba(124, 58, 237, 0.1);
-            color: var(--primary);
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-
-        /* Section Containers */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        section {
-            padding: 6rem 0;
-            position: relative;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-header h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .section-header p {
-            color: var(--text-muted);
-            font-size: 1.125rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* ==========================================================================
-           4. CUSTOM CURSOR, LOADER & PROGRESS BAR
-           ========================================================================== */
-        
-        /* Custom Cursor */
-        .cursor-dot, .cursor-outline {
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 9999;
-            pointer-events: none;
-        }
-
-        .cursor-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--primary);
-        }
-
-        .cursor-outline {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--primary-glow);
-            transition: width 0.2s, height 0.2s, border-color 0.2s;
-        }
-
-        @media (hover: none) and (pointer: coarse) {
-            .cursor-dot, .cursor-outline { display: none; }
-        }
-
-        /* Scroll Progress */
-        .scroll-progress {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 3px;
-            background: var(--primary);
-            z-index: 10000;
-            transition: width 0.1s ease;
-        }
-
-        /* Loading Screen */
-        .loader {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            transition: opacity 0.5s ease;
-        }
-
-        .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--card-border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* ==========================================================================
-           5. NAVBAR
-           ========================================================================== */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 1rem 0;
-            z-index: 1000;
-            background: var(--nav-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--card-border);
-            transition: all 0.3s ease;
-        }
-
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.05em;
-        }
-
-        .logo img {
-            width: 32px;
-            height: 32px;
-            /* Placeholder styling if logo doesn't load */
-            border-radius: 8px;
-            background: var(--primary);
-            object-fit: cover;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-main);
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            width: 60px;
-            height: 30px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 30px;
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 5px;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle svg {
-            width: 16px;
-            height: 16px;
-            fill: var(--text-muted);
-            transition: fill 0.3s ease;
-        }
-
-        .theme-toggle .toggle-thumb {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 24px;
-            height: 24px;
-            background: var(--bg-color);
-            border: 1px solid var(--card-border);
-            border-radius: 50%;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: var(--shadow-sm);
-        }
-
-        [data-theme="dark"] .theme-toggle .toggle-thumb {
-            transform: translateX(30px);
-        }
-
-        [data-theme="dark"] .theme-toggle .icon-moon { fill: var(--text-main); }
-        html:not([data-theme="dark"]) .theme-toggle .icon-sun { fill: var(--text-main); }
-
-        /* Mobile Menu */
-        .menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none; /* simple hidden for mobile, in real app add a slide menu */
-            }
-            .menu-btn { display: block; }
-            .theme-toggle { display: none; } /* Hide in nav, maybe add to mobile menu later */
-        }
-
-        /* ==========================================================================
-           6. HERO SECTION
-           ========================================================================== */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding-top: 5rem;
-            overflow: hidden;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            max-width: 800px;
-        }
-
-        .hero h1 {
-            font-size: clamp(3rem, 5vw, 5rem);
-            margin-bottom: 1.5rem;
-            line-height: 1.1;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-muted);
-            margin-bottom: 2.5rem;
-            max-width: 650px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-btns {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        /* Animated Background */
-        .bg-elements {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .bg-shape {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.5;
-            animation: float 15s infinite alternate ease-in-out;
-        }
-
-        .shape-1 {
-            width: 400px; height: 400px;
-            background: rgba(124, 58, 237, 0.2);
-            top: -10%; left: -10%;
-        }
-
-        .shape-2 {
-            width: 500px; height: 500px;
-            background: rgba(59, 130, 246, 0.15);
-            bottom: -20%; right: -10%;
-            animation-delay: -5s;
-        }
-
-        .shape-3 {
-            width: 300px; height: 300px;
-            background: rgba(236, 72, 153, 0.15);
-            top: 40%; left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -10s;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(50px, 30px) scale(1.1); }
-            100% { transform: translate(-30px, 80px) scale(0.9); }
-        }
-
-        .grid-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: 
-                linear-gradient(to right, var(--card-border) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--card-border) 1px, transparent 1px);
-            background-size: 50px 50px;
-            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-            opacity: 0.3;
-        }
-
-        /* ==========================================================================
-           7. FEATURES SECTION
-           ========================================================================== */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            backdrop-filter: blur(10px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            group: hover;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 24px;
-            padding: 2px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg), 0 0 40px -10px var(--primary-glow);
-            border-color: rgba(124, 58, 237, 0.3);
-        }
-
-        .feature-card:hover::before { opacity: 1; }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(124, 58, 237, 0.1);
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-            transition: transform 0.4s ease;
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotate(5deg);
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .feature-icon svg { width: 30px; height: 30px; stroke-width: 1.5; }
-
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card p {
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-
-        .status-badge {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            font-size: 0.7rem;
-            padding: 0.2rem 0.6rem;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--card-border);
-        }
-
-        /* ==========================================================================
-           8. WHY CHOOSE SECTION
-           ========================================================================== */
-        .why-section {
-            background: var(--bg-alt);
-            border-top: 1px solid var(--card-border);
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-
-        .bento-item {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .bento-item:hover {
-            border-color: var(--text-muted);
-        }
-
-        .bento-item.large {
-            grid-column: span 2;
-        }
-
-        .bento-icon {
-            color: var(--primary);
-        }
-
-        .bento-item h4 {
-            font-size: 1.25rem;
-        }
-        .bento-item p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        @media (max-width: 900px) {
-            .bento-grid { grid-template-columns: 1fr; }
-            .bento-item.large { grid-column: span 1; }
-        }
-
-        /* ==========================================================================
-           9. STATISTICS SECTION
-           ========================================================================== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-card {
-            padding: 2rem;
-        }
-
-        .stat-number {
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stat-label {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        /* ==========================================================================
-           10. CONTACT SECTION
-           ========================================================================== */
-        .contact-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 30px;
-            padding: 4rem 2rem;
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-            overflow: hidden;
+            background: #4C1D95;
+            border-radius: 4px;
+        }
+        /* OpenAI Minimalist Card Styling */
+        .google-card, .openai-card {
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .contact-card::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
-            opacity: 0.1;
-            z-index: 0;
-            pointer-events: none;
+        .dark .google-card, .dark .openai-card {
+            background: rgba(13, 13, 15, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-
-        .contact-content {
-            position: relative;
-            z-index: 1;
+        .google-card:hover, .openai-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
         }
-
-        .email-link {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: inline-block;
-            margin: 2rem 0;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
+        .gradient-text {
+            background: linear-gradient(135deg, #FFFFFF 0%, #A78BFA 50%, #C4B5FD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
-        .email-link:hover {
-            color: var(--primary);
-            border-color: var(--primary);
+        .light .gradient-text {
+            background: linear-gradient(135deg, #0F172A 0%, #6D28D9 50%, #4C1D95 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
-        /* ==========================================================================
-           11. FOOTER
-           ========================================================================== */
-        footer {
-            border-top: 1px solid var(--card-border);
-            padding: 4rem 0 2rem;
-            background: var(--bg-alt);
+        .filter-pill {
+            transition: all 0.2s ease;
         }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 4rem;
+        .filter-pill.active {
+            background-color: #7C3AED;
+            color: #ffffff;
+            border-color: #7C3AED;
         }
-
-        .footer-col h5 {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
+        .openai-glow {
+            box-shadow: 0 0 50px -10px rgba(124, 58, 237, 0.25);
         }
-
-        .footer-links {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .footer-links a {
-            color: var(--text-muted);
-            transition: color 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .social-icons a {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-
-        .social-icons a:hover {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-            transform: translateY(-3px);
-        }
-
-        .footer-bottom {
-            border-top: 1px solid var(--card-border);
-            padding-top: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 900px) {
-            .footer-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 600px) {
-            .footer-grid { grid-template-columns: 1fr; }
-            .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
-            .hero h1 { font-size: 2.5rem; }
-        }
-
-        /* ==========================================================================
-           12. ANIMATIONS & UTILITIES
-           ========================================================================== */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .delay-100 { transition-delay: 100ms; }
-        .delay-200 { transition-delay: 200ms; }
-        .delay-300 { transition-delay: 300ms; }
-
-        .back-to-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px; height: 50px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 999;
-            color: var(--text-main);
-        }
-
-        .back-to-top.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .back-to-top:hover {
-            background: var(--primary);
-            color: #fff;
-            transform: translateY(-5px);
-        }
-
-        /* SVG Reset */
-        svg {
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 dark:bg-darkbg dark:text-slate-100 font-sans transition-colors duration-300 min-h-screen flex flex-col overflow-x-hidden">
 
-    <!-- Loading Screen -->
-    <div class="loader" id="loader">
-        <div class="loader-spinner"></div>
-    </div>
-
-    <!-- Scroll Progress -->
-    <div class="scroll-progress" id="scrollProgress"></div>
-
-    <!-- Custom Cursor -->
-    <div class="cursor-dot" id="cursorDot"></div>
-    <div class="cursor-outline" id="cursorOutline"></div>
-
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="container nav-container">
-            <a href="#" class="logo">
-                <img src="logo.png" alt="C" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%237C3AED\'/><text x=\'50\' y=\'68\' font-size=\'60\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\'>C</text></svg>'">
-                <span>Codenix</span>
+    <!-- NAVIGATION BAR (OpenAI Style Header) -->
+    <header class="w-full px-4 sm:px-10 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-darkbg/80 border-b border-slate-200 dark:border-white/5">
+        
+        <!-- Brand Logo & Main Nav Links -->
+        <div class="flex items-center gap-8 sm:gap-12">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 rounded-xl bg-black dark:bg-white flex items-center justify-center text-white dark:text-black shadow-md transition-transform group-hover:scale-105">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">CODENIX</span>
             </a>
-            
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
 
-            <!-- Theme Toggle -->
-            <div class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
-                <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                <div class="toggle-thumb"></div>
-            </div>
-            
-            <button class="menu-btn"><svg viewBox="0 0 24 24" width="24" height="24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="hero" id="home">
-        <div class="bg-elements" id="heroBg">
-            <div class="grid-bg"></div>
-            <div class="bg-shape shape-1"></div>
-            <div class="bg-shape shape-2"></div>
-            <div class="bg-shape shape-3"></div>
+            <!-- Header Section Navigation -->
+            <nav class="hidden md:flex items-center gap-8 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
+                <a href="#ai-tools" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navAITools">AI Tools</a>
+                <a href="#web-games" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="catGames">Web Games</a>
+                <a href="#features" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navFeatures">Capabilities</a>
+                <a href="#why-us" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navWhyUs">Why Codenix</a>
+                <a href="#about-us" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navAboutUs">About</a>
+                <a href="#contact" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navContact">Contact</a>
+            </nav>
         </div>
 
-        <div class="container hero-content reveal">
-            <span class="badge">Codenix Studio Presents</span>
-            <h1>The <span class="text-primary-gradient">Future</span> of AI Tools Starts Here.</h1>
-            <p>Discover powerful AI tools for chatting, coding, generating images, voices, QR codes, and much more — all in one free platform.</p>
+        <!-- Right Action Controls -->
+        <div class="flex items-center gap-3 sm:gap-4">
             
-            <div class="hero-btns">
-                <a href="/Start/" class="btn btn-primary btn-ripple">
-                    Start Your Journey Now
-                    <svg width="20" height="20" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-                <a href="#features" class="btn btn-secondary btn-ripple">
-                    Learn More
-                </a>
+            <!-- Language Dropdown -->
+            <div class="relative group">
+                <button id="langDropdownBtn" class="px-3 py-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-medium flex items-center gap-1.5 transition-colors border border-transparent dark:border-white/10">
+                    <i class="fa-solid fa-globe text-slate-500 text-xs"></i>
+                    <span id="currentLangCode" class="uppercase font-semibold">EN</span>
+                </button>
+                <div id="langDropdown" class="hidden absolute right-0 mt-2 w-36 openai-card rounded-2xl shadow-2xl py-2 z-50 text-xs">
+                    <button onclick="setLanguage('en')" class="w-full px-4 py-2 text-left hover:bg-brand-500/10 flex items-center justify-between">English <span>EN</span></button>
+                    <button onclick="setLanguage('es')" class="w-full px-4 py-2 text-left hover:bg-brand-500/10 flex items-center justify-between">Español <span>ES</span></button>
+                    <button onclick="setLanguage('ar')" class="w-full px-4 py-2 text-left hover:bg-brand-500/10 flex items-center justify-between">العربية <span>AR</span></button>
+                    <button onclick="setLanguage('fr')" class="w-full px-4 py-2 text-left hover:bg-brand-500/10 flex items-center justify-between">Français <span>FR</span></button>
+                    <button onclick="setLanguage('de')" class="w-full px-4 py-2 text-left hover:bg-brand-500/10 flex items-center justify-between">Deutsch <span>DE</span></button>
+                </div>
             </div>
+
+            <!-- Dark/Light Theme Switcher -->
+            <button id="themeToggleBtn" aria-label="Toggle Theme" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-colors">
+                <i class="fa-solid fa-sun hidden dark:inline-block text-amber-400"></i>
+                <i class="fa-solid fa-moon inline-block dark:hidden text-slate-700"></i>
+            </button>
+
+            <!-- Direct Link to /Start/ for Sign In / Codenix ID -->
+            <a href="/Start/" class="px-5 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-xs sm:text-sm shadow-sm hover:opacity-90 hover:scale-105 transition-all">
+                <span data-i18n="btnCodenixID">Try Codenix</span>
+            </a>
         </div>
     </header>
 
-    <!-- Features Section -->
-    <section id="features" class="container">
-        <div class="section-header reveal">
-            <h2 class="text-gradient">Powerful Tools at Your Fingertips</h2>
-            <p>Everything you need to boost productivity, creativity, and development in one seamless ecosystem.</p>
+    <!-- HERO SECTION (OpenAI Minimalist & High Impact Style) -->
+    <section class="pt-16 pb-20 sm:pt-24 sm:pb-28 px-4 max-w-6xl mx-auto text-center relative z-10">
+        
+        <!-- OpenAI Style Announcement Pill -->
+        <a href="/Start/" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200/70 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 mb-8 hover:border-brand-500/50 transition-all">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            <span data-i18n="heroBadge">Introducing Codenix 2.0 • Free AI & Web Ecosystem</span>
+            <i class="fa-solid fa-arrow-right text-[10px] text-slate-400"></i>
+        </a>
+
+        <!-- Impactful OpenAI-style Headline -->
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight max-w-4xl mx-auto leading-[1.1] mb-8 text-slate-900 dark:text-white">
+            <span data-i18n="heroTitle1">Creating intelligence for</span> <span class="gradient-text">everyone.</span>
+        </h1>
+        
+        <p class="text-slate-600 dark:text-slate-400 text-base sm:text-xl max-w-2xl mx-auto leading-relaxed mb-10 font-normal" data-i18n="heroSubtitle">
+            Codenix builds free, accessible artificial intelligence tools, interactive web games, and developer utilities in one unified ecosystem.
+        </p>
+
+        <!-- OpenAI CTA Button Row (Search Bar Removed) -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-16">
+            <a href="/Start/" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-sm hover:opacity-90 hover:scale-[1.02] transition-all shadow-xl flex items-center justify-center gap-2">
+                <span data-i18n="btnTryCodenix">Try Codenix Free</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+            </a>
+            <a href="#ai-tools" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-slate-200/80 dark:bg-white/10 text-slate-800 dark:text-white font-semibold text-sm hover:bg-slate-300 dark:hover:bg-white/20 transition-all flex items-center justify-center gap-2">
+                <span data-i18n="btnExplore">Explore Capabilities</span>
+            </a>
         </div>
 
-        <div class="features-grid">
-            <!-- Feature 1 -->
-            <div class="feature-card reveal">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <!-- OpenAI Hero Interactive Showcase Box -->
+        <div class="relative w-full max-w-4xl mx-auto rounded-3xl openai-card p-6 sm:p-8 overflow-hidden text-left border border-slate-200 dark:border-white/10 openai-glow">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 dark:border-white/10 text-xs text-slate-400">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                    <span class="ml-2 font-mono text-[11px] text-slate-400">Codenix Studio v2.0 • Active Session</span>
                 </div>
-                <h3>AI Chat Models</h3>
-                <p>Engage in fluid conversations with state-of-the-art AI models. Ask questions, brainstorm ideas, or just chat.</p>
-            </div>
-            
-            <!-- Feature 2 -->
-            <div class="feature-card reveal delay-100">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                </div>
-                <h3>Image Generation</h3>
-                <p>Turn text into stunning, high-resolution artwork and graphics instantly with our advanced image models.</p>
+                <span class="px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-400 font-semibold text-[10px]">100% FREE</span>
             </div>
 
-            <!-- Feature 3 -->
-            <div class="feature-card reveal delay-200">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            <div class="space-y-4 font-mono text-xs sm:text-sm">
+                <div class="flex items-start gap-3 text-slate-600 dark:text-slate-300">
+                    <span class="text-brand-500 font-bold">&gt;</span>
+                    <span class="text-slate-900 dark:text-slate-100">User: Generate a high-performance interactive web application & AI model runner.</span>
                 </div>
-                <h3>Code Generation</h3>
-                <p>Accelerate development. Generate snippets, refactor code, and debug instantly in multiple languages.</p>
-            </div>
-
-            <!-- Feature 4 -->
-            <div class="feature-card reveal">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                <div class="p-4 rounded-2xl bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/5 space-y-2 text-slate-700 dark:text-slate-300">
+                    <div class="flex items-center gap-2 text-brand-400 font-bold text-xs">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <span>Codenix Ecosystem Neural Output</span>
+                    </div>
+                    <p class="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-sans">
+                        Synchronized with Codenix ID. Provisioning instant code generation, media synthesis, and web arcade shaders with zero latency...
+                    </p>
                 </div>
-                <h3>Voice Generation</h3>
-                <p>Create natural, human-like voiceovers from text in seconds. Perfect for videos, podcasts, and accessibility.</p>
-            </div>
-
-            <!-- Feature 5 -->
-            <div class="feature-card reveal delay-100">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                </div>
-                <h3>QR Generator</h3>
-                <p>Instantly generate high-quality, customizable QR codes for links, text, contacts, and networks.</p>
-            </div>
-
-            <!-- Feature 6 -->
-            <div class="feature-card reveal delay-200">
-                <span class="status-badge">Coming Soon</span>
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
-                </div>
-                <h3>AI Agents</h3>
-                <p>Deploy autonomous agents that handle complex, multi-step tasks across the web on your behalf.</p>
-            </div>
-            
-            <!-- Feature 7 -->
-            <div class="feature-card reveal">
-                <span class="status-badge">Coming Soon</span>
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
-                </div>
-                <h3>Developer APIs</h3>
-                <p>Integrate Codenix’s powerful AI capabilities directly into your own applications seamlessly.</p>
             </div>
         </div>
+
+        <!-- OpenAI Category Navigation Pills -->
+        <div class="flex flex-wrap items-center justify-center gap-2 max-w-3xl mx-auto mt-14" id="categoryFilterContainer">
+            <button onclick="filterCategory('all')" class="filter-pill active px-5 py-2 rounded-full border border-slate-300 dark:border-white/10 text-xs font-semibold transition-all" data-i18n="catAll">
+                All Capabilities (20+)
+            </button>
+            <button onclick="filterCategory('ai')" class="filter-pill px-5 py-2 rounded-full border border-slate-300 dark:border-white/10 text-xs font-semibold transition-all" data-i18n="catAI">
+                AI Tools
+            </button>
+            <button onclick="filterCategory('games')" class="filter-pill px-5 py-2 rounded-full border border-slate-300 dark:border-white/10 text-xs font-semibold transition-all" data-i18n="catGames">
+                Web Games
+            </button>
+            <button onclick="filterCategory('dev')" class="filter-pill px-5 py-2 rounded-full border border-slate-300 dark:border-white/10 text-xs font-semibold transition-all" data-i18n="catDev">
+                Developer Suite
+            </button>
+            <button onclick="filterCategory('data')" class="filter-pill px-5 py-2 rounded-full border border-slate-300 dark:border-white/10 text-xs font-semibold transition-all" data-i18n="catData">
+                Data Tools
+            </button>
+        </div>
+
     </section>
 
-    <!-- Why Choose Codenix -->
-    <section id="about" class="why-section">
-        <div class="container">
-            <div class="section-header reveal">
-                <h2>Why Choose <span class="text-primary-gradient">Codenix?</span></h2>
-                <p>Built from the ground up to provide a premium, frictionless experience for creators and developers.</p>
+    <!-- OPENAI PRODUCTS SHOWCASE GRID -->
+    <section id="ai-tools" class="py-16 bg-slate-100/50 dark:bg-darkbg border-y border-slate-200 dark:border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+                <div>
+                    <h2 class="text-2xl sm:text-4xl font-semibold tracking-tight" data-i18n="gridTitle">Ecosystem Capabilities</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2" data-i18n="gridSubtitle">Explore all free tools and applications synchronized with your Codenix ID.</p>
+                </div>
+                <span class="text-xs font-mono px-3 py-1 rounded-full bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/10 w-max">Codenix Hub • Free Access</span>
             </div>
 
-            <div class="bento-grid">
-                <div class="bento-item reveal">
-                    <svg class="bento-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <h4>100% Free to Use</h4>
-                    <p>No paywalls, no hidden fees. Access powerful AI tools completely free of charge.</p>
-                </div>
+            <!-- Product Cards Grid (OpenAI Aesthetic) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="productsGrid">
                 
-                <div class="bento-item reveal delay-100">
-                    <svg class="bento-icon" width="24" height="24" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    <h4>Lightning Fast</h4>
-                    <p>Optimized infrastructure ensures your generations and responses happen in milliseconds.</p>
+                <!-- Card 1 -->
+                <div class="product-card openai-card p-7 rounded-3xl space-y-5 flex flex-col justify-between" data-category="ai">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-code"></i>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300">FLAGSHIP AI</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="p1Title">AI Code & Logic Generator</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed" data-i18n="p1Desc">
+                            Converts plain prompt instructions into clean, optimized code across front-end, back-end, and database scripts.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-mono">Codenix Core</span>
+                        <a href="/Start/" class="font-semibold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-1 transition-colors">
+                            <span>Launch Tool</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bento-item reveal delay-200">
-                    <svg class="bento-icon" width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    <h4>Beautiful Interface</h4>
-                    <p>A distraction-free, elegant UI designed to let your creativity flow without friction.</p>
+                <!-- Card 2 -->
+                <div class="product-card openai-card p-7 rounded-3xl space-y-5 flex flex-col justify-between" data-category="ai">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400">CREATIVE AI</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="p2Title">Generative Media & Visual Studio</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed" data-i18n="p2Desc">
+                            Synthesizes graphics, vector icons, and dynamic visual assets instantly using advanced prompt models.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-mono">Codenix Studio</span>
+                        <a href="/Start/" class="font-semibold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-1 transition-colors">
+                            <span>Launch Studio</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bento-item large reveal">
-                    <svg class="bento-icon" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                    <h4>Growing Ecosystem by Codenix Studio</h4>
-                    <p>We are constantly training new models, adding features, and expanding the platform based on community feedback. Be part of a fast-growing AI ecosystem built for the future.</p>
+                <!-- Card 3 -->
+                <div class="product-card openai-card p-7 rounded-3xl space-y-5 flex flex-col justify-between" data-category="ai">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-file-contract"></i>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400">ANALYSIS</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="p3Title">Smart Data & Document Summarizer</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed" data-i18n="p3Desc">
+                            Extracts insights, summarizes lengthy documents, and generates data schemas with zero subscription fees.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-mono">Codenix Docs</span>
+                        <a href="/Start/" class="font-semibold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-1 transition-colors">
+                            <span>Open Summarizer</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bento-item reveal delay-100">
-                    <svg class="bento-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"></path><path d="M10 2c1 .5 2 2 2 5h-2c0-3-1-4-2-5Z"></path></svg>
-                    <h4>Multiple AI Models</h4>
-                    <p>Switch seamlessly between various industry-leading models.</p>
+                <!-- Card 4 -->
+                <div class="product-card openai-card p-7 rounded-3xl space-y-5 flex flex-col justify-between" id="web-games" data-category="games">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-pink-600 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-gamepad"></i>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-400">WEB GAMES</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="p4Title">Interactive Web Arcade & WebGL Games</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed" data-i18n="p4Desc">
+                            Play fast-loading 2D and 3D web games directly in your browser with real-time global leaderboard ranking.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-mono">Codenix Arcade</span>
+                        <a href="/Start/" class="font-semibold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-1 transition-colors">
+                            <span>Play Now</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="product-card openai-card p-7 rounded-3xl space-y-5 flex flex-col justify-between" data-category="dev">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400">UTILITIES</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="p5Title">Developer Productivity Suite</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed" data-i18n="p5Desc">
+                            Instant regex builders, API mock generators, JSON formatting, and code optimization tools ready in seconds.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-mono">Codenix DevSuite</span>
+                        <a href="/Start/" class="font-semibold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-1 transition-colors">
+                            <span>Launch Suite</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="product-card openai-card p-7 rounded-3xl space-y-5 flex flex-col justify-between" data-category="data">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-cubes-stacked"></i>
+                            </div>
+                            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400">20+ ECOSYSTEM</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="p6Title">Complete 20+ Free Applications Library</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed" data-i18n="p6Desc">
+                            An expanding suite of over 20 digital tools seamlessly interconnected under one free account on /Start/.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+                        <span class="text-slate-400 font-mono">Codenix Hub</span>
+                        <a href="/Start/" class="font-semibold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-1 transition-colors">
+                            <span>Explore All</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mb-16 space-y-4">
+                <span class="text-xs font-mono font-semibold text-brand-500 uppercase tracking-widest">Architectural Principles</span>
+                <h2 class="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                    <span data-i18n="featSectionTitle">Engineered for speed, privacy, and</span> <span class="gradient-text">simplicity.</span>
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg" data-i18n="featSectionSub">
+                    Codenix brings together artificial intelligence models and developer tools into a single seamless experience.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="openai-card p-8 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="f1Title">Cutting-Edge AI Core</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="f1Desc">
+                        Leverage neural models for rapid text generation, code creation, and automated media synthesis directly in your browser.
+                    </p>
+                </div>
+
+                <div class="openai-card p-8 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="f2Title">Cross-Device Synchronization</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="f2Desc">
+                        Your settings, saved tools, and game scores sync effortlessly across desktop and mobile devices.
+                    </p>
+                </div>
+
+                <div class="openai-card p-8 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="f3Title">Private & Secure</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="f3Desc">
+                        We prioritize user data privacy. Authentication processes occur safely on our official <code>/Start/</code> page.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Statistics Section -->
-    <section class="container">
-        <div class="stats-grid">
-            <div class="stat-card reveal">
-                <div class="stat-number" data-target="15">0</div>
-                <div class="stat-label">AI Tools Available</div>
+    <!-- WHY US SECTION -->
+    <section id="why-us" class="py-24 bg-slate-100/50 dark:bg-darkbg border-y border-slate-200 dark:border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mb-16 space-y-4">
+                <span class="text-xs font-mono font-semibold text-emerald-500 uppercase tracking-widest">Built for Everyone</span>
+                <h2 class="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                    <span data-i18n="whyUsTitle">Why Choose Codenix?</span>
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400 text-base" data-i18n="whyUsSub">
+                    We eliminate paywalls and complex sign-ups, giving creators instant access to artificial intelligence.
+                </p>
             </div>
-            <div class="stat-card reveal delay-100">
-                <div class="stat-number" data-target="200">0</div>
-                <div class="stat-label">Active Users</div>
-            </div>
-            <div class="stat-card reveal delay-200">
-                <div class="stat-number" data-target="60000">0</div>
-                <div class="stat-label">Images Generated</div>
-            </div>
-            <div class="stat-card reveal delay-300">
-                <div class="stat-number" data-target="2000">0</div>
-                <div class="stat-label">Code Snippets</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="openai-card p-8 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="why1Title">100% Free Forever</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="why1Desc">
+                        No hidden credit cards, no tier limits, and zero cost. Every single AI tool and web game is available to all users globally.
+                    </p>
+                </div>
+
+                <div class="openai-card p-8 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="why2Title">Ultra Low Latency</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="why2Desc">
+                        Optimized neural pipelines ensure low latency responses and seamless browser execution without heavy setups.
+                    </p>
+                </div>
+
+                <div class="openai-card p-8 rounded-3xl space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-fingerprint"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white" data-i18n="why3Title">Unified Codenix ID</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="why3Desc">
+                        Sign in or create your account at /Start/ to unlock single sign-on across all ecosystem applications with one login.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="container">
-        <div class="contact-card reveal">
-            <div class="contact-content">
-                <span class="badge">Get In Touch</span>
-                <h2>Let's build the future together.</h2>
-                <p>Have questions, feedback, or want to partner with us?</p>
-                <a href="mailto:codenix.ai@gmail.com" class="email-link">codenix.ai@gmail.com</a>
-                <br>
-                <a href="mailto:codenix.ai@gmail.com" class="btn btn-primary btn-ripple mt-4">
-                    Send us an email
-                </a>
+    <!-- WHO WE ARE SECTION -->
+    <section id="about-us" class="py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="openai-card rounded-3xl p-8 sm:p-14 border border-slate-200 dark:border-white/10 relative overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    
+                    <div class="space-y-6">
+                        <span class="text-xs font-mono font-semibold text-brand-500 uppercase tracking-widest" data-i18n="aboutBadge">Who We Are</span>
+                        <h2 class="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-white leading-tight">
+                            <span data-i18n="aboutTitle1">Democratizing AI Technology for</span><br>
+                            <span class="gradient-text" data-i18n="aboutTitle2">Creators & Engineers Everywhere.</span>
+                        </h2>
+                        <p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed" data-i18n="aboutDesc">
+                            Codenix is an innovative technology hub focused on making artificial intelligence, web games, and developer software freely accessible to everyone. Our mission is to empower developers, students, and creators globally with top-tier digital tools.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed" data-i18n="aboutDescSub">
+                            All user authentication and account management take place securely on our dedicated portal page at <code>/Start/</code>.
+                        </p>
+
+                        <div class="pt-2">
+                            <a href="/Start/" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-sm hover:scale-[1.02] transition-all shadow-lg">
+                                <span data-i18n="btnVisitStart">Open /Start/ Account Portal</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="relative flex justify-center">
+                        <div class="w-full max-w-md openai-card rounded-3xl p-8 text-center space-y-6">
+                            <div class="w-16 h-16 rounded-2xl bg-black dark:bg-white text-white dark:text-black mx-auto flex items-center justify-center shadow-lg text-2xl">
+                                <i class="fa-solid fa-network-wired"></i>
+                            </div>
+                            <h3 class="font-semibold text-2xl text-slate-900 dark:text-white" data-i18n="aboutBoxTitle">Codenix Ecosystem</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="aboutBoxSub">
+                                Connecting AI tools, developer suites, and games under one unified portal.
+                            </p>
+                            <div class="grid grid-cols-2 gap-3 pt-2 text-left">
+                                <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5">
+                                    <div class="text-xs font-semibold text-brand-400">20+ Tools</div>
+                                    <div class="text-[11px] text-slate-400">Free to access</div>
+                                </div>
+                                <div class="p-3.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5">
+                                    <div class="text-xs font-semibold text-emerald-400">SSO ID</div>
+                                    <div class="text-[11px] text-slate-400">Hosted on /Start/</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <a href="#" class="logo" style="margin-bottom: 1rem; display: inline-flex;">
-                        <img src="logo.png" alt="C" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%237C3AED\'/><text x=\'50\' y=\'68\' font-size=\'60\' font-family=\'sans-serif\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\'>C</text></svg>'">
-                        <span>Codenix</span>
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="openai-card rounded-3xl p-8 sm:p-12 border border-slate-200 dark:border-white/10 max-w-3xl mx-auto text-center space-y-6">
+                
+                <div class="w-12 h-12 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-black flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+
+                <div class="space-y-3">
+                    <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white" data-i18n="contactTitle">Get in Touch with Codenix</h2>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-xl mx-auto" data-i18n="contactDesc">
+                        Have questions about our AI tools, web games, or ecosystem partnerships? Reach out to our team directly anytime.
+                    </p>
+                </div>
+
+                <div class="inline-flex flex-col sm:flex-row items-center gap-3 p-3 px-6 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                    <span class="text-xs sm:text-sm font-mono text-slate-600 dark:text-slate-400">Official Contact Email:</span>
+                    <a href="mailto:codenixai@gmail.com" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white hover:text-brand-500 flex items-center gap-2 transition-colors">
+                        <span>codenixai@gmail.com</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                     </a>
-                    <p style="color: var(--text-muted); font-size: 0.95rem;">Empowering creators and developers with powerful, free AI tools. Built with passion by Codenix Studio.</p>
-                    <div class="social-icons">
-                        <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a>
-                        <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a>
-                        <a href="#" aria-label="Discord"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="9" cy="12" r="1"></circle><circle cx="15" cy="12" r="1"></circle><path d="M7.5 6.5C7.5 6.5 9 5 12 5s4.5 1.5 4.5 1.5c0 0 2.5 4.5 2.5 10.5 0 0-2 2-5 2l-.5-1s1-.5 1-1.5c-2 1-4 1-6 1s-4-1-6-1c0 1 .5 1.5 1 1.5l-.5 1c-3 0-5-2-5-2C3 11 5.5 6.5 7.5 6.5z"></path></svg></a>
-                    </div>
-                </div>
-                
-                <div class="footer-col">
-                    <h5>Features</h5>
-                    <div class="footer-links">
-                        <a href="#">AI Chat</a>
-                        <a href="#">Image Generation</a>
-                        <a href="#">Code Generation</a>
-                        <a href="#">Voice Generation</a>
-                        <a href="#">QR Generator</a>
-                    </div>
+                    <button onclick="copyContactEmail()" class="px-4 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-black text-xs font-semibold transition-all ml-0 sm:ml-2 hover:opacity-90">
+                        <i class="fa-solid fa-copy"></i> <span id="copyEmailText">Copy</span>
+                    </button>
                 </div>
 
-                <div class="footer-col">
-                    <h5>Company</h5>
-                    <div class="footer-links">
-                        <a href="#about">About Us</a>
-                        <a href="#">Codenix Studio</a>
-                        <a href="#">Careers</a>
-                        <a href="#">Blog</a>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="footer-col">
-                    <h5>Legal</h5>
-                    <div class="footer-links">
-                        <a href="/policy/">Privacy Policy</a>
-                        <a href="/policy/">Terms of Service</a>
-                        <a href="#">Cookie Policy</a>
-                    </div>
+    <!-- FOOTER (OpenAI Minimalist Footer) -->
+    <footer class="mt-auto bg-white dark:bg-darkbg border-t border-slate-200 dark:border-white/10 text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-start justify-between gap-8">
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-xs font-bold">C</div>
+                    <span class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">CODENIX</span>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                    Free AI & Web Ecosystem democratizing technology, web arcade games, and developer utilities worldwide.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-8 w-full md:w-auto">
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-slate-900 dark:text-white uppercase text-[11px] tracking-wider">Ecosystem</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#ai-tools" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navAITools">AI Tools</a></li>
+                        <li><a href="#web-games" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="catGames">Web Games</a></li>
+                        <li><a href="/Start/" class="hover:text-slate-900 dark:hover:text-white transition-colors">Codenix ID</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-slate-900 dark:text-white uppercase text-[11px] tracking-wider">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#about-us" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navAboutUs">About Us</a></li>
+                        <li><a href="#why-us" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navWhyUs">Why Codenix</a></li>
+                        <li><a href="#features" class="hover:text-slate-900 dark:hover:text-white transition-colors" data-i18n="navFeatures">Capabilities</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-3 col-span-2 sm:col-span-1">
+                    <h4 class="font-semibold text-slate-900 dark:text-white uppercase text-[11px] tracking-wider">Contact</h4>
+                    <ul class="space-y-2">
+                        <li><a href="mailto:codenixai@gmail.com" class="hover:text-slate-900 dark:hover:text-white transition-colors">codenixai@gmail.com</a></li>
+                        <li><a href="/Start/" class="font-semibold text-brand-500 hover:underline">/Start/ Portal</a></li>
+                    </ul>
                 </div>
             </div>
+        </div>
 
-            <div class="footer-bottom">
-                <p>&copy; 2026 Codenix Studio. All rights reserved.</p>
-                <p>Status: All systems operational</p>
-            </div>
+        <div class="border-t border-slate-200 dark:border-white/5 py-6 text-center text-[11px] text-slate-400">
+            © 2026 Codenix AI Ecosystem. All rights reserved. • 100% Free Forever
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
-    <div class="back-to-top" id="backToTop">
-        <svg width="24" height="24" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    <!-- Toast Notification Message Box -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-2xl openai-card border border-slate-200 dark:border-white/10 text-xs font-semibold shadow-2xl flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-base" id="toastIcon"></i>
+        <span id="toastMessage">Action completed successfully!</span>
     </div>
 
-    <!-- Scripts -->
     <script>
+        const translations = {
+            en: {
+                navFeatures: "Capabilities",
+                navAITools: "AI Tools",
+                navWhyUs: "Why Codenix",
+                navAboutUs: "About",
+                navContact: "Contact",
+                btnCodenixID: "Try Codenix",
+                btnTryCodenix: "Try Codenix Free",
+                btnExplore: "Explore Capabilities",
+                heroBadge: "Introducing Codenix 2.0 • Free AI & Web Ecosystem",
+                heroTitle1: "Creating intelligence for",
+                heroSubtitle: "Codenix builds free, accessible artificial intelligence tools, interactive web games, and developer utilities in one unified ecosystem.",
+                catAll: "All Capabilities (20+)",
+                catAI: "AI Tools",
+                catGames: "Web Games",
+                catDev: "Developer Suite",
+                catData: "Data Tools",
+                gridTitle: "Ecosystem Capabilities",
+                gridSubtitle: "Explore all free tools and applications synchronized with your Codenix ID.",
+                p1Title: "AI Code & Logic Generator",
+                p1Desc: "Converts plain prompt instructions into clean, optimized code across front-end, back-end, and database scripts.",
+                p2Title: "Generative Media & Visual Studio",
+                p2Desc: "Synthesizes graphics, vector icons, and dynamic visual assets instantly using advanced prompt models.",
+                p3Title: "Smart Data & Document Summarizer",
+                p3Desc: "Extracts insights, summarizes lengthy documents, and generates data schemas with zero subscription fees.",
+                p4Title: "Interactive Web Arcade & WebGL Games",
+                p4Desc: "Play fast-loading 2D and 3D web games directly in your browser with real-time global leaderboard ranking.",
+                p5Title: "Developer Productivity Suite",
+                p5Desc: "Instant regex builders, API mock generators, JSON formatting, and code optimization tools ready in seconds.",
+                p6Title: "Complete 20+ Free Applications Library",
+                p6Desc: "An expanding suite of over 20 digital tools seamlessly interconnected under one free account on /Start/.",
+                featSectionTitle: "Engineered for speed, privacy, and",
+                featSectionSub: "Codenix brings together artificial intelligence models and developer tools into a single seamless experience.",
+                f1Title: "Cutting-Edge AI Core",
+                f1Desc: "Leverage neural models for rapid text generation, code creation, and automated media synthesis directly in your browser.",
+                f2Title: "Cross-Device Synchronization",
+                f2Desc: "Your settings, saved tools, and game scores sync effortlessly across desktop and mobile devices.",
+                f3Title: "Private & Secure",
+                f3Desc: "We prioritize user data privacy. Authentication processes occur safely on our official /Start/ page.",
+                whyUsTitle: "Why Choose Codenix?",
+                whyUsSub: "We eliminate paywalls and complex sign-ups, giving creators instant access to artificial intelligence.",
+                why1Title: "100% Free Forever",
+                why1Desc: "No hidden credit cards, no tier limits, and zero cost. Every single AI tool and web game is available to all users globally.",
+                why2Title: "Ultra Low Latency",
+                why2Desc: "Optimized neural pipelines ensure low latency responses and seamless browser execution without heavy setups.",
+                why3Title: "Unified Codenix ID",
+                why3Desc: "Sign in or create your account at /Start/ to unlock single sign-on across all ecosystem applications with one login.",
+                aboutBadge: "Who We Are",
+                aboutTitle1: "Democratizing AI Technology for",
+                aboutTitle2: "Creators & Engineers Everywhere.",
+                aboutDesc: "Codenix is an innovative technology hub focused on making artificial intelligence, web games, and developer software freely accessible to everyone. Our mission is to empower developers, students, and creators globally with top-tier digital tools.",
+                aboutDescSub: "All user authentication and account management take place securely on our dedicated portal page at /Start/.",
+                btnVisitStart: "Open /Start/ Account Portal",
+                aboutBoxTitle: "Codenix Ecosystem",
+                aboutBoxSub: "Connecting AI tools, developer suites, and games under one unified portal.",
+                contactTitle: "Get in Touch with Codenix",
+                contactDesc: "Have questions about our AI tools, web games, or ecosystem partnerships? Reach out to our team directly anytime."
+            },
+            es: {
+                navFeatures: "Capacidades",
+                navAITools: "Herramientas IA",
+                navWhyUs: "Por Qué Codenix",
+                navAboutUs: "Acerca de",
+                navContact: "Contacto",
+                btnCodenixID: "Probar Codenix",
+                btnTryCodenix: "Probar Codenix Gratis",
+                btnExplore: "Explorar Capacidades",
+                heroBadge: "Presentando Codenix 2.0 • Ecosistema IA Gratis",
+                heroTitle1: "Creando inteligencia para",
+                heroSubtitle: "Codenix crea herramientas gratuitas de inteligencia artificial, juegos web y utilidades para desarrolladores.",
+                catAll: "Todas las Capacidades (20+)",
+                catAI: "Herramientas IA",
+                catGames: "Juegos Web",
+                catDev: "Suite Desarrolladores",
+                catData: "Herramientas Datos",
+                gridTitle: "Capacidades del Ecosistema",
+                gridSubtitle: "Explora todas las herramientas gratuitas sincronizadas con tu Codenix ID.",
+                p1Title: "Generador de Código e Inteligencia Lógica",
+                p1Desc: "Convierte instrucciones simples en código limpio y optimizado de manera instantánea.",
+                p2Title: "Estudio Generativo de Medios y Gráficos",
+                p2Desc: "Crea gráficos, iconos vectoriales y recursos visuales al instante utilizando IA.",
+                p3Title: "Resumidor de Datos y Documentos Inteligente",
+                p3Desc: "Extrae información clave y resume documentos extensos sin ningún costo.",
+                p4Title: "Arcade Web Interactivo y Juegos WebGL",
+                p4Desc: "Disfruta de juegos 2D y 3D en tu navegador con tabla de clasificación global.",
+                p5Title: "Suite de Productividad para Desarrolladores",
+                p5Desc: "Generador de expresiones regulares, simulación de API y formateador JSON listo en segundos.",
+                p6Title: "Biblioteca Completa de 20+ Aplicaciones",
+                p6Desc: "Una biblioteca en constante expansión de más de 20 herramientas interconectadas en /Start/.",
+                featSectionTitle: "Diseñado para velocidad, privacidad y",
+                featSectionSub: "Codenix reúne modelos de inteligencia artificial y herramientas de desarrollo en una sola experiencia fluida.",
+                f1Title: "Núcleo de IA de Vanguardia",
+                f1Desc: "Aprovecha modelos neuronales para generación de texto, creación de código y síntesis de medios.",
+                f2Title: "Sincronización Multi-Dispositivo",
+                f2Desc: "Tus configuraciones y puntuaciones de juegos se sincronizan entre escritorio y dispositivos móviles.",
+                f3Title: "Privado y Seguro",
+                f3Desc: "Priorizamos tu privacidad. Los procesos de autenticación ocurren de forma segura en /Start/.",
+                whyUsTitle: "¿Por Qué Elegir Codenix?",
+                whyUsSub: "Eliminamos cobros y registros complejos para dar acceso inmediato a la tecnología IA.",
+                why1Title: "100% Gratis Para Siempre",
+                why1Desc: "Sin tarjetas de crédito ni costos ocultos. Todas nuestras herramientas son libres para todos.",
+                why2Title: "Latencia Ultra Baja",
+                why2Desc: "Arquitectura optimizada para respuestas rápidas directamente en el navegador.",
+                why3Title: "Codenix ID Unificado",
+                why3Desc: "Inicia sesión o crea tu cuenta en /Start/ para acceder a todas las aplicaciones con un solo perfil.",
+                aboutBadge: "¿Quiénes Somos?",
+                aboutTitle1: "Democratizando la Tecnología de IA para",
+                aboutTitle2: "Creadores e Ingenieros en Todo el Mundo.",
+                aboutDesc: "Codenix es un centro tecnológico enfocado en hacer que la IA, los juegos web y las herramientas de desarrollo sean accesibles para todos.",
+                aboutDescSub: "La autenticación de usuarios y gestión de cuentas se realiza en la página portal /Start/.",
+                btnVisitStart: "Abrir Portal de Cuenta /Start/",
+                aboutBoxTitle: "Ecosistema Codenix",
+                aboutBoxSub: "Conectando herramientas de IA y juegos bajo un solo portal.",
+                contactTitle: "Ponte en Contacto con Codenix",
+                contactDesc: "¿Tienes preguntas sobre nuestras herramientas de IA o juegos? Escríbenos directamente."
+            },
+            ar: {
+                navFeatures: "القدرات",
+                navAITools: "أدوات الذكاء الاصطناعي",
+                navWhyUs: "لماذا كودينيكس",
+                navAboutUs: "عن المنظومة",
+                navContact: "تواصل معنا",
+                btnCodenixID: "تجربة Codenix",
+                btnTryCodenix: "تجربة Codenix مجاناً",
+                btnExplore: "استكشاف القدرات",
+                heroBadge: "إطلاق Codenix 2.0 • منظومة الذكاء الاصطناعي والألعاب",
+                heroTitle1: "ابتكار الذكاء الاصطناعي لـ",
+                heroSubtitle: "تبني كودينيكس أدوات ذكاء اصطناعي وألعاب ويب وأدوات مطورين مجانية ومتاحة للجميع.",
+                catAll: "جميع القدرات (20+)",
+                catAI: "أدوات الذكاء الاصطناعي",
+                catGames: "ألعاب الويب",
+                catDev: "أدوات المطورين",
+                catData: "بيانات وإنتاجية",
+                gridTitle: "قدرات المنظومة",
+                gridSubtitle: "استكشف جميع التطبيقات والأدوات المجانية المزامنة مع حساب Codenix ID الخاص بك.",
+                p1Title: "مولد الأكواد البرمجية والمنطق الذكي",
+                p1Desc: "يحول التعليمات النصية البسيطة إلى أكواد برمجية محسنة ومباشرة عبر مختلف اللغات.",
+                p2Title: "استوديو التوليد المرئي والوسائط",
+                p2Desc: "ينشئ الرسومات والأيقونات والوسائط التفاعلية فوراً باستخدام نماذج الذكاء الاصطناعي.",
+                p3Title: "مُلخص المستندات والبيانات الذكي",
+                p3Desc: "يستخرج المفاهيم الرئيسية ويلخص المستندات الطويلة بدون أي اشتراكات مدفوعة.",
+                p4Title: "ألعاب الويب التفاعلية ثلاثية الأبعاد",
+                p4Desc: "العاب ويب سريعة التحميل مباشرة في متصفحك مع نظام نقاط ومتصدرين عالمي.",
+                p5Title: "مجموعة أدوات المطورين للإنتاجية",
+                p5Desc: "بناء التعبيرات النمطية، واختبار الواجهات، وتنظيف بيانات JSON جاهز في ثوانٍ.",
+                p6Title: "مكتبة كاملة تضم أكثر من 20 تطبيقاً",
+                p6Desc: "حزمة متنامية تضم أكثر من 20 أداة برمجية مترابطة تحت حساب واحد مجاني في /Start/.",
+                featSectionTitle: "مصمم للسرعة، الخصوصية، و",
+                featSectionSub: "تجمع كودينيكس بين نماذج الذكاء الاصطناعي وأدوات المطورين في تجربة واحدة سلسة.",
+                f1Title: "محرك ذكاء اصطناعي متطور",
+                f1Desc: "استفد من النماذج العصبية لتوليد النصوص والأكواد وإنشاء الوسائط مباشرة في المتصفح.",
+                f2Title: "مزامنة عبر جميع الأجهزة",
+                f2Desc: "تتزامن إعداداتك وأدواتك المحفوظة ونتائج ألعابك بسلاسة بين أجهزة الكمبيوتر والهواتف.",
+                f3Title: "خصوصية وأمان تام",
+                f3Desc: "نضع خصوصية بيانات المستخدم في المقدمة. تتم عمليات تسجيل الدخول بأمان عبر صفحة /Start/.",
+                whyUsTitle: "لماذا تختار كودينيكس؟",
+                whyUsSub: "نحن نلغي الاشتراكات والتعقيدات لنمنح الجميع وصولاً فورياً لتقنيات الذكاء الاصطناعي.",
+                why1Title: "مجاني 100% مدى الحياة",
+                why1Desc: "بدون بطاقات إلكترونية أو رسوم خفية. جميع الأدوات متاحة لكافة المستخدمين مجاناً.",
+                why2Title: "استجابة فائقة السرعة",
+                why2Desc: "بنية عصبية محسنة تضمن استجابة فورية وتنفيذ سريع داخل المتصفح.",
+                why3Title: "معرف Codenix ID موحد",
+                why3Desc: "سجل دخولك أو أنشئ حسابك في /Start/ للوصول لكافة التطبيقات ببيانات موحدة.",
+                aboutBadge: "من نحن",
+                aboutTitle1: "تيسير تقنيات الذكاء الاصطناعي لـ",
+                aboutTitle2: "المبدعين والمهندسين في كل مكان.",
+                aboutDesc: "كودينيكس هي منظومة تكنولوجية مبتكرة تهدف إلى جعل الذكاء الاصطناعي وألعاب الويب وأدوات البرمجة متاحة للجميع مجاناً.",
+                aboutDescSub: "جميع عمليات تسجيل الدخول وإدارة الحسابات تتم بأمان عبر صفحة البوابة /Start/.",
+                btnVisitStart: "زيارة بوابة الحسابات /Start/",
+                aboutBoxTitle: "منظومة Codenix",
+                aboutBoxSub: "ربط أدوات الذكاء الاصطناعي والألعاب تحت مظلة بوابة واحدة.",
+                contactTitle: "تواصل مع كودينيكس",
+                contactDesc: "هل لديك أي استفسار حول أدوات الذكاء الاصطناعي أو الألعاب؟ تواصل مع فريقنا مباشرة."
+            },
+            fr: {
+                navFeatures: "Capacités",
+                navAITools: "Outils IA",
+                navWhyUs: "Pourquoi Codenix",
+                navAboutUs: "À propos",
+                navContact: "Contact",
+                btnCodenixID: "Essayer Codenix",
+                btnTryCodenix: "Essayer Codenix Gratuit",
+                btnExplore: "Explorer les Capacités",
+                heroBadge: "Présentation de Codenix 2.0 • Écosystème IA Gratuit",
+                heroTitle1: "Créer une intelligence pour",
+                heroSubtitle: "Codenix conçoit des outils d'IA gratuits, des jeux web interactifs et des utilitaires pour développeurs.",
+                catAll: "Toutes les Capacités (20+)",
+                catAI: "Outils IA",
+                catGames: "Jeux Web",
+                catDev: "Suite Développeur",
+                catData: "Outils Données",
+                gridTitle: "Capacités de l'Écosystème",
+                gridSubtitle: "Explorez tous les outils gratuits synchronisés avec votre identifiant Codenix ID.",
+                p1Title: "Générateur de Code & Logique IA",
+                p1Desc: "Transforme des instructions simples en code propre et optimisé instantanément.",
+                p2Title: "Studio Visuel & Médias Génératifs",
+                p2Desc: "Synthétise des graphiques, icônes vectorielles et visuels dynamiques grâce à l'IA.",
+                p3Title: "Analyseur & Résumeur de Documents IA",
+                p3Desc: "Extrait des informations clés et résume des documents volumineux sans abonnement.",
+                p4Title: "Arcade Web Interactive & Jeux WebGL",
+                p4Desc: "Jouez à des jeux 2D/3D directement dans votre navigateur avec classement mondial.",
+                p5Title: "Suite de Productivité pour Développeurs",
+                p5Desc: "Générateur Regex, simulation d'API et nettoyeur JSON prêt en quelques secondes.",
+                p6Title: "Bibliothèque de 20+ Applications Gratuites",
+                p6Desc: "Une suite de plus de 20 outils numériques interconnectés gratuitement sur /Start/.",
+                featSectionTitle: "Conçu pour la vitesse, la confidentialité et",
+                featSectionSub: "Codenix rassemble des modèles d'IA et des outils de développement dans une expérience fluide.",
+                f1Title: "Cœur d'IA de Pointe",
+                f1Desc: "Profitez de modèles neuronaux pour la génération de texte, de code et de médias.",
+                f2Title: "Synchronisation Multi-Appareils",
+                f2Desc: "Vos paramètres et scores de jeux se synchronisent entre ordinateur et appareils mobiles.",
+                f3Title: "Privé et Sécurisé",
+                f3Desc: "Nous priorisons la confidentialité. La connexion se fait en toute sécurité sur /Start/.",
+                whyUsTitle: "Pourquoi Choisir Codenix ?",
+                whyUsSub: "Nous supprimons les abonnements payants pour offrir un accès immédiat à l'IA.",
+                why1Title: "100% Gratuit pour Toujours",
+                why1Desc: "Aucune carte bancaire requise. Tous les outils sont entièrement gratuits.",
+                why2Title: "Latence Ultra Faible",
+                why2Desc: "Architecture optimisée garantissant une exécution rapide dans le navigateur.",
+                why3Title: "Identifiant Codenix ID Unique",
+                why3Desc: "Connectez-vous sur /Start/ pour déverrouiller toutes les applications avec un seul compte.",
+                aboutBadge: "Qui Sommes-Nous",
+                aboutTitle1: "Démocratiser la Technologie IA pour les",
+                aboutTitle2: "Créateurs & Ingénieurs Partout dans le Monde.",
+                aboutDesc: "Codenix est un pôle technologique innovant dédié à la démocratisation de l'IA et du développement.",
+                aboutDescSub: "La connexion et la gestion des comptes se font en toute sécurité sur la page /Start/.",
+                btnVisitStart: "Ouvrir le Portail /Start/",
+                aboutBoxTitle: "Écosystème Codenix",
+                aboutBoxSub: "Rassembler outils IA et jeux web sous un même portail.",
+                contactTitle: "Contactez Codenix",
+                contactDesc: "Des questions sur nos outils IA ou jeux ? Écrivez-nous directement."
+            },
+            de: {
+                navFeatures: "Fähigkeiten",
+                navAITools: "KI-Tools",
+                navWhyUs: "Warum Codenix",
+                navAboutUs: "Über Uns",
+                navContact: "Kontakt",
+                btnCodenixID: "Codenix Testen",
+                btnTryCodenix: "Codenix Gratis Testen",
+                btnExplore: "Fähigkeiten Entdecken",
+                heroBadge: "Codenix 2.0 Vorstellen • Kostenloses KI Ökosystem",
+                heroTitle1: "Intelligenz schaffen für",
+                heroSubtitle: "Codenix entwickelt kostenlose KI-Tools, interaktive Web-Spiele und Entwickler-Software in einem Ökosystem.",
+                catAll: "Alle Fähigkeiten (20+)",
+                catAI: "KI-Tools",
+                catGames: "Web-Spiele",
+                catDev: "Entwickler-Suite",
+                catData: "Daten-Tools",
+                gridTitle: "Ökosystem Fähigkeiten",
+                gridSubtitle: "Entdecken Sie alle kostenlosen Tools, die mit Ihrer Codenix ID synchronisiert werden.",
+                p1Title: "KI-Code- & Logikgenerator",
+                p1Desc: "Wandelt einfache Textbefehle sofort in sauberen und optimierten Code um.",
+                p2Title: "Generatives Medien & Visuelles Studio",
+                p2Desc: "Erstellt Grafiken, Vektor-Icons und visuelle Assets sofort mithilfe von KI.",
+                p3Title: "Smarte Daten- & Dokumentenzusammenfassung",
+                p3Desc: "Extrahiert Erkenntnisse und fasst lange Dokumente ohne Gebühren zusammen.",
+                p4Title: "Interaktives Web-Arcade & WebGL Spiele",
+                p4Desc: "Spielen Sie 2D & 3D Spiele im Browser mit globaler Bestenliste.",
+                p5Title: "Entwickler-Produktivitäts-Suite",
+                p5Desc: "Regex-Generator, API-Mocking und JSON-Sanitizer direkt einsatzbereit.",
+                p6Title: "Komplette Bibliothek mit 20+ Anwendungen",
+                p6Desc: "Eine wachsende Bibliothek von über 20 kostenlosen Tools auf /Start/.",
+                featSectionTitle: "Entwickelt für Geschwindigkeit, Datenschutz und",
+                featSectionSub: "Codenix vereint KI-Modelle und Entwickler-Tools in einer nahtlosen Erfahrung.",
+                f1Title: "Spitzenklasse KI-Kern",
+                f1Desc: "Nutzen Sie neuronale Modelle für Textgenerierung, Code-Erstellung und Medien direkt im Browser.",
+                f2Title: "Geräteübergreifende Synchronisation",
+                f2Desc: "Einstellungen und Spielergebnisse werden nahtlos zwischen Desktop und Mobilgeräten synchronisiert.",
+                f3Title: "Privat & Sicher",
+                f3Desc: "Datenschutz steht an erster Stelle. Die Anmeldung erfolgt sicher auf /Start/.",
+                whyUsTitle: "Warum Codenix Wählen?",
+                whyUsSub: "Wir entfernen Bezahlschranken für sofortigen Zugriff auf moderne KI-Technologie.",
+                why1Title: "100% Kostenlos Für Immer",
+                why1Desc: "Keine versteckten Gebühren. Alle KI-Tools und Spiele stehen jedem kostenlos zur Verfügung.",
+                why2Title: "Extrem Niedrige Latenz",
+                why2Desc: "Optimierte neuronale Architektur sorgt für schnelle Antworten ohne schwere Installationen.",
+                why3Title: "Einheitliche Codenix ID",
+                why3Desc: "Melden Sie sich auf /Start/ an, um alle Anwendungen mit einem Konto zu nutzen.",
+                aboutBadge: "Über Uns",
+                aboutTitle1: "Zugängliche KI-Technologie Bauen für",
+                aboutTitle2: "Ersteller & Ingenieure Weltweit.",
+                aboutDesc: "Codenix ist ein Technologie-Hub, der darauf fokussiert ist, KI und Software-Tools für alle zugänglich zu machen.",
+                aboutDescSub: "Die Anmeldung und Kontoverwaltung erfolgen sicher auf unserer Seite unter /Start/.",
+                btnVisitStart: "Portal /Start/ Öffnen",
+                aboutBoxTitle: "Codenix Ökosystem",
+                aboutBoxSub: "Verbindung von KI-Tools und Spielen unter einem Portal.",
+                contactTitle: "Kontaktieren Sie Codenix",
+                contactDesc: "Haben Sie Fragen zu unseren KI-Tools oder Spielen? Schreiben Sie uns direkt."
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
-            /* =========================================
-               1. Loader
-               ========================================= */
-            const loader = document.getElementById('loader');
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 500);
-            }, 800); // Minimum 800ms to show the smooth loading state
-
-            /* =========================================
-               2. Custom Cursor
-               ========================================= */
-            const cursorDot = document.getElementById('cursorDot');
-            const cursorOutline = document.getElementById('cursorOutline');
-            
-            // Only activate if device supports hover
-            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-                window.addEventListener('mousemove', (e) => {
-                    const posX = e.clientX;
-                    const posY = e.clientY;
-
-                    cursorDot.style.left = `${posX}px`;
-                    cursorDot.style.top = `${posY}px`;
-
-                    // Slight delay for outline
-                    cursorOutline.animate({
-                        left: `${posX}px`,
-                        top: `${posY}px`
-                    }, { duration: 500, fill: "forwards" });
-                });
-
-                // Hover effect on links and buttons
-                const interactables = document.querySelectorAll('a, button, .theme-toggle');
-                interactables.forEach(el => {
-                    el.addEventListener('mouseenter', () => {
-                        cursorOutline.style.width = '60px';
-                        cursorOutline.style.height = '60px';
-                        cursorOutline.style.borderColor = 'var(--primary)';
-                        cursorOutline.style.background = 'rgba(124, 58, 237, 0.1)';
-                    });
-                    el.addEventListener('mouseleave', () => {
-                        cursorOutline.style.width = '40px';
-                        cursorOutline.style.height = '40px';
-                        cursorOutline.style.borderColor = 'var(--primary-glow)';
-                        cursorOutline.style.background = 'transparent';
-                    });
-                });
-            }
-
-            /* =========================================
-               3. Theme Toggle
-               ========================================= */
-            const themeToggle = document.getElementById('themeToggle');
-            const htmlTag = document.documentElement;
-            
-            // Check local storage or system preference
-            const savedTheme = localStorage.getItem('codenix-theme');
-            if (savedTheme) {
-                htmlTag.setAttribute('data-theme', savedTheme);
-            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                htmlTag.removeAttribute('data-theme'); // default to dark if not light
-            }
-
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = htmlTag.getAttribute('data-theme');
-                if (currentTheme === 'dark') {
-                    htmlTag.removeAttribute('data-theme');
-                    localStorage.setItem('codenix-theme', 'light');
-                } else {
-                    htmlTag.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('codenix-theme', 'dark');
-                }
-            });
-
-            /* =========================================
-               4. Scroll Progress & Sticky Navbar
-               ========================================= */
-            const scrollProgress = document.getElementById('scrollProgress');
-            const navbar = document.getElementById('navbar');
-            const backToTop = document.getElementById('backToTop');
-
-            window.addEventListener('scroll', () => {
-                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                const scrolled = (winScroll / height) * 100;
-                scrollProgress.style.width = scrolled + '%';
-
-                if (winScroll > 50) {
-                    navbar.style.boxShadow = 'var(--shadow-sm)';
-                } else {
-                    navbar.style.boxShadow = 'none';
-                }
-
-                if (winScroll > 300) {
-                    backToTop.classList.add('show');
-                } else {
-                    backToTop.classList.remove('show');
-                }
-            });
-
-            backToTop.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-
-            /* =========================================
-               5. Ripple Effect on Buttons
-               ========================================= */
-            const buttons = document.querySelectorAll('.btn-ripple');
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    // Make sure click isn't opening a link immediately to see effect
-                    // For actual navigation, ripple happens fast
-                    
-                    const x = e.clientX - e.target.getBoundingClientRect().left;
-                    const y = e.clientY - e.target.getBoundingClientRect().top;
-                    
-                    const ripples = document.createElement('span');
-                    ripples.style.left = x + 'px';
-                    ripples.style.top = y + 'px';
-                    ripples.classList.add('ripple');
-                    
-                    this.appendChild(ripples);
-                    
-                    setTimeout(() => {
-                        ripples.remove();
-                    }, 600);
-                });
-            });
-
-            /* =========================================
-               6. Intersection Observer (Scroll Reveal)
-               ========================================= */
-            const revealElements = document.querySelectorAll('.reveal');
-            
-            const revealObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, {
-                threshold: 0.1,
-                rootMargin: "0px 0px -50px 0px"
-            });
-
-            revealElements.forEach(el => {
-                revealObserver.observe(el);
-            });
-
-            /* =========================================
-               7. Animated Counter
-               ========================================= */
-            const stats = document.querySelectorAll('.stat-number');
-            let hasCounted = false;
-
-            const countUp = (el) => {
-                const target = +el.getAttribute('data-target');
-                const duration = 2000; // 2 seconds
-                const start = 0;
-                const increment = target / (duration / 16); // 60fps
-                
-                let current = start;
-                
-                const updateCounter = () => {
-                    current += increment;
-                    if (current < target) {
-                        // Format with K/M for large numbers or commas
-                        if(target > 999999) {
-                            el.innerText = (current / 1000000).toFixed(1) + 'M+';
-                        } else if(target > 999) {
-                            el.innerText = (current / 1000).toFixed(1).replace('.0', '') + 'K+';
-                        } else {
-                            el.innerText = Math.ceil(current);
-                        }
-                        requestAnimationFrame(updateCounter);
-                    } else {
-                        if(target > 999999) {
-                            el.innerText = (target / 1000000).toFixed(1) + 'M+';
-                        } else if (target > 999) {
-                            el.innerText = (target / 1000).toFixed(1).replace('.0', '') + 'K+';
-                        } else {
-                            el.innerText = target;
-                        }
-                    }
-                };
-                updateCounter();
-            };
-
-            const statsObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !hasCounted) {
-                        stats.forEach(stat => countUp(stat));
-                        hasCounted = true;
-                    }
-                });
-            }, { threshold: 0.5 });
-
-            if(stats.length > 0) {
-                statsObserver.observe(document.querySelector('.stats-grid'));
-            }
-
-            /* =========================================
-               8. Mouse Parallax in Hero
-               ========================================= */
-            const hero = document.getElementById('home');
-            const bgShapes = document.querySelectorAll('.bg-shape');
-
-            if (window.matchMedia("(hover: hover)").matches) {
-                hero.addEventListener('mousemove', (e) => {
-                    const x = (window.innerWidth - e.pageX * 2) / 90;
-                    const y = (window.innerHeight - e.pageY * 2) / 90;
-
-                    bgShapes.forEach(shape => {
-                        shape.style.transform = `translate(${x}px, ${y}px)`;
-                    });
-                });
-                
-                hero.addEventListener('mouseleave', () => {
-                    bgShapes.forEach(shape => {
-                        shape.style.transform = `translate(0px, 0px)`;
-                    });
-                });
-            }
+            detectUserLanguage();
+            setupThemeToggle();
+            setupLangDropdown();
         });
+
+        function detectUserLanguage() {
+            const browserLang = (navigator.language || navigator.userLanguage || 'en').slice(0, 2).toLowerCase();
+            const supportedLangs = ['en', 'es', 'ar', 'fr', 'de'];
+            const initialLang = supportedLangs.includes(browserLang) ? browserLang : 'en';
+            setLanguage(initialLang);
+        }
+
+        function setLanguage(langCode) {
+            const langData = translations[langCode] || translations.en;
+            document.documentElement.dir = (langCode === 'ar') ? 'rtl' : 'ltr';
+            document.documentElement.lang = langCode;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (langData[key]) el.textContent = langData[key];
+            });
+
+            document.getElementById('currentLangCode').textContent = langCode;
+            document.getElementById('langDropdown').classList.add('hidden');
+        }
+
+        function setupLangDropdown() {
+            const btn = document.getElementById('langDropdownBtn');
+            const dropdown = document.getElementById('langDropdown');
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                dropdown.classList.add('hidden');
+            });
+        }
+
+        function setupThemeToggle() {
+            const btn = document.getElementById('themeToggleBtn');
+            btn.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                }
+            });
+
+            if (localStorage.theme === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // OpenAI Category filter logic
+        function filterCategory(cat) {
+            const buttons = document.querySelectorAll('.filter-pill');
+            buttons.forEach(b => b.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                if (cat === 'all' || card.getAttribute('data-category') === cat) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function copyContactEmail() {
+            const email = "codenixai@gmail.com";
+            const tempInput = document.createElement("input");
+            tempInput.value = email;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            document.getElementById('copyEmailText').textContent = "Copied!";
+            showToast("Email address copied to clipboard!");
+            setTimeout(() => {
+                document.getElementById('copyEmailText').textContent = "Copy";
+            }, 2000);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
     </script>
 </body>
 </html>
