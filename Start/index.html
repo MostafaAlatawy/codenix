@@ -106,8 +106,8 @@
     <!-- HEADER NAVIGATION -->
     <header class="w-full px-6 sm:px-12 py-5 flex items-center justify-between border-b border-white/10 bg-codenixDark/80 backdrop-blur-md sticky top-0 z-50">
         <a href="/" class="flex items-center gap-3 group">
-            <div class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-md transition-transform group-hover:scale-105">
-                <img src="logo.png" alt="Codenix Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/36x36/7C3AED/ffffff?text=C';">
+            <div class="w-9 h-9 rounded-xl bg-brand-600/20 border border-brand-500/40 flex items-center justify-center overflow-hidden shadow-md transition-transform group-hover:scale-105">
+                <span class="font-mono font-black text-brand-300 text-lg leading-none">C</span>
             </div>
             <div class="flex flex-col">
                 <span class="text-xl font-extrabold tracking-tight text-white leading-none">CODENIX ID</span>
@@ -472,7 +472,7 @@
                     }
 
                     // Listen for state changes (e.g. OAuth redirects)
-                    client.auth.onAuthStateChanged((event, session) => {
+                    client.auth.onAuthStateChange((event, session) => {
                         if (session) {
                             handleUserSession(session);
                         } else {
@@ -484,6 +484,47 @@
                 }
             }
         });
+
+        // OAuth Social Login Handler (Google, GitHub)
+        async function handleOAuthLogin(provider) {
+            const client = getSupabaseClient();
+            if (client && client.auth) {
+                showToast(`Redirecting to ${provider} sign in...`, 'info');
+                try {
+                    const { data, error } = await client.auth.signInWithOAuth({
+                        provider: provider,
+                        options: {
+                            redirectTo: window.location.href
+                        }
+                    });
+                    if (error) throw error;
+                } catch (err) {
+                    showToast(err.message || `OAuth error with ${provider}`, 'error');
+                }
+            } else {
+                showToast(`Simulating ${provider} OAuth sign-in...`, 'info');
+                setTimeout(() => {
+                    simulateMockLogin(`user_${provider}@codenix.id`);
+                }, 800);
+            }
+        }
+
+        // Mock Login Fallback
+        function simulateMockLogin(email) {
+            const mockSession = {
+                user: {
+                    id: 'mock-' + Math.random().toString(36).substring(2, 9),
+                    email: email,
+                    user_metadata: {
+                        privacy_accepted: false,
+                        virtual_id: null,
+                        mfa_completed: false
+                    }
+                }
+            };
+            showToast('Fallback session active.', 'info');
+            handleUserSession(mockSession);
+        }
 
         // AUTH MODE SWITCHING (SIGN IN / SIGN UP)
         function switchAuthMode(mode) {
