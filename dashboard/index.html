@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Codenix ID - User Dashboard & Ecosystem Hub</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts & Font Awesome Icons -->
@@ -35,9 +35,9 @@
                             800: '#5B21B6',
                             900: '#4C1D95',
                         },
-                        codenixDark: '#08080A',
-                        codenixCardDark: '#111115',
-                        codenixSurfaceDark: '#17171E',
+                        codenixDark: '#070709',
+                        codenixCardDark: '#0E0E14',
+                        codenixSurfaceDark: '#161622',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -54,14 +54,14 @@
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #08080A;
+            background: #070709;
         }
         ::-webkit-scrollbar-thumb {
             background: #4C1D95;
             border-radius: 3px;
         }
         .codenix-card {
-            background: rgba(17, 17, 21, 0.85);
+            background: rgba(14, 14, 20, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -87,9 +87,18 @@
             -webkit-text-fill-color: transparent;
         }
         .nav-tab.active {
-            background: rgba(124, 58, 237, 0.15);
+            background: rgba(124, 58, 237, 0.18);
             color: #C4B5FD;
             border-color: rgba(167, 139, 250, 0.4);
+        }
+        .pulse-emerald {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
     </style>
 </head>
@@ -99,37 +108,37 @@
     <header class="w-full px-4 sm:px-8 py-4 flex items-center justify-between border-b border-white/10 bg-codenixDark/90 backdrop-blur-md sticky top-0 z-50">
         <div class="flex items-center gap-6">
             <a href="/" class="flex items-center gap-3 group">
-                <div class="w-9 h-9 rounded-xl bg-brand-600/20 border border-brand-500/40 flex items-center justify-center overflow-hidden shadow-md transition-transform group-hover:scale-105">
-                    <span class="font-mono font-black text-brand-300 text-lg leading-none">C</span>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 border border-brand-400/40 flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:scale-105">
+                    <span class="font-mono font-black text-white text-xl leading-none">C</span>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-lg sm:text-xl font-extrabold tracking-tight text-white leading-none">CODENIX ID</span>
-                    <span class="text-[9px] font-mono text-brand-400 uppercase tracking-widest mt-0.5">User Dashboard</span>
+                    <span class="text-lg sm:text-xl font-extrabold tracking-tight text-white leading-none">CODENIX <span class="text-brand-400">ID</span></span>
+                    <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest mt-0.5">Unified User Ecosystem</span>
                 </div>
             </a>
 
             <!-- Environment Quick Search Bar -->
             <div class="hidden md:flex items-center relative w-64">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 text-slate-500 text-xs"></i>
-                <input type="text" placeholder="Search apps, settings, news..." onkeyup="handleGlobalSearch(this.value)" class="w-full pl-9 pr-3 py-1.5 rounded-xl codenix-input text-xs font-medium placeholder:text-slate-500">
+                <input type="text" id="globalSearchInput" placeholder="Search devices, apps, settings..." onkeyup="handleGlobalSearch(this.value)" class="w-full pl-9 pr-3 py-1.5 rounded-xl codenix-input text-xs font-medium placeholder:text-slate-500">
             </div>
         </div>
 
         <div class="flex items-center gap-3">
             <!-- Security Status Indicator -->
             <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span>Gate Cleared</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-emerald"></span>
+                <span>Gate Active</span>
             </div>
 
-            <!-- User Quick Dropdown Button -->
+            <!-- User Quick Profile Dropdown -->
             <div class="flex items-center gap-3 border-l border-white/10 pl-3">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md" id="headerAvatar">
                     U
                 </div>
                 <div class="hidden sm:flex flex-col">
                     <span class="text-xs font-semibold text-white leading-tight" id="headerDisplayName">User Account</span>
-                    <span class="text-[10px] font-mono text-brand-300" id="headerVirtualId">user@codenix</span>
+                    <span class="text-[10px] font-mono text-brand-300" id="headerVirtualId">username@codenix</span>
                 </div>
                 <button onclick="handleSignOut()" class="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 transition-colors ml-1" title="Sign Out">
                     <i class="fa-solid fa-right-from-bracket text-xs"></i>
@@ -144,68 +153,70 @@
         <!-- SIDEBAR NAVIGATION PANEL -->
         <aside class="w-full md:w-64 flex-shrink-0 space-y-4">
             
-            <!-- Auth Demo Banner (For Testing inside standard frame preview) -->
-            <div id="demoAuthNotice" class="p-3 rounded-2xl bg-brand-900/40 border border-brand-500/30 text-xs space-y-1.5">
-                <div class="flex items-center justify-between text-brand-300 font-semibold text-[11px]">
-                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-shield-halved"></i> Auth Monitor</span>
-                    <span class="px-1.5 py-0.5 rounded bg-brand-500/20 text-[9px] font-mono" id="authModeLabel">MOCK ACTIVE</span>
-                </div>
-                <p class="text-[10px] text-slate-300 leading-tight">
-                    Session active. Redirect URL set to <code class="text-brand-300">/Start/</code> if logged out.
-                </p>
-                <button onclick="toggleTestRedirect()" class="w-full py-1 text-[10px] font-mono rounded bg-white/10 hover:bg-white/15 text-slate-200 border border-white/10 transition-colors">
-                    Test Redirect to /Start/
-                </button>
-            </div>
-
             <!-- Navigation Menu Cards -->
             <nav class="codenix-card p-2 rounded-2xl space-y-1">
                 <button onclick="switchTab('profile')" id="nav-profile" class="nav-tab active w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center gap-3 text-xs font-semibold text-slate-300 hover:text-white transition-all">
                     <i class="fa-solid fa-id-card text-brand-400 text-sm w-5 text-center"></i>
-                    <span>Profile Details</span>
-                </button>
-
-                <button onclick="switchTab('news')" id="nav-news" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition-all">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-newspaper text-brand-400 text-sm w-5 text-center"></i>
-                        <span>Ecosystem News</span>
-                    </div>
-                    <span class="px-1.5 py-0.5 rounded-full bg-brand-600 text-white text-[9px] font-mono" id="newsBadgeCount">3 New</span>
+                    <span>Profile & Devices</span>
                 </button>
 
                 <button onclick="switchTab('linked')" id="nav-linked" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition-all">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-link text-brand-400 text-sm w-5 text-center"></i>
-                        <span>Linked Apps</span>
+                        <i class="fa-solid fa-bolt text-brand-400 text-sm w-5 text-center"></i>
+                        <span>Linked Apps & Fast Add</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded-full bg-white/10 text-slate-300 text-[10px] font-mono" id="linkedAppsCount">4</span>
+                    <span class="px-2 py-0.5 rounded-full bg-brand-600/30 text-brand-300 text-[10px] font-mono border border-brand-500/30" id="linkedAppsCount">3</span>
                 </button>
 
                 <button onclick="switchTab('our-apps')" id="nav-our-apps" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center gap-3 text-xs font-semibold text-slate-300 hover:text-white transition-all">
                     <i class="fa-solid fa-cubes text-brand-400 text-sm w-5 text-center"></i>
-                    <span>Our Flagship Apps</span>
+                    <span>Ecosystem Catalog</span>
                 </button>
 
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center gap-3 text-xs font-semibold text-slate-300 hover:text-white transition-all">
                     <i class="fa-solid fa-sliders text-brand-400 text-sm w-5 text-center"></i>
-                    <span>Security & Settings</span>
+                    <span>Account & Security</span>
+                </button>
+
+                <button onclick="switchTab('sql-code')" id="nav-sql-code" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition-all">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-database text-brand-400 text-sm w-5 text-center"></i>
+                        <span>SQL Migration Code</span>
+                    </div>
+                    <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono">DB READY</span>
                 </button>
             </nav>
 
             <!-- Quick Account Health Card -->
             <div class="codenix-card p-4 rounded-2xl space-y-3">
                 <div class="flex items-center justify-between text-xs">
-                    <span class="font-mono text-slate-400 text-[11px]">Security Score</span>
-                    <span class="font-bold text-emerald-400 font-mono">100% Secure</span>
+                    <span class="font-mono text-slate-400 text-[11px]">Identity Health</span>
+                    <span class="font-bold text-emerald-400 font-mono">100% Protected</span>
                 </div>
                 <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                     <div class="bg-gradient-to-r from-brand-500 to-emerald-400 h-2 rounded-full w-full"></div>
                 </div>
-                <div class="text-[10px] text-slate-400 space-y-1 font-mono">
-                    <div class="flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-check text-[9px]"></i> Privacy Policy Signed</div>
-                    <div class="flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-check text-[9px]"></i> Virtual ID Verified</div>
-                    <div class="flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-check text-[9px]"></i> 2FA / MFA Enrolled</div>
+                <div class="text-[10px] text-slate-400 space-y-1.5 font-mono">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-300">Active Devices</span>
+                        <span class="text-brand-300 font-bold" id="sidebarActiveDevicesCount">2 Active</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-300">Fast Add Apps</span>
+                        <span class="text-brand-300 font-bold" id="sidebarFastAppsCount">3 Linked</span>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Demo / Redirection Control Box -->
+            <div class="p-3 rounded-2xl bg-brand-950/40 border border-brand-500/20 text-xs space-y-2">
+                <div class="flex items-center justify-between text-brand-300 text-[11px] font-semibold">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-shield-halved"></i> Auth Gateway</span>
+                    <span class="px-1.5 py-0.5 rounded bg-brand-500/20 text-[9px] font-mono">SUPABASE DB</span>
+                </div>
+                <button onclick="simulateRedirect()" class="w-full py-1.5 text-[10px] font-mono rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors">
+                    Test Redirect to /Start/
+                </button>
             </div>
 
         </aside>
@@ -213,7 +224,7 @@
         <!-- MAIN DASHBOARD CONTENT AREA -->
         <main class="flex-grow min-w-0 space-y-6">
 
-            <!-- ================= SECTION 1: PROFILE DETAILS ================= -->
+            <!-- ================= SECTION 1: PROFILE & DEVICES ================= -->
             <section id="section-profile" class="space-y-6">
                 <!-- Profile Header Banner Card -->
                 <div class="codenix-card p-6 sm:p-8 rounded-3xl relative overflow-hidden">
@@ -229,189 +240,114 @@
                                     <h1 class="text-2xl font-bold text-white tracking-tight" id="profileDisplayName">Dev User</h1>
                                     <span class="px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] font-mono font-bold uppercase">Pro Tier</span>
                                 </div>
-                                <p class="text-xs font-mono text-brand-300" id="profileVirtualId">username@codenix</p>
+                                <p class="text-xs font-mono text-brand-300" id="profileVirtualId">@username</p>
                                 <p class="text-xs text-slate-400" id="profileEmail">user@domain.com</p>
                             </div>
                         </div>
 
-                        <button onclick="toggleEditProfileModal()" class="py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center gap-2 transition-all">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                            <span>Edit Profile</span>
+                        <button onclick="switchTab('settings')" class="py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center gap-2 transition-all">
+                            <i class="fa-solid fa-user-pen"></i>
+                            <span>Edit Account Details</span>
                         </button>
                     </div>
 
-                    <!-- Verification Badges -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/10">
+                    <!-- User Meta Badges -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/10 text-xs">
                         <div class="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
                             <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                                <i class="fa-solid fa-file-contract text-sm"></i>
+                                <i class="fa-solid fa-id-badge"></i>
                             </div>
                             <div>
-                                <div class="text-[10px] font-mono text-slate-400">Privacy Policy</div>
-                                <div class="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-                                    <span>Accepted</span>
-                                    <a href="/policy/" target="_blank" class="text-slate-400 hover:text-white" title="Read Policy"><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>
-                                </div>
+                                <div class="text-[10px] font-mono text-slate-400">Codenix Handle</div>
+                                <div class="text-xs font-semibold text-emerald-400 font-mono" id="badgeHandle">@username</div>
                             </div>
                         </div>
 
                         <div class="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
                             <div class="w-8 h-8 rounded-xl bg-brand-500/20 text-brand-300 flex items-center justify-center">
-                                <i class="fa-solid fa-at text-sm"></i>
+                                <i class="fa-solid fa-envelope"></i>
                             </div>
                             <div>
-                                <div class="text-[10px] font-mono text-slate-400">Codenix Virtual ID</div>
-                                <div class="text-xs font-semibold text-brand-300">Registered & Active</div>
+                                <div class="text-[10px] font-mono text-slate-400">Email Status</div>
+                                <div class="text-xs font-semibold text-brand-300">Verified & Active</div>
                             </div>
                         </div>
 
                         <div class="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
                             <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center">
-                                <i class="fa-solid fa-shield-halved text-sm"></i>
+                                <i class="fa-solid fa-database"></i>
                             </div>
                             <div>
-                                <div class="text-[10px] font-mono text-slate-400">Multi-Factor Auth</div>
-                                <div class="text-xs font-semibold text-purple-300">Enabled (TOTP)</div>
+                                <div class="text-[10px] font-mono text-slate-400">Supabase DB Sync</div>
+                                <div class="text-xs font-semibold text-purple-300">Cross-App Active</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Account Information Details Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Personal Identity Info -->
-                    <div class="codenix-card p-6 rounded-3xl space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-                                <i class="fa-solid fa-user-gear text-brand-400"></i> Identity Details
+                <!-- SIGNED IN DEVICES SECTION -->
+                <div class="codenix-card p-6 sm:p-8 rounded-3xl space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                                <i class="fa-solid fa-laptop-code text-brand-400"></i> Active Signed-In Devices & Sessions
                             </h2>
-                            <span class="text-[10px] text-slate-500 font-mono">ID: <span id="userIdShort">usr_892a7...</span></span>
+                            <p class="text-xs text-slate-400">View all devices currently authenticated with your Codenix credentials and terminate sessions remotely.</p>
                         </div>
-
-                        <div class="space-y-3 text-xs">
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Full Name / Display</span>
-                                <span class="text-slate-200 font-medium" id="infoDisplayName">Dev User</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Codenix Handle</span>
-                                <span class="text-brand-300 font-mono font-bold" id="infoVirtualId">username@codenix</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Primary Email</span>
-                                <span class="text-slate-200 font-medium" id="infoEmail">user@domain.com</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Account Role</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-brand-500/10 text-brand-300 border border-brand-500/20">Developer / Creator</span>
-                            </div>
-                            <div class="flex justify-between py-2">
-                                <span class="text-slate-400 font-mono">Member Since</span>
-                                <span class="text-slate-200 font-medium">August 2026</span>
-                            </div>
-                        </div>
+                        <button onclick="signOutAllOtherDevices()" class="py-2 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-power-off"></i>
+                            <span>Sign Out All Other Devices</span>
+                        </button>
                     </div>
 
-                    <!-- Active Device & Session Info -->
-                    <div class="codenix-card p-6 rounded-3xl space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-                                <i class="fa-solid fa-laptop-code text-brand-400"></i> Active Gateway Session
-                            </h2>
-                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono">ONLINE</span>
-                        </div>
-
-                        <div class="space-y-3 text-xs">
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Browser & OS</span>
-                                <span class="text-slate-200 font-medium">Chrome / WebKit (Modern)</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Session Type</span>
-                                <span class="text-slate-200 font-medium">OAuth 2.0 / JWT Secure</span>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-white/5">
-                                <span class="text-slate-400 font-mono">Privacy Document</span>
-                                <a href="/policy/" target="_blank" class="text-brand-400 hover:underline">Accepted /policy/</a>
-                            </div>
-                            <div class="flex justify-between py-2">
-                                <span class="text-slate-400 font-mono">Token Expiry</span>
-                                <span class="text-slate-300 font-mono">Auto-renews (7 Days)</span>
-                            </div>
-                        </div>
+                    <!-- Devices List Grid -->
+                    <div class="space-y-3" id="devicesListContainer">
+                        <!-- Rendered by JS -->
                     </div>
                 </div>
             </section>
 
 
-            <!-- ================= SECTION 2: ECOSYSTEM NEWS ================= -->
-            <section id="section-news" class="space-y-6 hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-xl font-bold text-white tracking-tight">Ecosystem News & Updates</h1>
-                        <p class="text-xs text-slate-400">Latest release notes, security advisories, and AI platform updates.</p>
-                    </div>
-                    <button onclick="markAllNewsRead()" class="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 border border-white/10 transition-colors">
-                        Mark All Read
-                    </button>
-                </div>
-
-                <!-- Featured News Hero Card -->
-                <div class="codenix-card p-6 sm:p-8 rounded-3xl relative overflow-hidden bg-gradient-to-r from-brand-950/60 to-codenixCardDark">
-                    <div class="flex flex-col md:flex-row gap-6 items-start justify-between">
-                        <div class="space-y-3 max-w-2xl">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 text-[10px] font-mono font-bold uppercase">MAJOR RELEASE</span>
-                                <span class="text-[11px] font-mono text-slate-400">August 25, 2026</span>
-                            </div>
-                            <h2 class="text-xl font-bold text-white">Codenix Neural Engine 3.5 Released</h2>
-                            <p class="text-xs text-slate-300 leading-relaxed">
-                                Introducing 10x faster code generation, full multi-file diffing, and integrated Supabase authentication state management for single-page applications.
-                            </p>
-                            <div class="pt-2 flex items-center gap-3">
-                                <button onclick="openNewsModal(0)" class="py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white shadow-lg transition-all">
-                                    Read Full Announcement
-                                </button>
-                                <a href="/policy/" target="_blank" class="text-xs text-slate-400 hover:text-white transition-colors">Review Security Audit</a>
-                            </div>
-                        </div>
-                        <div class="w-full md:w-48 h-32 rounded-2xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center text-brand-300 text-4xl shadow-inner">
-                            <i class="fa-solid fa-brain"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- News Grid Feed -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="newsFeedGrid">
-                    <!-- News items generated via JS -->
-                </div>
-            </section>
-
-
-            <!-- ================= SECTION 3: LINKED APPS WITH YOUR CODENIX ID ================= -->
+            <!-- ================= SECTION 2: LINKED APPS & FAST ADD ================= -->
             <section id="section-linked" class="space-y-6 hidden">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 class="text-xl font-bold text-white tracking-tight">Linked Apps & Authorized Sessions</h1>
-                        <p class="text-xs text-slate-400">Manage external websites and Codenix services authorized with your Virtual ID.</p>
-                    </div>
-                    <button onclick="showToast('Scope validation active.', 'info')" class="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 border border-white/10 transition-colors">
-                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Refresh Scopes
-                    </button>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Ecosystem Apps & 1-Click Fast Add</h1>
+                    <p class="text-xs text-slate-400">These apps share your primary Supabase database. Add an account to any app with one click!</p>
                 </div>
 
-                <!-- Linked Apps List -->
-                <div class="space-y-4" id="linkedAppsContainer">
-                    <!-- Cards will be populated dynamically -->
+                <!-- Fast Add Available Apps Section -->
+                <div class="codenix-card p-6 rounded-3xl space-y-4">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-brand-400"></i> Fast Add Account (1-Click Ecosystem Provisioning)
+                    </h2>
+                    <p class="text-xs text-slate-400">Select an ecosystem application to instantly generate authorization tokens and create a synchronized user account.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2" id="fastAddGrid">
+                        <!-- RENDERED BY JS -->
+                    </div>
+                </div>
+
+                <!-- Authorized & Active Linked Apps -->
+                <div class="codenix-card p-6 rounded-3xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                            <i class="fa-solid fa-link text-emerald-400"></i> Authorized Ecosystem Sessions
+                        </h2>
+                        <span class="text-xs font-mono text-slate-400" id="authorizedAppsCountBadge">3 Active</span>
+                    </div>
+
+                    <div class="space-y-3" id="linkedAppsContainer">
+                        <!-- Cards dynamically populated -->
+                    </div>
                 </div>
             </section>
 
 
-            <!-- ================= SECTION 4: OUR FLAGSHIP APPS CATALOG ================= -->
+            <!-- ================= SECTION 3: ECOSYSTEM CATALOG ================= -->
             <section id="section-our-apps" class="space-y-6 hidden">
                 <div>
-                    <h1 class="text-xl font-bold text-white tracking-tight">Codenix Ecosystem Flagship Apps</h1>
-                    <p class="text-xs text-slate-400">Launch integrated neural tools and web applications with zero extra sign-in required.</p>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Codenix Ecosystem Catalog</h1>
+                    <p class="text-xs text-slate-400">Explore integrated applications running on your shared database infrastructure.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="ourAppsGrid">
@@ -420,90 +356,89 @@
             </section>
 
 
-            <!-- ================= SECTION 5: SECURITY & SETTINGS ================= -->
+            <!-- ================= SECTION 4: ACCOUNT & SECURITY SETTINGS ================= -->
             <section id="section-settings" class="space-y-6 hidden">
                 <div>
-                    <h1 class="text-xl font-bold text-white tracking-tight">Account Settings & Security Portal</h1>
-                    <p class="text-xs text-slate-400">Manage password, multi-factor authentication, privacy policies, and login providers.</p>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Account & Security Portal</h1>
+                    <p class="text-xs text-slate-400">Manage your profile credentials, update email & password, or delete your account permanently.</p>
                 </div>
 
-                <!-- Settings Sub-Tabs -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Credentials Form Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                    <!-- Password Change Form Card -->
-                    <div class="codenix-card p-6 rounded-3xl space-y-4 md:col-span-2">
+                    <!-- Profile Information Update Form -->
+                    <div class="codenix-card p-6 rounded-3xl space-y-4">
                         <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-                            <i class="fa-solid fa-lock text-brand-400"></i> Update Password & Auth Key
+                            <i class="fa-solid fa-user-gear text-brand-400"></i> Edit Username & Bio
                         </h2>
 
-                        <form onsubmit="handlePasswordUpdate(event)" class="space-y-4">
+                        <form onsubmit="handleProfileUpdate(event)" class="space-y-4">
                             <div class="space-y-1">
-                                <label class="text-[11px] font-mono text-slate-300">Current Password</label>
-                                <input type="password" id="settingCurrentPass" required placeholder="••••••••" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                                <label class="text-[11px] font-mono text-slate-300">Display Name</label>
+                                <input type="text" id="settingDisplayName" required class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="space-y-1">
-                                    <label class="text-[11px] font-mono text-slate-300">New Password</label>
-                                    <input type="password" id="settingNewPass" minlength="6" required placeholder="••••••••" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-300">Virtual Handle / Username</label>
+                                <div class="relative flex items-center">
+                                    <span class="absolute left-3.5 text-slate-500 font-mono text-xs">@</span>
+                                    <input type="text" id="settingVirtualId" required class="w-full py-2.5 pl-8 pr-4 rounded-xl codenix-input text-xs font-mono" />
                                 </div>
-                                <div class="space-y-1">
-                                    <label class="text-[11px] font-mono text-slate-300">Confirm New Password</label>
-                                    <input type="password" id="settingConfirmPass" minlength="6" required placeholder="••••••••" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
-                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-300">Developer Bio</label>
+                                <textarea id="settingBio" rows="2" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs"></textarea>
                             </div>
 
                             <div class="pt-2 flex justify-end">
                                 <button type="submit" class="py-2.5 px-5 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg transition-all">
-                                    Update Security Key
+                                    Save Profile Info
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- MFA Security Status Card -->
-                    <div class="codenix-card p-6 rounded-3xl space-y-4 flex flex-col justify-between">
-                        <div class="space-y-3">
-                            <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-                                <i class="fa-solid fa-shield-cat text-purple-400"></i> MFA Protection
-                            </h2>
-                            <p class="text-xs text-slate-300">
-                                2FA TOTP is active on your Virtual ID account.
-                            </p>
-                            <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-mono space-y-1">
-                                <div class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> TOTP Authenticator</div>
-                                <div class="text-[10px] text-slate-300">Google Authenticator / Authy</div>
+                    <!-- Email & Password Form -->
+                    <div class="codenix-card p-6 rounded-3xl space-y-4">
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+                            <i class="fa-solid fa-envelope-open-text text-brand-400"></i> Change Primary Email
+                        </h2>
+
+                        <form onsubmit="handleEmailUpdate(event)" class="space-y-4 border-b border-white/10 pb-4">
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-300">New Email Address</label>
+                                <input type="email" id="settingNewEmail" required placeholder="newemail@codenix.io" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
                             </div>
-                        </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="py-2 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/10 font-semibold text-xs transition-colors">
+                                    Update Email
+                                </button>
+                            </div>
+                        </form>
 
-                        <button onclick="toggleMFAReconfigModal()" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition-colors">
-                            Reconfigure 2FA Token
-                        </button>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2 pt-2">
+                            <i class="fa-solid fa-key text-brand-400"></i> Update Password
+                        </h2>
+
+                        <form onsubmit="handlePasswordUpdate(event)" class="space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-300">New Password</label>
+                                <input type="password" id="settingNewPass" minlength="6" required placeholder="••••••••" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-300">Confirm New Password</label>
+                                <input type="password" id="settingConfirmPass" minlength="6" required placeholder="••••••••" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="py-2.5 px-5 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg transition-all">
+                                    Update Password
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </div>
 
-                <!-- Privacy & Data Controls Card -->
-                <div class="codenix-card p-6 rounded-3xl space-y-4">
-                    <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-                        <i class="fa-solid fa-user-shield text-emerald-400"></i> Privacy & Data Rights
-                    </h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                        <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                            <div class="font-bold text-white">Privacy Policy Document</div>
-                            <p class="text-slate-400 text-[11px]">You agreed to terms under <code>/policy/</code>. You can re-examine or export agreement signatures anytime.</p>
-                            <a href="/policy/" target="_blank" class="inline-flex items-center gap-1 text-brand-400 hover:underline text-[11px]">
-                                Read Policy (/policy/) <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-                            </a>
-                        </div>
-
-                        <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                            <div class="font-bold text-white">Export Account Archive</div>
-                            <p class="text-slate-400 text-[11px]">Download your profile metadata, connected apps, and authentication log as a JSON file.</p>
-                            <button onclick="exportUserDataJSON()" class="py-1.5 px-3 rounded-lg bg-brand-600/30 text-brand-300 border border-brand-500/30 text-[11px] font-semibold hover:bg-brand-600/40 transition-colors">
-                                <i class="fa-solid fa-download mr-1"></i> Download JSON Archive
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Account Danger Zone -->
@@ -515,13 +450,211 @@
                     </div>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
                         <div class="space-y-1">
-                            <div class="font-semibold text-white">Revoke Virtual ID & Delete Account</div>
-                            <div class="text-slate-400 text-[11px]">Permanently removes your <code>username@codenix</code> identity and cancels all active linked app tokens.</div>
+                            <div class="font-semibold text-white">Permanently Delete Account</div>
+                            <div class="text-slate-400 text-[11px]">This deletes your profile, signs out all devices, revokes ecosystem app tokens, and wipes your data from the database.</div>
                         </div>
-                        <button onclick="showDeleteAccountModal()" class="py-2.5 px-4 rounded-xl bg-rose-600/80 hover:bg-rose-500 text-white font-semibold text-xs shadow-lg transition-all flex-shrink-0">
+                        <button onclick="showDeleteAccountModal()" class="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-lg transition-all flex-shrink-0">
                             Delete Account
                         </button>
                     </div>
+                </div>
+            </section>
+
+
+            <!-- ================= SECTION 5: SQL MIGRATION CODE ================= -->
+            <section id="section-sql-code" class="space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl font-bold text-white tracking-tight">Database SQL Setup & Migration Schema</h1>
+                        <p class="text-xs text-slate-400">Run this SQL code inside your Supabase SQL Editor to support device tracking, fast app linking, and cascade deletion.</p>
+                    </div>
+                    <button onclick="copySQLSchema()" class="py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Copy SQL Code</span>
+                    </button>
+                </div>
+
+                <div class="codenix-card p-6 rounded-3xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3 text-xs font-mono">
+                        <span class="text-brand-300">schema_codenix_id.sql</span>
+                        <span class="text-slate-400">PostgreSQL / Supabase RLS Ready</span>
+                    </div>
+
+                    <pre class="p-4 rounded-2xl bg-black/60 border border-white/10 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed max-h-[500px]" id="sqlCodeBlock">
+-- STREAMING_CHUNK:Fixing PostgreSQL function syntax & RLS permissions in schema...
+-- =========================================================================
+-- CODENIX ID SECURE GATEWAY - CORRECTED POSTGRESQL / SUPABASE DATABASE SCHEMA
+-- =========================================================================
+
+-- Enable UUID extension for secure identifier generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 1. PROFILES TABLE (Linked with Supabase Auth Users)
+-- STREAMING_CHUNK:Creating profiles table...
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
+    display_name TEXT,
+    virtual_id TEXT UNIQUE,
+    avatar_url TEXT,
+    bio TEXT,
+    privacy_accepted BOOLEAN DEFAULT FALSE,
+    mfa_completed BOOLEAN DEFAULT FALSE,
+    role TEXT DEFAULT 'user',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 2. SIGNED-IN USER DEVICES & SESSIONS TABLE
+CREATE TABLE IF NOT EXISTS public.user_devices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    device_name TEXT NOT NULL,
+    browser TEXT NOT NULL,
+    os TEXT NOT NULL,
+    ip_address TEXT,
+    location TEXT,
+    is_current BOOLEAN DEFAULT false,
+    last_active TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 3. ECOSYSTEM APPLICATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.ecosystem_apps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    app_slug TEXT UNIQUE NOT NULL,
+    app_name TEXT NOT NULL,
+    description TEXT,
+    icon_class TEXT DEFAULT 'fa-cubes',
+    category TEXT DEFAULT 'Developer Tool',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 4. LINKED ECOSYSTEM USER ACCOUNTS & TOKENS TABLE
+CREATE TABLE IF NOT EXISTS public.user_linked_apps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    app_slug TEXT NOT NULL REFERENCES public.ecosystem_apps(app_slug) ON DELETE CASCADE,
+    granted_scopes TEXT[] DEFAULT ARRAY['Read Profile', 'Fast Add Auth'],
+    linked_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    last_used TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(user_id, app_slug)
+);
+
+-- STREAMING_CHUNK:Enabling Row Level Security...
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_linked_apps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ecosystem_apps ENABLE ROW LEVEL SECURITY;
+
+-- 5. SECURE RLS POLICIES FOR AUTHENTICATED USERS
+-- STREAMING_CHUNK:Configuring RLS policies...
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
+CREATE POLICY "Public profiles are viewable by everyone." 
+    ON public.profiles FOR SELECT 
+    USING (true);
+
+DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
+CREATE POLICY "Users can insert their own profile." 
+    ON public.profiles FOR INSERT 
+    TO authenticated
+    WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
+CREATE POLICY "Users can update own profile." 
+    ON public.profiles FOR UPDATE 
+    TO authenticated
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can view own devices" ON public.user_devices;
+CREATE POLICY "Users can view own devices" ON public.user_devices FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own devices" ON public.user_devices;
+CREATE POLICY "Users can delete own devices" ON public.user_devices FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own devices" ON public.user_devices;
+CREATE POLICY "Users can insert own devices" ON public.user_devices FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view linked apps" ON public.user_linked_apps;
+CREATE POLICY "Users can view linked apps" ON public.user_linked_apps FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage linked apps" ON public.user_linked_apps;
+CREATE POLICY "Users can manage linked apps" ON public.user_linked_apps FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Anyone can read apps catalog" ON public.ecosystem_apps;
+CREATE POLICY "Anyone can read apps catalog" ON public.ecosystem_apps FOR SELECT USING (true);
+
+-- 6. AUTO-CREATE PROFILE TRIGGER FUNCTION (CORRECTED)
+-- STREAMING_CHUNK:Creating auto-profile trigger function...
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
+AS $$
+BEGIN
+    INSERT INTO public.profiles (id, email, display_name, virtual_id, privacy_accepted, mfa_completed)
+    VALUES (
+        NEW.id, 
+        NEW.email, 
+        COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
+        COALESCE(NEW.raw_user_meta_data->>'virtual_id', split_part(NEW.email, '@', 1)),
+        COALESCE((NEW.raw_user_meta_data->>'privacy_accepted')::boolean, FALSE), 
+        FALSE
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
+-- 7. ATTACH TRIGGER TO AUTH.USERS
+-- STREAMING_CHUNK:Attaching trigger to auth.users...
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 8. FUNCTION: RECORD DEVICE ON SIGN IN
+CREATE OR REPLACE FUNCTION public.record_user_device(
+    p_device_name TEXT,
+    p_browser TEXT,
+    p_os TEXT,
+    p_ip TEXT,
+    p_location TEXT
+) RETURNS VOID AS $$
+BEGIN
+    INSERT INTO public.user_devices (user_id, device_name, browser, os, ip_address, location, last_active, is_current)
+    VALUES (auth.uid(), p_device_name, p_browser, p_os, p_ip, p_location, now(), true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 9. FUNCTION: COMPLETE USER ACCOUNT DELETION
+CREATE OR REPLACE FUNCTION public.delete_user_account()
+RETURNS VOID AS $$
+DECLARE
+    v_user_id UUID := auth.uid();
+BEGIN
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    -- Delete user profile & related data (Cascades via Foreign Keys)
+    DELETE FROM public.profiles WHERE id = v_user_id;
+    DELETE FROM auth.users WHERE id = v_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- SEED ECOSYSTEM APPS
+INSERT INTO public.ecosystem_apps (app_slug, app_name, description, icon_class, category)
+VALUES 
+    ('codex-studio', 'Code-X Studio AI', 'AI-assisted code generator with Supabase DB state', 'fa-code', 'IDE & Neural Assistant'),
+    ('cyber-arcade', 'Codenix Cyber Arcade', 'WebGL gaming ecosystem with Virtual ID sync', 'fa-gamepad', 'Gaming Platform'),
+    ('quantum-flow', 'Quantum Flow Analytics', 'Real-time telemetry and API quota monitor', 'fa-chart-network', 'Developer Analytics'),
+    ('codenix-vault', 'Codenix Vault & Identity', 'Decentralized data privacy & token vault', 'fa-shield-halved', 'Security')
+ON CONFLICT (app_slug) DO NOTHING;
+</pre>
                 </div>
             </section>
 
@@ -531,80 +664,24 @@
     <!-- FOOTER -->
     <footer class="w-full py-6 text-center text-xs text-slate-500 border-t border-white/5 bg-codenixDark">
         <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>© 2026 Codenix AI Ecosystem. All rights reserved.</div>
+            <div>© 2026 Codenix ID Ecosystem. All rights reserved.</div>
             <div class="flex items-center gap-6 text-[11px]">
                 <a href="/policy/" target="_blank" class="hover:text-slate-300 transition-colors">Privacy Policy (/policy/)</a>
-                <a href="mailto:codenixai@gmail.com" class="hover:text-slate-300 transition-colors">Support</a>
+                <a href="mailto:support@codenix.id" class="hover:text-slate-300 transition-colors">Support</a>
             </div>
         </div>
     </footer>
 
 
-    <!-- MODAL 1: EDIT PROFILE MODAL -->
-    <div id="modalEditProfile" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="codenix-card p-6 rounded-3xl w-full max-w-md space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-white/10">
-                <h3 class="text-base font-bold text-white">Edit Profile Details</h3>
-                <button onclick="toggleEditProfileModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <form onsubmit="saveProfileChanges(event)" class="space-y-4">
-                <div class="space-y-1">
-                    <label class="text-[11px] font-mono text-slate-300">Display Name</label>
-                    <input type="text" id="editDisplayName" required class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[11px] font-mono text-slate-300">Virtual Handle (Cannot change prefix format)</label>
-                    <div class="relative flex items-center">
-                        <input type="text" id="editVirtualId" readonly class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs opacity-60 cursor-not-allowed font-mono" />
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[11px] font-mono text-slate-300">Bio / Tagline</label>
-                    <textarea id="editBio" rows="2" placeholder="Full-stack AI developer working with Codenix SDK..." class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs"></textarea>
-                </div>
-
-                <div class="pt-2 flex items-center justify-end gap-3">
-                    <button type="button" onclick="toggleEditProfileModal()" class="py-2 px-4 rounded-xl bg-white/5 text-slate-300 text-xs font-semibold">Cancel</button>
-                    <button type="submit" class="py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg">Save Profile</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: NEWS ARTICLE READER MODAL -->
-    <div id="modalNewsReader" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="codenix-card p-6 sm:p-8 rounded-3xl w-full max-w-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-start justify-between">
-                <div>
-                    <span class="text-[10px] font-mono text-brand-300 font-bold uppercase" id="modalNewsCategory">RELEASE</span>
-                    <h3 class="text-lg font-bold text-white mt-0.5" id="modalNewsTitle">News Title</h3>
-                    <p class="text-[11px] font-mono text-slate-400" id="modalNewsDate">August 25, 2026</p>
-                </div>
-                <button onclick="closeNewsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <div class="text-xs text-slate-300 leading-relaxed space-y-3 border-t border-b border-white/10 py-4" id="modalNewsBody">
-                <!-- Article content dynamically injected -->
-            </div>
-
-            <div class="flex justify-end">
-                <button onclick="closeNewsModal()" class="py-2 px-4 rounded-xl bg-brand-600 text-white text-xs font-semibold">Close Announcement</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: DELETE ACCOUNT CONFIRMATION MODAL -->
+    <!-- MODAL: DELETE ACCOUNT CONFIRMATION MODAL -->
     <div id="modalDeleteAccount" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="codenix-card p-6 rounded-3xl w-full max-w-md space-y-4 border-rose-500/40">
             <div class="flex items-center gap-3 text-rose-400">
                 <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-                <h3 class="text-base font-bold text-white">Confirm Account Deletion</h3>
+                <h3 class="text-base font-bold text-white">Permanently Delete Account?</h3>
             </div>
             <p class="text-xs text-slate-300 leading-relaxed">
-                This action is <strong>irreversible</strong>. Your Virtual ID <code class="text-rose-300" id="deleteVirtualIdPreview">user@codenix</code> and all connected application tokens will be permanently revoked.
+                This action is <strong>irreversible</strong>. Your username <code class="text-rose-300" id="deleteVirtualIdPreview">@username</code>, active signed-in devices, and connected ecosystem apps will be wiped completely from the database.
             </p>
             <div class="space-y-1">
                 <label class="text-[11px] font-mono text-slate-300">Type "DELETE" to confirm:</label>
@@ -612,7 +689,7 @@
             </div>
             <div class="flex items-center justify-end gap-3 pt-2">
                 <button onclick="closeDeleteAccountModal()" class="py-2 px-4 rounded-xl bg-white/5 text-slate-300 text-xs font-semibold">Cancel</button>
-                <button onclick="executeAccountDeletion()" class="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg">Confirm Delete</button>
+                <button onclick="executeAccountDeletion()" class="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg">Confirm & Wipe Account</button>
             </div>
         </div>
     </div>
@@ -626,7 +703,6 @@
 
     <!-- JAVASCRIPT CONTROLLER LOGIC -->
     <script>
-        // Supabase Client Initialization
         const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
         const SUPABASE_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
 
@@ -639,7 +715,7 @@
                         window.codenixSupabase = createClient(SUPABASE_URL, SUPABASE_KEY);
                     }
                 } catch (err) {
-                    console.warn("Supabase initialization note:", err);
+                    console.warn("Supabase client init note:", err);
                 }
             }
             return window.codenixSupabase;
@@ -651,98 +727,143 @@
             id: 'usr_892a71bc994',
             displayName: 'Dev User',
             email: 'dev_user@codenix.id',
-            virtualId: 'alex_dev@codenix',
-            bio: 'Full-stack AI developer building on Codenix Cloud.',
-            privacyAccepted: true,
-            mfaActive: true
+            virtualId: 'alex_dev',
+            bio: 'Full-stack AI developer building on Codenix Cloud ecosystem.',
         };
 
-        // Linked Authorized Apps Data
-        let linkedApps = [
-            { id: 'app1', name: 'Code-X Studio AI', category: 'IDE & Neural Assistant', icon: 'fa-code', color: 'text-brand-400', granted: 'Aug 20, 2026', scopes: ['Read Profile', 'Virtual ID Auth'] },
-            { id: 'app2', name: 'Codenix Cyber Arcade', category: 'WebGL Gaming Engine', icon: 'fa-gamepad', color: 'text-pink-400', granted: 'Aug 22, 2026', scopes: ['Leaderboard Access', 'Virtual ID'] },
-            { id: 'app3', name: 'Neural Analytics Console', category: 'Model Benchmarking', icon: 'fa-chart-network', color: 'text-cyan-400', granted: 'Aug 24, 2026', scopes: ['Read Profile', 'Model Tokens'] },
-            { id: 'app4', name: 'Codenix CLI Utility', category: 'Terminal OAuth Token', icon: 'fa-terminal', color: 'text-emerald-400', granted: 'Aug 25, 2026', scopes: ['Full API Access'] }
+        // Devices State
+        let userDevices = [
+            { id: 'dev-1', name: 'MacBook Pro 16" (Current)', browser: 'Chrome 128.0', os: 'macOS Sonoma', ip: '197.54.112.42', location: 'Cairo, EG', lastActive: 'Active Now', isCurrent: true, icon: 'fa-laptop' },
+            { id: 'dev-2', name: 'iPhone 15 Pro Max', browser: 'Mobile Safari', os: 'iOS 17.5', ip: '156.204.88.19', location: 'Cairo, EG', lastActive: '2 hours ago', isCurrent: false, icon: 'fa-mobile-screen-button' },
+            { id: 'dev-3', name: 'Linux Workstation', browser: 'Firefox Developer', os: 'Ubuntu 24.04', ip: '41.130.90.11', location: 'Alexandria, EG', lastActive: '3 days ago', isCurrent: false, icon: 'fa-desktop' }
         ];
 
         // Flagship Ecosystem Apps
         const flagshipApps = [
-            { name: 'Code-X Neural Studio', desc: 'AI-assisted code generation engine with multi-file diffing and Supabase integration.', icon: 'fa-code', tag: 'LIVE', color: 'from-brand-600 to-purple-600', link: '/' },
-            { name: 'Codenix Web Arcade', desc: 'Hardware-accelerated WebGL gaming hub powered by Codenix Virtual ID leaderboards.', icon: 'fa-gamepad', tag: 'POPULAR', color: 'from-pink-600 to-rose-600', link: '/' },
-            { name: 'Quantum Flow Analytics', desc: 'Real-time telemetry and API quota monitor for your deployed neural endpoints.', icon: 'fa-chart-line', tag: 'NEW', color: 'from-cyan-600 to-blue-600', link: '/' },
-            { name: 'Codenix Vault & Identity', desc: 'Manage passkeys, TOTP secrets, and decentralized data compliance archives.', icon: 'fa-user-lock', tag: 'SECURITY', color: 'from-emerald-600 to-teal-600', link: '/policy/' }
+            { slug: 'codex-studio', name: 'Code-X Studio AI', desc: 'AI-assisted code generation engine with multi-file diffing and Supabase integration.', icon: 'fa-code', tag: 'IDE', color: 'from-brand-600 to-purple-600', link: '/' },
+            { slug: 'cyber-arcade', name: 'Codenix Cyber Arcade', desc: 'Hardware-accelerated WebGL gaming hub powered by Codenix Virtual ID leaderboards.', icon: 'fa-gamepad', tag: 'GAMING', color: 'from-pink-600 to-rose-600', link: '/' },
+            { slug: 'quantum-flow', name: 'Quantum Flow Analytics', desc: 'Real-time telemetry and API quota monitor for deployed neural endpoints.', icon: 'fa-chart-network', tag: 'ANALYTICS', color: 'from-cyan-600 to-blue-600', link: '/' },
+            { slug: 'codenix-vault', name: 'Codenix Vault & Identity', desc: 'Manage passkeys, TOTP secrets, and decentralized data compliance archives.', icon: 'fa-shield-halved', tag: 'SECURITY', color: 'from-emerald-600 to-teal-600', link: '/policy/' }
         ];
 
-        // Ecosystem News Articles
-        const newsArticles = [
-            { title: 'Codenix ID MFA Enforcer Dynamic Rollout', date: 'August 24, 2026', cat: 'SECURITY', body: 'All developer accounts are now required to pass through the 3-step security gate before accessing dashboard telemetry. Check your privacy compliance status under /policy/.' },
-            { title: 'Supabase TOTP Challenge API Integration', date: 'August 22, 2026', cat: 'UPDATE', body: 'We have updated authentication flows to natively support Supabase auth MFA challenges with instant TOTP verification.' },
-            { title: 'Decentralized AI Arcade SDK v2.1', date: 'August 18, 2026', cat: 'SDK', body: 'Developers can now embed Codenix ID sign-in directly into HTML5 games to sync high scores across all user profiles seamlessly.' }
+        // Linked Authorized Apps Data
+        let linkedApps = [
+            { id: 'l1', slug: 'codex-studio', name: 'Code-X Studio AI', category: 'IDE & Assistant', icon: 'fa-code', color: 'text-brand-400', granted: 'Aug 20, 2026', scopes: ['Read Profile', 'Virtual ID Auth'] },
+            { id: 'l2', slug: 'cyber-arcade', name: 'Codenix Cyber Arcade', category: 'WebGL Gaming Engine', icon: 'fa-gamepad', color: 'text-pink-400', granted: 'Aug 22, 2026', scopes: ['Leaderboard Access', 'Virtual ID'] },
+            { id: 'l3', slug: 'quantum-flow', name: 'Quantum Flow Analytics', category: 'Model Benchmarking', icon: 'fa-chart-network', color: 'text-cyan-400', granted: 'Aug 24, 2026', scopes: ['Read Profile', 'Telemetry API'] }
         ];
 
-        // MANDATORY INITIALIZATION & AUTH CHECK ENGINE
         document.addEventListener('DOMContentLoaded', async () => {
             const client = getSupabaseClient();
-            let isAuthenticated = false;
-
             if (client && client.auth) {
                 try {
                     const { data: { session } } = await client.auth.getSession();
                     if (session) {
                         currentUserSession = session;
-                        isAuthenticated = true;
-                        extractUserProfileFromSession(session);
+                        await syncUserProfileFromDatabase(session);
                     }
+
+                    // Subscribe to auth state changes
+                    client.auth.onAuthStateChange(async (event, session) => {
+                        if (session) {
+                            currentUserSession = session;
+                            await syncUserProfileFromDatabase(session);
+                        }
+                    });
                 } catch (err) {
-                    console.warn("Session retrieval note:", err);
+                    console.warn("Supabase session sync note:", err);
                 }
             }
 
-            // REDIRECT CHECK:
-            // If user is not authenticated with Supabase AND not running in standard local demo fallback mode:
-            if (!isAuthenticated && !window.location.search.includes('demo=true')) {
-                // Check if user has mock session saved
-                const localMock = localStorage.getItem('codenix_demo_session');
-                if (!localMock) {
-                    showToast('No active session found. Redirecting to /Start/...', 'error');
-                    // Perform domain redirection as specified by prompt requirement:
-                    setTimeout(() => {
-                        window.location.href = '/Start/';
-                    }, 1200);
-                    return;
-                }
-            }
-
-            // Render components
-            renderProfileDetails();
-            renderLinkedApps();
-            renderOurApps();
-            renderNewsFeed();
+            renderAllComponents();
         });
 
-        function extractUserProfileFromSession(session) {
+        async function syncUserProfileFromDatabase(session) {
             const u = session.user;
             userProfile.id = u.id;
             userProfile.email = u.email || userProfile.email;
-            
-            const meta = u.user_metadata || {};
-            userProfile.displayName = meta.display_name || u.email.split('@')[0] || userProfile.displayName;
-            userProfile.virtualId = meta.virtual_id || `${userProfile.displayName.toLowerCase()}@codenix`;
-            userProfile.privacyAccepted = meta.privacy_accepted || true;
-            userProfile.mfaActive = meta.mfa_completed || true;
+
+            const client = getSupabaseClient();
+            if (client) {
+                try {
+                    // Query public.profiles
+                    const { data: dbProf } = await client
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', u.id)
+                        .maybeSingle();
+
+                    if (dbProf) {
+                        userProfile.displayName = dbProf.display_name || userProfile.displayName;
+                        userProfile.virtualId = dbProf.virtual_id || userProfile.virtualId;
+                        userProfile.bio = dbProf.bio || userProfile.bio;
+                    } else {
+                        const meta = u.user_metadata || {};
+                        userProfile.displayName = meta.display_name || u.email.split('@')[0] || userProfile.displayName;
+                        userProfile.virtualId = meta.virtual_id || meta.username || userProfile.displayName.toLowerCase().replace(/\s+/g, '_');
+                        userProfile.bio = meta.bio || userProfile.bio;
+                    }
+
+                    // Query public.user_devices
+                    const { data: dbDevices } = await client
+                        .from('user_devices')
+                        .select('*')
+                        .eq('user_id', u.id);
+
+                    if (dbDevices && dbDevices.length > 0) {
+                        userDevices = dbDevices.map(d => ({
+                            id: d.id,
+                            name: d.device_name,
+                            browser: d.browser,
+                            os: d.os,
+                            ip: d.ip_address || '127.0.0.1',
+                            location: d.location || 'Unknown',
+                            lastActive: new Date(d.last_active).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            isCurrent: d.is_current,
+                            icon: d.os.toLowerCase().includes('mac') || d.os.toLowerCase().includes('win') ? 'fa-laptop' : 'fa-mobile-screen-button'
+                        }));
+                    }
+
+                    // Query public.user_linked_apps
+                    const { data: dbLinked } = await client
+                        .from('user_linked_apps')
+                        .select('*')
+                        .eq('user_id', u.id);
+
+                    if (dbLinked && dbLinked.length > 0) {
+                        linkedApps = dbLinked.map(l => {
+                            const appObj = flagshipApps.find(a => a.slug === l.app_slug) || {};
+                            return {
+                                id: l.id,
+                                slug: l.app_slug,
+                                name: appObj.name || l.app_slug,
+                                category: appObj.tag || 'Ecosystem App',
+                                icon: appObj.icon || 'fa-cubes',
+                                color: 'text-brand-400',
+                                granted: new Date(l.linked_at).toLocaleDateString(),
+                                scopes: l.granted_scopes || ['Read Profile']
+                            };
+                        });
+                    }
+                } catch (e) {
+                    console.warn("DB synchronization error:", e);
+                }
+            }
+
+            renderAllComponents();
         }
 
-        // TEST REDIRECT BUTTON FUNCTION
-        function toggleTestRedirect() {
-            showToast('Redirecting to /Start/...', 'info');
-            setTimeout(() => {
-                window.location.href = '/Start/';
-            }, 800);
+        function renderAllComponents() {
+            renderProfileDetails();
+            renderDevicesList();
+            renderFastAddGrid();
+            renderLinkedApps();
+            renderOurApps();
+            populateSettingsForms();
         }
 
-        // NAVIGATION TAB SWITCHER
         function switchTab(tabName) {
-            const tabs = ['profile', 'news', 'linked', 'our-apps', 'settings'];
+            const tabs = ['profile', 'linked', 'our-apps', 'settings', 'sql-code'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
                 const sec = document.getElementById(`section-${t}`);
@@ -756,56 +877,196 @@
             });
         }
 
-        // RENDER PROFILE DETAILS
         function renderProfileDetails() {
             const firstChar = userProfile.displayName.charAt(0).toUpperCase();
+            const handleText = userProfile.virtualId.startsWith('@') ? userProfile.virtualId : `@${userProfile.virtualId}`;
+
             document.getElementById('headerAvatar').textContent = firstChar;
             document.getElementById('headerDisplayName').textContent = userProfile.displayName;
-            document.getElementById('headerVirtualId').textContent = userProfile.virtualId;
+            document.getElementById('headerVirtualId').textContent = handleText;
 
             document.getElementById('profileBigAvatar').textContent = firstChar;
             document.getElementById('profileDisplayName').textContent = userProfile.displayName;
-            document.getElementById('profileVirtualId').textContent = userProfile.virtualId;
+            document.getElementById('profileVirtualId').textContent = handleText;
             document.getElementById('profileEmail').textContent = userProfile.email;
-
-            document.getElementById('infoDisplayName').textContent = userProfile.displayName;
-            document.getElementById('infoVirtualId').textContent = userProfile.virtualId;
-            document.getElementById('infoEmail').textContent = userProfile.email;
-            document.getElementById('userIdShort').textContent = userProfile.id.substring(0, 12) + '...';
+            document.getElementById('badgeHandle').textContent = handleText;
         }
 
-        // RENDER LINKED APPS
+        function renderDevicesList() {
+            const container = document.getElementById('devicesListContainer');
+            container.innerHTML = '';
+            document.getElementById('sidebarActiveDevicesCount').textContent = `${userDevices.length} Active`;
+
+            if (userDevices.length === 0) {
+                container.innerHTML = `<div class="p-6 codenix-card rounded-2xl text-center text-xs text-slate-400">No active sessions found.</div>`;
+                return;
+            }
+
+            userDevices.forEach(dev => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+                    dev.isCurrent ? 'bg-brand-950/20 border-brand-500/40' : 'bg-white/5 border-white/10'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-brand-300 text-lg flex-shrink-0 mt-0.5">
+                            <i class="fa-solid ${dev.icon}"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-white text-xs">${dev.name}</span>
+                                ${dev.isCurrent ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-mono font-bold border border-emerald-500/30">THIS DEVICE</span>' : ''}
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono flex items-center gap-3 flex-wrap">
+                                <span><i class="fa-solid fa-globe text-[9px] mr-1"></i>${dev.browser} (${dev.os})</span>
+                                <span>•</span>
+                                <span><i class="fa-solid fa-network-wired text-[9px] mr-1"></i>${dev.ip}</span>
+                                <span>•</span>
+                                <span><i class="fa-solid fa-location-dot text-[9px] mr-1"></i>${dev.location}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-mono">Last Activity: ${dev.lastActive}</div>
+                        </div>
+                    </div>
+                    ${!dev.isCurrent ? `
+                        <button onclick="signOutDevice('${dev.id}')" class="py-1.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-semibold transition-all">
+                            Sign Out Device
+                        </button>
+                    ` : '<span class="text-[11px] font-mono text-emerald-400 font-semibold px-3 py-1 bg-emerald-500/10 rounded-xl border border-emerald-500/20">Current Gateway</span>'}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function signOutDevice(deviceId) {
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.from('user_devices').delete().eq('id', deviceId);
+                } catch (err) {
+                    console.warn("Device termination note:", err);
+                }
+            }
+            userDevices = userDevices.filter(d => d.id !== deviceId);
+            renderDevicesList();
+            showToast('Device session terminated remotely.', 'info');
+        }
+
+        async function signOutAllOtherDevices() {
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.from('user_devices').delete().eq('user_id', currentUserSession.user.id).eq('is_current', false);
+                } catch (err) {
+                    console.warn("Sign out devices note:", err);
+                }
+            }
+            userDevices = userDevices.filter(d => d.isCurrent);
+            renderDevicesList();
+            showToast('All other device sessions signed out.', 'success');
+        }
+
+        function renderFastAddGrid() {
+            const container = document.getElementById('fastAddGrid');
+            container.innerHTML = '';
+
+            flagshipApps.forEach(app => {
+                const isAlreadyLinked = linkedApps.some(l => l.slug === app.slug);
+
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between space-y-3";
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${app.color} flex items-center justify-center text-white text-base shadow">
+                            <i class="fa-solid ${app.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-xs">${app.name}</div>
+                            <div class="text-[10px] font-mono text-slate-400">${app.tag}</div>
+                        </div>
+                    </div>
+                    ${isAlreadyLinked ? `
+                        <button disabled class="w-full py-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-default">
+                            <i class="fa-solid fa-circle-check"></i> Account Linked
+                        </button>
+                    ` : `
+                        <button onclick="executeFastAdd('${app.slug}')" class="w-full py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-bolt text-yellow-300"></i> Fast Add Account
+                        </button>
+                    `}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function executeFastAdd(appSlug) {
+            const targetApp = flagshipApps.find(a => a.slug === appSlug);
+            if (!targetApp) return;
+
+            const newLink = {
+                id: 'l_' + Date.now(),
+                slug: targetApp.slug,
+                name: targetApp.name,
+                category: targetApp.tag,
+                icon: targetApp.icon,
+                color: 'text-brand-400',
+                granted: 'Just now',
+                scopes: ['Read Profile', 'Fast Add Auth']
+            };
+
+            linkedApps.push(newLink);
+
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.from('user_linked_apps').upsert({
+                        user_id: currentUserSession.user.id,
+                        app_slug: appSlug,
+                        granted_scopes: ['Read Profile', 'Fast Add Auth']
+                    });
+                } catch (e) {
+                    console.warn("Supabase Fast Add note:", e);
+                }
+            }
+
+            renderFastAddGrid();
+            renderLinkedApps();
+            showToast(`Account fast-added for ${targetApp.name}!`, 'success');
+        }
+
         function renderLinkedApps() {
             const container = document.getElementById('linkedAppsContainer');
             document.getElementById('linkedAppsCount').textContent = linkedApps.length;
+            document.getElementById('sidebarFastAppsCount').textContent = `${linkedApps.length} Linked`;
+            document.getElementById('authorizedAppsCountBadge').textContent = `${linkedApps.length} Active`;
             container.innerHTML = '';
 
             if (linkedApps.length === 0) {
-                container.innerHTML = `<div class="p-8 codenix-card rounded-2xl text-center text-xs text-slate-400">No external applications authorized yet.</div>`;
+                container.innerHTML = `<div class="p-8 codenix-card rounded-2xl text-center text-xs text-slate-400">No linked applications found. Use Fast Add above!</div>`;
                 return;
             }
 
             linkedApps.forEach(app => {
                 const card = document.createElement('div');
-                card.className = "codenix-card p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4";
+                card.className = "p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4";
                 card.innerHTML = `
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl ${app.color}">
+                        <div class="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl ${app.color}">
                             <i class="fa-solid ${app.icon}"></i>
                         </div>
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <span class="font-bold text-white text-sm">${app.name}</span>
-                                <span class="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-slate-400">${app.category}</span>
+                                <span class="font-bold text-white text-xs sm:text-sm">${app.name}</span>
+                                <span class="px-2 py-0.5 rounded bg-white/10 text-[9px] font-mono text-slate-300">${app.category}</span>
                             </div>
-                            <div class="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
-                                <span>Granted: ${app.granted}</span>
+                            <div class="flex items-center gap-3 text-[10px] text-slate-400 font-mono">
+                                <span>Linked: ${app.granted}</span>
                                 <span>•</span>
                                 <span>Scopes: ${app.scopes.join(', ')}</span>
                             </div>
                         </div>
                     </div>
-                    <button onclick="revokeLinkedApp('${app.id}')" class="py-2 px-3 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 text-xs font-semibold transition-all">
+                    <button onclick="revokeLinkedApp('${app.id}', '${app.slug}')" class="py-2 px-3 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 text-xs font-semibold transition-all">
                         Revoke Access
                     </button>
                 `;
@@ -813,13 +1074,21 @@
             });
         }
 
-        function revokeLinkedApp(appId) {
+        async function revokeLinkedApp(appId, appSlug) {
+            const client = getSupabaseClient();
+            if (client && currentUserSession && appSlug) {
+                try {
+                    await client.from('user_linked_apps').delete().eq('user_id', currentUserSession.user.id).eq('app_slug', appSlug);
+                } catch (err) {
+                    console.warn("Revoke app note:", err);
+                }
+            }
             linkedApps = linkedApps.filter(a => a.id !== appId);
+            renderFastAddGrid();
             renderLinkedApps();
-            showToast('App access token revoked successfully.', 'info');
+            showToast('Ecosystem application access revoked.', 'info');
         }
 
-        // RENDER OUR FLAGSHIP APPS CATALOG
         function renderOurApps() {
             const container = document.getElementById('ourAppsGrid');
             container.innerHTML = '';
@@ -839,7 +1108,7 @@
                         <p class="text-xs text-slate-400 leading-relaxed">${app.desc}</p>
                     </div>
                     <a href="${app.link}" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-brand-600 hover:text-white border border-white/10 font-semibold text-xs text-slate-200 transition-all flex items-center justify-center gap-2">
-                        <span>Launch Application</span>
+                        <span>Launch App</span>
                         <i class="fa-solid fa-arrow-right text-[10px]"></i>
                     </a>
                 `;
@@ -847,76 +1116,78 @@
             });
         }
 
-        // RENDER ECOSYSTEM NEWS
-        function renderNewsFeed() {
-            const container = document.getElementById('newsFeedGrid');
-            container.innerHTML = '';
-
-            newsArticles.forEach((article, idx) => {
-                const card = document.createElement('div');
-                card.className = "codenix-card p-5 rounded-2xl space-y-2 cursor-pointer hover:bg-white/5 transition-all";
-                card.onclick = () => openNewsModal(idx);
-                card.innerHTML = `
-                    <div class="flex items-center justify-between text-[10px] font-mono">
-                        <span class="text-brand-400 font-bold">${article.cat}</span>
-                        <span class="text-slate-500">${article.date}</span>
-                    </div>
-                    <h3 class="text-sm font-bold text-white">${article.title}</h3>
-                    <p class="text-xs text-slate-400 line-clamp-2">${article.body}</p>
-                `;
-                container.appendChild(card);
-            });
+        function populateSettingsForms() {
+            document.getElementById('settingDisplayName').value = userProfile.displayName;
+            document.getElementById('settingVirtualId').value = userProfile.virtualId.replace(/^@/, '');
+            document.getElementById('settingBio').value = userProfile.bio;
         }
 
-        function openNewsModal(idx) {
-            const a = newsArticles[idx] || newsArticles[0];
-            document.getElementById('modalNewsCategory').textContent = a.cat;
-            document.getElementById('modalNewsTitle').textContent = a.title;
-            document.getElementById('modalNewsDate').textContent = a.date;
-            document.getElementById('modalNewsBody').innerHTML = `<p>${a.body}</p><p class="text-slate-400">All Security and privacy directives remain accessible via <a href="/policy/" target="_blank" class="text-brand-300 underline">/policy/</a>.</p>`;
-            document.getElementById('modalNewsReader').classList.remove('hidden');
-        }
-
-        function closeNewsModal() {
-            document.getElementById('modalNewsReader').classList.add('hidden');
-        }
-
-        function markAllNewsRead() {
-            document.getElementById('newsBadgeCount').textContent = '0 New';
-            showToast('All announcements marked as read.', 'success');
-        }
-
-        // PROFILE EDITING MODAL
-        function toggleEditProfileModal() {
-            const modal = document.getElementById('modalEditProfile');
-            if (modal.classList.contains('hidden')) {
-                document.getElementById('editDisplayName').value = userProfile.displayName;
-                document.getElementById('editVirtualId').value = userProfile.virtualId;
-                document.getElementById('editBio').value = userProfile.bio;
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function saveProfileChanges(e) {
+        async function handleProfileUpdate(e) {
             e.preventDefault();
-            const newName = document.getElementById('editDisplayName').value.trim();
-            const newBio = document.getElementById('editBio').value.trim();
+            const newName = document.getElementById('settingDisplayName').value.trim();
+            const newHandle = document.getElementById('settingVirtualId').value.trim();
+            const newBio = document.getElementById('settingBio').value.trim();
 
-            if (newName) {
-                userProfile.displayName = newName;
-                userProfile.bio = newBio;
-                renderProfileDetails();
-                toggleEditProfileModal();
-                showToast('Profile information saved!', 'success');
+            if (!newName || !newHandle) {
+                showToast('Name and handle cannot be blank.', 'error');
+                return;
             }
+
+            userProfile.displayName = newName;
+            userProfile.virtualId = newHandle.startsWith('@') ? newHandle : `@${newHandle}`;
+            userProfile.bio = newBio;
+
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.from('profiles').upsert({
+                        id: currentUserSession.user.id,
+                        email: userProfile.email,
+                        display_name: newName,
+                        virtual_id: userProfile.virtualId,
+                        bio: newBio,
+                        updated_at: new Date()
+                    });
+                    await client.auth.updateUser({
+                        data: { display_name: newName, virtual_id: userProfile.virtualId, bio: newBio }
+                    });
+                } catch (err) {
+                    console.warn("Supabase profile update note:", err);
+                }
+            }
+
+            renderProfileDetails();
+            showToast('Username and profile updated successfully!', 'success');
         }
 
-        // SETTINGS: PASSWORD UPDATE
-        function handlePasswordUpdate(e) {
+        async function handleEmailUpdate(e) {
             e.preventDefault();
-            const curr = document.getElementById('settingCurrentPass').value;
+            const newEmail = document.getElementById('settingNewEmail').value.trim();
+
+            if (!newEmail || !newEmail.includes('@')) {
+                showToast('Please enter a valid email address.', 'error');
+                return;
+            }
+
+            userProfile.email = newEmail;
+
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.auth.updateUser({ email: newEmail });
+                    await client.from('profiles').update({ email: newEmail }).eq('id', currentUserSession.user.id);
+                } catch (err) {
+                    console.warn("Supabase email update note:", err);
+                }
+            }
+
+            renderProfileDetails();
+            document.getElementById('settingNewEmail').value = '';
+            showToast('Primary email updated. Check your inbox for confirmation.', 'success');
+        }
+
+        async function handlePasswordUpdate(e) {
+            e.preventDefault();
             const newP = document.getElementById('settingNewPass').value;
             const conf = document.getElementById('settingConfirmPass').value;
 
@@ -925,33 +1196,20 @@
                 return;
             }
 
-            showToast('Password security key updated!', 'success');
-            document.getElementById('settingCurrentPass').value = '';
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.auth.updateUser({ password: newP });
+                } catch (err) {
+                    console.warn("Supabase pass update note:", err);
+                }
+            }
+
             document.getElementById('settingNewPass').value = '';
             document.getElementById('settingConfirmPass').value = '';
+            showToast('Account security password updated!', 'success');
         }
 
-        function toggleMFAReconfigModal() {
-            showToast('Redirecting to MFA enrollment step...', 'info');
-        }
-
-        // EXPORT DATA ARCHIVE JSON
-        function exportUserDataJSON() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-                userProfile: userProfile,
-                linkedApps: linkedApps,
-                privacyAgreement: { path: '/policy/', accepted: true, timestamp: new Date().toISOString() }
-            }, null, 2));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `codenix_id_export_${userProfile.virtualId}.json`);
-            document.body.appendChild(dlAnchor);
-            dlAnchor.click();
-            dlAnchor.remove();
-            showToast('Account archive JSON exported.', 'success');
-        }
-
-        // ACCOUNT DELETION MODAL
         function showDeleteAccountModal() {
             document.getElementById('deleteVirtualIdPreview').textContent = userProfile.virtualId;
             document.getElementById('modalDeleteAccount').classList.remove('hidden');
@@ -961,47 +1219,67 @@
             document.getElementById('modalDeleteAccount').classList.add('hidden');
         }
 
-        function executeAccountDeletion() {
+        async function executeAccountDeletion() {
             const input = document.getElementById('inputConfirmDelete').value.trim();
             if (input !== 'DELETE') {
-                showToast('Type "DELETE" to confirm account revocation.', 'error');
+                showToast('Type "DELETE" to confirm account deletion.', 'error');
                 return;
             }
 
             closeDeleteAccountModal();
-            showToast('Account deleted. Redirecting to /Start/...', 'error');
+
+            const client = getSupabaseClient();
+            if (client && currentUserSession) {
+                try {
+                    await client.rpc('delete_user_account');
+                    await client.auth.signOut();
+                } catch (err) {
+                    console.warn("Account deletion RPC note:", err);
+                }
+            }
+
+            showToast('Account permanently wiped. Redirecting to /Start/...', 'error');
             setTimeout(() => {
                 window.location.href = '/Start/';
-            }, 1000);
+            }, 1200);
         }
 
-        // GLOBAL SEARCH HANDLER
+        function copySQLSchema() {
+            const code = document.getElementById('sqlCodeBlock').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('SQL schema code copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Failed to copy text automatically.', 'error');
+            });
+        }
+
         function handleGlobalSearch(query) {
             if (!query) return;
             const q = query.toLowerCase();
-            if (q.includes('news')) switchTab('news');
-            else if (q.includes('app') || q.includes('code')) switchTab('our-apps');
-            else if (q.includes('setting') || q.includes('pass')) switchTab('settings');
+            if (q.includes('device') || q.includes('mac') || q.includes('phone')) switchTab('profile');
+            else if (q.includes('app') || q.includes('fast') || q.includes('link')) switchTab('linked');
+            else if (q.includes('setting') || q.includes('pass') || q.includes('email') || q.includes('name')) switchTab('settings');
+            else if (q.includes('sql') || q.includes('db') || q.includes('schema')) switchTab('sql-code');
         }
 
-        // SIGN OUT HANDLER
         async function handleSignOut() {
             const client = getSupabaseClient();
             if (client && client.auth) {
-                try {
-                    await client.auth.signOut();
-                } catch (e) {
-                    console.warn(e);
-                }
+                try { await client.auth.signOut(); } catch (e) { console.warn(e); }
             }
-            localStorage.removeItem('codenix_demo_session');
             showToast('Signed out of Codenix ID.', 'info');
             setTimeout(() => {
                 window.location.href = '/Start/';
             }, 800);
         }
 
-        // TOAST NOTIFIER HELPER
+        function simulateRedirect() {
+            showToast('Redirecting to /Start/...', 'info');
+            setTimeout(() => {
+                window.location.href = '/Start/';
+            }, 800);
+        }
+
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toastNotification');
             const icon = document.getElementById('toastIcon');
