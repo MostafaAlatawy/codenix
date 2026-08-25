@@ -128,21 +128,27 @@
             <!-- Security Status Indicator -->
             <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-emerald"></span>
-                <span>Gate Active</span>
+                <span id="headerDbStatusText">Supabase Live Sync</span>
             </div>
 
-            <!-- User Quick Profile Dropdown -->
+            <!-- Auth Action Button & User Quick Profile Dropdown -->
             <div class="flex items-center gap-3 border-l border-white/10 pl-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md" id="headerAvatar">
-                    U
-                </div>
-                <div class="hidden sm:flex flex-col">
-                    <span class="text-xs font-semibold text-white leading-tight" id="headerDisplayName">User Account</span>
-                    <span class="text-[10px] font-mono text-brand-300" id="headerVirtualId">username@codenix</span>
-                </div>
-                <button onclick="handleSignOut()" class="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 transition-colors ml-1" title="Sign Out">
-                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                <button onclick="openAuthModal()" id="btnHeaderAuth" class="py-1.5 px-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Sign In / Up</span>
                 </button>
+                <div class="flex items-center gap-3 hidden" id="headerUserInfo">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md" id="headerAvatar">
+                        U
+                    </div>
+                    <div class="hidden sm:flex flex-col">
+                        <span class="text-xs font-semibold text-white leading-tight" id="headerDisplayName">User Account</span>
+                        <span class="text-[10px] font-mono text-brand-300" id="headerVirtualId">username@codenix</span>
+                    </div>
+                    <button onclick="handleSignOut()" class="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 transition-colors ml-1" title="Sign Out">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -165,12 +171,20 @@
                         <i class="fa-solid fa-bolt text-brand-400 text-sm w-5 text-center"></i>
                         <span>Linked Apps & Fast Add</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded-full bg-brand-600/30 text-brand-300 text-[10px] font-mono border border-brand-500/30" id="linkedAppsCount">3</span>
+                    <span class="px-2 py-0.5 rounded-full bg-brand-600/30 text-brand-300 text-[10px] font-mono border border-brand-500/30" id="linkedAppsCount">0</span>
                 </button>
 
                 <button onclick="switchTab('our-apps')" id="nav-our-apps" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center gap-3 text-xs font-semibold text-slate-300 hover:text-white transition-all">
                     <i class="fa-solid fa-cubes text-brand-400 text-sm w-5 text-center"></i>
                     <span>Ecosystem Catalog</span>
+                </button>
+
+                <button onclick="switchTab('db-viewer')" id="nav-db-viewer" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-white transition-all">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-table text-cyan-400 text-sm w-5 text-center"></i>
+                        <span>Live Database Inspector</span>
+                    </div>
+                    <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-mono font-bold" id="dbViewerBadge">LIVE TABLES</span>
                 </button>
 
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-tab w-full py-2.5 px-3 rounded-xl border border-transparent flex items-center gap-3 text-xs font-semibold text-slate-300 hover:text-white transition-all">
@@ -658,20 +672,124 @@ ON CONFLICT (app_slug) DO NOTHING;
                 </div>
             </section>
 
+
+            <!-- ================= SECTION 6: LIVE DATABASE INSPECTOR ================= -->
+            <section id="section-db-viewer" class="space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-database text-cyan-400"></i> Supabase Live Database Inspector
+                        </h1>
+                        <p class="text-xs text-slate-400">View live raw rows stored directly in your Supabase PostgreSQL tables.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="refreshCurrentTableData()" class="py-2.5 px-4 rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-rotate text-xs" id="tableRefreshIcon"></i>
+                            <span>Fetch Fresh Rows</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Switcher Buttons -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/10 text-xs font-mono">
+                    <button onclick="selectDbTable('profiles')" id="btnTable-profiles" class="px-4 py-2 rounded-xl bg-white/10 text-white font-bold border border-white/20 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-users text-brand-400"></i>
+                        <span>profiles</span>
+                        <span class="px-1.5 py-0.2 rounded bg-brand-500/30 text-[10px]" id="count-profiles">-</span>
+                    </button>
+                    <button onclick="selectDbTable('ecosystem_apps')" id="btnTable-ecosystem_apps" class="px-4 py-2 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-transparent transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-cubes text-purple-400"></i>
+                        <span>ecosystem_apps</span>
+                        <span class="px-1.5 py-0.2 rounded bg-white/10 text-[10px]" id="count-ecosystem_apps">-</span>
+                    </button>
+                    <button onclick="selectDbTable('user_devices')" id="btnTable-user_devices" class="px-4 py-2 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-transparent transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-laptop text-emerald-400"></i>
+                        <span>user_devices</span>
+                        <span class="px-1.5 py-0.2 rounded bg-white/10 text-[10px]" id="count-user_devices">-</span>
+                    </button>
+                    <button onclick="selectDbTable('user_linked_apps')" id="btnTable-user_linked_apps" class="px-4 py-2 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-transparent transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-link text-yellow-400"></i>
+                        <span>user_linked_apps</span>
+                        <span class="px-1.5 py-0.2 rounded bg-white/10 text-[10px]" id="count-user_linked_apps">-</span>
+                    </button>
+                </div>
+
+                <!-- Table Viewer Display Card -->
+                <div class="codenix-card p-6 rounded-3xl space-y-4">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                        <div class="flex items-center gap-2 text-slate-300">
+                            <span>Query: <code class="text-cyan-300" id="currentQueryLabel">SELECT * FROM public.profiles</code></span>
+                        </div>
+                        <div class="text-slate-400 text-[11px]" id="queryExecutionMeta">Latency: - ms</div>
+                    </div>
+
+                    <!-- Scrollable Table Grid -->
+                    <div class="overflow-x-auto rounded-2xl border border-white/10 bg-black/40">
+                        <table class="w-full text-left text-xs font-mono" id="dbTableDisplay">
+                            <!-- Populated dynamically via JavaScript -->
+                        </table>
+                    </div>
+
+                    <!-- RLS Notice Banner -->
+                    <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-center gap-3">
+                        <i class="fa-solid fa-shield-halved text-sm flex-shrink-0"></i>
+                        <div>
+                            <strong>Row Level Security (RLS) Active:</strong> Unauthenticated users can read public tables (<code class="text-amber-200">ecosystem_apps</code>, public profiles). Sign in to view and mutate private user session records.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="w-full py-6 text-center text-xs text-slate-500 border-t border-white/5 bg-codenixDark">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>© 2026 Codenix ID Ecosystem. All rights reserved.</div>
-            <div class="flex items-center gap-6 text-[11px]">
-                <a href="/policy/" target="_blank" class="hover:text-slate-300 transition-colors">Privacy Policy (/policy/)</a>
-                <a href="mailto:support@codenix.id" class="hover:text-slate-300 transition-colors">Support</a>
-            </div>
-        </div>
-    </footer>
+    <!-- MODAL: SUPABASE AUTHENTICATION DIALOG -->
+    <div id="modalAuth" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="codenix-card p-6 sm:p-8 rounded-3xl w-full max-w-md space-y-5 border-brand-500/40 relative">
+            <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-2">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
 
+            <div class="space-y-1">
+                <div class="text-xs font-mono text-brand-300 uppercase tracking-widest font-semibold">Supabase Auth Gateway</div>
+                <h3 class="text-xl font-extrabold text-white">Access Codenix ID</h3>
+                <p class="text-xs text-slate-400">Sign in or register to store live profile & device records in your database.</p>
+            </div>
+
+            <!-- Auth Mode Switcher -->
+            <div class="flex rounded-xl bg-white/5 p-1 text-xs font-semibold">
+                <button onclick="setAuthMode('login')" id="btnAuthModeLogin" class="flex-1 py-2 rounded-lg bg-brand-600 text-white transition-all">Sign In</button>
+                <button onclick="setAuthMode('register')" id="btnAuthModeRegister" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition-all">Create Account</button>
+            </div>
+
+            <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div id="registerFields" class="space-y-3 hidden">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-mono text-slate-300">Display Name</label>
+                        <input type="text" id="authDisplayName" placeholder="Alex Dev" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-mono text-slate-300">Virtual Handle</label>
+                        <input type="text" id="authVirtualId" placeholder="alex_dev" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs font-mono" />
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-mono text-slate-300">Email Address</label>
+                    <input type="email" id="authEmail" required placeholder="user@codenix.id" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-mono text-slate-300">Password</label>
+                    <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full py-2.5 px-4 rounded-xl codenix-input text-xs" />
+                </div>
+
+                <button type="submit" id="btnSubmitAuth" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-bold text-xs shadow-lg transition-all">
+                    Sign In to Database
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL: DELETE ACCOUNT CONFIRMATION MODAL -->
     <div id="modalDeleteAccount" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -721,24 +839,24 @@ ON CONFLICT (app_slug) DO NOTHING;
             return window.codenixSupabase;
         }
 
-        // Global User Profile State
+        // Active State Variables
         let currentUserSession = null;
+        let activeDbTable = 'profiles';
+        let currentAuthMode = 'login';
+
+        // Profile State
         let userProfile = {
-            id: 'usr_892a71bc994',
-            displayName: 'Dev User',
-            email: 'dev_user@codenix.id',
-            virtualId: 'alex_dev',
-            bio: 'Full-stack AI developer building on Codenix Cloud ecosystem.',
+            id: 'guest_user',
+            displayName: 'Guest Developer',
+            email: 'guest@codenix.id',
+            virtualId: 'guest_dev',
+            bio: 'Browsing public Supabase tables in guest mode.',
         };
 
         // Devices State
-        let userDevices = [
-            { id: 'dev-1', name: 'MacBook Pro 16" (Current)', browser: 'Chrome 128.0', os: 'macOS Sonoma', ip: '197.54.112.42', location: 'Cairo, EG', lastActive: 'Active Now', isCurrent: true, icon: 'fa-laptop' },
-            { id: 'dev-2', name: 'iPhone 15 Pro Max', browser: 'Mobile Safari', os: 'iOS 17.5', ip: '156.204.88.19', location: 'Cairo, EG', lastActive: '2 hours ago', isCurrent: false, icon: 'fa-mobile-screen-button' },
-            { id: 'dev-3', name: 'Linux Workstation', browser: 'Firefox Developer', os: 'Ubuntu 24.04', ip: '41.130.90.11', location: 'Alexandria, EG', lastActive: '3 days ago', isCurrent: false, icon: 'fa-desktop' }
-        ];
+        let userDevices = [];
 
-        // Flagship Ecosystem Apps
+        // Flagship Ecosystem Catalog
         const flagshipApps = [
             { slug: 'codex-studio', name: 'Code-X Studio AI', desc: 'AI-assisted code generation engine with multi-file diffing and Supabase integration.', icon: 'fa-code', tag: 'IDE', color: 'from-brand-600 to-purple-600', link: '/' },
             { slug: 'cyber-arcade', name: 'Codenix Cyber Arcade', desc: 'Hardware-accelerated WebGL gaming hub powered by Codenix Virtual ID leaderboards.', icon: 'fa-gamepad', tag: 'GAMING', color: 'from-pink-600 to-rose-600', link: '/' },
@@ -746,48 +864,69 @@ ON CONFLICT (app_slug) DO NOTHING;
             { slug: 'codenix-vault', name: 'Codenix Vault & Identity', desc: 'Manage passkeys, TOTP secrets, and decentralized data compliance archives.', icon: 'fa-shield-halved', tag: 'SECURITY', color: 'from-emerald-600 to-teal-600', link: '/policy/' }
         ];
 
-        // Linked Authorized Apps Data
-        let linkedApps = [
-            { id: 'l1', slug: 'codex-studio', name: 'Code-X Studio AI', category: 'IDE & Assistant', icon: 'fa-code', color: 'text-brand-400', granted: 'Aug 20, 2026', scopes: ['Read Profile', 'Virtual ID Auth'] },
-            { id: 'l2', slug: 'cyber-arcade', name: 'Codenix Cyber Arcade', category: 'WebGL Gaming Engine', icon: 'fa-gamepad', color: 'text-pink-400', granted: 'Aug 22, 2026', scopes: ['Leaderboard Access', 'Virtual ID'] },
-            { id: 'l3', slug: 'quantum-flow', name: 'Quantum Flow Analytics', category: 'Model Benchmarking', icon: 'fa-chart-network', color: 'text-cyan-400', granted: 'Aug 24, 2026', scopes: ['Read Profile', 'Telemetry API'] }
-        ];
+        // Linked Ecosystem Apps
+        let linkedApps = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             const client = getSupabaseClient();
-            if (client && client.auth) {
+            
+            if (client) {
+                // Initialize Auth State Listener
                 try {
                     const { data: { session } } = await client.auth.getSession();
                     if (session) {
                         currentUserSession = session;
                         await syncUserProfileFromDatabase(session);
+                    } else {
+                        updateAuthUiState(false);
                     }
 
-                    // Subscribe to auth state changes
                     client.auth.onAuthStateChange(async (event, session) => {
+                        currentUserSession = session;
                         if (session) {
-                            currentUserSession = session;
                             await syncUserProfileFromDatabase(session);
+                            updateAuthUiState(true);
+                        } else {
+                            updateAuthUiState(false);
+                            renderAllComponents();
                         }
                     });
                 } catch (err) {
-                    console.warn("Supabase session sync note:", err);
+                    console.warn("Auth check warning:", err);
+                }
+
+                // Subscribe to Supabase Postgres Realtime Changes
+                try {
+                    client.channel('public:db-changes')
+                        .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+                            console.log('Real-time DB change detected:', payload);
+                            showToast(`Database updated: ${payload.table} (${payload.eventType})`, 'info');
+                            if (currentUserSession) syncUserProfileFromDatabase(currentUserSession);
+                            refreshCurrentTableData();
+                        })
+                        .subscribe();
+                } catch (err) {
+                    console.warn("Realtime subscription note:", err);
                 }
             }
 
+            // Load initial live tables
+            await loadAllTableCounts();
+            await fetchCurrentTableRows();
             renderAllComponents();
         });
 
         async function syncUserProfileFromDatabase(session) {
+            if (!session || !session.user) return;
             const u = session.user;
             userProfile.id = u.id;
-            userProfile.email = u.email || userProfile.email;
+            userProfile.email = u.email || 'user@codenix.id';
 
             const client = getSupabaseClient();
             if (client) {
                 try {
-                    // Query public.profiles
-                    const { data: dbProf } = await client
+                    // Fetch profile record from public.profiles table
+                    const { data: dbProf, error: profErr } = await client
                         .from('profiles')
                         .select('*')
                         .eq('id', u.id)
@@ -799,12 +938,21 @@ ON CONFLICT (app_slug) DO NOTHING;
                         userProfile.bio = dbProf.bio || userProfile.bio;
                     } else {
                         const meta = u.user_metadata || {};
-                        userProfile.displayName = meta.display_name || u.email.split('@')[0] || userProfile.displayName;
-                        userProfile.virtualId = meta.virtual_id || meta.username || userProfile.displayName.toLowerCase().replace(/\s+/g, '_');
-                        userProfile.bio = meta.bio || userProfile.bio;
+                        userProfile.displayName = meta.display_name || u.email.split('@')[0];
+                        userProfile.virtualId = meta.virtual_id || u.email.split('@')[0];
+                        userProfile.bio = meta.bio || 'Codenix ecosystem developer.';
+
+                        // Auto-create missing profile row in Supabase
+                        await client.from('profiles').upsert({
+                            id: u.id,
+                            email: u.email,
+                            display_name: userProfile.displayName,
+                            virtual_id: userProfile.virtualId,
+                            bio: userProfile.bio
+                        });
                     }
 
-                    // Query public.user_devices
+                    // Fetch user devices from public.user_devices table
                     const { data: dbDevices } = await client
                         .from('user_devices')
                         .select('*')
@@ -820,11 +968,40 @@ ON CONFLICT (app_slug) DO NOTHING;
                             location: d.location || 'Unknown',
                             lastActive: new Date(d.last_active).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                             isCurrent: d.is_current,
-                            icon: d.os.toLowerCase().includes('mac') || d.os.toLowerCase().includes('win') ? 'fa-laptop' : 'fa-mobile-screen-button'
+                            icon: (d.os || '').toLowerCase().includes('mac') || (d.os || '').toLowerCase().includes('win') ? 'fa-laptop' : 'fa-mobile-screen-button'
                         }));
+                    } else {
+                        // Insert current device session into database
+                        const userAgent = navigator.userAgent;
+                        const os = userAgent.includes('Mac') ? 'macOS' : userAgent.includes('Windows') ? 'Windows' : 'Linux';
+                        const browser = userAgent.includes('Chrome') ? 'Chrome' : userAgent.includes('Safari') ? 'Safari' : 'Firefox';
+
+                        const { data: insertedDev } = await client.from('user_devices').insert({
+                            user_id: u.id,
+                            device_name: `${os} Browser Session`,
+                            browser: browser,
+                            os: os,
+                            ip_address: '197.54.112.42',
+                            location: 'Cairo, EG',
+                            is_current: true
+                        }).select().single();
+
+                        if (insertedDev) {
+                            userDevices = [{
+                                id: insertedDev.id,
+                                name: insertedDev.device_name,
+                                browser: insertedDev.browser,
+                                os: insertedDev.os,
+                                ip: insertedDev.ip_address,
+                                location: insertedDev.location,
+                                lastActive: 'Active Now',
+                                isCurrent: true,
+                                icon: 'fa-laptop'
+                            }];
+                        }
                     }
 
-                    // Query public.user_linked_apps
+                    // Fetch linked applications from public.user_linked_apps table
                     const { data: dbLinked } = await client
                         .from('user_linked_apps')
                         .select('*')
@@ -845,12 +1022,220 @@ ON CONFLICT (app_slug) DO NOTHING;
                             };
                         });
                     }
+
                 } catch (e) {
-                    console.warn("DB synchronization error:", e);
+                    console.warn("Supabase database sync exception:", e);
                 }
             }
 
             renderAllComponents();
+            loadAllTableCounts();
+        }
+
+        async function fetchCurrentTableRows() {
+            const client = getSupabaseClient();
+            const tableDisplay = document.getElementById('dbTableDisplay');
+            const queryLabel = document.getElementById('currentQueryLabel');
+            const metaEl = document.getElementById('queryExecutionMeta');
+            const refreshIcon = document.getElementById('tableRefreshIcon');
+
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+            queryLabel.textContent = `SELECT * FROM public.${activeDbTable}`;
+
+            const startTime = performance.now();
+
+            if (!client) {
+                tableDisplay.innerHTML = `<tr><td class="p-4 text-rose-400">Supabase client initialization failed.</td></tr>`;
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                return;
+            }
+
+            try {
+                const { data, error, count } = await client
+                    .from(activeDbTable)
+                    .select('*', { count: 'exact' })
+                    .limit(50);
+
+                const endTime = performance.now();
+                metaEl.textContent = `Latency: ${Math.round(endTime - startTime)} ms | ${data ? data.length : 0} rows retrieved`;
+
+                if (error) {
+                    tableDisplay.innerHTML = `
+                        <tbody>
+                            <tr>
+                                <td class="p-6 text-rose-400 bg-rose-950/20 text-center">
+                                    <i class="fa-solid fa-triangle-exclamation text-lg mb-2"></i>
+                                    <div>Error reading <strong>${activeDbTable}</strong>: ${error.message}</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">Check RLS policies or run the SQL setup script.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    `;
+                    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    tableDisplay.innerHTML = `
+                        <tbody>
+                            <tr>
+                                <td class="p-8 text-center text-slate-400 bg-white/5">
+                                    <i class="fa-solid fa-database text-2xl text-slate-600 mb-2"></i>
+                                    <div>Table <strong>public.${activeDbTable}</strong> is currently empty.</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    `;
+                    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                    return;
+                }
+
+                // Dynamically build HTML Table
+                const columns = Object.keys(data[0]);
+                let headerHtml = `<thead class="bg-white/10 text-brand-300"><tr>`;
+                columns.forEach(col => {
+                    headerHtml += `<th class="p-3 border-b border-white/10 whitespace-nowrap">${col}</th>`;
+                });
+                headerHtml += `</tr></thead>`;
+
+                let bodyHtml = `<tbody class="divide-y divide-white/5">`;
+                data.forEach(row => {
+                    bodyHtml += `<tr class="hover:bg-white/5 transition-colors">`;
+                    columns.forEach(col => {
+                        let val = row[col];
+                        if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
+                        if (val === null || val === undefined) val = `<span class="text-slate-600">NULL</span>`;
+                        bodyHtml += `<td class="p-3 whitespace-nowrap text-slate-200 max-w-xs truncate" title="${String(val)}">${val}</td>`;
+                    });
+                    bodyHtml += `</tr>`;
+                });
+                bodyHtml += `</tbody>`;
+
+                tableDisplay.innerHTML = headerHtml + bodyHtml;
+
+            } catch (err) {
+                console.error("Table fetch error:", err);
+            }
+
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+        }
+
+        async function loadAllTableCounts() {
+            const client = getSupabaseClient();
+            if (!client) return;
+
+            const tables = ['profiles', 'ecosystem_apps', 'user_devices', 'user_linked_apps'];
+            for (const tbl of tables) {
+                try {
+                    const { count } = await client.from(tbl).select('*', { count: 'exact', head: true });
+                    const badge = document.getElementById(`count-${tbl}`);
+                    if (badge) badge.textContent = count !== null ? count : '0';
+                } catch (e) {
+                    console.warn(`Count error on ${tbl}:`, e);
+                }
+            }
+        }
+
+        function selectDbTable(tableName) {
+            activeDbTable = tableName;
+            ['profiles', 'ecosystem_apps', 'user_devices', 'user_linked_apps'].forEach(t => {
+                const btn = document.getElementById(`btnTable-${t}`);
+                if (t === tableName) {
+                    btn.className = "px-4 py-2 rounded-xl bg-white/10 text-white font-bold border border-white/20 transition-all flex items-center gap-2";
+                } else {
+                    btn.className = "px-4 py-2 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-transparent transition-all flex items-center gap-2";
+                }
+            });
+            fetchCurrentTableRows();
+        }
+
+        function refreshCurrentTableData() {
+            fetchCurrentTableRows();
+            loadAllTableCounts();
+        }
+
+        function updateAuthUiState(isAuthenticated) {
+            const btnAuth = document.getElementById('btnHeaderAuth');
+            const userInfo = document.getElementById('headerUserInfo');
+            const statusText = document.getElementById('headerDbStatusText');
+
+            if (isAuthenticated) {
+                btnAuth?.classList.add('hidden');
+                userInfo?.classList.remove('hidden');
+                if (statusText) statusText.textContent = "Supabase Auth Active";
+            } else {
+                btnAuth?.classList.remove('hidden');
+                userInfo?.classList.add('hidden');
+                if (statusText) statusText.textContent = "Guest Mode (Read Only)";
+            }
+        }
+
+        function openAuthModal() {
+            document.getElementById('modalAuth').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modalAuth').classList.add('hidden');
+        }
+
+        function setAuthMode(mode) {
+            currentAuthMode = mode;
+            const btnLogin = document.getElementById('btnAuthModeLogin');
+            const btnRegister = document.getElementById('btnAuthModeRegister');
+            const registerFields = document.getElementById('registerFields');
+            const btnSubmit = document.getElementById('btnSubmitAuth');
+
+            if (mode === 'login') {
+                btnLogin.className = "flex-1 py-2 rounded-lg bg-brand-600 text-white transition-all";
+                btnRegister.className = "flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition-all";
+                registerFields.classList.add('hidden');
+                btnSubmit.textContent = "Sign In to Database";
+            } else {
+                btnRegister.className = "flex-1 py-2 rounded-lg bg-brand-600 text-white transition-all";
+                btnLogin.className = "flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition-all";
+                registerFields.classList.remove('hidden');
+                btnSubmit.textContent = "Create Account & Store Row";
+            }
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const client = getSupabaseClient();
+            if (!client) {
+                showToast('Supabase client uninitialized.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+
+            if (currentAuthMode === 'login') {
+                const { data, error } = await client.auth.signInWithPassword({ email, password });
+                if (error) {
+                    showToast(`Login failed: ${error.message}`, 'error');
+                } else {
+                    showToast('Successfully signed in to Supabase!', 'success');
+                    closeAuthModal();
+                }
+            } else {
+                const displayName = document.getElementById('authDisplayName').value.trim() || email.split('@')[0];
+                const virtualId = document.getElementById('authVirtualId').value.trim() || email.split('@')[0];
+
+                const { data, error } = await client.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: { display_name: displayName, virtual_id: virtualId }
+                    }
+                });
+
+                if (error) {
+                    showToast(`Registration failed: ${error.message}`, 'error');
+                } else {
+                    showToast('Account created in Supabase! Signing in...', 'success');
+                    closeAuthModal();
+                }
+            }
         }
 
         function renderAllComponents() {
@@ -863,7 +1248,7 @@ ON CONFLICT (app_slug) DO NOTHING;
         }
 
         function switchTab(tabName) {
-            const tabs = ['profile', 'linked', 'our-apps', 'settings', 'sql-code'];
+            const tabs = ['profile', 'linked', 'our-apps', 'db-viewer', 'settings', 'sql-code'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
                 const sec = document.getElementById(`section-${t}`);
@@ -875,10 +1260,14 @@ ON CONFLICT (app_slug) DO NOTHING;
                     sec?.classList.add('hidden');
                 }
             });
+
+            if (tabName === 'db-viewer') {
+                fetchCurrentTableRows();
+            }
         }
 
         function renderProfileDetails() {
-            const firstChar = userProfile.displayName.charAt(0).toUpperCase();
+            const firstChar = (userProfile.displayName || 'U').charAt(0).toUpperCase();
             const handleText = userProfile.virtualId.startsWith('@') ? userProfile.virtualId : `@${userProfile.virtualId}`;
 
             document.getElementById('headerAvatar').textContent = firstChar;
@@ -898,7 +1287,7 @@ ON CONFLICT (app_slug) DO NOTHING;
             document.getElementById('sidebarActiveDevicesCount').textContent = `${userDevices.length} Active`;
 
             if (userDevices.length === 0) {
-                container.innerHTML = `<div class="p-6 codenix-card rounded-2xl text-center text-xs text-slate-400">No active sessions found.</div>`;
+                container.innerHTML = `<div class="p-6 codenix-card rounded-2xl text-center text-xs text-slate-400">No active sessions found in public.user_devices. Sign in to register this device.</div>`;
                 return;
             }
 
@@ -916,7 +1305,7 @@ ON CONFLICT (app_slug) DO NOTHING;
                         <div class="space-y-1">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="font-bold text-white text-xs">${dev.name}</span>
-                                ${dev.isCurrent ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-mono font-bold border border-emerald-500/30">THIS DEVICE</span>' : ''}
+                                ${dev.isCurrent ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-mono font-bold border border-emerald-500/30">THIS SESSION</span>' : ''}
                             </div>
                             <div class="text-[11px] text-slate-400 font-mono flex items-center gap-3 flex-wrap">
                                 <span><i class="fa-solid fa-globe text-[9px] mr-1"></i>${dev.browser} (${dev.os})</span>
@@ -949,7 +1338,7 @@ ON CONFLICT (app_slug) DO NOTHING;
             }
             userDevices = userDevices.filter(d => d.id !== deviceId);
             renderDevicesList();
-            showToast('Device session terminated remotely.', 'info');
+            showToast('Device session deleted from database.', 'info');
         }
 
         async function signOutAllOtherDevices() {
@@ -963,7 +1352,7 @@ ON CONFLICT (app_slug) DO NOTHING;
             }
             userDevices = userDevices.filter(d => d.isCurrent);
             renderDevicesList();
-            showToast('All other device sessions signed out.', 'success');
+            showToast('All other device sessions deleted.', 'success');
         }
 
         function renderFastAddGrid() {
@@ -1003,19 +1392,6 @@ ON CONFLICT (app_slug) DO NOTHING;
             const targetApp = flagshipApps.find(a => a.slug === appSlug);
             if (!targetApp) return;
 
-            const newLink = {
-                id: 'l_' + Date.now(),
-                slug: targetApp.slug,
-                name: targetApp.name,
-                category: targetApp.tag,
-                icon: targetApp.icon,
-                color: 'text-brand-400',
-                granted: 'Just now',
-                scopes: ['Read Profile', 'Fast Add Auth']
-            };
-
-            linkedApps.push(newLink);
-
             const client = getSupabaseClient();
             if (client && currentUserSession) {
                 try {
@@ -1024,14 +1400,15 @@ ON CONFLICT (app_slug) DO NOTHING;
                         app_slug: appSlug,
                         granted_scopes: ['Read Profile', 'Fast Add Auth']
                     });
+                    await syncUserProfileFromDatabase(currentUserSession);
+                    showToast(`Account fast-added in database for ${targetApp.name}!`, 'success');
                 } catch (e) {
-                    console.warn("Supabase Fast Add note:", e);
+                    showToast(`Failed to write to database: ${e.message}`, 'error');
                 }
+            } else {
+                openAuthModal();
+                showToast('Please sign in to link applications to your database row.', 'info');
             }
-
-            renderFastAddGrid();
-            renderLinkedApps();
-            showToast(`Account fast-added for ${targetApp.name}!`, 'success');
         }
 
         function renderLinkedApps() {
@@ -1042,7 +1419,7 @@ ON CONFLICT (app_slug) DO NOTHING;
             container.innerHTML = '';
 
             if (linkedApps.length === 0) {
-                container.innerHTML = `<div class="p-8 codenix-card rounded-2xl text-center text-xs text-slate-400">No linked applications found. Use Fast Add above!</div>`;
+                container.innerHTML = `<div class="p-8 codenix-card rounded-2xl text-center text-xs text-slate-400">No linked applications found in public.user_linked_apps table.</div>`;
                 return;
             }
 
@@ -1079,14 +1456,12 @@ ON CONFLICT (app_slug) DO NOTHING;
             if (client && currentUserSession && appSlug) {
                 try {
                     await client.from('user_linked_apps').delete().eq('user_id', currentUserSession.user.id).eq('app_slug', appSlug);
+                    await syncUserProfileFromDatabase(currentUserSession);
+                    showToast('Ecosystem application access revoked from database.', 'info');
                 } catch (err) {
-                    console.warn("Revoke app note:", err);
+                    showToast(`Revoke error: ${err.message}`, 'error');
                 }
             }
-            linkedApps = linkedApps.filter(a => a.id !== appId);
-            renderFastAddGrid();
-            renderLinkedApps();
-            showToast('Ecosystem application access revoked.', 'info');
         }
 
         function renderOurApps() {
@@ -1133,31 +1508,36 @@ ON CONFLICT (app_slug) DO NOTHING;
                 return;
             }
 
-            userProfile.displayName = newName;
-            userProfile.virtualId = newHandle.startsWith('@') ? newHandle : `@${newHandle}`;
-            userProfile.bio = newBio;
-
             const client = getSupabaseClient();
             if (client && currentUserSession) {
                 try {
-                    await client.from('profiles').upsert({
+                    const { error } = await client.from('profiles').upsert({
                         id: currentUserSession.user.id,
                         email: userProfile.email,
                         display_name: newName,
-                        virtual_id: userProfile.virtualId,
+                        virtual_id: newHandle.startsWith('@') ? newHandle : `@${newHandle}`,
                         bio: newBio,
                         updated_at: new Date()
                     });
-                    await client.auth.updateUser({
-                        data: { display_name: newName, virtual_id: userProfile.virtualId, bio: newBio }
-                    });
-                } catch (err) {
-                    console.warn("Supabase profile update note:", err);
-                }
-            }
 
-            renderProfileDetails();
-            showToast('Username and profile updated successfully!', 'success');
+                    if (error) {
+                        showToast(`Database write error: ${error.message}`, 'error');
+                        return;
+                    }
+
+                    await client.auth.updateUser({
+                        data: { display_name: newName, virtual_id: newHandle, bio: newBio }
+                    });
+
+                    await syncUserProfileFromDatabase(currentUserSession);
+                    showToast('Profile row updated in Supabase!', 'success');
+                } catch (err) {
+                    showToast(`Error: ${err.message}`, 'error');
+                }
+            } else {
+                openAuthModal();
+                showToast('Please sign in to update your database profile.', 'info');
+            }
         }
 
         async function handleEmailUpdate(e) {
@@ -1169,21 +1549,18 @@ ON CONFLICT (app_slug) DO NOTHING;
                 return;
             }
 
-            userProfile.email = newEmail;
-
             const client = getSupabaseClient();
             if (client && currentUserSession) {
                 try {
                     await client.auth.updateUser({ email: newEmail });
                     await client.from('profiles').update({ email: newEmail }).eq('id', currentUserSession.user.id);
+                    showToast('Primary email updated in database. Confirmation sent.', 'success');
                 } catch (err) {
-                    console.warn("Supabase email update note:", err);
+                    showToast(`Email error: ${err.message}`, 'error');
                 }
+            } else {
+                openAuthModal();
             }
-
-            renderProfileDetails();
-            document.getElementById('settingNewEmail').value = '';
-            showToast('Primary email updated. Check your inbox for confirmation.', 'success');
         }
 
         async function handlePasswordUpdate(e) {
@@ -1200,14 +1577,15 @@ ON CONFLICT (app_slug) DO NOTHING;
             if (client && currentUserSession) {
                 try {
                     await client.auth.updateUser({ password: newP });
+                    document.getElementById('settingNewPass').value = '';
+                    document.getElementById('settingConfirmPass').value = '';
+                    showToast('Supabase password updated!', 'success');
                 } catch (err) {
-                    console.warn("Supabase pass update note:", err);
+                    showToast(`Password error: ${err.message}`, 'error');
                 }
+            } else {
+                openAuthModal();
             }
-
-            document.getElementById('settingNewPass').value = '';
-            document.getElementById('settingConfirmPass').value = '';
-            showToast('Account security password updated!', 'success');
         }
 
         function showDeleteAccountModal() {
@@ -1233,14 +1611,16 @@ ON CONFLICT (app_slug) DO NOTHING;
                 try {
                     await client.rpc('delete_user_account');
                     await client.auth.signOut();
+                    showToast('Account completely wiped from Supabase.', 'error');
                 } catch (err) {
-                    console.warn("Account deletion RPC note:", err);
+                    showToast(`Account deletion error: ${err.message}`, 'error');
                 }
+            } else {
+                showToast('Guest session cleared.', 'info');
             }
 
-            showToast('Account permanently wiped. Redirecting to /Start/...', 'error');
             setTimeout(() => {
-                window.location.href = '/Start/';
+                window.location.reload();
             }, 1200);
         }
 
@@ -1258,6 +1638,7 @@ ON CONFLICT (app_slug) DO NOTHING;
             const q = query.toLowerCase();
             if (q.includes('device') || q.includes('mac') || q.includes('phone')) switchTab('profile');
             else if (q.includes('app') || q.includes('fast') || q.includes('link')) switchTab('linked');
+            else if (q.includes('table') || q.includes('row') || q.includes('inspect')) switchTab('db-viewer');
             else if (q.includes('setting') || q.includes('pass') || q.includes('email') || q.includes('name')) switchTab('settings');
             else if (q.includes('sql') || q.includes('db') || q.includes('schema')) switchTab('sql-code');
         }
@@ -1267,10 +1648,19 @@ ON CONFLICT (app_slug) DO NOTHING;
             if (client && client.auth) {
                 try { await client.auth.signOut(); } catch (e) { console.warn(e); }
             }
+            currentUserSession = null;
+            userProfile = {
+                id: 'guest_user',
+                displayName: 'Guest Developer',
+                email: 'guest@codenix.id',
+                virtualId: 'guest_dev',
+                bio: 'Browsing public Supabase tables in guest mode.',
+            };
+            userDevices = [];
+            linkedApps = [];
+            updateAuthUiState(false);
+            renderAllComponents();
             showToast('Signed out of Codenix ID.', 'info');
-            setTimeout(() => {
-                window.location.href = '/Start/';
-            }, 800);
         }
 
         function simulateRedirect() {
@@ -1290,7 +1680,7 @@ ON CONFLICT (app_slug) DO NOTHING;
             if (type === 'error') {
                 icon.className = "fa-solid fa-circle-exclamation text-rose-400 text-base";
             } else if (type === 'info') {
-                icon.className = "fa-solid fa-circle-info text-brand-400 text-base";
+                icon.className = "fa-solid fa-circle-info text-cyan-400 text-base";
             } else {
                 icon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
             }
