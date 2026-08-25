@@ -178,10 +178,10 @@
                 <!-- Email & Password Form -->
                 <form id="emailAuthForm" onsubmit="handleEmailAuth(event)" class="space-y-4">
                     <div class="space-y-1">
-                        <label class="text-[11px] font-mono text-slate-300 font-medium">Email Address</label>
+                        <label class="text-[11px] font-mono text-slate-300 font-medium" id="authEmailLabel">Email Address or Username</label>
                         <div class="relative">
-                            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                            <input type="email" id="authEmail" required placeholder="name@domain.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl codenix-input text-xs font-medium" />
+                            <i class="fa-solid fa-user-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                            <input type="text" id="authEmail" required placeholder="name@domain.com or username" class="w-full pl-10 pr-4 py-2.5 rounded-xl codenix-input text-xs font-medium" />
                         </div>
                     </div>
 
@@ -454,16 +454,14 @@
         // Global User Profile State
         let currentAuthMode = 'signin'; // 'signin' or 'signup'
         let currentUserSession = null;
+        let currentFactorId = null; // Supabase MFA TOTP Factor ID
         let userSecurityProfile = {
             privacyAccepted: false,
             virtualId: null,
             mfaCompleted: false
         };
 
-        // ON LOAD INITIALIZATION
         document.addEventListener('DOMContentLoaded', async () => {
-            initQRCode();
-            
             const client = getSupabaseClient();
             if (client && client.auth) {
                 try {
@@ -496,6 +494,7 @@
             const subtitle = document.getElementById('authSubtitle');
             const submitText = document.getElementById('btnSubmitAuthText');
             const checkContainer = document.getElementById('signUpCheckContainer');
+            const emailLabel = document.getElementById('authEmailLabel');
 
             if (mode === 'signup') {
                 btnSignUp.className = "py-2 rounded-xl bg-brand-600 text-white shadow-md transition-all";
@@ -504,6 +503,7 @@
                 subtitle.textContent = "Join the open AI ecosystem with your new account.";
                 submitText.textContent = "Create Account & Verify";
                 checkContainer.classList.remove('hidden');
+                if (emailLabel) emailLabel.textContent = "Email Address";
             } else {
                 btnSignIn.className = "py-2 rounded-xl bg-brand-600 text-white shadow-md transition-all";
                 btnSignUp.className = "py-2 rounded-xl text-slate-400 hover:text-white transition-all";
@@ -511,35 +511,13 @@
                 subtitle.textContent = "Sign in or create your account to access the ecosystem.";
                 submitText.textContent = "Sign In to Codenix";
                 checkContainer.classList.add('hidden');
+                if (emailLabel) emailLabel.textContent = "Email Address or Username";
             }
         }
 
-        // OAUTH SIGN IN (GOOGLE / GITHUB)
-        async function handleOAuthLogin(provider) {
-            showToast(`Connecting to ${provider.toUpperCase()}...`, 'info');
-            
-            const client = getSupabaseClient();
-            if (client && client.auth) {
-                try {
-                    const { error } = await client.auth.signInWithOAuth({
-                        provider: provider,
-                        options: {
-                            redirectTo: window.location.origin + '/dashboard/'
-                        }
-                    });
-                    if (error) throw error;
-                } catch (err) {
-                    showToast(err.message || `Failed to authenticate with ${provider}`, 'error');
-                }
-            } else {
-                simulateMockLogin(`user_${provider}@codenix.org`);
-            }
-        }
-
-        // EMAIL & PASSWORD AUTHENTICATION
         async function handleEmailAuth(e) {
             e.preventDefault();
-            const email = document.getElementById('authEmail').value.trim();
+            const identifier = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
             const client = getSupabaseClient();
 
@@ -554,8 +532,8 @@
                 if (client && client.auth) {
                     try {
                         const { data, error } = await client.auth.signUp({
-                            email,
-                            password,
+                            email: identifier,
+                            password: password,
                             options: {
                                 data: {
                                     privacy_accepted: true
@@ -570,21 +548,42 @@
                         showToast(err.message, 'error');
                     }
                 } else {
-                    simulateMockLogin(email);
+                    simulateMockLogin(identifier);
                 }
             } else {
                 showToast('Signing in...', 'info');
+                let targetEmail = identifier;
+
                 if (client && client.auth) {
                     try {
-                        const { data, error } = await client.auth.signInWithPassword({ email, password });
+                        // Resolve username to email if identifier is not standard email format
+                        if (!identifier.includes('@') || identifier.endsWith('@codenix')) {
+                            const cleanUsername = identifier.replace('@codenix', '').toLowerCase();
+                            const fullVirtualId = `${cleanUsername}@codenix`;
+
+                            const { data: profile } = await client
+                                .from('profiles')
+                                .select('email')
+                                .or(`virtual_id.eq.${fullVirtualId},virtual_id.eq.${cleanUsername}`)
+                                .maybeSingle();
+
+                            if (profile && profile.email) {
+                                targetEmail = profile.email;
+                            }
+                        }
+
+                        const { data, error } = await client.auth.signInWithPassword({ 
+                            email: targetEmail, 
+                            password: password 
+                        });
                         if (error) throw error;
                         showToast('Signed in successfully!', 'success');
                         handleUserSession(data.session);
                     } catch (err) {
-                        showToast(err.message, 'error');
+                        showToast(err.message || 'Invalid login credentials.', 'error');
                     }
                 } else {
-                    simulateMockLogin(email);
+                    simulateMockLogin(identifier.includes('@') ? identifier : `${identifier}@codenix.com`);
                 }
             }
         }
@@ -603,25 +602,19 @@
             userSecurityProfile.virtualId = meta.virtual_id || userSecurityProfile.virtualId || null;
             userSecurityProfile.mfaCompleted = meta.mfa_completed || userSecurityProfile.mfaCompleted || false;
 
-            // MANDATORY SECURITY GATE CHECK BEFORE DASHBOARD ACCESS:
+            // MANDATORY SECURITY GATE CHECK BEFORE DASHBOARD REDIRECT:
             if (!userSecurityProfile.privacyAccepted || !userSecurityProfile.virtualId || !userSecurityProfile.mfaCompleted) {
                 showOnboardingGate();
             } else {
-                window.history.pushState({}, '', '/dashboard/');
-                showDashboard(user);
+                redirectToDashboard();
             }
         }
 
-        // MOCK LOGIN FALLBACK
-        function simulateMockLogin(email) {
-            const mockSession = {
-                user: {
-                    id: 'usr_' + Math.random().toString(36).substring(2, 9),
-                    email: email,
-                    user_metadata: {}
-                }
-            };
-            handleUserSession(mockSession);
+        function redirectToDashboard() {
+            showToast('Security gate cleared! Redirecting to /dashboard...', 'success');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 800);
         }
 
         // SHOW ONBOARDING GATE (3 STEPS)
@@ -665,6 +658,90 @@
                 c1.classList.add('hidden');
                 c2.classList.add('hidden');
                 c3.classList.remove('hidden');
+
+                // Initialize Real Supabase TOTP MFA Enrollment
+                initSupabaseTOTP();
+            }
+        }
+
+        async function initSupabaseTOTP() {
+            const client = getSupabaseClient();
+            if (client && client.auth && currentUserSession) {
+                try {
+                    // Check if user already has TOTP factor enrolled
+                    const { data: factorsData } = await client.auth.mfa.listFactors();
+                    let totpFactor = factorsData?.totp?.find(f => f.status === 'verified' || f.status === 'unverified');
+
+                    if (!totpFactor) {
+                        const { data: enrollData, error } = await client.auth.mfa.enroll({
+                            factorType: 'totp',
+                            issuer: 'Codenix',
+                            friendlyName: currentUserSession.user.email || 'Codenix User'
+                        });
+                        if (error) throw error;
+                        currentFactorId = enrollData.id;
+                        renderMFAQRCode(enrollData.totp.qr_code, enrollData.totp.uri, enrollData.totp.secret);
+                    } else {
+                        currentFactorId = totpFactor.id;
+                        if (totpFactor.status === 'unverified') {
+                            const { data: enrollData } = await client.auth.mfa.enroll({
+                                factorType: 'totp',
+                                issuer: 'Codenix'
+                            });
+                            if (enrollData) {
+                                currentFactorId = enrollData.id;
+                                renderMFAQRCode(enrollData.totp.qr_code, enrollData.totp.uri, enrollData.totp.secret);
+                            }
+                        } else {
+                            document.getElementById('mfaSecretText').textContent = "TOTP Factor Active";
+                            document.getElementById('qrcodeCanvas').innerHTML = '<div class="text-xs text-slate-800 font-mono text-center p-2"><i class="fa-solid fa-shield-halved text-emerald-500 text-3xl mb-1 block"></i>MFA Active</div>';
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Supabase MFA initialization note:", err);
+                    renderMockQRCode();
+                }
+            } else {
+                renderMockQRCode();
+            }
+        }
+
+        function renderMFAQRCode(qrSvgOrData, uri, secret) {
+            const qrContainer = document.getElementById('qrcodeCanvas');
+            document.getElementById('mfaSecretText').textContent = secret || 'CODENIX-MFA-9842';
+            qrContainer.innerHTML = '';
+
+            if (qrSvgOrData && qrSvgOrData.startsWith('data:image/svg+xml')) {
+                const img = document.createElement('img');
+                img.src = qrSvgOrData;
+                img.className = "w-36 h-36 mx-auto";
+                qrContainer.appendChild(img);
+            } else if (uri && window.QRCode) {
+                new QRCode(qrContainer, {
+                    text: uri,
+                    width: 140,
+                    height: 140,
+                    colorDark: "#08080A",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } else {
+                renderMockQRCode();
+            }
+        }
+
+        function renderMockQRCode() {
+            const qrContainer = document.getElementById('qrcodeCanvas');
+            if (qrContainer && window.QRCode) {
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: "otpauth://totp/CodenixID:user?secret=CODENIXMFA98428812&issuer=Codenix",
+                    width: 140,
+                    height: 140,
+                    colorDark: "#08080A",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
             }
         }
 
@@ -705,7 +782,6 @@
             updateStepIndicators();
         }
 
-        // STEP 3 SUBMISSION: MFA Code Verification
         async function submitStep3() {
             const code = document.getElementById('mfaCodeInput').value.trim();
             if (code.length !== 6 || isNaN(code)) {
@@ -713,20 +789,38 @@
                 return;
             }
 
+            const client = getSupabaseClient();
+            if (client && client.auth && currentFactorId) {
+                showToast('Verifying code with Supabase TOTP...', 'info');
+                try {
+                    // Create MFA Challenge
+                    const { data: challengeData, error: challengeErr } = await client.auth.mfa.challenge({
+                        factorId: currentFactorId
+                    });
+                    if (challengeErr) throw challengeErr;
+
+                    // Verify MFA Challenge with user token
+                    const { data: verifyData, error: verifyErr } = await client.auth.mfa.verify({
+                        factorId: currentFactorId,
+                        challengeId: challengeData.id,
+                        code: code
+                    });
+                    if (verifyErr) throw verifyErr;
+
+                    showToast('Supabase TOTP verification successful!', 'success');
+                } catch (err) {
+                    showToast(err.message || 'Invalid MFA code. Please try again.', 'error');
+                    return;
+                }
+            }
+
             userSecurityProfile.mfaCompleted = true;
             await updateUserMetadata({ mfa_completed: true });
 
-            showToast('MFA Enabled & Profile Fully Verified!', 'success');
-            window.history.pushState({}, '', '/dashboard/');
-            
-            if (currentUserSession && currentUserSession.user) {
-                showDashboard(currentUserSession.user);
-            } else {
-                showDashboard({ email: 'user@codenix.com' });
-            }
+            redirectToDashboard();
         }
 
-        // UPDATE USER METADATA IN SUPABASE AUTH
+        // UPDATE USER METADATA IN SUPABASE AUTH & PROFILES TABLE
         async function updateUserMetadata(dataObj) {
             const client = getSupabaseClient();
             if (client && client.auth && currentUserSession) {
@@ -734,48 +828,24 @@
                     await client.auth.updateUser({
                         data: dataObj
                     });
+
+                    // Sync metadata to public profiles table if virtual_id or metadata updated
+                    if (dataObj.virtual_id) {
+                        await client.from('profiles').upsert({
+                            id: currentUserSession.user.id,
+                            email: currentUserSession.user.email,
+                            virtual_id: dataObj.virtual_id,
+                            privacy_accepted: true,
+                            updated_at: new Date().toISOString()
+                        });
+                    }
                 } catch (err) {
                     console.warn("Metadata update notice:", err);
                 }
             }
         }
 
-        // GENERATE QR CODE FOR MFA ENROLLMENT
-        function initQRCode() {
-            const qrContainer = document.getElementById('qrcodeCanvas');
-            if (qrContainer) {
-                qrContainer.innerHTML = '';
-                try {
-                    new QRCode(qrContainer, {
-                        text: "otpauth://totp/CodenixID:user?secret=CODENIXMFA98428812&issuer=Codenix",
-                        width: 140,
-                        height: 140,
-                        colorDark: "#08080A",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                } catch(e) {
-                    console.log("QR Code renderer note:", e);
-                }
-            }
-        }
-
-        // SHOW DASHBOARD VIEW
-        function showDashboard(user) {
-            document.getElementById('authCard').classList.add('hidden');
-            document.getElementById('onboardingGateCard').classList.add('hidden');
-            document.getElementById('dashboardCard').classList.remove('hidden');
-
-            const email = user.email || 'developer@codenix.org';
-            const displayName = email.split('@')[0];
-            
-            document.getElementById('dashDisplayName').textContent = displayName;
-            document.getElementById('userAvatarChar').textContent = displayName.charAt(0).toUpperCase();
-            document.getElementById('dashVirtualId').textContent = userSecurityProfile.virtualId || `${displayName}@codenix`;
-        }
-
         function showAuthView() {
-            window.history.pushState({}, '', '/');
             document.getElementById('dashboardCard').classList.add('hidden');
             document.getElementById('onboardingGateCard').classList.add('hidden');
             document.getElementById('authCard').classList.remove('hidden');
