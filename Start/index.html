@@ -710,34 +710,41 @@
             if (client && client.auth && currentUserSession) {
                 try {
                     // Check if user already has TOTP factor enrolled
-                    const { data: factorsData } = await client.auth.mfa.listFactors();
-                    let totpFactor = factorsData?.totp?.find(f => f.status === 'verified' || f.status === 'unverified');
+                    const { data: factorsData, error: listErr } = await client.auth.mfa.listFactors();
+                    if (listErr) throw listErr;
 
-                    if (!totpFactor) {
-                        const { data: enrollData, error } = await client.auth.mfa.enroll({
-                            factorType: 'totp',
-                            issuer: 'Codenix',
-                            friendlyName: currentUserSession.user.email || 'Codenix User'
-                        });
-                        if (error) throw error;
-                        currentFactorId = enrollData.id;
-                        renderMFAQRCode(enrollData.totp.qr_code, enrollData.totp.uri, enrollData.totp.secret);
-                    } else {
-                        currentFactorId = totpFactor.id;
-                        if (totpFactor.status === 'unverified') {
-                            const { data: enrollData } = await client.auth.mfa.enroll({
-                                factorType: 'totp',
-                                issuer: 'Codenix'
-                            });
-                            if (enrollData) {
-                                currentFactorId = enrollData.id;
-                                renderMFAQRCode(enrollData.totp.qr_code, enrollData.totp.uri, enrollData.totp.secret);
-                            }
-                        } else {
-                            document.getElementById('mfaSecretText').textContent = "TOTP Factor Active";
-                            document.getElementById('qrcodeCanvas').innerHTML = '<div class="text-xs text-slate-800 font-mono text-center p-2"><i class="fa-solid fa-shield-halved text-emerald-500 text-3xl mb-1 block"></i>MFA Active</div>';
+                    const allTotp = factorsData?.totp || [];
+                    const verifiedFactor = allTotp.find(f => f.status === 'verified');
+                    const unverifiedFactor = allTotp.find(f => f.status === 'unverified');
+
+                    // If a verified factor already exists, mark MFA as active
+                    if (verifiedFactor) {
+                        currentFactorId = verifiedFactor.id;
+                        userSecurityProfile.mfaCompleted = true;
+                        document.getElementById('mfaSecretText').textContent = "TOTP Factor Active & Verified";
+                        document.getElementById('qrcodeCanvas').innerHTML = '<div class="text-xs text-slate-800 font-mono text-center p-2"><i class="fa-solid fa-shield-halved text-emerald-500 text-3xl mb-1 block"></i>MFA Active</div>';
+                        return;
+                    }
+
+                    // If an unverified factor already exists, unenroll it first to clear stale enrollment
+                    if (unverifiedFactor) {
+                        try {
+                            await client.auth.mfa.unenroll({ factorId: unverifiedFactor.id });
+                        } catch (unenrollErr) {
+                            console.warn("Could not unenroll stale factor:", unenrollErr);
                         }
                     }
+
+                    // Enroll fresh TOTP factor
+                    const { data: enrollData, error: enrollErr } = await client.auth.mfa.enroll({
+                        factorType: 'totp',
+                        issuer: 'Codenix',
+                        friendlyName: currentUserSession.user.email || 'Codenix User'
+                    });
+                    if (enrollErr) throw enrollErr;
+
+                    currentFactorId = enrollData.id;
+                    renderMFAQRCode(enrollData.totp.qr_code, enrollData.totp.uri, enrollData.totp.secret);
                 } catch (err) {
                     console.warn("Supabase MFA initialization note:", err);
                     renderMockQRCode();
@@ -866,19 +873,25 @@
             const client = getSupabaseClient();
             if (client && client.auth && currentUserSession) {
                 try {
-                    await client.auth.updateUser({
+                    // Update auth user metadata first (always allowed for logged in user)
+                    const { error: authErr } = await client.auth.updateUser({
                         data: dataObj
                     });
+                    if (authErr) console.warn("Auth metadata update notice:", authErr.message);
 
-                    // Sync metadata to public profiles table if virtual_id or metadata updated
-                    if (dataObj.virtual_id) {
-                        await client.from('profiles').upsert({
+                    // Sync metadata to public profiles table with conflict handling
+                    if (dataObj.virtual_id && currentUserSession.user) {
+                        const { error: profileErr } = await client.from('profiles').upsert({
                             id: currentUserSession.user.id,
                             email: currentUserSession.user.email,
                             virtual_id: dataObj.virtual_id,
-                            privacy_accepted: true,
+                            privacy_accepted: userSecurityProfile.privacyAccepted || true,
                             updated_at: new Date().toISOString()
-                        });
+                        }, { onConflict: 'id' });
+
+                        if (profileErr) {
+                            console.warn("Profiles database sync notice (RLS policy check):", profileErr.message);
+                        }
                     }
                 } catch (err) {
                     console.warn("Metadata update notice:", err);
