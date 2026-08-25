@@ -435,16 +435,20 @@
         const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
         const SUPABASE_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
 
-        // Initialize Supabase Client safely preventing duplicate declaration errors
-        if (typeof supabase === 'undefined' || !supabase) {
-            var supabase = null;
-            try {
-                if (window.supabase) {
-                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Safe getter function to prevent global scope variable identifier collisions with the library bundle
+        function getSupabaseClient() {
+            if (!window.codenixSupabase) {
+                try {
+                    if (window.supabase && typeof window.supabase.createClient === 'function') {
+                        window.codenixSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    } else if (typeof createClient === 'function') {
+                        window.codenixSupabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+                    }
+                } catch (err) {
+                    console.warn("Supabase initialization fallback mode:", err);
                 }
-            } catch (err) {
-                console.warn("Supabase initialization standard mode:", err);
             }
+            return window.codenixSupabase;
         }
 
         // Global User Profile State
@@ -460,21 +464,26 @@
         document.addEventListener('DOMContentLoaded', async () => {
             initQRCode();
             
-            if (supabase) {
-                // Check active session
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    handleUserSession(session);
-                }
-
-                // Listen for state changes (e.g. OAuth redirects)
-                supabase.auth.onAuthStateChanged((event, session) => {
+            const client = getSupabaseClient();
+            if (client && client.auth) {
+                try {
+                    // Check active session
+                    const { data: { session } } = await client.auth.getSession();
                     if (session) {
                         handleUserSession(session);
-                    } else {
-                        showAuthView();
                     }
-                });
+
+                    // Listen for state changes (e.g. OAuth redirects)
+                    client.auth.onAuthStateChanged((event, session) => {
+                        if (session) {
+                            handleUserSession(session);
+                        } else {
+                            showAuthView();
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Auth listener notice:", e);
+                }
             }
         });
 
@@ -509,9 +518,10 @@
         async function handleOAuthLogin(provider) {
             showToast(`Connecting to ${provider.toUpperCase()}...`, 'info');
             
-            if (supabase) {
+            const client = getSupabaseClient();
+            if (client && client.auth) {
                 try {
-                    const { error } = await supabase.auth.signInWithOAuth({
+                    const { error } = await client.auth.signInWithOAuth({
                         provider: provider,
                         options: {
                             redirectTo: window.location.origin + '/dashboard/'
@@ -531,6 +541,7 @@
             e.preventDefault();
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
+            const client = getSupabaseClient();
 
             if (currentAuthMode === 'signup') {
                 const policyAgree = document.getElementById('authPolicyAgree').checked;
@@ -540,9 +551,9 @@
                 }
                 
                 showToast('Creating account...', 'info');
-                if (supabase) {
+                if (client && client.auth) {
                     try {
-                        const { data, error } = await supabase.auth.signUp({
+                        const { data, error } = await client.auth.signUp({
                             email,
                             password,
                             options: {
@@ -563,9 +574,9 @@
                 }
             } else {
                 showToast('Signing in...', 'info');
-                if (supabase) {
+                if (client && client.auth) {
                     try {
-                        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                        const { data, error } = await client.auth.signInWithPassword({ email, password });
                         if (error) throw error;
                         showToast('Signed in successfully!', 'success');
                         handleUserSession(data.session);
@@ -717,9 +728,10 @@
 
         // UPDATE USER METADATA IN SUPABASE AUTH
         async function updateUserMetadata(dataObj) {
-            if (supabase && currentUserSession) {
+            const client = getSupabaseClient();
+            if (client && client.auth && currentUserSession) {
                 try {
-                    await supabase.auth.updateUser({
+                    await client.auth.updateUser({
                         data: dataObj
                     });
                 } catch (err) {
@@ -773,8 +785,9 @@
 
         // SIGN OUT HANDLER
         async function handleSignOut() {
-            if (supabase) {
-                await supabase.auth.signOut();
+            const client = getSupabaseClient();
+            if (client && client.auth) {
+                await client.auth.signOut();
             }
             currentUserSession = null;
             userSecurityProfile = { privacyAccepted: false, virtualId: null, mfaCompleted: false };
