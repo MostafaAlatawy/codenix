@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workspace Dashboard | Codenix AI Studio</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+    <link rel="icon" href="logo.png">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -177,7 +177,7 @@
         }
     </style>
 </head>
-<body class="bg-surface-dark text-slate-100 min-h-screen selection:bg-brand-500/30 selection:text-brand-300 antialiased">
+<body class="bg-slate-50 dark:bg-surface-dark text-slate-800 dark:text-slate-100 min-h-screen selection:bg-brand-500/30 selection:text-brand-300 antialiased transition-colors duration-300">
 
     <!-- Custom Triangle Cursor Pointer -->
     <div id="custom-cursor"></div>
@@ -187,16 +187,14 @@
             
             <!-- Brand Logo -->
             <div class="flex items-center gap-3 cursor-pointer group" onclick="window.location.reload()">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform duration-300">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    </svg>
+                <div class="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center bg-slate-800">
+                    <img src="logo.png" alt="Codenix AI Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/36x36/8b5cf6/ffffff?text=C';">
                 </div>
                 <div class="flex flex-col">
                     <span class="text-lg font-extrabold tracking-tight dark:text-white text-slate-900 leading-tight">
                         CODENIX<span class="text-brand-500 font-normal">AI</span>
                     </span>
-                    <span class="text-[10px] uppercase font-medium tracking-widest text-slate-400 dark:text-slate-500 -mt-0.5">Workspace</span>
+                    <span class="text-[10px] uppercase font-medium tracking-widest text-slate-500 dark:text-slate-400 -mt-0.5">Workspace</span>
                 </div>
             </div>
 
@@ -205,7 +203,7 @@
 
                 <!-- Notifications Dropdown -->
                 <div class="relative">
-                    <button id="notif-btn" class="relative p-2.5 rounded-2xl bg-slate-800/40 dark:bg-slate-800/50 hover:bg-brand-500/10 text-slate-400 dark:text-slate-300 hover:text-brand-500 dark:hover:text-brand-400 border border-slate-700/40 dark:border-slate-800 transition-all duration-200" aria-label="Notifications">
+                    <button id="notif-btn" class="relative p-2.5 rounded-2xl bg-slate-200/70 dark:bg-slate-800/50 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-300/80 dark:border-slate-800 transition-all duration-200" aria-label="Notifications">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
@@ -214,6 +212,35 @@
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
                         </span>
+                    </button>
+
+                    <!-- Notifications Menu Dropdown -->
+                    <div id="notif-dropdown" class="dropdown-menu absolute right-0 mt-3 w-80 rounded-3xl dark:bg-slate-900/95 bg-white/95 border dark:border-slate-800 border-slate-200 shadow-2xl backdrop-blur-2xl p-4 z-50 text-left">
+                        <div class="flex items-center justify-between pb-3 border-b dark:border-slate-800/80 border-slate-200/80 mb-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Updates & Broadcasts</h4>
+                            <span id="notif-count" class="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-300 font-bold px-2.5 py-0.5 rounded-full border border-brand-500/20">0</span>
+                        </div>
+                        <div id="notif-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center py-6">Checking for broadcasts & updates...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="p-2.5 rounded-2xl bg-slate-200/70 dark:bg-slate-800/50 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-300/80 dark:border-slate-800 transition-all duration-200" aria-label="Toggle Theme">
+                    <svg id="theme-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
+                    </svg>
+                </button>
+
+                <!-- Profile Pill Menu -->
+                <div class="relative">
+                    <button id="profile-btn" class="flex items-center gap-3 p-1.5 pr-4 rounded-full dark:bg-slate-800/50 bg-slate-200/70 border dark:border-slate-800 border-slate-300/80 hover:border-brand-500/40 transition-all duration-200">
+                        <div class="relative h-8 w-8 rounded-full overflow-hidden border border-brand-500/30 bg-slate-800">
+                            <div id="avatar-loader" class="absolute inset-0 avatar-shimmer"></div>
+                            <img id="user-avatar" src="" alt="Profile" class="h-full w-full object-cover opacity-0 transition-opacity duration-300">
+                        </div>
+                        <span id="user-name-abbr" class="text-xs font-semibold dark:text-slate-200 text-slate-800 tracking-tight">Syncing...</span>
                     </button>
 
                     <!-- Notifications Menu Dropdown -->
@@ -622,14 +649,18 @@
                     const sectionType = getValue(0).toString().trim();
                     if (!sectionType || sectionType.toLowerCase() === 'section type') return;
 
-                    if (sectionType.toLowerCase() === 'notifications') {
+                    const typeLower = sectionType.toLowerCase();
+
+                    // Process Notifications and Broadcasts
+                    if (['notifications', 'notification', 'broadcasts', 'broadcast'].includes(typeLower)) {
                         const title = getValue(1).toString().trim();
                         const link = cleanImageUrl(getValue(2).toString());
-                        if (title) parsedNotifications.push({ title, link });
+                        const isBroadcast = typeLower.includes('broadcast');
+                        if (title) parsedNotifications.push({ title, link, isBroadcast });
                         return;
                     }
 
-                    if (sectionType.toLowerCase() === 'messages') {
+                    if (['messages', 'message'].includes(typeLower)) {
                         const title = getValue(1).toString().trim();
                         const link = cleanImageUrl(getValue(2).toString());
                         if (title) parsedMessages.push({ title, mediaUrl: link });
@@ -686,7 +717,7 @@
         // Notification Setup
         function setupNotificationUI(notifications) {
             if (notifications.length === 0) {
-                notifList.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No announcements right now.</p>`;
+                notifList.innerHTML = `<p class="text-xs text-slate-500 dark:text-slate-400 text-center py-6">No announcements right now.</p>`;
                 notifCount.textContent = "0";
                 notifBadge.classList.add('hidden');
                 mainNotificationsPanel.classList.add('hidden');
@@ -698,12 +729,18 @@
 
             notifList.innerHTML = notifications.map(notif => {
                 const targetLink = notif.link && notif.link !== '#' ? notif.link : 'javascript:void(0)';
+                const badgeLabel = notif.isBroadcast ? 'Broadcast' : 'Notice';
+                const badgeColor = notif.isBroadcast ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-brand-500/10 text-brand-600 dark:text-brand-300 border-brand-500/20';
+                
                 return `
                     <a href="${targetLink}" ${targetLink !== 'javascript:void(0)' ? 'target="_blank"' : ''} class="block p-2.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 group">
                         <div class="flex items-start gap-2.5">
-                            <span class="flex-shrink-0 mt-1 h-2 w-2 rounded-full bg-brand-500"></span>
-                            <div>
-                                <p class="text-xs font-medium dark:text-slate-200 text-slate-700 leading-snug group-hover:text-brand-500 transition-colors">${notif.title}</p>
+                            <span class="flex-shrink-0 mt-1 h-2 w-2 rounded-full ${notif.isBroadcast ? 'bg-amber-500' : 'bg-brand-500'}"></span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border uppercase tracking-wider ${badgeColor}">${badgeLabel}</span>
+                                </div>
+                                <p class="text-xs font-medium dark:text-slate-200 text-slate-800 leading-snug group-hover:text-brand-500 transition-colors">${notif.title}</p>
                             </div>
                         </div>
                     </a>
@@ -715,18 +752,25 @@
 
             mainNotificationsList.innerHTML = notifications.map(notif => {
                 const targetLink = notif.link && notif.link !== '#' ? notif.link : 'javascript:void(0)';
+                const iconBg = notif.isBroadcast ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400' : 'bg-brand-500/10 text-brand-500 dark:text-brand-400';
+                
                 return `
                     <div onclick="if('${targetLink}' !== 'javascript:void(0)') { window.open('${targetLink}', '_blank'); }" class="glass-card p-4 rounded-2xl cursor-pointer group flex items-start gap-3.5 transition-all">
-                        <div class="p-2.5 rounded-xl bg-brand-500/10 text-brand-500 dark:text-brand-400 group-hover:bg-brand-500 group-hover:text-white transition-all">
+                        <div class="p-2.5 rounded-xl ${iconBg} group-hover:bg-brand-500 group-hover:text-white transition-all">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${notif.isBroadcast ? 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c.41 0 .789.21 1.01.558l1.158 1.831 border-0' : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'}" />
                             </svg>
                         </div>
                         <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${notif.isBroadcast ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-brand-500/10 text-brand-600 dark:text-brand-300 border-brand-500/20'}">
+                                    ${notif.isBroadcast ? 'Broadcast' : 'Notice'}
+                                </span>
+                            </div>
                             <p class="text-xs font-semibold dark:text-slate-200 text-slate-800 group-hover:text-brand-500 transition-colors leading-relaxed">${notif.title}</p>
                             ${notif.link && notif.link !== '#' ? `
                                 <span class="inline-flex items-center gap-1 text-[11px] text-brand-500 font-semibold mt-1">
-                                    Read notice
+                                    Read details
                                     <svg class="h-3 w-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                     </svg>
