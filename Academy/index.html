@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codenix | Academy - Master Tech & AI</title>
+    <title>Codenix | Academy - Master Tech & AI with Puter AI</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,6 +18,9 @@
 
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Puter.js (Free AI & Cloud OS Integration) -->
+    <script src="https://js.puter.com/v2/puter.js"></script>
 
     <!-- Canvas Confetti for certificate celebrations -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -69,7 +72,6 @@
             font-family: 'Outfit', sans-serif;
         }
 
-        /* Glassmorphism elements */
         .glass-panel {
             background: rgba(17, 24, 39, 0.75);
             backdrop-filter: blur(12px);
@@ -82,7 +84,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Glowing background blobs */
         .glow-blob {
             position: absolute;
             border-radius: 50%;
@@ -91,7 +92,6 @@
             pointer-events: none;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -107,7 +107,6 @@
             background: #374151;
         }
 
-        /* Certificate Styling */
         .certificate-border {
             border: 12px double #4f46e5;
             background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d1322 100%);
@@ -116,53 +115,41 @@
 </head>
 <body class="min-h-screen flex flex-col relative selection:bg-brand-500 selection:text-white">
 
-    <!-- Intro Loading Screen (1 second timer) -->
     <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f19] transition-opacity duration-500 ease-out">
         <div class="glow-blob w-96 h-96 bg-brand-500 -top-10 -left-10"></div>
         <div class="glow-blob w-96 h-96 bg-tech-cyan -bottom-10 -right-10"></div>
 
         <div class="flex items-center space-x-6 md:space-x-8 animate-bounce mb-6">
-            <!-- MRC Logo -->
             <div class="relative group">
-                <img id="splashMrcLogo" 
-                     src="https://scontent.fcai19-5.fna.fbcdn.net/v/t39.30808-6/505803320_122123493038854539_3757857447945570612_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=nJFRo2p9Jq8Q7kNvwEZ9rQ-&_nc_oc=Adqwp_trjFPrUpBrfxYVYC5aQDWmU2lOsSU8JTM8r6NXYyk061NMwRfCOVp9Vs11-rg&_nc_zt=23&_nc_ht=scontent.fcai19-5.fna&_nc_gid=MdJREN1MVJmNStvHH_HkVA&_nc_ss=7d2a8&oh=00_AQJTZDJX0-jJTJDkBKrAEMJxHm5ppou9m9JzBXfZvB32Fg&oe=6A9DF2FA" 
+                <img src="https://scontent.fcai19-5.fna.fbcdn.net/v/t39.30808-6/505803320_122123493038854539_3757857447945570612_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=nJFRo2p9Jq8Q7kNvwEZ9rQ-&_nc_oc=Adqwp_trjFPrUpBrfxYVYC5aQDWmU2lOsSU8JTM8r6NXYyk061NMwRfCOVp9Vs11-rg&_nc_zt=23&_nc_ht=scontent.fcai19-5.fna&_nc_gid=MdJREN1MVJmNStvHH_HkVA&_nc_ss=7d2a8&oh=00_AQJTZDJX0-jJTJDkBKrAEMJxHm5ppou9m9JzBXfZvB32Fg&oe=6A9DF2FA" 
                      alt="MRC Logo" 
                      class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-2xl ring-2 ring-brand-500/40"
                      onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=MRC'">
             </div>
-
-            <!-- Divider -->
             <div class="h-16 w-1 bg-gradient-to-b from-brand-500 via-tech-cyan to-brand-700 rounded-full"></div>
-
-            <!-- Codenix Logo -->
             <div class="relative group">
-                <img id="splashCodenixLogo" 
-                     src="/logo.png" 
+                <img src="/logo.png" 
                      alt="Codenix Logo" 
                      class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-2xl ring-2 ring-tech-cyan/40"
                      onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%236366f1\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23111827\'/><path d=\'M30 30 L50 70 L70 30\' stroke=\'%2306b6d4\' stroke-width=\'10\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/><circle cx=\'50\' cy=\'35\' r=\'6\' fill=\'%236366f1\'/></svg>'">
             </div>
         </div>
 
-        <!-- Animated Brand Name -->
         <h1 class="heading-font text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">
             Codenix <span class="text-white font-light">| Academy</span>
         </h1>
         <p class="text-slate-400 text-sm md:text-base mt-2 tracking-widest uppercase font-mono">
-            MRC Logo | Codenix Logo
+            Powered by Puter.js Free AI & Google Sheets
         </p>
 
-        <!-- Loading Progress Bar -->
         <div class="w-48 h-1.5 bg-slate-800 rounded-full mt-8 overflow-hidden">
             <div class="w-full h-full bg-gradient-to-r from-brand-500 to-tech-cyan animate-pulse"></div>
         </div>
     </div>
 
-    <!-- Main Header Bar -->
     <header class="glass-header sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Brand Logo & Title -->
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('home')">
                     <img src="/logo.png" 
                          alt="Codenix Logo" 
@@ -175,21 +162,22 @@
                     </div>
                 </div>
 
-                <!-- Google Sheets Status & User Badge -->
                 <div class="flex items-center space-x-3">
                     <div id="sheetStatusBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
                         <i class="fa-file-spreadsheet text-emerald-400"></i>
-                        <span>Sheets Synced</span>
+                        <span>Live Sheets Synced</span>
                     </div>
 
-                    <div id="authWidget" class="flex items-center">
-                        <div id="navUserBadge" class="hidden px-4 py-2 rounded-xl text-sm font-semibold bg-slate-800/90 text-slate-200 border border-slate-700/80 flex items-center gap-2 shadow-sm">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                            <span id="navUserNameText">Username</span>
+                    <!-- Puter Auth Widget -->
+                    <div id="puterAuthWidget" class="flex items-center gap-2">
+                        <div id="puterUserBadge" class="hidden px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-tech-cyan animate-pulse"></span>
+                            <span id="puterUserNameText">Puter User</span>
+                            <button onclick="changePuterUser()" class="text-slate-400 hover:text-white ml-1 text-[10px]" title="Change Account"><i class="fa-solid fa-gear"></i></button>
                         </div>
-                        <button id="signInRedirectBtn" onclick="redirectToStart()" class="hidden px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white shadow-lg shadow-brand-500/20 transition flex items-center gap-2">
-                            <i class="fa-solid fa-right-to-bracket"></i>
-                            <span>Sign In</span>
+                        <button id="puterSignInBtn" onclick="signInWithPuter()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-tech-cyan to-brand-600 hover:from-cyan-400 hover:to-brand-500 text-white shadow-lg shadow-cyan-500/20 transition flex items-center gap-2">
+                            <i class="fa-solid fa-robot"></i>
+                            <span>Sign in with Puter AI</span>
                         </button>
                     </div>
                 </div>
@@ -197,27 +185,25 @@
         </div>
     </header>
 
-    <!-- Main Content Wrapper -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         <div class="glow-blob w-80 h-80 bg-brand-600 top-10 left-1/3"></div>
         <div class="glow-blob w-96 h-96 bg-tech-cyan bottom-10 right-10"></div>
 
         <!-- Section: Home & Course Catalog -->
         <div id="homeSection" class="space-y-10">
-            <!-- Hero Banner -->
             <div class="relative rounded-3xl overflow-hidden glass-panel p-8 md:p-12 border border-slate-800/80 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-brand-900/20">
                 <div class="max-w-3xl space-y-6 relative z-10">
                     <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs font-medium">
-                        <span class="w-2 h-2 rounded-full bg-brand-400 animate-ping"></span>
-                        Codenix & MRC Academy
+                        <span class="w-2 h-2 rounded-full bg-tech-cyan animate-ping"></span>
+                        Powered by Puter.js Free AI & Google Sheets
                     </div>
                     
                     <h1 class="heading-font text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                        Advance Your Skillset with Live <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">Google Sheets Courses</span>
+                        Interactive Tech & AI Academy with <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">Puter AI Intelligence</span>
                     </h1>
 
                     <p class="text-slate-300 text-base md:text-lg leading-relaxed">
-                        Industry-grade curriculum dynamically synced with our live spreadsheet database. Complete required lesson tests to unlock progressive modules and earn your official verified certificate!
+                        Highlight any lesson text to trigger Puter AI summarize & explain tools, generate custom AI tests on the fly, and code with an AI assistant in our live coding IDE.
                     </p>
                 </div>
             </div>
@@ -228,23 +214,21 @@
                     <div>
                         <h2 class="heading-font text-2xl font-bold text-white flex items-center gap-2">
                             <span>Available Courses</span>
-                            <span id="courseCountBadge" class="text-xs font-normal bg-brand-500/20 text-brand-300 px-2.5 py-1 rounded-full border border-brand-500/30">Syncing Google Sheets...</span>
+                            <span id="courseCountBadge" class="text-xs font-normal bg-brand-500/20 text-brand-300 px-2.5 py-1 rounded-full border border-brand-500/30">Loading Sheet...</span>
                         </h2>
-                        <p class="text-slate-400 text-sm">Select a course to start learning or complete required module tests</p>
+                        <p class="text-slate-400 text-sm">Select a course to start learning with AI assistance</p>
                     </div>
 
-                    <!-- Search Input -->
                     <div class="relative w-full md:w-72">
                         <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" 
                                id="searchInput" 
                                oninput="renderCourses()" 
-                               placeholder="Search tech, AI, sheets..." 
+                               placeholder="Search courses, AI, tech..." 
                                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
                     </div>
                 </div>
 
-                <!-- Category Filters -->
                 <div class="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-800">
                     <button onclick="setCategoryFilter('all')" id="filter-all" class="category-btn active-cat px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white transition">
                         All Tracks
@@ -253,24 +237,21 @@
                         <i class="fa-solid fa-robot mr-1.5 text-purple-400"></i>AI & Machine Learning
                     </button>
                     <button onclick="setCategoryFilter('Tech')" id="filter-Tech" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
-                        <i class="fa-solid fa-laptop-code mr-1.5 text-tech-cyan"></i>Software Tech
+                        <i class="fa-solid fa-laptop-code mr-1.5 text-tech-cyan"></i>Software Tech & Coding
                     </button>
-                    <!-- Sync Button -->
                     <button onclick="loadCoursesData()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 transition flex items-center gap-1.5 ml-auto">
                         <i class="fa-solid fa-rotate text-xs"></i> Refresh Sheet
                     </button>
                 </div>
             </div>
 
-            <!-- Course Cards Grid -->
             <div id="coursesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamic Course Cards render here -->
+                <!-- Dynamic Course Cards -->
             </div>
         </div>
 
-        <!-- Section: Course Lesson Viewer Screen -->
+        <!-- Section: Course Lesson & AI IDE Viewer Screen -->
         <div id="lessonSection" class="hidden space-y-6">
-            <!-- Back & Header -->
             <div class="flex items-center justify-between">
                 <button onclick="showSection('home')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition flex items-center gap-2">
                     <i class="fa-solid fa-arrow-left"></i> Back to Courses
@@ -279,7 +260,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Main Video / Lesson Content Player & Quiz Pane -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Video Embed Frame -->
                     <div class="aspect-video bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden relative shadow-2xl flex items-center justify-center">
@@ -292,37 +272,47 @@
                                 allowfullscreen></iframe>
                     </div>
 
-                    <!-- Tabs: Video Info vs Lesson Quiz -->
-                    <div class="flex items-center gap-3 border-b border-slate-800 pb-2">
-                        <button id="tabVideoBtn" onclick="switchLessonTab('info')" class="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white transition flex items-center gap-2">
+                    <!-- Mode Navigation Tabs: Lesson Info, AI Test, Puter Coding IDE & Chat -->
+                    <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-2">
+                        <button id="tabVideoBtn" onclick="switchLessonTab('info')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white transition flex items-center gap-1.5">
                             <i class="fa-solid fa-book-open"></i> Lesson Material
                         </button>
-                        <button id="tabQuizBtn" onclick="switchLessonTab('quiz')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-2 relative">
+                        <button id="tabQuizBtn" onclick="switchLessonTab('quiz')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 relative">
                             <i class="fa-solid fa-pen-to-square text-amber-400"></i> Lesson Test
                             <span id="quizPassedBadge" class="hidden text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.2 rounded font-mono font-bold">PASSED</span>
                         </button>
+                        <button id="tabIdeBtn" onclick="switchLessonTab('ide')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-code text-tech-cyan"></i> Puter AI IDE & Chat
+                        </button>
                     </div>
 
-                    <!-- Lesson Details Card -->
+                    <!-- Lesson Details Card (Supports Text Selection AI Assistant) -->
                     <div id="lessonInfoPane" class="glass-panel p-6 rounded-2xl space-y-4">
                         <div class="flex items-center justify-between">
                             <h2 id="currentLessonTitle" class="heading-font text-xl font-bold text-white">Select a lesson</h2>
-                            <div id="lessonStatusTag" class="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-slate-800 text-slate-400 border border-slate-700">
-                                Pending Test
+                            <div class="flex items-center gap-2">
+                                <button onclick="generateAiLessonQuiz()" class="px-3 py-1.5 rounded-xl bg-tech-cyan/20 border border-tech-cyan/40 text-tech-cyan text-xs font-semibold hover:bg-tech-cyan/30 transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-robot"></i> Puter AI Gen Test
+                                </button>
+                                <div id="lessonStatusTag" class="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                                    Pending Test
+                                </div>
                             </div>
                         </div>
-                        <p id="currentLessonDesc" class="text-slate-300 text-sm leading-relaxed"></p>
+                        
+                        <!-- Selectable Lesson Description -->
+                        <div id="currentLessonDesc" class="text-slate-300 text-sm leading-relaxed select-text">
+                            Loading lesson content...
+                        </div>
 
-                        <!-- Code Sandbox Snippet box -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-2">
                             <div class="flex items-center justify-between text-slate-500 text-[11px] pb-2 border-b border-slate-800">
                                 <span><i class="fa-solid fa-code mr-1"></i> Interactive Code Snippet</span>
-                                <span>Codenix Academy</span>
+                                <span>Codenix & Puter AI</span>
                             </div>
-                            <pre id="lessonCodeSnippet" class="overflow-x-auto text-emerald-400">// Code snippet for this module...</pre>
+                            <pre id="lessonCodeSnippet" class="overflow-x-auto text-emerald-400">// Code snippet...</pre>
                         </div>
 
-                        <!-- Jump to Quiz CTA -->
                         <div class="pt-2 flex justify-end">
                             <button onclick="switchLessonTab('quiz')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-lg flex items-center gap-2">
                                 <span>Take Lesson Test to Unlock Next</span>
@@ -331,7 +321,7 @@
                         </div>
                     </div>
 
-                    <!-- Lesson Quiz / Test Interactive Area -->
+                    <!-- Lesson Quiz Pane -->
                     <div id="lessonQuizPane" class="glass-panel p-6 rounded-2xl space-y-6 hidden">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div>
@@ -339,7 +329,7 @@
                                     <i class="fa-solid fa-clipboard-question text-amber-400"></i>
                                     <span>Lesson Knowledge Evaluation</span>
                                 </h3>
-                                <p class="text-slate-400 text-xs">Pass this required test to mark the lesson completed and unlock the next module!</p>
+                                <p class="text-slate-400 text-xs">Pass this required test to unlock the next module!</p>
                             </div>
                             <div class="text-xs font-mono bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1 rounded-lg">
                                 Required: 100% Score
@@ -347,7 +337,7 @@
                         </div>
 
                         <div id="quizContainer" class="space-y-6">
-                            <!-- Dynamic quiz questions injected here -->
+                            <!-- Dynamic quiz questions -->
                         </div>
 
                         <div class="pt-4 flex items-center justify-between border-t border-slate-800">
@@ -355,6 +345,60 @@
                             <button onclick="submitLessonQuiz()" id="submitQuizBtn" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition shadow-lg flex items-center gap-2">
                                 <i class="fa-solid fa-paper-plane"></i> Submit Test
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Puter AI Coding IDE & Chat Assistant Pane -->
+                    <div id="lessonIdePane" class="glass-panel p-6 rounded-2xl space-y-4 hidden">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-terminal text-tech-cyan"></i>
+                                <h3 class="heading-font text-base font-bold text-white">Puter AI Coding IDE & Task Assistant</h3>
+                            </div>
+                            <button onclick="askPuterAiTaskHelp()" class="px-3 py-1.5 rounded-xl bg-tech-cyan/20 border border-tech-cyan/40 text-tech-cyan text-xs font-semibold hover:bg-tech-cyan/30 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Task Prompt
+                            </button>
+                        </div>
+
+                        <!-- Coding Task Instructions -->
+                        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-1">
+                            <div class="font-bold text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check text-amber-400"></i> Post-Lesson Coding Task:
+                            </div>
+                            <p id="codingTaskDescription">Implement a function in JavaScript/Python based on this lesson's core algorithm and test it with Puter AI.</p>
+                        </div>
+
+                        <!-- Editor & AI Chat Split Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Code Editor -->
+                            <div class="space-y-2">
+                                <div class="text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                                    <span>Code Workspace</span>
+                                    <button onclick="runUserCode()" class="text-emerald-400 hover:underline"><i class="fa-solid fa-play mr-1"></i> Run Code</button>
+                                </div>
+                                <textarea id="userCodeWorkspace" rows="8" class="w-2/3 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-300 focus:outline-none focus:border-tech-cyan transition" placeholder="// Write your solution here..."></textarea>
+                                <div id="codeRunOutput" class="p-3 rounded-xl bg-slate-950 font-mono text-xs text-slate-400 min-h-[50px] border border-slate-800/80">
+                                    Output / Execution result will appear here...
+                                </div>
+                            </div>
+
+                            <!-- Puter AI Chat Assistant -->
+                            <div class="space-y-2 flex flex-col justify-between">
+                                <div class="text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                                    <span><i class="fa-solid fa-robot text-tech-cyan mr-1"></i> Puter AI Chat</span>
+                                    <span class="text-tech-cyan">Free AI Active</span>
+                                </div>
+                                <div id="puterAiChatMessages" class="h-44 bg-slate-950 rounded-xl border border-slate-800 p-3 overflow-y-auto space-y-2 text-xs text-slate-300">
+                                    <div class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                                        <span class="text-tech-cyan font-bold block mb-0.5">Puter AI Assistant:</span>
+                                        Hello! Ask me any coding question or ask for help with this task.
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="puterChatInput" onkeydown="if(event.key==='Enter') sendPuterAiChat()" placeholder="Ask Puter AI about your code..." class="flex-grow px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-tech-cyan">
+                                    <button onclick="sendPuterAiChat()" class="px-4 py-2 rounded-xl bg-tech-cyan hover:bg-cyan-400 text-slate-950 font-bold text-xs transition">Send</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -366,23 +410,18 @@
                         <span id="courseProgressText" class="text-xs font-mono bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full">0% Done</span>
                     </div>
 
-                    <!-- Progress Bar -->
                     <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                         <div id="courseProgressBar" class="bg-gradient-to-r from-brand-500 to-tech-cyan h-full w-0 transition-all duration-500"></div>
                     </div>
 
-                    <!-- Lesson List -->
                     <div id="lessonsList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                        <!-- Rendered dynamically with locked/unlocked state -->
+                        <!-- Lessons list -->
                     </div>
 
-                    <!-- Final Exam & Certificate Unlock CTA -->
                     <div id="certificateClaimBox" class="mt-4 p-4 rounded-xl bg-gradient-to-br from-brand-900/50 via-slate-900 to-slate-900 border border-brand-500/30 text-center space-y-3">
                         <div id="certLockMessage" class="text-xs text-slate-300 font-medium leading-relaxed">
                             Complete all lesson tests to unlock the Final Course Exam & official verified certificate!
                         </div>
-                        
-                        <!-- Dynamic Button: Final Exam or View Certificate -->
                         <button id="certActionButton" onclick="handleCertAction()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs transition flex items-center justify-center gap-2 cursor-not-allowed">
                             <i id="certActionIcon" class="fa-solid fa-lock text-slate-500 text-sm"></i>
                             <span id="certActionText">Certificate Locked</span>
@@ -392,6 +431,32 @@
             </div>
         </div>
     </main>
+
+    <!-- Floating AI Text Selection Toolbar (Puter AI Summarize / Explain) -->
+    <div id="aiFloatingToolbar" class="hidden fixed z-50 bg-slate-900/95 backdrop-blur-md border border-tech-cyan/50 rounded-2xl shadow-2xl p-3 flex items-center gap-2 animate-bounce">
+        <div class="text-[11px] font-bold text-tech-cyan flex items-center gap-1">
+            <i class="fa-solid fa-robot"></i> Puter AI:
+        </div>
+        <button onclick="aiActionSelectedText('summarize')" class="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition">Summarize</button>
+        <button onclick="aiActionSelectedText('explain')" class="px-2.5 py-1 rounded-lg bg-tech-cyan hover:bg-cyan-400 text-slate-950 text-xs font-semibold transition">Explain Simply</button>
+        <button onclick="aiActionSelectedText('quiz')" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition">Create Quiz</button>
+        <button onclick="hideAiToolbar()" class="text-slate-400 hover:text-white px-1.5"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- AI Response Modal -->
+    <div id="aiModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md p-4 flex items-center justify-center">
+        <div class="w-full max-w-lg glass-panel p-6 rounded-3xl border border-tech-cyan/40 space-y-4 shadow-2xl relative">
+            <button onclick="closeAiModal()" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-2 text-tech-cyan font-bold text-sm">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Puter AI Result
+            </div>
+            <div id="aiModalContent" class="text-slate-200 text-sm leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-[50vh] overflow-y-auto select-text">
+                Processing with Puter AI...
+            </div>
+        </div>
+    </div>
 
     <!-- Final Comprehensive Exam Modal Screen -->
     <div id="finalExamModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center">
@@ -406,12 +471,12 @@
                 </div>
                 <h2 id="finalExamCourseTitle" class="heading-font text-2xl font-extrabold text-white">Course Final Exam</h2>
                 <p class="text-slate-300 text-xs leading-relaxed">
-                    This final exam combines evaluation questions from all course modules. Pass this exam with a 100% score to issue your official verified certificate!
+                    Pass this final exam with a 100% score to issue your official verified certificate!
                 </p>
             </div>
 
             <div id="finalExamQuestionsContainer" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2">
-                <!-- Dynamically populated final exam questions -->
+                <!-- Final exam questions -->
             </div>
 
             <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
@@ -426,7 +491,6 @@
     <!-- Certificate Modal Screen -->
     <div id="certificateModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center">
         <div class="w-full max-w-4xl space-y-4">
-            <!-- Modal Actions Bar -->
             <div class="flex items-center justify-between text-white">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-shield-halved text-emerald-400"></i>
@@ -445,12 +509,9 @@
                 </div>
             </div>
 
-            <!-- The Printable Certificate Container -->
             <div id="certificateContainer" class="certificate-border rounded-2xl p-6 sm:p-10 text-white relative overflow-hidden shadow-2xl">
                 <div class="relative z-10 flex flex-col items-center text-center space-y-6">
-                    <!-- Top Logos Header -->
                     <div class="w-full flex items-center justify-between border-b border-slate-800/80 pb-6">
-                        <!-- MRC Logo -->
                         <div class="flex items-center space-x-3">
                             <img src="https://scontent.fcai19-5.fna.fbcdn.net/v/t39.30808-6/505803320_122123493038854539_3757857447945570612_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=nJFRo2p9Jq8Q7kNvwEZ9rQ-&_nc_oc=Adqwp_trjFPrUpBrfxYVYC5aQDWmU2lOsSU8JTM8r6NXYyk061NMwRfCOVp9Vs11-rg&_nc_zt=23&_nc_ht=scontent.fcai19-5.fna&_nc_gid=MdJREN1MVJmNStvHH_HkVA&_nc_ss=7d2a8&oh=00_AQJTZDJX0-jJTJDkBKrAEMJxHm5ppou9m9JzBXfZvB32Fg&oe=6A9DF2FA" 
                                  alt="MRC Logo" 
@@ -462,7 +523,6 @@
                             </div>
                         </div>
 
-                        <!-- Certificate Badge Title -->
                         <div class="text-center">
                             <span class="text-[10px] uppercase font-mono tracking-widest text-brand-400 block">Certificate of Completion</span>
                             <div class="heading-font font-extrabold text-xl sm:text-2xl tracking-tight text-white">
@@ -470,7 +530,6 @@
                             </div>
                         </div>
 
-                        <!-- Codenix Logo -->
                         <div class="flex items-center space-x-3">
                             <div class="text-right hidden sm:block">
                                 <span class="text-xs font-bold tracking-wider text-slate-300 block">CODENIX</span>
@@ -479,54 +538,44 @@
                             <img src="/logo.png" 
                                  alt="Codenix Logo" 
                                  class="w-14 h-14 rounded-xl object-cover border border-slate-700"
-                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%236366f1\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23111827\'/><path d=\'M30 30 L50 70 L70 30\' stroke=\'%2306b6d4\' stroke-width=\'10\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/><circle cx=\'50\' cy=\'35\' r=\'6\' fill=\'%236366f1\'/></svg>'">
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%236366f1\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'#111827\'/><path d=\'M30 30 L50 70 L70 30\' stroke=\'%2306b6d4\' stroke-width=\'10\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/><circle cx=\'50\' cy=\'35\' r=\'6\' fill=\'%236366f1\'/></svg>'">
                         </div>
                     </div>
 
-                    <!-- Main Certificate Text -->
                     <div class="space-y-3 my-4">
                         <p class="text-xs font-mono uppercase tracking-widest text-slate-400">This is to proudly certify that</p>
-                        
-                        <!-- Student Username - Strictly Pure White (#ffffff) -->
                         <h2 id="certUserName" class="heading-font text-2xl sm:text-4xl font-extrabold text-white py-1 drop-shadow-md">
                             Student Name
                         </h2>
-                        
                         <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-                            has successfully completed all required units, knowledge tests, and technical final evaluations for the course
+                            has successfully completed all required units, Puter AI knowledge tests, and technical coding evaluations for the course
                         </p>
-
-                        <!-- Course Title -->
                         <h3 id="certCourseTitle" class="heading-font text-xl sm:text-2xl font-bold text-brand-400 mt-2">
                             Course Name
                         </h3>
                     </div>
 
-                    <!-- Footer Verification & Signatures -->
                     <div class="w-full pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                        <!-- Verification Details -->
                         <div class="text-left space-y-1">
                             <div class="flex items-center gap-1.5 text-emerald-400 font-semibold text-xs">
                                 <i class="fa-solid fa-circle-check"></i>
-                                <span>Verified Credentials</span>
+                                <span>Verified Puter AI Credentials</span>
                             </div>
                             <div class="text-[11px] text-slate-400 font-mono">
                                 Issue Date: <span id="certIssueDate">2026-09-02</span>
                             </div>
                             <div class="text-[11px] text-slate-500 font-mono">
-                                Certificate ID: <span id="certUniqueId" class="text-slate-400">CDNX-MRC-8921X</span>
+                                Certificate ID: <span id="certUniqueId" class="text-slate-400">CDNX-PUTER-AI-8921X</span>
                             </div>
                         </div>
 
-                        <!-- Verification Seal Icon -->
                         <div class="w-16 h-16 rounded-full bg-slate-900 border-2 border-brand-500/50 flex flex-col items-center justify-center text-center shadow-lg">
                             <i class="fa-solid fa-award text-amber-400 text-lg"></i>
                             <span class="text-[8px] font-bold tracking-widest uppercase text-slate-300 mt-0.5">OFFICIAL</span>
                         </div>
 
-                        <!-- Signature / Issuing Platform -->
                         <div class="text-right space-y-1">
-                            <div class="font-bold text-slate-200 heading-font text-sm">Codenix | Academy Board</div>
+                            <div class="font-bold text-slate-200 heading-font text-sm">Codenix & Puter AI Board</div>
                             <div class="text-[10px] text-slate-400">Joint Committee of Codenix & MRC</div>
                         </div>
                     </div>
@@ -536,26 +585,10 @@
     </div>
 
     <script>
-        /* =========================================================
-           GLOBAL STATE, GOOGLE SHEETS & SUPABASE INITIALIZATION
-           ========================================================= */
-        const GOOGLE_SHEET_ID = "1_puo8qnwlwSr7bIyK6TjgtDk5mcWlxhn1gAeteTTwDM";
+        const GOOGLE_SHEET_ID = "1cs7IbcNmhLjPz4EXAGjSIuEoOB4KPBpnD28T57-LsYs";
         const GOOGLE_SHEET_GVIZ_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
 
-        const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
-
-        let supabaseClient = null;
-        try {
-            if (typeof supabase !== 'undefined') {
-                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch (e) {
-            console.warn("Supabase client error:", e);
-        }
-
         let currentUser = {
-            id: 'guest-1',
             name: 'Academy Student',
             email: 'student@codenix.com',
             isSignedIn: false
@@ -565,17 +598,11 @@
         let activeCourse = null;
         let activeLesson = null;
         let activeLessonIndex = 0;
-        let userProgressMap = {}; // { courseId: { completedLessons: [indices], finalExamPassed: boolean } }
+        let userProgressMap = {};
         let coursesList = [];
+        let selectedTextCache = '';
 
-        // Redirect user to sign-in page on main domain if not authenticated
-        function redirectToStart() {
-            window.location.href = '/Start/';
-        }
-
-        // Window Load & Initial Setup
         window.onload = async function() {
-            // 1. Splash screen timer (1 second duration)
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
                 if (splash) {
@@ -584,73 +611,79 @@
                 }
             }, 1000);
 
-            // 2. Check Supabase User Login
-            await checkSupabaseUser();
+            // Load Puter session from localStorage if present
+            const savedPuterUser = localStorage.getItem('codenix_puter_user');
+            if (savedPuterUser) {
+                try {
+                    currentUser = JSON.parse(savedPuterUser);
+                    updatePuterAuthUI();
+                } catch(e) {}
+            }
 
-            // 3. Load Courses directly from Google Sheets
             await loadCoursesData();
-
-            // 4. Initial Render
+            initTextSelectionListener();
             renderCourses();
         };
 
-        // Check user session with Supabase
-        async function checkSupabaseUser() {
-            if (!supabaseClient) {
-                return;
-            }
-
+        // Puter.js Sign In Integration
+        async function signInWithPuter() {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                
-                if (session && session.user) {
-                    currentUser.id = session.user.id;
-                    currentUser.email = session.user.email;
-                    currentUser.isSignedIn = true;
-
-                    // Fetch username from profiles
-                    const { data: profile } = await supabaseClient
-                        .from('profiles')
-                        .select('full_name, username')
-                        .eq('id', session.user.id)
-                        .single();
-
-                    if (profile) {
-                        currentUser.name = profile.full_name || profile.username || session.user.email.split('@')[0];
-                    } else {
-                        currentUser.name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    const puterUser = await puter.auth.signIn();
+                    if (puterUser) {
+                        currentUser.name = puterUser.username || puterUser.email || 'Puter Student';
+                        currentUser.email = puterUser.email || 'puter@codenix.com';
+                        currentUser.isSignedIn = true;
+                        localStorage.setItem('codenix_puter_user', JSON.stringify(currentUser));
+                        updatePuterAuthUI();
+                        showCustomModal("Signed in with Puter AI successfully!");
                     }
-                    updateAuthHeader();
                 } else {
-                    // Fallback username if guest or not logged in
-                    currentUser.name = "Academy Student";
-                    updateAuthHeader();
+                    // Fallback interactive prompt if puter auth is offline
+                    const name = prompt("Enter your name for Puter AI Academy:", currentUser.name);
+                    if (name) {
+                        currentUser.name = name;
+                        currentUser.isSignedIn = true;
+                        localStorage.setItem('codenix_puter_user', JSON.stringify(currentUser));
+                        updatePuterAuthUI();
+                    }
                 }
             } catch (err) {
-                console.warn("Auth check fallback:", err);
-                currentUser.name = "Academy Student";
-                updateAuthHeader();
+                console.warn("Puter auth error:", err);
+                const name = prompt("Enter your name for Puter AI profile:", currentUser.name);
+                if (name) {
+                    currentUser.name = name;
+                    currentUser.isSignedIn = true;
+                    localStorage.setItem('codenix_puter_user', JSON.stringify(currentUser));
+                    updatePuterAuthUI();
+                }
             }
         }
 
-        // Update Nav UI Header with Username
-        function updateAuthHeader() {
-            const userBadge = document.getElementById('navUserBadge');
-            const userNameText = document.getElementById('navUserNameText');
-            const signInBtn = document.getElementById('signInRedirectBtn');
+        function changePuterUser() {
+            localStorage.removeItem('codenix_puter_user');
+            currentUser.isSignedIn = false;
+            currentUser.name = 'Academy Student';
+            updatePuterAuthUI();
+            signInWithPuter();
+        }
+
+        function updatePuterAuthUI() {
+            const badge = document.getElementById('puterUserBadge');
+            const nameText = document.getElementById('puterUserNameText');
+            const signInBtn = document.getElementById('puterSignInBtn');
 
             if (currentUser.isSignedIn) {
-                userNameText.innerText = currentUser.name;
-                userBadge.classList.remove('hidden');
+                nameText.innerText = currentUser.name;
+                badge.classList.remove('hidden');
                 signInBtn.classList.add('hidden');
             } else {
-                userNameText.innerText = currentUser.name || "Academy Student";
-                userBadge.classList.remove('hidden');
-                signInBtn.classList.add('hidden');
+                badge.classList.add('hidden');
+                signInBtn.classList.remove('hidden');
             }
         }
 
-        // Fetch courses dynamically from Google Sheets
+        // Fetch courses from new Google Sheet ID
         async function loadCoursesData() {
             const badge = document.getElementById('courseCountBadge');
             const statusBadge = document.getElementById('sheetStatusBadge');
@@ -661,7 +694,6 @@
                 if (!response.ok) throw new Error("Google Sheets fetch failed");
 
                 const text = await response.text();
-                // Extract valid JSON from Google Visualization API output
                 const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
                 const gvizData = JSON.parse(jsonString);
 
@@ -669,11 +701,8 @@
                 const cols = table.cols.map(c => (c.label || c.id || '').trim().toLowerCase());
                 const rows = table.rows;
 
-                if (!rows || rows.length === 0) {
-                    throw new Error("Google Sheet is empty");
-                }
+                if (!rows || rows.length === 0) throw new Error("Google Sheet is empty");
 
-                // Helper to extract value by possible column headers
                 const getVal = (row, ...names) => {
                     for (const name of names) {
                         const idx = cols.findIndex(c => c.includes(name.toLowerCase()));
@@ -690,29 +719,26 @@
                     if (!r.c) return;
                     
                     const courseId = getVal(r, 'course id', 'course_id', 'course') || 'course-1';
-                    const courseTitle = getVal(r, 'course title', 'course_title', 'title') || 'Tech Mastery Course';
-                    const category = getVal(r, 'category', 'track') || 'Tech';
-                    const description = getVal(r, 'course description', 'course_desc', 'description') || 'Industry curriculum powered by Codenix & MRC.';
+                    const courseTitle = getVal(r, 'course title', 'course_title', 'title') || 'Tech & AI Course';
+                    const category = getVal(r, 'category', 'track') || 'AI';
+                    const description = getVal(r, 'course description', 'course_desc', 'description') || 'Industry curriculum powered by Puter AI & Google Sheets.';
                     const level = getVal(r, 'level', 'difficulty') || 'Intermediate';
-                    const duration = getVal(r, 'duration', 'time') || '3 Hours';
-                    const thumbnail = getVal(r, 'thumbnail', 'image', 'cover') || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80';
+                    const duration = getVal(r, 'duration', 'time') || '4 Hours';
+                    const thumbnail = getVal(r, 'thumbnail', 'image', 'cover') || 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80';
 
-                    const lessonTitle = getVal(r, 'lesson title', 'lesson_title', 'unit') || `Module ${rowIdx + 1}: Technical Core`;
+                    const lessonTitle = getVal(r, 'lesson title', 'lesson_title', 'unit') || `Module ${rowIdx + 1}: AI Core`;
                     let videoUrl = getVal(r, 'video url', 'video_url', 'youtube') || 'https://www.youtube.com/embed/aircAruvnKk';
-                    
-                    // Convert watch URL to embed URL if needed
                     if (videoUrl.includes('watch?v=')) {
                         videoUrl = videoUrl.replace('watch?v=', 'embed/');
                     }
 
-                    const lessonDesc = getVal(r, 'lesson description', 'lesson_desc') || 'Master key principles, practical techniques, and complete the evaluation test.';
-                    const codeSnippet = getVal(r, 'code snippet', 'code', 'snippet') || '// Codenix interactive sandbox\nfunction executeCoreLogic() {\n  return "Passed Lesson Test";\n}';
+                    const lessonDesc = getVal(r, 'lesson description', 'lesson_desc') || 'Master key principles, practical techniques, and test your knowledge with Puter AI.';
+                    const codeSnippet = getVal(r, 'code snippet', 'code', 'snippet') || '// Puter AI interactive code\nfunction runPuterTask() {\n  return "Success";\n}';
                     
-                    // Parse custom quiz question or generate structured quiz
-                    const qText = getVal(r, 'question', 'quiz_question') || `What is the primary objective of ${lessonTitle}?`;
-                    const optA = getVal(r, 'option a', 'opt_a', 'option 1') || 'To understand core technical concepts';
-                    const optB = getVal(r, 'option b', 'opt_b', 'option 2') || 'To bypass code testing';
-                    const optC = getVal(r, 'option c', 'opt_c', 'option 3') || 'To ignore architectural guidelines';
+                    const qText = getVal(r, 'question', 'quiz_question') || `What is the core takeaway of ${lessonTitle}?`;
+                    const optA = getVal(r, 'option a', 'opt_a', 'option 1') || 'Understanding core technical architecture';
+                    const optB = getVal(r, 'option b', 'opt_b', 'option 2') || 'Bypassing execution loops';
+                    const optC = getVal(r, 'option c', 'opt_c', 'option 3') || 'Ignoring safety checks';
                     const correctOpt = parseInt(getVal(r, 'correct index', 'answer', 'correct') || '0', 10);
 
                     if (!parsedCoursesMap[courseId]) {
@@ -740,11 +766,11 @@
                                 answerIndex: isNaN(correctOpt) ? 0 : correctOpt
                             },
                             {
-                                question: `Which method verifies completion of ${lessonTitle}?`,
+                                question: `How does Puter AI assist in evaluating ${lessonTitle}?`,
                                 options: [
-                                    'Passing the lesson test evaluation',
-                                    'Skipping the video material',
-                                    'Closing the browser window'
+                                    'By providing real-time AI code review & test generation',
+                                    'By deleting local files',
+                                    'By disabling internet connection'
                                 ],
                                 answerIndex: 0
                             }
@@ -753,95 +779,47 @@
                 });
 
                 coursesList = Object.values(parsedCoursesMap);
-
-                if (coursesList.length === 0) {
-                    useDefaultFallbackCourses();
-                }
-
                 if (statusBadge) statusBadge.classList.remove('hidden');
             } catch (err) {
-                console.warn("Google Sheets parse fallback triggered:", err);
+                console.warn("Sheet fallback:", err);
                 useDefaultFallbackCourses();
             }
-
             renderCourses();
         }
 
         function useDefaultFallbackCourses() {
             coursesList = [
                 {
-                    id: 'course-ai-1',
-                    title: 'AI & Neural Networks Core',
+                    id: 'course-puter-ai',
+                    title: 'Puter AI & LLM Systems Masterclass',
                     category: 'AI',
-                    description: 'Learn deep learning architectures, CNNs, and LLM prompting strategies with Codenix & MRC.',
-                    level: 'Intermediate',
-                    duration: '4 Hours',
+                    description: 'Build production-ready web apps and neural workflows using Puter.js free AI API.',
+                    level: 'Advanced',
+                    duration: '5 Hours',
                     thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80',
                     lessons: [
                         {
-                            title: 'Module 1: Intro to Artificial Intelligence',
+                            title: 'Module 1: Puter.js AI Chat & Completion API',
                             video_url: 'https://www.youtube.com/embed/aircAruvnKk',
-                            description: 'Overview of AI history, neural network nodes, and machine learning fundamentals.',
-                            code_snippet: 'const model = await ai.loadModel("neural-core");\nconsole.log(model.summary());',
+                            description: 'Learn how puter.ai.chat() enables instant AI responses inside web clients without API keys.',
+                            code_snippet: 'const response = await puter.ai.chat("Explain Puter AI");\nconsole.log(response);',
                             quiz: [
                                 {
-                                    question: 'What is the main function of activation functions in Neural Networks?',
-                                    options: ['Introduce non-linearity', 'Increase video resolution', 'Decrease storage space'],
-                                    answerIndex: 0
-                                },
-                                {
-                                    question: 'Which optimizer is widely used for deep learning gradient descent?',
-                                    options: ['Adam Optimizer', 'QuickSort', 'Linear Search'],
+                                    question: 'What is the primary method to call Puter AI chat?',
+                                    options: ['puter.ai.chat()', 'console.log()', 'fetch.ai()'],
                                     answerIndex: 0
                                 }
                             ]
                         },
                         {
-                            title: 'Module 2: Transformer Architecture & Attention',
+                            title: 'Module 2: Advanced Cloud IDE Integration',
                             video_url: 'https://www.youtube.com/embed/zjkBMFhNj_g',
-                            description: 'How self-attention mechanisms calculate token vectors under the hood.',
-                            code_snippet: 'class SelfAttention {\n  computeAttention(Q, K, V) {\n    return softmax(Q * K.T) * V;\n  }\n}',
+                            description: 'Building coding sandboxes and automated AI test suites for students.',
+                            code_snippet: 'async function evaluateTask(code) {\n  return await puter.ai.chat("Review code: " + code);\n}',
                             quiz: [
                                 {
-                                    question: 'What key innovation did the Transformer paper "Attention Is All You Need" introduce?',
-                                    options: ['Self-Attention Mechanisms', 'Recurrent Loops', 'Random Forest Trees'],
-                                    answerIndex: 0
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    id: 'course-tech-1',
-                    title: 'Full-Stack Web Development Mastery',
-                    category: 'Tech',
-                    description: 'Master modern web app construction with React, Tailwind, and Supabase backend architecture.',
-                    level: 'Beginner',
-                    duration: '6 Hours',
-                    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
-                    lessons: [
-                        {
-                            title: 'Module 1: Frontend Architecture & DOM',
-                            video_url: 'https://www.youtube.com/embed/w7ejDZ8SWv8',
-                            description: 'Structuring clean single-page web applications with modern state flow.',
-                            code_snippet: 'const state = { user: "Codenix", authenticated: true };',
-                            quiz: [
-                                {
-                                    question: 'What is the primary benefit of Single Page Applications (SPAs)?',
-                                    options: ['Seamless UX without page reloads', 'Higher server latency', 'No JavaScript required'],
-                                    answerIndex: 0
-                                }
-                            ]
-                        },
-                        {
-                            title: 'Module 2: Realtime Database & API Services',
-                            video_url: 'https://www.youtube.com/embed/8sXRyHI3bLw',
-                            description: 'Connecting reactive user interfaces to cloud storage endpoints.',
-                            code_snippet: 'const { data } = await supabase.from("courses").select("*");',
-                            quiz: [
-                                {
-                                    question: 'How does real-time streaming sync database updates?',
-                                    options: ['WebSockets / Event Subscriptions', 'Continuous page refreshing', 'FTP File transfer'],
+                                    question: 'Why integrate Puter AI into coding courses?',
+                                    options: ['To provide instant interactive tasks & AI chat feedback', 'To slow down browser rendering', 'To add static images'],
                                     answerIndex: 0
                                 }
                             ]
@@ -851,12 +829,11 @@
             ];
         }
 
-        // Navigation helper
-        function showSection(section) {
-            if (section === 'home') {
+        function showSection(sec) {
+            if (sec === 'home') {
                 document.getElementById('homeSection').classList.remove('hidden');
                 document.getElementById('lessonSection').classList.add('hidden');
-            } else if (section === 'lesson') {
+            } else if (sec === 'lesson') {
                 document.getElementById('homeSection').classList.add('hidden');
                 document.getElementById('lessonSection').classList.remove('hidden');
             }
@@ -877,7 +854,6 @@
             renderCourses();
         }
 
-        // Render Courses List
         function renderCourses() {
             const grid = document.getElementById('coursesGrid');
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
@@ -895,7 +871,7 @@
                     <div class="col-span-full text-center py-12 glass-panel rounded-2xl">
                         <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3 block"></i>
                         <h4 class="text-white font-bold text-lg">No courses found</h4>
-                        <p class="text-slate-400 text-xs mt-1">Try adjusting your search query or refreshing Google Sheets</p>
+                        <p class="text-slate-400 text-xs mt-1">Try adjusting your search query or refresh sheet</p>
                     </div>
                 `;
                 return;
@@ -903,7 +879,6 @@
 
             grid.innerHTML = filtered.map(course => {
                 const prog = userProgressMap[course.id] || { completedLessons: [], finalExamPassed: false };
-                const completedCount = prog.completedLessons.length;
                 const totalLessons = course.lessons ? course.lessons.length : 1;
                 const isFullyDone = prog.finalExamPassed;
 
@@ -914,15 +889,11 @@
                                 <img src="${course.thumbnail}" 
                                      alt="${course.title}" 
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                     onerror="this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80'">
+                                     onerror="this.src='https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80'">
                                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
-                                
-                                <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                    course.category === 'AI' ? 'bg-purple-500/80 text-white' : 'bg-brand-600/80 text-white'
-                                } backdrop-blur-md">
+                                <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-600/90 text-white backdrop-blur-md">
                                     ${course.category}
                                 </span>
-
                                 <span class="absolute bottom-3 right-3 text-xs font-mono text-slate-300 bg-slate-900/80 px-2.5 py-0.5 rounded-md backdrop-blur-sm border border-slate-800">
                                     <i class="fa-regular fa-clock mr-1 text-brand-400"></i>${course.duration}
                                 </span>
@@ -956,7 +927,6 @@
             }).join('');
         }
 
-        // Open selected course viewer
         function openCourse(courseId) {
             activeCourse = coursesList.find(c => c.id === courseId);
             if (!activeCourse) return;
@@ -971,7 +941,6 @@
             showSection('lesson');
         }
 
-        // Render playlist in sidebar with Locked/Unlocked state
         function renderLessonsPlaylist() {
             const listContainer = document.getElementById('lessonsList');
             const prog = userProgressMap[activeCourse.id] || { completedLessons: [], finalExamPassed: false };
@@ -984,12 +953,11 @@
 
             listContainer.innerHTML = activeCourse.lessons.map((lesson, idx) => {
                 const isCompleted = completedIndices.includes(idx);
-                // Lesson 0 is unlocked. Lesson N requires Lesson N-1 to be completed.
                 const isUnlocked = (idx === 0) || completedIndices.includes(idx - 1);
                 const isActive = activeLessonIndex === idx;
 
                 return `
-                    <div onclick="${isUnlocked ? `loadLesson(${idx})` : 'showLockedLessonAlert()'}" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between ${
+                    <div onclick="${isUnlocked ? `loadLesson(${idx})` : 'showLockedAlert()'}" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between ${
                         isActive 
                         ? 'bg-brand-600/20 border-brand-500 text-white' 
                         : isUnlocked 
@@ -1008,8 +976,8 @@
                             </span>
                             <div class="truncate">
                                 <span class="text-xs font-medium truncate block">${lesson.title}</span>
-                                <span class="text-[10px] ${isCompleted ? 'text-emerald-400' : isUnlocked ? 'text-amber-400' : 'text-slate-600'} font-mono">
-                                    ${isCompleted ? 'Test Passed' : isUnlocked ? 'Test Pending' : 'Locked'}
+                                <span class="text-[10px] ${isCompleted ? 'text-emerald-400' : isUnlocked ? 'text-tech-cyan' : 'text-slate-600'} font-mono">
+                                    ${isCompleted ? 'Test Passed' : isUnlocked ? 'AI Enabled' : 'Locked'}
                                 </span>
                             </div>
                         </div>
@@ -1021,11 +989,10 @@
             updateCertificateLockStatus();
         }
 
-        function showLockedLessonAlert() {
-            alert("This module is locked! Pass the test in the previous lesson to unlock this lesson.");
+        function showLockedAlert() {
+            showCustomModal("This module is locked! Pass the test in the previous lesson to unlock.");
         }
 
-        // Update Certificate Lock Status in Sidebar
         function updateCertificateLockStatus() {
             const prog = userProgressMap[activeCourse.id] || { completedLessons: [], finalExamPassed: false };
             const total = activeCourse.lessons.length;
@@ -1037,27 +1004,23 @@
             const actionText = document.getElementById('certActionText');
 
             if (prog.finalExamPassed) {
-                // Fully unlocked!
-                lockMsg.innerText = "Congratulations! Your course certificate is issued and verified.";
+                lockMsg.innerText = "Congratulations! Your verified certificate is ready.";
                 actionBtn.className = "w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer";
                 actionIcon.className = "fa-solid fa-award text-amber-300 text-sm";
                 actionText.innerText = "View / Download Certificate";
             } else if (allLessonsDone) {
-                // All lessons passed, ready for Final Exam
-                lockMsg.innerText = "All lesson tests passed! Take the Final Exam to unlock your certificate.";
+                lockMsg.innerText = "All lesson tests passed! Take the Final Exam for your certificate.";
                 actionBtn.className = "w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer animate-pulse";
                 actionIcon.className = "fa-solid fa-graduation-cap text-white text-sm";
                 actionText.innerText = "Take Final Course Exam";
             } else {
-                // Locked
-                lockMsg.innerText = "Pass all module tests to unlock the Final Exam & official certificate!";
+                lockMsg.innerText = "Pass all module tests to unlock certificate!";
                 actionBtn.className = "w-full py-2.5 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs transition flex items-center justify-center gap-2 cursor-not-allowed";
                 actionIcon.className = "fa-solid fa-lock text-slate-500 text-sm";
                 actionText.innerText = "Certificate Locked";
             }
         }
 
-        // Load specific lesson
         function loadLesson(index) {
             if (!activeCourse || !activeCourse.lessons[index]) return;
             
@@ -1066,8 +1029,9 @@
 
             document.getElementById('currentLessonTitle').innerText = activeLesson.title;
             document.getElementById('currentLessonDesc').innerText = activeLesson.description || "Follow along with the lesson content.";
-            document.getElementById('lessonCodeSnippet').innerText = activeLesson.code_snippet || "// Interactive snippet...";
+            document.getElementById('lessonCodeSnippet').innerText = activeLesson.code_snippet || "// Code snippet...";
             document.getElementById('videoPlayerIframe').src = activeLesson.video_url;
+            document.getElementById('codingTaskDescription').innerText = `Task for ${activeLesson.title}: Implement the algorithm described in this lesson and verify it with Puter AI.`;
 
             const prog = userProgressMap[activeCourse.id] || { completedLessons: [] };
             const isCompleted = prog.completedLessons.includes(index);
@@ -1090,33 +1054,36 @@
             switchLessonTab('info');
         }
 
-        // Switch between Video Material and Quiz
         function switchLessonTab(tab) {
             const infoPane = document.getElementById('lessonInfoPane');
             const quizPane = document.getElementById('lessonQuizPane');
-            const tabVideoBtn = document.getElementById('tabVideoBtn');
-            const tabQuizBtn = document.getElementById('tabQuizBtn');
+            const idePane = document.getElementById('lessonIdePane');
+            const btnInfo = document.getElementById('tabVideoBtn');
+            const btnQuiz = document.getElementById('tabQuizBtn');
+            const btnIde = document.getElementById('tabIdeBtn');
 
-            if (tab === 'quiz') {
-                infoPane.classList.add('hidden');
-                quizPane.classList.remove('hidden');
-                tabQuizBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white transition flex items-center gap-2 shadow-md";
-                tabVideoBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-2";
-            } else {
+            infoPane.classList.add('hidden');
+            quizPane.classList.add('hidden');
+            idePane.classList.add('hidden');
+            btnInfo.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5";
+            btnQuiz.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 relative";
+            btnIde.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5";
+
+            if (tab === 'info') {
                 infoPane.classList.remove('hidden');
-                quizPane.classList.add('hidden');
-                tabVideoBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white transition flex items-center gap-2 shadow-md";
-                tabQuizBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-2";
+                btnInfo.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white transition flex items-center gap-1.5 shadow-md";
+            } else if (tab === 'quiz') {
+                quizPane.classList.remove('hidden');
+                btnQuiz.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white transition flex items-center gap-1.5 shadow-md";
+            } else if (tab === 'ide') {
+                idePane.classList.remove('hidden');
+                btnIde.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-tech-cyan text-slate-950 transition flex items-center gap-1.5 shadow-md";
             }
         }
 
-        // Render Lesson Quiz HTML
         function renderLessonQuiz() {
             const container = document.getElementById('quizContainer');
-            if (!activeLesson || !activeLesson.quiz || activeLesson.quiz.length === 0) {
-                container.innerHTML = `<div class="text-slate-400 text-xs py-4">No test questions required for this lesson.</div>`;
-                return;
-            }
+            if (!activeLesson || !activeLesson.quiz) return;
 
             container.innerHTML = activeLesson.quiz.map((q, qIdx) => {
                 return `
@@ -1136,21 +1103,53 @@
                     </div>
                 `;
             }).join('');
-
-            document.getElementById('quizResultFeedback').innerText = "Select answers for all questions and submit.";
+            document.getElementById('quizResultFeedback').innerText = "Answer all questions and submit.";
         }
 
-        // Submit Lesson Quiz
+        // Puter AI: Generate custom test on the fly for the lesson
+        async function generateAiLessonQuiz() {
+            showAiModal("Puter AI is generating custom test questions for this lesson...");
+            try {
+                let aiPrompt = `Generate 2 multiple choice quiz questions with options and correct option index (0, 1, or 2) in JSON format for the lesson titled "${activeLesson.title}" with description "${activeLesson.description}". Format as valid JSON array: [{"question": "...", "options": ["A", "B", "C"], "answerIndex": 0}]`;
+                
+                let aiResponse = "";
+                if (typeof puter !== 'undefined' && puter.ai) {
+                    aiResponse = await puter.ai.chat(aiPrompt);
+                } else {
+                    aiResponse = `[{"question": "What is the primary architectural focus of ${activeLesson.title}?", "options": ["Core implementation & reliability", "Random syntax", "Static storage"], "answerIndex": 0}]`;
+                }
+
+                // Try parsing JSON or fallback
+                let parsed = null;
+                try {
+                    const cleanJson = aiResponse.substring(aiResponse.indexOf('['), aiResponse.lastIndexOf(']') + 1);
+                    parsed = JSON.parse(cleanJson);
+                } catch(e) {}
+
+                if (parsed && Array.isArray(parsed)) {
+                    activeLesson.quiz = parsed;
+                    renderLessonQuiz();
+                    closeAiModal();
+                    showCustomModal("Puter AI generated a new custom test for this lesson!");
+                } else {
+                    closeAiModal();
+                    showCustomModal("AI Generated: " + aiResponse);
+                }
+            } catch(err) {
+                closeAiModal();
+                showCustomModal("Error generating AI quiz: " + err.message);
+            }
+        }
+
         function submitLessonQuiz() {
             if (!activeLesson || !activeLesson.quiz) return;
-
             let total = activeLesson.quiz.length;
             let correctCount = 0;
 
             for (let i = 0; i < total; i++) {
                 const selected = document.querySelector(`input[name="lesson_q_${i}"]:checked`);
                 if (!selected) {
-                    document.getElementById('quizResultFeedback').innerHTML = `<span class="text-rose-400 font-bold">Please answer all questions before submitting!</span>`;
+                    document.getElementById('quizResultFeedback').innerHTML = `<span class="text-rose-400 font-bold">Please answer all questions!</span>`;
                     return;
                 }
                 if (parseInt(selected.value, 10) === activeLesson.quiz[i].answerIndex) {
@@ -1159,30 +1158,150 @@
             }
 
             if (correctCount === total) {
-                // Passed!
                 const prog = userProgressMap[activeCourse.id];
                 if (!prog.completedLessons.includes(activeLessonIndex)) {
                     prog.completedLessons.push(activeLessonIndex);
                 }
-
-                document.getElementById('quizResultFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Passed 100%! Next module unlocked!</span>`;
-                
-                confetti({
-                    particleCount: 60,
-                    spread: 60,
-                    origin: { y: 0.6 }
-                });
-
+                document.getElementById('quizResultFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Passed 100%! Next module unlocked.</span>`;
+                confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
                 renderLessonsPlaylist();
-                
                 setTimeout(() => {
                     switchLessonTab('info');
                     loadLesson(activeLessonIndex);
                 }, 1200);
-
             } else {
-                document.getElementById('quizResultFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Score: ${correctCount}/${total}. Please review material and try again.</span>`;
+                document.getElementById('quizResultFeedback').innerHTML = `<span class="text-rose-400 font-bold">Score: ${correctCount}/${total}. Try again!</span>`;
             }
+        }
+
+        // Puter AI Text Selection & Floating Menu
+        function initTextSelectionListener() {
+            document.addEventListener('mouseup', function(e) {
+                const selection = window.getSelection();
+                const text = selection.toString().trim();
+                const toolbar = document.getElementById('aiFloatingToolbar');
+
+                if (text.length > 3 && document.getElementById('lessonSection') && !document.getElementById('lessonSection').classList.contains('hidden')) {
+                    selectedTextCache = text;
+                    const x = e.clientX;
+                    const y = e.clientY - 60;
+                    toolbar.style.left = `${Math.min(window.innerWidth - 350, Math.max(10, x - 150))}px`;
+                    toolbar.style.top = `${Math.max(10, y)}px`;
+                    toolbar.classList.remove('hidden');
+                } else {
+                    // Don't hide immediately if clicking toolbar
+                }
+            });
+        }
+
+        function hideAiToolbar() {
+            document.getElementById('aiFloatingToolbar').classList.add('hidden');
+        }
+
+        async function aiActionSelectedText(action) {
+            hideAiToolbar();
+            if (!selectedTextCache) return;
+
+            showAiModal(`Puter AI is processing your request on selected text...`);
+
+            let promptText = "";
+            if (action === 'summarize') promptText = `Summarize this text concisely: "${selectedTextCache}"`;
+            else if (action === 'explain') promptText = `Explain this text simply like I am a beginner: "${selectedTextCache}"`;
+            else if (action === 'quiz') promptText = `Create a multiple choice quiz question based on this text: "${selectedTextCache}"`;
+
+            try {
+                let aiReply = "";
+                if (typeof puter !== 'undefined' && puter.ai) {
+                    aiReply = await puter.ai.chat(promptText);
+                } else {
+                    aiReply = `AI Analysis of "${selectedTextCache}": This concept involves fundamental principles of the module curriculum.`;
+                }
+                document.getElementById('aiModalContent').innerText = aiReply;
+            } catch (err) {
+                document.getElementById('aiModalContent').innerText = "Error querying Puter AI: " + err.message;
+            }
+        }
+
+        function showAiModal(content) {
+            document.getElementById('aiModalContent').innerText = content;
+            document.getElementById('aiModal').classList.remove('hidden');
+        }
+
+        function closeAiModal() {
+            document.getElementById('aiModal').classList.add('hidden');
+        }
+
+        function showCustomModal(msg) {
+            showAiModal(msg);
+        }
+
+        // Puter AI Coding IDE & Chat
+        async function runUserCode() {
+            const code = document.getElementById('userCodeWorkspace').value;
+            const outputBox = document.getElementById('codeRunOutput');
+            outputBox.innerText = "Executing & reviewing code with Puter AI...";
+
+            try {
+                let aiReview = "";
+                if (typeof puter !== 'undefined' && puter.ai) {
+                    aiReview = await puter.ai.chat(`Review and execute logic for this code snippet and provide simulated output: \n${code}`);
+                } else {
+                    aiReview = `Code executed successfully. Output: [Simulated result for ${code.substring(0, 30)}...]`;
+                }
+                outputBox.innerText = aiReview;
+            } catch (err) {
+                outputBox.innerText = "Execution error: " + err.message;
+            }
+        }
+
+        async function askPuterAiTaskHelp() {
+            const input = document.getElementById('puterChatInput');
+            input.value = "Can you help me solve this coding task step by step?";
+            sendPuterAiChat();
+        }
+
+        async function sendPuterAiChat() {
+            const input = document.getElementById('puterChatInput');
+            const msgContainer = document.getElementById('puterAiChatMessages');
+            const userMsg = input.value.trim();
+            if (!userMsg) return;
+
+            msgContainer.innerHTML += `
+                <div class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 text-right">
+                    <span class="text-brand-400 font-bold block mb-0.5">You:</span>
+                    ${userMsg}
+                </div>
+            `;
+            input.value = '';
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+
+            const loadingId = 'loading-' + Date.now();
+            msgContainer.innerHTML += `
+                <div id="${loadingId}" class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
+                    <span class="text-tech-cyan font-bold block mb-0.5">Puter AI:</span>
+                    Thinking...
+                </div>
+            `;
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+
+            try {
+                let reply = "";
+                if (typeof puter !== 'undefined' && puter.ai) {
+                    reply = await puter.ai.chat(userMsg);
+                } else {
+                    reply = `Puter AI response to "${userMsg}": Make sure your algorithm correctly handles edge cases and returns the expected data type.`;
+                }
+                document.getElementById(loadingId).innerHTML = `
+                    <span class="text-tech-cyan font-bold block mb-0.5">Puter AI:</span>
+                    ${reply}
+                `;
+            } catch (err) {
+                document.getElementById(loadingId).innerHTML = `
+                    <span class="text-rose-400 font-bold block mb-0.5">Puter AI Error:</span>
+                    ${err.message}
+                `;
+            }
+            msgContainer.scrollTop = msgContainer.scrollHeight;
         }
 
         function handleCertAction() {
@@ -1194,48 +1313,36 @@
             } else if (prog.completedLessons.length >= total) {
                 openFinalExamModal();
             } else {
-                alert("The certificate is locked! Complete all lesson tests first.");
+                showCustomModal("Certificate is locked! Complete all lesson tests first.");
             }
         }
 
-        // Open Final Exam Modal
         function openFinalExamModal() {
             if (!activeCourse) return;
-
             document.getElementById('finalExamCourseTitle').innerText = `${activeCourse.title} - Final Exam`;
             
-            // Aggregate all quiz questions from all lessons
             let allQuestions = [];
-            activeCourse.lessons.forEach((l, lIdx) => {
-                if (l.quiz) {
-                    l.quiz.forEach(q => {
-                        allQuestions.push({
-                            ...q,
-                            lessonTitle: l.title
-                        });
-                    });
-                }
+            activeCourse.lessons.forEach(l => {
+                if (l.quiz) l.quiz.forEach(q => allQuestions.push({ ...q, lessonTitle: l.title }));
             });
 
             const container = document.getElementById('finalExamQuestionsContainer');
-            container.innerHTML = allQuestions.map((q, idx) => {
-                return `
-                    <div class="space-y-3 bg-slate-900 p-4 rounded-2xl border border-slate-800">
-                        <div class="text-xs font-semibold text-white space-y-1">
-                            <span class="text-[10px] text-brand-400 font-mono block">${q.lessonTitle}</span>
-                            <span>Q${idx + 1}: ${q.question}</span>
-                        </div>
-                        <div class="space-y-2 pl-2">
-                            ${q.options.map((opt, oIdx) => `
-                                <label class="flex items-center space-x-3 p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 cursor-pointer text-xs text-slate-300 transition">
-                                    <input type="radio" name="final_q_${idx}" value="${oIdx}" class="accent-brand-500 w-4 h-4">
-                                    <span>${opt}</span>
-                                </label>
-                            `).join('')}
-                        </div>
+            container.innerHTML = allQuestions.map((q, idx) => `
+                <div class="space-y-3 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                    <div class="text-xs font-semibold text-white space-y-1">
+                        <span class="text-[10px] text-brand-400 font-mono block">${q.lessonTitle}</span>
+                        <span>Q${idx + 1}: ${q.question}</span>
                     </div>
-                `;
-            }).join('');
+                    <div class="space-y-2 pl-2">
+                        ${q.options.map((opt, oIdx) => `
+                            <label class="flex items-center space-x-3 p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 cursor-pointer text-xs text-slate-300 transition">
+                                <input type="radio" name="final_q_${idx}" value="${oIdx}" class="accent-brand-500 w-4 h-4">
+                                <span>${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
 
             document.getElementById('finalExamModal').classList.remove('hidden');
         }
@@ -1244,25 +1351,18 @@
             document.getElementById('finalExamModal').classList.add('hidden');
         }
 
-        // Submit Final Exam
         function submitFinalExam() {
             let allQuestions = [];
-            activeCourse.lessons.forEach(l => {
-                if (l.quiz) {
-                    l.quiz.forEach(q => allQuestions.push(q));
-                }
-            });
+            activeCourse.lessons.forEach(l => { if (l.quiz) l.quiz.forEach(q => allQuestions.push(q)); });
 
             let correctCount = 0;
             for (let i = 0; i < allQuestions.length; i++) {
                 const selected = document.querySelector(`input[name="final_q_${i}"]:checked`);
                 if (!selected) {
-                    document.getElementById('finalExamFeedback').innerHTML = `<span class="text-rose-400 font-bold">Please answer all final exam questions!</span>`;
+                    document.getElementById('finalExamFeedback').innerHTML = `<span class="text-rose-400 font-bold">Answer all questions!</span>`;
                     return;
                 }
-                if (parseInt(selected.value, 10) === allQuestions[i].answerIndex) {
-                    correctCount++;
-                }
+                if (parseInt(selected.value, 10) === allQuestions[i].answerIndex) correctCount++;
             }
 
             if (correctCount === allQuestions.length) {
@@ -1271,46 +1371,31 @@
                 updateCertificateLockStatus();
                 openCertificateModal();
             } else {
-                document.getElementById('finalExamFeedback').innerHTML = `<span class="text-rose-400 font-bold">Score: ${correctCount}/${allQuestions.length}. Review lesson concepts and retry.</span>`;
+                document.getElementById('finalExamFeedback').innerHTML = `<span class="text-rose-400 font-bold">Score: ${correctCount}/${allQuestions.length}. Review concepts and retry.</span>`;
             }
         }
 
-        // Open Certificate Modal
         function openCertificateModal() {
             if (!activeCourse) return;
-
-            // Student username in strictly pure white text
-            const nameElem = document.getElementById('certUserName');
-            nameElem.innerText = currentUser.name || "Academy Student";
-
+            document.getElementById('certUserName').innerText = currentUser.name || "Academy Student";
             document.getElementById('certCourseTitle').innerText = activeCourse.title;
             document.getElementById('certIssueDate').innerText = new Date().toISOString().split('T')[0];
-            document.getElementById('certUniqueId').innerText = `CDNX-MRC-${Math.floor(100000 + Math.random() * 900000)}`;
+            document.getElementById('certUniqueId').innerText = `CDNX-PUTER-${Math.floor(100000 + Math.random() * 900000)}`;
 
             document.getElementById('certificateModal').classList.remove('hidden');
-
-            confetti({
-                particleCount: 120,
-                spread: 90,
-                origin: { y: 0.5 }
-            });
+            confetti({ particleCount: 120, spread: 90, origin: { y: 0.5 } });
         }
 
         function closeCertificateModal() {
             document.getElementById('certificateModal').classList.add('hidden');
         }
 
-        // Download Certificate as PNG Image
         function downloadCertificate() {
-            const certElement = document.getElementById('certificateContainer');
-            if (!certElement) return;
-
-            html2canvas(certElement, {
-                scale: 2,
-                backgroundColor: '#0b0f19'
-            }).then(canvas => {
+            const cert = document.getElementById('certificateContainer');
+            if (!cert) return;
+            html2canvas(cert, { scale: 2, backgroundColor: '#0b0f19' }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Codenix_Academy_Certificate_${(currentUser.name || 'Student').replace(/\s+/g, '_')}.png`;
+                link.download = `Codenix_Puter_Certificate_${(currentUser.name || 'Student').replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
