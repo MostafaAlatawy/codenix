@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenix | Academy - Master Tech & AI</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Canvas Confetti for certificate celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- HTML2Canvas for smooth certificate rendering/download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        tech: {
+                            cyan: '#06b6d4',
+                            purple: '#a855f7',
+                            dark: '#0b0f19',
+                            card: '#111827',
+                            border: '#1f2937'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Glassmorphism elements */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-header {
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Glowing background blobs */
+        .glow-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.18;
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        /* Certificate Styling */
+        .certificate-border {
+            border: 12px double #4f46e5;
+            background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d1322 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative selection:bg-brand-500 selection:text-white">
+
+    <!-- Intro Loading Screen (1 second timer) -->
+    <div id="splashScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f19] transition-opacity duration-500 ease-out">
+        <div class="glow-blob w-96 h-96 bg-brand-500 -top-10 -left-10"></div>
+        <div class="glow-blob w-96 h-96 bg-tech-cyan -bottom-10 -right-10"></div>
+
+        <div class="flex items-center space-x-6 md:space-x-8 animate-bounce mb-6">
+            <!-- MRC Logo -->
+            <div class="relative group">
+                <img id="splashMrcLogo" 
+                     src="https://scontent.fcai19-5.fna.fbcdn.net/v/t39.30808-6/505803320_122123493038854539_3757857447945570612_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=nJFRo2p9Jq8Q7kNvwEZ9rQ-&_nc_oc=Adqwp_trjFPrUpBrfxYVYC5aQDWmU2lOsSU8JTM8r6NXYyk061NMwRfCOVp9Vs11-rg&_nc_zt=23&_nc_ht=scontent.fcai19-5.fna&_nc_gid=MdJREN1MVJmNStvHH_HkVA&_nc_ss=7d2a8&oh=00_AQJTZDJX0-jJTJDkBKrAEMJxHm5ppou9m9JzBXfZvB32Fg&oe=6A9DF2FA" 
+                     alt="MRC Logo" 
+                     class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-2xl ring-2 ring-brand-500/40"
+                     onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=MRC'">
+            </div>
+
+            <!-- Divider -->
+            <div class="h-16 w-1 bg-gradient-to-b from-brand-500 via-tech-cyan to-brand-700 rounded-full"></div>
+
+            <!-- Codenix Logo -->
+            <div class="relative group">
+                <img id="splashCodenixLogo" 
+                     src="logo.png" 
+                     alt="Codenix Logo" 
+                     class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-2xl ring-2 ring-tech-cyan/40"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%236366f1\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23111827\'/><path d=\'M30 30 L50 70 L70 30\' stroke=\'%2306b6d4\' stroke-width=\'10\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/><circle cx=\'50\' cy=\'35\' r=\'6\' fill=\'%236366f1\'/></svg>'">
+            </div>
+        </div>
+
+        <!-- Animated Brand Name -->
+        <h1 class="heading-font text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">
+            Codenix <span class="text-white font-light">| Academy</span>
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base mt-2 tracking-widest uppercase font-mono">
+            MRC Logo | Codenix Logo
+        </p>
+
+        <!-- Loading Progress Bar -->
+        <div class="w-48 h-1.5 bg-slate-800 rounded-full mt-8 overflow-hidden">
+            <div class="w-full h-full bg-gradient-to-r from-brand-500 to-tech-cyan animate-pulse"></div>
+        </div>
+    </div>
+
+    <!-- Main Header Bar (Contains Logo & Username Only) -->
+    <header class="glass-header sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Brand Logo & Title -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('home')">
+                    <img src="logo.png" 
+                         alt="Codenix Logo" 
+                         class="w-11 h-11 rounded-xl border border-brand-500/30 object-cover shadow-lg"
+                         onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%236366f1\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23111827\'/><path d=\'M30 30 L50 70 L70 30\' stroke=\'%2306b6d4\' stroke-width=\'10\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/><circle cx=\'50\' cy=\'35\' r=\'6\' fill=\'%236366f1\'/></svg>'">
+                    <div>
+                        <div class="heading-font font-bold text-xl tracking-tight text-white flex items-center gap-1.5">
+                            Codenix <span class="text-brand-400 font-normal">| Academy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Username Badge Only -->
+                <div class="flex items-center space-x-3">
+                    <div id="authWidget" class="flex items-center">
+                        <div id="navUserBadge" class="hidden px-4 py-2 rounded-xl text-sm font-semibold bg-slate-800/90 text-slate-200 border border-slate-700/80 flex items-center gap-2 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span id="navUserNameText">Username</span>
+                        </div>
+                        <button id="signInRedirectBtn" onclick="redirectToStart()" class="hidden px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white shadow-lg shadow-brand-500/20 transition flex items-center gap-2">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>Sign In</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+        <div class="glow-blob w-80 h-80 bg-brand-600 top-10 left-1/3"></div>
+        <div class="glow-blob w-96 h-96 bg-tech-cyan bottom-10 right-10"></div>
+
+        <!-- Section: Home & Course Catalog -->
+        <div id="homeSection" class="space-y-10">
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl overflow-hidden glass-panel p-8 md:p-12 border border-slate-800/80 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-brand-900/20">
+                <div class="max-w-3xl space-y-6 relative z-10">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-brand-400 animate-ping"></span>
+                        Codenix & MRC Academy
+                    </div>
+                    
+                    <h1 class="heading-font text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                        Advance Your Skillset with Next-Gen <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">Tech & AI Courses</span>
+                    </h1>
+
+                    <p class="text-slate-300 text-base md:text-lg leading-relaxed">
+                        Industry-grade curriculum crafted by <strong class="text-white">Codenix</strong> in partnership with <strong class="text-white">MRC</strong>. Earn official verified certificates with dynamic student validation powered by Supabase.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Filter & Search Section -->
+            <div id="coursesAnchor" class="space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="heading-font text-2xl font-bold text-white flex items-center gap-2">
+                            <span>Available Courses</span>
+                            <span id="courseCountBadge" class="text-xs font-normal bg-brand-500/20 text-brand-300 px-2.5 py-1 rounded-full border border-brand-500/30">Loading...</span>
+                        </h2>
+                        <p class="text-slate-400 text-sm">Select a course to start learning or claim your certificate</p>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-72">
+                        <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" 
+                               id="searchInput" 
+                               oninput="renderCourses()" 
+                               placeholder="Search tech, AI..." 
+                               class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-800">
+                    <button onclick="setCategoryFilter('all')" id="filter-all" class="category-btn active-cat px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white transition">
+                        All Tracks
+                    </button>
+                    <button onclick="setCategoryFilter('AI')" id="filter-AI" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                        <i class="fa-solid fa-robot mr-1.5 text-purple-400"></i>AI & Machine Learning
+                    </button>
+                    <button onclick="setCategoryFilter('Tech')" id="filter-Tech" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                        <i class="fa-solid fa-laptop-code mr-1.5 text-tech-cyan"></i>Software Tech
+                    </button>
+                    <!-- Languages Soon Badge -->
+                    <div class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900/60 text-slate-500 border border-slate-800/80 flex items-center gap-1.5 cursor-not-allowed">
+                        <i class="fa-solid fa-globe text-slate-600"></i>
+                        <span>Languages</span>
+                        <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-1.5 py-0.2 rounded font-bold uppercase">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Cards Grid -->
+            <div id="coursesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Course Cards render here -->
+            </div>
+        </div>
+
+        <!-- Section: Course Lesson Viewer Screen -->
+        <div id="lessonSection" class="hidden space-y-6">
+            <!-- Back & Header -->
+            <div class="flex items-center justify-between">
+                <button onclick="showSection('home')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Courses
+                </button>
+                <div id="lessonCourseTitle" class="heading-font text-lg font-bold text-white truncate max-w-md"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Video / Player Canvas -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="aspect-video bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden relative shadow-2xl flex items-center justify-center">
+                        <iframe id="videoPlayerIframe" 
+                                class="w-full h-full" 
+                                src="" 
+                                title="Course Lesson" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen></iframe>
+                    </div>
+
+                    <!-- Lesson Details -->
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h2 id="currentLessonTitle" class="heading-font text-xl font-bold text-white">Select a lesson</h2>
+                            <button id="markCompleteBtn" onclick="toggleCurrentLessonCompletion()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-2">
+                                <i class="fa-solid fa-check"></i> Mark Complete
+                            </button>
+                        </div>
+                        <p id="currentLessonDesc" class="text-slate-300 text-sm leading-relaxed"></p>
+
+                        <!-- Code Sandbox Snippet box -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-2">
+                            <div class="flex items-center justify-between text-slate-500 text-[11px] pb-2 border-b border-slate-800">
+                                <span><i class="fa-solid fa-code mr-1"></i> Interactive Code Snippet</span>
+                                <span>Codenix Academy</span>
+                            </div>
+                            <pre id="lessonCodeSnippet" class="overflow-x-auto text-emerald-400">// Code example for this module will appear here...</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lessons Playlist Sidebar -->
+                <div class="glass-panel p-5 rounded-2xl space-y-4 h-fit">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <h3 class="heading-font font-bold text-white text-base">Course Units & Modules</h3>
+                        <span id="courseProgressText" class="text-xs font-mono bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full">0% Done</span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div id="courseProgressBar" class="bg-gradient-to-r from-brand-500 to-tech-cyan h-full w-0 transition-all duration-500"></div>
+                    </div>
+
+                    <!-- Lesson List -->
+                    <div id="lessonsList" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- Certificate Unlock CTA -->
+                    <div id="certificateClaimBox" class="mt-4 p-4 rounded-xl bg-gradient-to-br from-brand-900/50 via-slate-900 to-slate-900 border border-brand-500/30 text-center space-y-3">
+                        <div class="text-xs text-slate-300 font-medium">Complete all modules to unlock your official verified certificate!</div>
+                        <button onclick="openCertificateModal()" id="claimCertBtn" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/20 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-award text-amber-300 text-sm"></i>
+                            <span>View / Download Certificate</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Certificate Modal Screen -->
+    <div id="certificateModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center">
+        <div class="w-full max-w-4xl space-y-4">
+            <!-- Modal Actions Bar -->
+            <div class="flex items-center justify-between text-white">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                    <span class="heading-font font-bold text-base">Codenix | Academy Verified Certificate</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="downloadCertificate()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Download PNG
+                    </button>
+                    <button onclick="printCertificate()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Print / PDF
+                    </button>
+                    <button onclick="closeCertificateModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- The Printable Certificate Container -->
+            <div id="certificateContainer" class="certificate-border rounded-2xl p-6 sm:p-10 text-white relative overflow-hidden shadow-2xl">
+                <div class="relative z-10 flex flex-col items-center text-center space-y-6">
+                    <!-- Top Logos Header -->
+                    <div class="w-full flex items-center justify-between border-b border-slate-800/80 pb-6">
+                        <!-- MRC Logo -->
+                        <div class="flex items-center space-x-3">
+                            <img src="https://scontent.fcai19-5.fna.fbcdn.net/v/t39.30808-6/505803320_122123493038854539_3757857447945570612_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=nJFRo2p9Jq8Q7kNvwEZ9rQ-&_nc_oc=Adqwp_trjFPrUpBrfxYVYC5aQDWmU2lOsSU8JTM8r6NXYyk061NMwRfCOVp9Vs11-rg&_nc_zt=23&_nc_ht=scontent.fcai19-5.fna&_nc_gid=MdJREN1MVJmNStvHH_HkVA&_nc_ss=7d2a8&oh=00_AQJTZDJX0-jJTJDkBKrAEMJxHm5ppou9m9JzBXfZvB32Fg&oe=6A9DF2FA" 
+                                 alt="MRC Logo" 
+                                 class="w-14 h-14 rounded-xl object-cover border border-slate-700"
+                                 onerror="this.src='https://placehold.co/80x80/4f46e5/ffffff?text=MRC'">
+                            <div class="text-left hidden sm:block">
+                                <span class="text-xs font-bold tracking-wider text-slate-300 block">MRC</span>
+                                <span class="text-[10px] text-slate-500">Official Partner</span>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Badge Title -->
+                        <div class="text-center">
+                            <span class="text-[10px] uppercase font-mono tracking-widest text-brand-400 block">Certificate of Completion</span>
+                            <div class="heading-font font-extrabold text-xl sm:text-2xl tracking-tight text-white">
+                                CODENIX <span class="text-brand-400">| ACADEMY</span>
+                            </div>
+                        </div>
+
+                        <!-- Codenix Logo -->
+                        <div class="flex items-center space-x-3">
+                            <div class="text-right hidden sm:block">
+                                <span class="text-xs font-bold tracking-wider text-slate-300 block">CODENIX</span>
+                                <span class="text-[10px] text-slate-500">Academy Hub</span>
+                            </div>
+                            <img src="logo.png" 
+                                 alt="Codenix Logo" 
+                                 class="w-14 h-14 rounded-xl object-cover border border-slate-700"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' fill=\'%236366f1\'><rect width=\'100\' height=\'100\' rx=\'20\' fill=\'%23111827\'/><path d=\'M30 30 L50 70 L70 30\' stroke=\'%2306b6d4\' stroke-width=\'10\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/><circle cx=\'50\' cy=\'35\' r=\'6\' fill=\'%236366f1\'/></svg>'">
+                        </div>
+                    </div>
+
+                    <!-- Main Certificate Text -->
+                    <div class="space-y-3 my-4">
+                        <p class="text-xs font-mono uppercase tracking-widest text-slate-400">This is to proudly certify that</p>
+                        
+                        <!-- Dynamic Student Username -->
+                        <h2 id="certUserName" class="heading-font text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-white to-tech-cyan py-1">
+                            Student Name
+                        </h2>
+                        
+                        <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
+                            has successfully completed all required units, code exercises, and technical evaluations for the course
+                        </p>
+
+                        <!-- Course Title -->
+                        <h3 id="certCourseTitle" class="heading-font text-xl sm:text-2xl font-bold text-brand-400 mt-2">
+                            Course Name
+                        </h3>
+                    </div>
+
+                    <!-- Footer Verification & Signatures -->
+                    <div class="w-full pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                        <!-- Verification Details -->
+                        <div class="text-left space-y-1">
+                            <div class="flex items-center gap-1.5 text-emerald-400 font-semibold text-xs">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Verified Credentials</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 font-mono">
+                                Issue Date: <span id="certIssueDate">2026-09-02</span>
+                            </div>
+                            <div class="text-[11px] text-slate-500 font-mono">
+                                Certificate ID: <span id="certUniqueId" class="text-slate-400">CDNX-MRC-8921X</span>
+                            </div>
+                        </div>
+
+                        <!-- Verification Seal Icon -->
+                        <div class="w-16 h-16 rounded-full bg-slate-900 border-2 border-brand-500/50 flex flex-col items-center justify-center text-center shadow-lg">
+                            <i class="fa-solid fa-award text-amber-400 text-lg"></i>
+                            <span class="text-[8px] font-bold tracking-widest uppercase text-slate-300 mt-0.5">OFFICIAL</span>
+                        </div>
+
+                        <!-- Signature / Issuing Platform -->
+                        <div class="text-right space-y-1">
+                            <div class="font-bold text-slate-200 heading-font text-sm">Codenix | Academy Board</div>
+                            <div class="text-[10px] text-slate-400">Joint Committee of Codenix & MRC</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================
+           GLOBAL STATE & SUPABASE INITIALIZATION
+           ========================================================= */
+        const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
+
+        let supabaseClient = null;
+        try {
+            if (typeof supabase !== 'undefined') {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.warn("Supabase client error:", e);
+        }
+
+        let currentUser = {
+            id: null,
+            name: '',
+            email: '',
+            isSignedIn: false
+        };
+
+        let currentCategoryFilter = 'all';
+        let activeCourse = null;
+        let activeLesson = null;
+        let userProgressMap = {}; 
+        let coursesList = [];
+
+        // Redirect user to sign-in page on main domain if not authenticated
+        function redirectToStart() {
+            window.location.href = '/Start/';
+        }
+
+        // Window Load & Initial Setup
+        window.onload = async function() {
+            // 1. Splash screen timer (1 second duration)
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.classList.add('opacity-0');
+                    setTimeout(() => splash.remove(), 500);
+                }
+            }, 1000);
+
+            // 2. Check Supabase User Login
+            await checkSupabaseUser();
+
+            // 3. Load Courses from Supabase or Fallback Catalog
+            await loadCoursesData();
+
+            // 4. Initial Render
+            renderCourses();
+        };
+
+        // Check user session with Supabase
+        async function checkSupabaseUser() {
+            if (!supabaseClient) {
+                redirectToStart();
+                return;
+            }
+
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                if (session && session.user) {
+                    currentUser.id = session.user.id;
+                    currentUser.email = session.user.email;
+                    currentUser.isSignedIn = true;
+
+                    // Fetch username from profiles
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('full_name, username')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (profile) {
+                        currentUser.name = profile.full_name || profile.username || session.user.email.split('@')[0];
+                    } else {
+                        currentUser.name = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+                    }
+                    updateAuthHeader();
+                } else {
+                    // User is not signed in -> redirect to /Start/
+                    redirectToStart();
+                }
+            } catch (err) {
+                console.error("Auth verification failed:", err);
+                redirectToStart();
+            }
+        }
+
+        // Update Nav UI Header with Username Only
+        function updateAuthHeader() {
+            const userBadge = document.getElementById('navUserBadge');
+            const userNameText = document.getElementById('navUserNameText');
+            const signInBtn = document.getElementById('signInRedirectBtn');
+
+            if (currentUser.isSignedIn) {
+                userNameText.innerText = currentUser.name;
+                userBadge.classList.remove('hidden');
+                signInBtn.classList.add('hidden');
+            } else {
+                userBadge.classList.add('hidden');
+                signInBtn.classList.remove('hidden');
+            }
+        }
+
+        // Fetch courses, units, and lessons from Supabase
+        async function loadCoursesData() {
+            if (!supabaseClient) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('courses')
+                    .select('*, units(*, lessons(*))');
+
+                if (!error && data && data.length > 0) {
+                    coursesList = data.map(c => {
+                        // Flatten lessons through units
+                        let allLessons = [];
+                        if (c.units && c.units.length > 0) {
+                            c.units.sort((a,b) => (a.sequence_order || 0) - (b.sequence_order || 0));
+                            c.units.forEach(unit => {
+                                if (unit.lessons) {
+                                    unit.lessons.sort((a,b) => (a.sequence_order || 0) - (b.sequence_order || 0));
+                                    unit.lessons.forEach(l => {
+                                        allLessons.push({
+                                            ...l,
+                                            unit_title: unit.title
+                                        });
+                                    });
+                                }
+                            });
+                        }
+
+                        return {
+                            id: c.id,
+                            title: c.title,
+                            category: c.category || 'Tech',
+                            description: c.description,
+                            level: c.level || 'Beginner',
+                            duration: c.duration || '2 Hours',
+                            thumbnail: c.thumbnail || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
+                            lessons: allLessons
+                        };
+                    });
+                } else {
+                    useDefaultFallbackCourses();
+                }
+            } catch (e) {
+                useDefaultFallbackCourses();
+            }
+        }
+
+        function useDefaultFallbackCourses() {
+            coursesList = [
+                {
+                    id: 'course-ai-1',
+                    title: 'AI & Neural Networks Core',
+                    category: 'AI',
+                    description: 'Learn deep learning architectures, CNNs, and LLM prompting strategies with Codenix & MRC.',
+                    level: 'Intermediate',
+                    duration: '4 Hours',
+                    thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80',
+                    lessons: [
+                        {
+                            title: 'Unit 1: Intro to AI Concepts',
+                            video_url: 'https://www.youtube.com/embed/aircAruvnKk',
+                            description: 'Overview of AI history and machine learning fundamentals.',
+                            code_snippet: 'const prompt = "Explain deep learning";'
+                        },
+                        {
+                            title: 'Unit 2: Transformer Architecture',
+                            video_url: 'https://www.youtube.com/embed/zjkBMFhNj_g',
+                            description: 'How attention mechanisms work under the hood.',
+                            code_snippet: 'class SelfAttention {\n  compute() { return true; }\n}'
+                        }
+                    ]
+                },
+                {
+                    id: 'course-tech-1',
+                    title: 'Full-Stack Web Development Mastery',
+                    category: 'Tech',
+                    description: 'Master modern web app construction with React, Tailwind, and Supabase backend architecture.',
+                    level: 'Beginner',
+                    duration: '6 Hours',
+                    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
+                    lessons: [
+                        {
+                            title: 'Unit 1: Frontend Architecture',
+                            video_url: 'https://www.youtube.com/embed/w7ejDZ8SWv8',
+                            description: 'Structuring clean single-page web applications.',
+                            code_snippet: 'const state = { user: "Codenix" };'
+                        }
+                    ]
+                }
+            ];
+        }
+
+        // Navigation helper
+        function showSection(section) {
+            if (section === 'home') {
+                document.getElementById('homeSection').classList.remove('hidden');
+                document.getElementById('lessonSection').classList.add('hidden');
+            } else if (section === 'lesson') {
+                document.getElementById('homeSection').classList.add('hidden');
+                document.getElementById('lessonSection').classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setCategoryFilter(cat) {
+            currentCategoryFilter = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById(`filter-${cat}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+                activeBtn.classList.add('bg-brand-600', 'text-white');
+            }
+            renderCourses();
+        }
+
+        // Render Courses List
+        function renderCourses() {
+            const grid = document.getElementById('coursesGrid');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = coursesList.filter(c => {
+                const matchesCat = (currentCategoryFilter === 'all') || (c.category.toLowerCase() === currentCategoryFilter.toLowerCase());
+                const matchesSearch = c.title.toLowerCase().includes(searchVal) || c.description.toLowerCase().includes(searchVal);
+                return matchesCat && matchesSearch;
+            });
+
+            document.getElementById('courseCountBadge').innerText = `${filtered.length} Courses`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 glass-panel rounded-2xl">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3 block"></i>
+                        <h4 class="text-white font-bold text-lg">No courses found</h4>
+                        <p class="text-slate-400 text-xs mt-1">Try adjusting your search query or category filter</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(course => {
+                const completedCount = (userProgressMap[course.id] || []).length;
+                const totalLessons = course.lessons ? course.lessons.length : 1;
+                const isDone = completedCount >= totalLessons;
+
+                return `
+                    <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-500/50 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group">
+                        <div>
+                            <div class="relative h-48 bg-slate-900 overflow-hidden">
+                                <img src="${course.thumbnail}" 
+                                     alt="${course.title}" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                     onerror="this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                                
+                                <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                    course.category === 'AI' ? 'bg-purple-500/80 text-white' : 'bg-brand-600/80 text-white'
+                                } backdrop-blur-md">
+                                    ${course.category}
+                                </span>
+
+                                <span class="absolute bottom-3 right-3 text-xs font-mono text-slate-300 bg-slate-900/80 px-2.5 py-0.5 rounded-md backdrop-blur-sm border border-slate-800">
+                                    <i class="fa-regular fa-clock mr-1 text-brand-400"></i>${course.duration}
+                                </span>
+                            </div>
+
+                            <div class="p-5 space-y-3">
+                                <h3 class="heading-font text-lg font-bold text-white group-hover:text-brand-300 transition line-clamp-1">
+                                    ${course.title}
+                                </h3>
+                                <p class="text-slate-400 text-xs leading-relaxed line-clamp-2">
+                                    ${course.description}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-5 pt-0 space-y-3">
+                            <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-3">
+                                <span><i class="fa-solid fa-layer-group text-brand-400 mr-1"></i>${totalLessons} Modules</span>
+                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-certificate mr-1"></i>Verified Cert</span>
+                            </div>
+
+                            <button onclick="openCourse('${course.id}')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center justify-center gap-2 group-hover:bg-brand-600">
+                                <span>${isDone ? 'Review / View Cert' : 'Start Learning'}</span>
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Open selected course viewer
+        function openCourse(courseId) {
+            activeCourse = coursesList.find(c => c.id === courseId);
+            if (!activeCourse) return;
+
+            if (!userProgressMap[activeCourse.id]) {
+                userProgressMap[activeCourse.id] = [];
+            }
+
+            document.getElementById('lessonCourseTitle').innerText = activeCourse.title;
+            renderLessonsPlaylist();
+            loadLesson(0);
+            showSection('lesson');
+        }
+
+        // Render playlist in sidebar
+        function renderLessonsPlaylist() {
+            const listContainer = document.getElementById('lessonsList');
+            const completedIndices = userProgressMap[activeCourse.id] || [];
+
+            const total = activeCourse.lessons.length;
+            const pct = total > 0 ? Math.round((completedIndices.length / total) * 100) : 0;
+            document.getElementById('courseProgressBar').style.width = `${pct}%`;
+            document.getElementById('courseProgressText').innerText = `${pct}% Done`;
+
+            listContainer.innerHTML = activeCourse.lessons.map((lesson, idx) => {
+                const isCompleted = completedIndices.includes(idx);
+                const isActive = activeLesson === lesson;
+
+                return `
+                    <div onclick="loadLesson(${idx})" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between ${
+                        isActive 
+                        ? 'bg-brand-600/20 border-brand-500 text-white' 
+                        : 'bg-slate-900/60 hover:bg-slate-800 border-slate-800 text-slate-300'
+                    }">
+                        <div class="flex items-center space-x-3 truncate">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold ${
+                                isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'
+                            }">
+                                ${isCompleted ? '✓' : idx + 1}
+                            </span>
+                            <div class="truncate">
+                                ${lesson.unit_title ? `<span class="text-[10px] text-brand-400 font-mono block">${lesson.unit_title}</span>` : ''}
+                                <span class="text-xs font-medium truncate">${lesson.title}</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load specific lesson video & metadata
+        function loadLesson(index) {
+            if (!activeCourse || !activeCourse.lessons[index]) return;
+            
+            activeLesson = activeCourse.lessons[index];
+            activeLesson._index = index;
+
+            document.getElementById('currentLessonTitle').innerText = activeLesson.title;
+            document.getElementById('currentLessonDesc').innerText = activeLesson.description || "Follow along with Codenix & MRC instructors.";
+            document.getElementById('lessonCodeSnippet').innerText = activeLesson.code_snippet || "// Code sandbox snippet loading...";
+            document.getElementById('videoPlayerIframe').src = activeLesson.video_url;
+
+            renderLessonsPlaylist();
+        }
+
+        // Toggle completion status of current lesson
+        function toggleCurrentLessonCompletion() {
+            if (!activeCourse || activeLesson === null) return;
+
+            const idx = activeLesson._index;
+            if (!userProgressMap[activeCourse.id]) {
+                userProgressMap[activeCourse.id] = [];
+            }
+
+            const arr = userProgressMap[activeCourse.id];
+            const foundIndex = arr.indexOf(idx);
+
+            if (foundIndex > -1) {
+                arr.splice(foundIndex, 1);
+            } else {
+                arr.push(idx);
+            }
+
+            renderLessonsPlaylist();
+
+            if (arr.length === activeCourse.lessons.length) {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Open Certificate Modal
+        function openCertificateModal() {
+            if (!activeCourse) return;
+
+            document.getElementById('certUserName').innerText = currentUser.name || "Academy Student";
+            document.getElementById('certCourseTitle').innerText = activeCourse.title;
+            document.getElementById('certIssueDate').innerText = new Date().toISOString().split('T')[0];
+            document.getElementById('certUniqueId').innerText = `CDNX-MRC-${Math.floor(100000 + Math.random() * 900000)}`;
+
+            document.getElementById('certificateModal').classList.remove('hidden');
+
+            confetti({
+                particleCount: 100,
+                spread: 100,
+                origin: { y: 0.5 }
+            });
+        }
+
+        function closeCertificateModal() {
+            document.getElementById('certificateModal').classList.add('hidden');
+        }
+
+        // Download Certificate
+        function downloadCertificate() {
+            const certElement = document.getElementById('certificateContainer');
+            if (!certElement) return;
+
+            html2canvas(certElement, {
+                scale: 2,
+                backgroundColor: '#0b0f19'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Codenix_Academy_Certificate_${currentUser.name.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function printCertificate() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
