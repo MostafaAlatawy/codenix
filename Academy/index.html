@@ -158,7 +158,7 @@
         </div>
     </div>
 
-    <!-- Main Header Bar (Contains Logo & Username Only) -->
+    <!-- Main Header Bar -->
     <header class="glass-header sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
@@ -175,8 +175,13 @@
                     </div>
                 </div>
 
-                <!-- Username Badge Only -->
+                <!-- Google Sheets Status & User Badge -->
                 <div class="flex items-center space-x-3">
+                    <div id="sheetStatusBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+                        <i class="fa-file-spreadsheet text-emerald-400"></i>
+                        <span>Sheets Synced</span>
+                    </div>
+
                     <div id="authWidget" class="flex items-center">
                         <div id="navUserBadge" class="hidden px-4 py-2 rounded-xl text-sm font-semibold bg-slate-800/90 text-slate-200 border border-slate-700/80 flex items-center gap-2 shadow-sm">
                             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -208,11 +213,11 @@
                     </div>
                     
                     <h1 class="heading-font text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                        Advance Your Skillset with Next-Gen <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">Tech & AI Courses</span>
+                        Advance Your Skillset with Live <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-tech-cyan to-purple-400">Google Sheets Courses</span>
                     </h1>
 
                     <p class="text-slate-300 text-base md:text-lg leading-relaxed">
-                        Industry-grade curriculum crafted by <strong class="text-white">Codenix</strong> in partnership with <strong class="text-white">MRC</strong>. Earn official verified certificates with dynamic student validation powered by Supabase.
+                        Industry-grade curriculum dynamically synced with our live spreadsheet database. Complete required lesson tests to unlock progressive modules and earn your official verified certificate!
                     </p>
                 </div>
             </div>
@@ -223,9 +228,9 @@
                     <div>
                         <h2 class="heading-font text-2xl font-bold text-white flex items-center gap-2">
                             <span>Available Courses</span>
-                            <span id="courseCountBadge" class="text-xs font-normal bg-brand-500/20 text-brand-300 px-2.5 py-1 rounded-full border border-brand-500/30">Loading...</span>
+                            <span id="courseCountBadge" class="text-xs font-normal bg-brand-500/20 text-brand-300 px-2.5 py-1 rounded-full border border-brand-500/30">Syncing Google Sheets...</span>
                         </h2>
-                        <p class="text-slate-400 text-sm">Select a course to start learning or claim your certificate</p>
+                        <p class="text-slate-400 text-sm">Select a course to start learning or complete required module tests</p>
                     </div>
 
                     <!-- Search Input -->
@@ -234,7 +239,7 @@
                         <input type="text" 
                                id="searchInput" 
                                oninput="renderCourses()" 
-                               placeholder="Search tech, AI..." 
+                               placeholder="Search tech, AI, sheets..." 
                                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
                     </div>
                 </div>
@@ -250,12 +255,10 @@
                     <button onclick="setCategoryFilter('Tech')" id="filter-Tech" class="category-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
                         <i class="fa-solid fa-laptop-code mr-1.5 text-tech-cyan"></i>Software Tech
                     </button>
-                    <!-- Languages Soon Badge -->
-                    <div class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900/60 text-slate-500 border border-slate-800/80 flex items-center gap-1.5 cursor-not-allowed">
-                        <i class="fa-solid fa-globe text-slate-600"></i>
-                        <span>Languages</span>
-                        <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-1.5 py-0.2 rounded font-bold uppercase">Coming Soon</span>
-                    </div>
+                    <!-- Sync Button -->
+                    <button onclick="loadCoursesData()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 transition flex items-center gap-1.5 ml-auto">
+                        <i class="fa-solid fa-rotate text-xs"></i> Refresh Sheet
+                    </button>
                 </div>
             </div>
 
@@ -276,8 +279,9 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Main Video / Player Canvas -->
-                <div class="lg:col-span-2 space-y-4">
+                <!-- Main Video / Lesson Content Player & Quiz Pane -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Video Embed Frame -->
                     <div class="aspect-video bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden relative shadow-2xl flex items-center justify-center">
                         <iframe id="videoPlayerIframe" 
                                 class="w-full h-full" 
@@ -288,13 +292,24 @@
                                 allowfullscreen></iframe>
                     </div>
 
-                    <!-- Lesson Details -->
-                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <!-- Tabs: Video Info vs Lesson Quiz -->
+                    <div class="flex items-center gap-3 border-b border-slate-800 pb-2">
+                        <button id="tabVideoBtn" onclick="switchLessonTab('info')" class="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white transition flex items-center gap-2">
+                            <i class="fa-solid fa-book-open"></i> Lesson Material
+                        </button>
+                        <button id="tabQuizBtn" onclick="switchLessonTab('quiz')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-2 relative">
+                            <i class="fa-solid fa-pen-to-square text-amber-400"></i> Lesson Test
+                            <span id="quizPassedBadge" class="hidden text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-1.5 py-0.2 rounded font-mono font-bold">PASSED</span>
+                        </button>
+                    </div>
+
+                    <!-- Lesson Details Card -->
+                    <div id="lessonInfoPane" class="glass-panel p-6 rounded-2xl space-y-4">
                         <div class="flex items-center justify-between">
                             <h2 id="currentLessonTitle" class="heading-font text-xl font-bold text-white">Select a lesson</h2>
-                            <button id="markCompleteBtn" onclick="toggleCurrentLessonCompletion()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-2">
-                                <i class="fa-solid fa-check"></i> Mark Complete
-                            </button>
+                            <div id="lessonStatusTag" class="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                                Pending Test
+                            </div>
                         </div>
                         <p id="currentLessonDesc" class="text-slate-300 text-sm leading-relaxed"></p>
 
@@ -304,7 +319,42 @@
                                 <span><i class="fa-solid fa-code mr-1"></i> Interactive Code Snippet</span>
                                 <span>Codenix Academy</span>
                             </div>
-                            <pre id="lessonCodeSnippet" class="overflow-x-auto text-emerald-400">// Code example for this module will appear here...</pre>
+                            <pre id="lessonCodeSnippet" class="overflow-x-auto text-emerald-400">// Code snippet for this module...</pre>
+                        </div>
+
+                        <!-- Jump to Quiz CTA -->
+                        <div class="pt-2 flex justify-end">
+                            <button onclick="switchLessonTab('quiz')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-bold transition shadow-lg flex items-center gap-2">
+                                <span>Take Lesson Test to Unlock Next</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lesson Quiz / Test Interactive Area -->
+                    <div id="lessonQuizPane" class="glass-panel p-6 rounded-2xl space-y-6 hidden">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                            <div>
+                                <h3 class="heading-font text-lg font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-question text-amber-400"></i>
+                                    <span>Lesson Knowledge Evaluation</span>
+                                </h3>
+                                <p class="text-slate-400 text-xs">Pass this required test to mark the lesson completed and unlock the next module!</p>
+                            </div>
+                            <div class="text-xs font-mono bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1 rounded-lg">
+                                Required: 100% Score
+                            </div>
+                        </div>
+
+                        <div id="quizContainer" class="space-y-6">
+                            <!-- Dynamic quiz questions injected here -->
+                        </div>
+
+                        <div class="pt-4 flex items-center justify-between border-t border-slate-800">
+                            <div id="quizResultFeedback" class="text-xs font-medium text-slate-400">Answer all questions and submit.</div>
+                            <button onclick="submitLessonQuiz()" id="submitQuizBtn" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition shadow-lg flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Test
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -312,7 +362,7 @@
                 <!-- Lessons Playlist Sidebar -->
                 <div class="glass-panel p-5 rounded-2xl space-y-4 h-fit">
                     <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                        <h3 class="heading-font font-bold text-white text-base">Course Units & Modules</h3>
+                        <h3 class="heading-font font-bold text-white text-base">Course Units & Progression</h3>
                         <span id="courseProgressText" class="text-xs font-mono bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full">0% Done</span>
                     </div>
 
@@ -322,22 +372,56 @@
                     </div>
 
                     <!-- Lesson List -->
-                    <div id="lessonsList" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                        <!-- Rendered dynamically -->
+                    <div id="lessonsList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                        <!-- Rendered dynamically with locked/unlocked state -->
                     </div>
 
-                    <!-- Certificate Unlock CTA -->
+                    <!-- Final Exam & Certificate Unlock CTA -->
                     <div id="certificateClaimBox" class="mt-4 p-4 rounded-xl bg-gradient-to-br from-brand-900/50 via-slate-900 to-slate-900 border border-brand-500/30 text-center space-y-3">
-                        <div class="text-xs text-slate-300 font-medium">Complete all modules to unlock your official verified certificate!</div>
-                        <button onclick="openCertificateModal()" id="claimCertBtn" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/20 transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-award text-amber-300 text-sm"></i>
-                            <span>View / Download Certificate</span>
+                        <div id="certLockMessage" class="text-xs text-slate-300 font-medium leading-relaxed">
+                            Complete all lesson tests to unlock the Final Course Exam & official verified certificate!
+                        </div>
+                        
+                        <!-- Dynamic Button: Final Exam or View Certificate -->
+                        <button id="certActionButton" onclick="handleCertAction()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs transition flex items-center justify-center gap-2 cursor-not-allowed">
+                            <i id="certActionIcon" class="fa-solid fa-lock text-slate-500 text-sm"></i>
+                            <span id="certActionText">Certificate Locked</span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Final Comprehensive Exam Modal Screen -->
+    <div id="finalExamModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center">
+        <div class="w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-brand-500/40 space-y-6 relative shadow-2xl">
+            <button onclick="closeFinalExamModal()" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono">
+                    <i class="fa-solid fa-graduation-cap"></i> Final Qualification Exam
+                </div>
+                <h2 id="finalExamCourseTitle" class="heading-font text-2xl font-extrabold text-white">Course Final Exam</h2>
+                <p class="text-slate-300 text-xs leading-relaxed">
+                    This final exam combines evaluation questions from all course modules. Pass this exam with a 100% score to issue your official verified certificate!
+                </p>
+            </div>
+
+            <div id="finalExamQuestionsContainer" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2">
+                <!-- Dynamically populated final exam questions -->
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+                <div id="finalExamFeedback" class="text-xs text-slate-400">Complete all questions carefully.</div>
+                <button onclick="submitFinalExam()" id="submitFinalExamBtn" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold text-xs transition shadow-lg shadow-brand-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-award"></i> Submit Final Exam
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Certificate Modal Screen -->
     <div id="certificateModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center">
@@ -403,13 +487,13 @@
                     <div class="space-y-3 my-4">
                         <p class="text-xs font-mono uppercase tracking-widest text-slate-400">This is to proudly certify that</p>
                         
-                        <!-- Dynamic Student Username -->
-                        <h2 id="certUserName" class="heading-font text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-white to-tech-cyan py-1">
+                        <!-- Student Username - Strictly Pure White (#ffffff) -->
+                        <h2 id="certUserName" class="heading-font text-2xl sm:text-4xl font-extrabold text-white py-1 drop-shadow-md">
                             Student Name
                         </h2>
                         
                         <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-                            has successfully completed all required units, code exercises, and technical evaluations for the course
+                            has successfully completed all required units, knowledge tests, and technical final evaluations for the course
                         </p>
 
                         <!-- Course Title -->
@@ -453,8 +537,11 @@
 
     <script>
         /* =========================================================
-           GLOBAL STATE & SUPABASE INITIALIZATION
+           GLOBAL STATE, GOOGLE SHEETS & SUPABASE INITIALIZATION
            ========================================================= */
+        const GOOGLE_SHEET_ID = "1_puo8qnwlwSr7bIyK6TjgtDk5mcWlxhn1gAeteTTwDM";
+        const GOOGLE_SHEET_GVIZ_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
+
         const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
 
@@ -468,16 +555,17 @@
         }
 
         let currentUser = {
-            id: null,
-            name: '',
-            email: '',
+            id: 'guest-1',
+            name: 'Academy Student',
+            email: 'student@codenix.com',
             isSignedIn: false
         };
 
         let currentCategoryFilter = 'all';
         let activeCourse = null;
         let activeLesson = null;
-        let userProgressMap = {}; 
+        let activeLessonIndex = 0;
+        let userProgressMap = {}; // { courseId: { completedLessons: [indices], finalExamPassed: boolean } }
         let coursesList = [];
 
         // Redirect user to sign-in page on main domain if not authenticated
@@ -499,7 +587,7 @@
             // 2. Check Supabase User Login
             await checkSupabaseUser();
 
-            // 3. Load Courses from Supabase or Fallback Catalog
+            // 3. Load Courses directly from Google Sheets
             await loadCoursesData();
 
             // 4. Initial Render
@@ -509,7 +597,6 @@
         // Check user session with Supabase
         async function checkSupabaseUser() {
             if (!supabaseClient) {
-                redirectToStart();
                 return;
             }
 
@@ -535,16 +622,18 @@
                     }
                     updateAuthHeader();
                 } else {
-                    // User is not signed in -> redirect to /Start/
-                    redirectToStart();
+                    // Fallback username if guest or not logged in
+                    currentUser.name = "Academy Student";
+                    updateAuthHeader();
                 }
             } catch (err) {
-                console.error("Auth verification failed:", err);
-                redirectToStart();
+                console.warn("Auth check fallback:", err);
+                currentUser.name = "Academy Student";
+                updateAuthHeader();
             }
         }
 
-        // Update Nav UI Header with Username Only
+        // Update Nav UI Header with Username
         function updateAuthHeader() {
             const userBadge = document.getElementById('navUserBadge');
             const userNameText = document.getElementById('navUserNameText');
@@ -555,56 +644,127 @@
                 userBadge.classList.remove('hidden');
                 signInBtn.classList.add('hidden');
             } else {
-                userBadge.classList.add('hidden');
-                signInBtn.classList.remove('hidden');
+                userNameText.innerText = currentUser.name || "Academy Student";
+                userBadge.classList.remove('hidden');
+                signInBtn.classList.add('hidden');
             }
         }
 
-        // Fetch courses, units, and lessons from Supabase
+        // Fetch courses dynamically from Google Sheets
         async function loadCoursesData() {
-            if (!supabaseClient) return;
+            const badge = document.getElementById('courseCountBadge');
+            const statusBadge = document.getElementById('sheetStatusBadge');
+            if (badge) badge.innerText = "Connecting Google Sheets...";
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('courses')
-                    .select('*, units(*, lessons(*))');
+                const response = await fetch(GOOGLE_SHEET_GVIZ_URL);
+                if (!response.ok) throw new Error("Google Sheets fetch failed");
 
-                if (!error && data && data.length > 0) {
-                    coursesList = data.map(c => {
-                        // Flatten lessons through units
-                        let allLessons = [];
-                        if (c.units && c.units.length > 0) {
-                            c.units.sort((a,b) => (a.sequence_order || 0) - (b.sequence_order || 0));
-                            c.units.forEach(unit => {
-                                if (unit.lessons) {
-                                    unit.lessons.sort((a,b) => (a.sequence_order || 0) - (b.sequence_order || 0));
-                                    unit.lessons.forEach(l => {
-                                        allLessons.push({
-                                            ...l,
-                                            unit_title: unit.title
-                                        });
-                                    });
-                                }
-                            });
+                const text = await response.text();
+                // Extract valid JSON from Google Visualization API output
+                const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                const gvizData = JSON.parse(jsonString);
+
+                const table = gvizData.table;
+                const cols = table.cols.map(c => (c.label || c.id || '').trim().toLowerCase());
+                const rows = table.rows;
+
+                if (!rows || rows.length === 0) {
+                    throw new Error("Google Sheet is empty");
+                }
+
+                // Helper to extract value by possible column headers
+                const getVal = (row, ...names) => {
+                    for (const name of names) {
+                        const idx = cols.findIndex(c => c.includes(name.toLowerCase()));
+                        if (idx !== -1 && row.c[idx] && row.c[idx].v !== null && row.c[idx].v !== undefined) {
+                            return String(row.c[idx].v).trim();
                         }
+                    }
+                    return '';
+                };
 
-                        return {
-                            id: c.id,
-                            title: c.title,
-                            category: c.category || 'Tech',
-                            description: c.description,
-                            level: c.level || 'Beginner',
-                            duration: c.duration || '2 Hours',
-                            thumbnail: c.thumbnail || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
-                            lessons: allLessons
+                const parsedCoursesMap = {};
+
+                rows.forEach((r, rowIdx) => {
+                    if (!r.c) return;
+                    
+                    const courseId = getVal(r, 'course id', 'course_id', 'course') || 'course-1';
+                    const courseTitle = getVal(r, 'course title', 'course_title', 'title') || 'Tech Mastery Course';
+                    const category = getVal(r, 'category', 'track') || 'Tech';
+                    const description = getVal(r, 'course description', 'course_desc', 'description') || 'Industry curriculum powered by Codenix & MRC.';
+                    const level = getVal(r, 'level', 'difficulty') || 'Intermediate';
+                    const duration = getVal(r, 'duration', 'time') || '3 Hours';
+                    const thumbnail = getVal(r, 'thumbnail', 'image', 'cover') || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80';
+
+                    const lessonTitle = getVal(r, 'lesson title', 'lesson_title', 'unit') || `Module ${rowIdx + 1}: Technical Core`;
+                    let videoUrl = getVal(r, 'video url', 'video_url', 'youtube') || 'https://www.youtube.com/embed/aircAruvnKk';
+                    
+                    // Convert watch URL to embed URL if needed
+                    if (videoUrl.includes('watch?v=')) {
+                        videoUrl = videoUrl.replace('watch?v=', 'embed/');
+                    }
+
+                    const lessonDesc = getVal(r, 'lesson description', 'lesson_desc') || 'Master key principles, practical techniques, and complete the evaluation test.';
+                    const codeSnippet = getVal(r, 'code snippet', 'code', 'snippet') || '// Codenix interactive sandbox\nfunction executeCoreLogic() {\n  return "Passed Lesson Test";\n}';
+                    
+                    // Parse custom quiz question or generate structured quiz
+                    const qText = getVal(r, 'question', 'quiz_question') || `What is the primary objective of ${lessonTitle}?`;
+                    const optA = getVal(r, 'option a', 'opt_a', 'option 1') || 'To understand core technical concepts';
+                    const optB = getVal(r, 'option b', 'opt_b', 'option 2') || 'To bypass code testing';
+                    const optC = getVal(r, 'option c', 'opt_c', 'option 3') || 'To ignore architectural guidelines';
+                    const correctOpt = parseInt(getVal(r, 'correct index', 'answer', 'correct') || '0', 10);
+
+                    if (!parsedCoursesMap[courseId]) {
+                        parsedCoursesMap[courseId] = {
+                            id: courseId,
+                            title: courseTitle,
+                            category: category,
+                            description: description,
+                            level: level,
+                            duration: duration,
+                            thumbnail: thumbnail,
+                            lessons: []
                         };
+                    }
+
+                    parsedCoursesMap[courseId].lessons.push({
+                        title: lessonTitle,
+                        video_url: videoUrl,
+                        description: lessonDesc,
+                        code_snippet: codeSnippet,
+                        quiz: [
+                            {
+                                question: qText,
+                                options: [optA, optB, optC],
+                                answerIndex: isNaN(correctOpt) ? 0 : correctOpt
+                            },
+                            {
+                                question: `Which method verifies completion of ${lessonTitle}?`,
+                                options: [
+                                    'Passing the lesson test evaluation',
+                                    'Skipping the video material',
+                                    'Closing the browser window'
+                                ],
+                                answerIndex: 0
+                            }
+                        ]
                     });
-                } else {
+                });
+
+                coursesList = Object.values(parsedCoursesMap);
+
+                if (coursesList.length === 0) {
                     useDefaultFallbackCourses();
                 }
-            } catch (e) {
+
+                if (statusBadge) statusBadge.classList.remove('hidden');
+            } catch (err) {
+                console.warn("Google Sheets parse fallback triggered:", err);
                 useDefaultFallbackCourses();
             }
+
+            renderCourses();
         }
 
         function useDefaultFallbackCourses() {
@@ -619,16 +779,35 @@
                     thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80',
                     lessons: [
                         {
-                            title: 'Unit 1: Intro to AI Concepts',
+                            title: 'Module 1: Intro to Artificial Intelligence',
                             video_url: 'https://www.youtube.com/embed/aircAruvnKk',
-                            description: 'Overview of AI history and machine learning fundamentals.',
-                            code_snippet: 'const prompt = "Explain deep learning";'
+                            description: 'Overview of AI history, neural network nodes, and machine learning fundamentals.',
+                            code_snippet: 'const model = await ai.loadModel("neural-core");\nconsole.log(model.summary());',
+                            quiz: [
+                                {
+                                    question: 'What is the main function of activation functions in Neural Networks?',
+                                    options: ['Introduce non-linearity', 'Increase video resolution', 'Decrease storage space'],
+                                    answerIndex: 0
+                                },
+                                {
+                                    question: 'Which optimizer is widely used for deep learning gradient descent?',
+                                    options: ['Adam Optimizer', 'QuickSort', 'Linear Search'],
+                                    answerIndex: 0
+                                }
+                            ]
                         },
                         {
-                            title: 'Unit 2: Transformer Architecture',
+                            title: 'Module 2: Transformer Architecture & Attention',
                             video_url: 'https://www.youtube.com/embed/zjkBMFhNj_g',
-                            description: 'How attention mechanisms work under the hood.',
-                            code_snippet: 'class SelfAttention {\n  compute() { return true; }\n}'
+                            description: 'How self-attention mechanisms calculate token vectors under the hood.',
+                            code_snippet: 'class SelfAttention {\n  computeAttention(Q, K, V) {\n    return softmax(Q * K.T) * V;\n  }\n}',
+                            quiz: [
+                                {
+                                    question: 'What key innovation did the Transformer paper "Attention Is All You Need" introduce?',
+                                    options: ['Self-Attention Mechanisms', 'Recurrent Loops', 'Random Forest Trees'],
+                                    answerIndex: 0
+                                }
+                            ]
                         }
                     ]
                 },
@@ -642,10 +821,30 @@
                     thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
                     lessons: [
                         {
-                            title: 'Unit 1: Frontend Architecture',
+                            title: 'Module 1: Frontend Architecture & DOM',
                             video_url: 'https://www.youtube.com/embed/w7ejDZ8SWv8',
-                            description: 'Structuring clean single-page web applications.',
-                            code_snippet: 'const state = { user: "Codenix" };'
+                            description: 'Structuring clean single-page web applications with modern state flow.',
+                            code_snippet: 'const state = { user: "Codenix", authenticated: true };',
+                            quiz: [
+                                {
+                                    question: 'What is the primary benefit of Single Page Applications (SPAs)?',
+                                    options: ['Seamless UX without page reloads', 'Higher server latency', 'No JavaScript required'],
+                                    answerIndex: 0
+                                }
+                            ]
+                        },
+                        {
+                            title: 'Module 2: Realtime Database & API Services',
+                            video_url: 'https://www.youtube.com/embed/8sXRyHI3bLw',
+                            description: 'Connecting reactive user interfaces to cloud storage endpoints.',
+                            code_snippet: 'const { data } = await supabase.from("courses").select("*");',
+                            quiz: [
+                                {
+                                    question: 'How does real-time streaming sync database updates?',
+                                    options: ['WebSockets / Event Subscriptions', 'Continuous page refreshing', 'FTP File transfer'],
+                                    answerIndex: 0
+                                }
+                            ]
                         }
                     ]
                 }
@@ -696,16 +895,17 @@
                     <div class="col-span-full text-center py-12 glass-panel rounded-2xl">
                         <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3 block"></i>
                         <h4 class="text-white font-bold text-lg">No courses found</h4>
-                        <p class="text-slate-400 text-xs mt-1">Try adjusting your search query or category filter</p>
+                        <p class="text-slate-400 text-xs mt-1">Try adjusting your search query or refreshing Google Sheets</p>
                     </div>
                 `;
                 return;
             }
 
             grid.innerHTML = filtered.map(course => {
-                const completedCount = (userProgressMap[course.id] || []).length;
+                const prog = userProgressMap[course.id] || { completedLessons: [], finalExamPassed: false };
+                const completedCount = prog.completedLessons.length;
                 const totalLessons = course.lessons ? course.lessons.length : 1;
-                const isDone = completedCount >= totalLessons;
+                const isFullyDone = prog.finalExamPassed;
 
                 return `
                     <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-500/50 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group">
@@ -741,12 +941,14 @@
                         <div class="p-5 pt-0 space-y-3">
                             <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-3">
                                 <span><i class="fa-solid fa-layer-group text-brand-400 mr-1"></i>${totalLessons} Modules</span>
-                                <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-certificate mr-1"></i>Verified Cert</span>
+                                <span class="${isFullyDone ? 'text-emerald-400 font-bold' : 'text-slate-400'} font-semibold">
+                                    <i class="fa-solid fa-certificate mr-1"></i>${isFullyDone ? 'Certified' : 'Certificate'}
+                                </span>
                             </div>
 
-                            <button onclick="openCourse('${course.id}')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center justify-center gap-2 group-hover:bg-brand-600">
-                                <span>${isDone ? 'Review / View Cert' : 'Start Learning'}</span>
-                                <i class="fa-solid fa-play text-[10px]"></i>
+                            <button onclick="openCourse('${course.id}')" class="w-full py-2.5 rounded-xl ${isFullyDone ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-slate-800 hover:bg-brand-600'} text-white font-semibold text-xs transition flex items-center justify-center gap-2 group-hover:bg-brand-600">
+                                <span>${isFullyDone ? 'View Verified Certificate' : 'Open Course Modules'}</span>
+                                <i class="fa-solid ${isFullyDone ? 'fa-award' : 'fa-play'} text-[10px]"></i>
                             </button>
                         </div>
                     </div>
@@ -760,7 +962,7 @@
             if (!activeCourse) return;
 
             if (!userProgressMap[activeCourse.id]) {
-                userProgressMap[activeCourse.id] = [];
+                userProgressMap[activeCourse.id] = { completedLessons: [], finalExamPassed: false };
             }
 
             document.getElementById('lessonCourseTitle').innerText = activeCourse.title;
@@ -769,84 +971,307 @@
             showSection('lesson');
         }
 
-        // Render playlist in sidebar
+        // Render playlist in sidebar with Locked/Unlocked state
         function renderLessonsPlaylist() {
             const listContainer = document.getElementById('lessonsList');
-            const completedIndices = userProgressMap[activeCourse.id] || [];
+            const prog = userProgressMap[activeCourse.id] || { completedLessons: [], finalExamPassed: false };
+            const completedIndices = prog.completedLessons;
 
             const total = activeCourse.lessons.length;
             const pct = total > 0 ? Math.round((completedIndices.length / total) * 100) : 0;
             document.getElementById('courseProgressBar').style.width = `${pct}%`;
-            document.getElementById('courseProgressText').innerText = `${pct}% Done`;
+            document.getElementById('courseProgressText').innerText = `${pct}% Complete`;
 
             listContainer.innerHTML = activeCourse.lessons.map((lesson, idx) => {
                 const isCompleted = completedIndices.includes(idx);
-                const isActive = activeLesson === lesson;
+                // Lesson 0 is unlocked. Lesson N requires Lesson N-1 to be completed.
+                const isUnlocked = (idx === 0) || completedIndices.includes(idx - 1);
+                const isActive = activeLessonIndex === idx;
 
                 return `
-                    <div onclick="loadLesson(${idx})" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between ${
+                    <div onclick="${isUnlocked ? `loadLesson(${idx})` : 'showLockedLessonAlert()'}" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between ${
                         isActive 
                         ? 'bg-brand-600/20 border-brand-500 text-white' 
-                        : 'bg-slate-900/60 hover:bg-slate-800 border-slate-800 text-slate-300'
+                        : isUnlocked 
+                            ? 'bg-slate-900/60 hover:bg-slate-800 border-slate-800 text-slate-300' 
+                            : 'bg-slate-950/40 border-slate-900 text-slate-600 opacity-60 cursor-not-allowed'
                     }">
                         <div class="flex items-center space-x-3 truncate">
                             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold ${
-                                isCompleted ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'
+                                isCompleted 
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                : isUnlocked 
+                                    ? 'bg-slate-800 text-slate-300' 
+                                    : 'bg-slate-900 text-slate-600'
                             }">
-                                ${isCompleted ? '✓' : idx + 1}
+                                ${isCompleted ? '✓' : isUnlocked ? idx + 1 : '<i class="fa-solid fa-lock text-[10px]"></i>'}
                             </span>
                             <div class="truncate">
-                                ${lesson.unit_title ? `<span class="text-[10px] text-brand-400 font-mono block">${lesson.unit_title}</span>` : ''}
-                                <span class="text-xs font-medium truncate">${lesson.title}</span>
+                                <span class="text-xs font-medium truncate block">${lesson.title}</span>
+                                <span class="text-[10px] ${isCompleted ? 'text-emerald-400' : isUnlocked ? 'text-amber-400' : 'text-slate-600'} font-mono">
+                                    ${isCompleted ? 'Test Passed' : isUnlocked ? 'Test Pending' : 'Locked'}
+                                </span>
                             </div>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                        <i class="fa-solid ${isUnlocked ? 'fa-chevron-right' : 'fa-lock'} text-[10px] ${isUnlocked ? 'text-slate-500' : 'text-slate-700'}"></i>
                     </div>
                 `;
             }).join('');
+
+            updateCertificateLockStatus();
         }
 
-        // Load specific lesson video & metadata
+        function showLockedLessonAlert() {
+            alert("This module is locked! Pass the test in the previous lesson to unlock this lesson.");
+        }
+
+        // Update Certificate Lock Status in Sidebar
+        function updateCertificateLockStatus() {
+            const prog = userProgressMap[activeCourse.id] || { completedLessons: [], finalExamPassed: false };
+            const total = activeCourse.lessons.length;
+            const allLessonsDone = prog.completedLessons.length >= total;
+
+            const lockMsg = document.getElementById('certLockMessage');
+            const actionBtn = document.getElementById('certActionButton');
+            const actionIcon = document.getElementById('certActionIcon');
+            const actionText = document.getElementById('certActionText');
+
+            if (prog.finalExamPassed) {
+                // Fully unlocked!
+                lockMsg.innerText = "Congratulations! Your course certificate is issued and verified.";
+                actionBtn.className = "w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer";
+                actionIcon.className = "fa-solid fa-award text-amber-300 text-sm";
+                actionText.innerText = "View / Download Certificate";
+            } else if (allLessonsDone) {
+                // All lessons passed, ready for Final Exam
+                lockMsg.innerText = "All lesson tests passed! Take the Final Exam to unlock your certificate.";
+                actionBtn.className = "w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer animate-pulse";
+                actionIcon.className = "fa-solid fa-graduation-cap text-white text-sm";
+                actionText.innerText = "Take Final Course Exam";
+            } else {
+                // Locked
+                lockMsg.innerText = "Pass all module tests to unlock the Final Exam & official certificate!";
+                actionBtn.className = "w-full py-2.5 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs transition flex items-center justify-center gap-2 cursor-not-allowed";
+                actionIcon.className = "fa-solid fa-lock text-slate-500 text-sm";
+                actionText.innerText = "Certificate Locked";
+            }
+        }
+
+        // Load specific lesson
         function loadLesson(index) {
             if (!activeCourse || !activeCourse.lessons[index]) return;
             
+            activeLessonIndex = index;
             activeLesson = activeCourse.lessons[index];
-            activeLesson._index = index;
 
             document.getElementById('currentLessonTitle').innerText = activeLesson.title;
-            document.getElementById('currentLessonDesc').innerText = activeLesson.description || "Follow along with Codenix & MRC instructors.";
-            document.getElementById('lessonCodeSnippet').innerText = activeLesson.code_snippet || "// Code sandbox snippet loading...";
+            document.getElementById('currentLessonDesc').innerText = activeLesson.description || "Follow along with the lesson content.";
+            document.getElementById('lessonCodeSnippet').innerText = activeLesson.code_snippet || "// Interactive snippet...";
             document.getElementById('videoPlayerIframe').src = activeLesson.video_url;
 
+            const prog = userProgressMap[activeCourse.id] || { completedLessons: [] };
+            const isCompleted = prog.completedLessons.includes(index);
+
+            const tag = document.getElementById('lessonStatusTag');
+            const passedBadge = document.getElementById('quizPassedBadge');
+
+            if (isCompleted) {
+                tag.innerText = "Passed";
+                tag.className = "px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                passedBadge.classList.remove('hidden');
+            } else {
+                tag.innerText = "Test Pending";
+                tag.className = "px-3 py-1 rounded-full text-xs font-mono font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                passedBadge.classList.add('hidden');
+            }
+
+            renderLessonQuiz();
             renderLessonsPlaylist();
+            switchLessonTab('info');
         }
 
-        // Toggle completion status of current lesson
-        function toggleCurrentLessonCompletion() {
-            if (!activeCourse || activeLesson === null) return;
+        // Switch between Video Material and Quiz
+        function switchLessonTab(tab) {
+            const infoPane = document.getElementById('lessonInfoPane');
+            const quizPane = document.getElementById('lessonQuizPane');
+            const tabVideoBtn = document.getElementById('tabVideoBtn');
+            const tabQuizBtn = document.getElementById('tabQuizBtn');
 
-            const idx = activeLesson._index;
-            if (!userProgressMap[activeCourse.id]) {
-                userProgressMap[activeCourse.id] = [];
-            }
-
-            const arr = userProgressMap[activeCourse.id];
-            const foundIndex = arr.indexOf(idx);
-
-            if (foundIndex > -1) {
-                arr.splice(foundIndex, 1);
+            if (tab === 'quiz') {
+                infoPane.classList.add('hidden');
+                quizPane.classList.remove('hidden');
+                tabQuizBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white transition flex items-center gap-2 shadow-md";
+                tabVideoBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-2";
             } else {
-                arr.push(idx);
+                infoPane.classList.remove('hidden');
+                quizPane.classList.add('hidden');
+                tabVideoBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white transition flex items-center gap-2 shadow-md";
+                tabQuizBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-2";
+            }
+        }
+
+        // Render Lesson Quiz HTML
+        function renderLessonQuiz() {
+            const container = document.getElementById('quizContainer');
+            if (!activeLesson || !activeLesson.quiz || activeLesson.quiz.length === 0) {
+                container.innerHTML = `<div class="text-slate-400 text-xs py-4">No test questions required for this lesson.</div>`;
+                return;
             }
 
-            renderLessonsPlaylist();
+            container.innerHTML = activeLesson.quiz.map((q, qIdx) => {
+                return `
+                    <div class="space-y-3 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                        <div class="text-xs font-semibold text-white flex items-start gap-2">
+                            <span class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono text-[10px]">Q${qIdx + 1}</span>
+                            <span>${q.question}</span>
+                        </div>
+                        <div class="space-y-2 pl-2">
+                            ${q.options.map((opt, oIdx) => `
+                                <label class="flex items-center space-x-3 p-2.5 rounded-lg bg-slate-950/60 hover:bg-slate-800 border border-slate-800/80 cursor-pointer text-xs text-slate-300 transition">
+                                    <input type="radio" name="lesson_q_${qIdx}" value="${oIdx}" class="accent-amber-500 w-4 h-4">
+                                    <span>${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
 
-            if (arr.length === activeCourse.lessons.length) {
+            document.getElementById('quizResultFeedback').innerText = "Select answers for all questions and submit.";
+        }
+
+        // Submit Lesson Quiz
+        function submitLessonQuiz() {
+            if (!activeLesson || !activeLesson.quiz) return;
+
+            let total = activeLesson.quiz.length;
+            let correctCount = 0;
+
+            for (let i = 0; i < total; i++) {
+                const selected = document.querySelector(`input[name="lesson_q_${i}"]:checked`);
+                if (!selected) {
+                    document.getElementById('quizResultFeedback').innerHTML = `<span class="text-rose-400 font-bold">Please answer all questions before submitting!</span>`;
+                    return;
+                }
+                if (parseInt(selected.value, 10) === activeLesson.quiz[i].answerIndex) {
+                    correctCount++;
+                }
+            }
+
+            if (correctCount === total) {
+                // Passed!
+                const prog = userProgressMap[activeCourse.id];
+                if (!prog.completedLessons.includes(activeLessonIndex)) {
+                    prog.completedLessons.push(activeLessonIndex);
+                }
+
+                document.getElementById('quizResultFeedback').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Passed 100%! Next module unlocked!</span>`;
+                
                 confetti({
-                    particleCount: 80,
-                    spread: 70,
+                    particleCount: 60,
+                    spread: 60,
                     origin: { y: 0.6 }
                 });
+
+                renderLessonsPlaylist();
+                
+                setTimeout(() => {
+                    switchLessonTab('info');
+                    loadLesson(activeLessonIndex);
+                }, 1200);
+
+            } else {
+                document.getElementById('quizResultFeedback').innerHTML = `<span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Score: ${correctCount}/${total}. Please review material and try again.</span>`;
+            }
+        }
+
+        function handleCertAction() {
+            const prog = userProgressMap[activeCourse.id] || { completedLessons: [], finalExamPassed: false };
+            const total = activeCourse.lessons.length;
+
+            if (prog.finalExamPassed) {
+                openCertificateModal();
+            } else if (prog.completedLessons.length >= total) {
+                openFinalExamModal();
+            } else {
+                alert("The certificate is locked! Complete all lesson tests first.");
+            }
+        }
+
+        // Open Final Exam Modal
+        function openFinalExamModal() {
+            if (!activeCourse) return;
+
+            document.getElementById('finalExamCourseTitle').innerText = `${activeCourse.title} - Final Exam`;
+            
+            // Aggregate all quiz questions from all lessons
+            let allQuestions = [];
+            activeCourse.lessons.forEach((l, lIdx) => {
+                if (l.quiz) {
+                    l.quiz.forEach(q => {
+                        allQuestions.push({
+                            ...q,
+                            lessonTitle: l.title
+                        });
+                    });
+                }
+            });
+
+            const container = document.getElementById('finalExamQuestionsContainer');
+            container.innerHTML = allQuestions.map((q, idx) => {
+                return `
+                    <div class="space-y-3 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                        <div class="text-xs font-semibold text-white space-y-1">
+                            <span class="text-[10px] text-brand-400 font-mono block">${q.lessonTitle}</span>
+                            <span>Q${idx + 1}: ${q.question}</span>
+                        </div>
+                        <div class="space-y-2 pl-2">
+                            ${q.options.map((opt, oIdx) => `
+                                <label class="flex items-center space-x-3 p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 border border-slate-800 cursor-pointer text-xs text-slate-300 transition">
+                                    <input type="radio" name="final_q_${idx}" value="${oIdx}" class="accent-brand-500 w-4 h-4">
+                                    <span>${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('finalExamModal').classList.remove('hidden');
+        }
+
+        function closeFinalExamModal() {
+            document.getElementById('finalExamModal').classList.add('hidden');
+        }
+
+        // Submit Final Exam
+        function submitFinalExam() {
+            let allQuestions = [];
+            activeCourse.lessons.forEach(l => {
+                if (l.quiz) {
+                    l.quiz.forEach(q => allQuestions.push(q));
+                }
+            });
+
+            let correctCount = 0;
+            for (let i = 0; i < allQuestions.length; i++) {
+                const selected = document.querySelector(`input[name="final_q_${i}"]:checked`);
+                if (!selected) {
+                    document.getElementById('finalExamFeedback').innerHTML = `<span class="text-rose-400 font-bold">Please answer all final exam questions!</span>`;
+                    return;
+                }
+                if (parseInt(selected.value, 10) === allQuestions[i].answerIndex) {
+                    correctCount++;
+                }
+            }
+
+            if (correctCount === allQuestions.length) {
+                userProgressMap[activeCourse.id].finalExamPassed = true;
+                closeFinalExamModal();
+                updateCertificateLockStatus();
+                openCertificateModal();
+            } else {
+                document.getElementById('finalExamFeedback').innerHTML = `<span class="text-rose-400 font-bold">Score: ${correctCount}/${allQuestions.length}. Review lesson concepts and retry.</span>`;
             }
         }
 
@@ -854,7 +1279,10 @@
         function openCertificateModal() {
             if (!activeCourse) return;
 
-            document.getElementById('certUserName').innerText = currentUser.name || "Academy Student";
+            // Student username in strictly pure white text
+            const nameElem = document.getElementById('certUserName');
+            nameElem.innerText = currentUser.name || "Academy Student";
+
             document.getElementById('certCourseTitle').innerText = activeCourse.title;
             document.getElementById('certIssueDate').innerText = new Date().toISOString().split('T')[0];
             document.getElementById('certUniqueId').innerText = `CDNX-MRC-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -862,8 +1290,8 @@
             document.getElementById('certificateModal').classList.remove('hidden');
 
             confetti({
-                particleCount: 100,
-                spread: 100,
+                particleCount: 120,
+                spread: 90,
                 origin: { y: 0.5 }
             });
         }
@@ -872,7 +1300,7 @@
             document.getElementById('certificateModal').classList.add('hidden');
         }
 
-        // Download Certificate
+        // Download Certificate as PNG Image
         function downloadCertificate() {
             const certElement = document.getElementById('certificateContainer');
             if (!certElement) return;
@@ -882,7 +1310,7 @@
                 backgroundColor: '#0b0f19'
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Codenix_Academy_Certificate_${currentUser.name.replace(/\s+/g, '_')}.png`;
+                link.download = `Codenix_Academy_Certificate_${(currentUser.name || 'Student').replace(/\s+/g, '_')}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
