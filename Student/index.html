@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenix | Student Main ToolKit</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas for timetable download as image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- PDF.js for rendering PDF documents on Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        purpleBrand: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7e22ce',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                            950: '#2e0454',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(12, 4, 24, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9333ea;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c084fc;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.25);
+        }
+        .glow-purple-sm {
+            box-shadow: 0 0 15px -3px rgba(168, 85, 247, 0.2);
+        }
+        .live-card-glow {
+            box-shadow: 0 0 20px 2px rgba(168, 85, 247, 0.5);
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 10px 1px rgba(168, 85, 247, 0.4); }
+            to { box-shadow: 0 0 22px 4px rgba(192, 132, 252, 0.8); }
+        }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-purple-50/70 text-slate-900 dark:bg-[#030108] dark:text-purple-100 min-h-screen flex flex-col font-sans antialiased selection:bg-purple-600 selection:text-white transition-colors duration-300">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] space-y-2 pointer-events-none"></div>
+
+    <!-- Top Mobile Navigation Bar -->
+    <header class="md:hidden bg-white/90 dark:bg-zinc-950/90 border-b border-purple-100 dark:border-purple-950/80 px-4 py-3 flex items-center justify-between sticky top-0 z-30 glass-panel">
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleMobileSidebar()" class="p-2 rounded-xl text-purple-950 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-950/60 focus:outline-none">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-700 to-fuchsia-500 flex items-center justify-center text-white font-bold text-base shadow-md">
+                    C
+                </div>
+                <span class="font-bold text-base tracking-wide text-purple-950 dark:text-white">CODENIX</span>
+            </div>
+        </div>
+        <button onclick="toggleTheme()" class="p-2 rounded-xl text-purple-900 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-950/60">
+            <i id="mobile-theme-icon" class="fa-solid fa-moon text-base"></i>
+        </button>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Sidebar Backdrop for Mobile -->
+        <div id="sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden md:hidden transition-opacity duration-300"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 md:w-64 bg-white dark:bg-zinc-950 border-r border-purple-100 dark:border-purple-950/80 flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300 ease-in-out -translate-x-full md:translate-x-0">
+            <div>
+                <!-- Sidebar Header -->
+                <div class="p-4 flex items-center justify-between border-b border-purple-100 dark:border-purple-950/80">
+                    <div class="flex items-center space-x-3 sidebar-text">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-700 to-fuchsia-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-600/30 shrink-0">
+                            C
+                        </div>
+                        <div class="overflow-hidden">
+                            <h1 class="font-bold text-lg tracking-wide text-purple-950 dark:text-white leading-tight truncate">CODENIX</h1>
+                            <p class="text-[11px] text-purple-600 dark:text-purple-400 font-medium tracking-wider uppercase truncate">Toolkit</p>
+                        </div>
+                    </div>
+
+                    <!-- Collapse Desktop Sidebar Button -->
+                    <button onclick="toggleDesktopSidebar()" class="hidden md:flex p-2 rounded-xl text-purple-800 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/60 transition">
+                        <i id="sidebar-collapse-icon" class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <!-- Close Mobile Sidebar Button -->
+                    <button onclick="closeMobileSidebar()" class="md:hidden p-2 rounded-xl text-purple-800 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/60">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="p-3 space-y-1.5">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" title="Dashboard" class="nav-btn active w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-purple-200 hover:bg-purple-100/70 dark:hover:bg-purple-950/50 hover:text-purple-950 dark:hover:text-white">
+                        <i class="fa-solid fa-chart-pie w-5 text-center text-purple-600 dark:text-purple-400 text-base shrink-0"></i>
+                        <span class="font-medium text-sm sidebar-text truncate">Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('timetable')" id="nav-timetable" title="Timetable" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-purple-200 hover:bg-purple-100/70 dark:hover:bg-purple-950/50 hover:text-purple-950 dark:hover:text-white">
+                        <i class="fa-solid fa-calendar-days w-5 text-center text-fuchsia-500 dark:text-fuchsia-400 text-base shrink-0"></i>
+                        <span class="font-medium text-sm sidebar-text truncate">Timetable</span>
+                    </button>
+                    <button onclick="switchTab('flexnotes')" id="nav-flexnotes" title="FlexNotes Canvas" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-purple-200 hover:bg-purple-100/70 dark:hover:bg-purple-950/50 hover:text-purple-950 dark:hover:text-white">
+                        <i class="fa-solid fa-pen-ruler w-5 text-center text-pink-500 dark:text-pink-400 text-base shrink-0"></i>
+                        <span class="font-medium text-sm sidebar-text truncate">FlexNotes</span>
+                    </button>
+                    <button onclick="switchTab('pomodoro')" id="nav-pomodoro" title="Pomodoro Timer" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-purple-200 hover:bg-purple-100/70 dark:hover:bg-purple-950/50 hover:text-purple-950 dark:hover:text-white">
+                        <i class="fa-solid fa-stopwatch w-5 text-center text-rose-500 dark:text-rose-400 text-base shrink-0"></i>
+                        <span class="font-medium text-sm sidebar-text truncate">Pomodoro</span>
+                    </button>
+                    <button onclick="switchTab('tasks')" id="nav-tasks" title="Task Manager" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-purple-200 hover:bg-purple-100/70 dark:hover:bg-purple-950/50 hover:text-purple-950 dark:hover:text-white">
+                        <i class="fa-solid fa-list-check w-5 text-center text-violet-600 dark:text-violet-400 text-base shrink-0"></i>
+                        <span class="font-medium text-sm sidebar-text truncate">Tasks</span>
+                    </button>
+                    <button onclick="switchTab('notes')" id="nav-notes" title="Notes Manager" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-purple-200 hover:bg-purple-100/70 dark:hover:bg-purple-950/50 hover:text-purple-950 dark:hover:text-white">
+                        <i class="fa-solid fa-note-sticky w-5 text-center text-amber-500 dark:text-amber-400 text-base shrink-0"></i>
+                        <span class="font-medium text-sm sidebar-text truncate">Notes</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- System Controls Footer -->
+            <div class="p-3 border-t border-purple-100 dark:border-purple-950/80 bg-purple-50/50 dark:bg-black/40 space-y-2">
+                <button onclick="toggleTheme()" title="Toggle Dark/Light Mode" class="w-full text-xs bg-purple-100/80 hover:bg-purple-200 dark:bg-purple-950/60 dark:hover:bg-purple-900 text-purple-950 dark:text-purple-200 py-2.5 rounded-xl transition border border-purple-200 dark:border-purple-900/80 flex items-center justify-center gap-2 font-medium">
+                    <i id="theme-icon" class="fa-solid fa-moon text-sm shrink-0"></i>
+                    <span id="theme-text" class="sidebar-text truncate">Switch Theme</span>
+                </button>
+
+                <div class="sidebar-text flex items-center justify-between text-xs text-purple-800 dark:text-purple-400 px-2 py-0.5">
+                    <span class="truncate">Local Storage</span>
+                    <span id="storage-status" class="text-emerald-600 dark:text-emerald-400 font-semibold shrink-0"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Saved</span>
+                </div>
+                
+                <div class="sidebar-text grid grid-cols-2 gap-2">
+                    <button onclick="exportAllData()" title="Backup Data to JSON" class="text-[11px] bg-white dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 py-2 rounded-lg transition border border-purple-200 dark:border-purple-900/60 flex items-center justify-center gap-1 font-medium">
+                        <i class="fa-solid fa-download"></i> Backup
+                    </button>
+                    <label title="Restore Data from JSON" class="text-[11px] bg-white dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 py-2 rounded-lg transition border border-purple-200 dark:border-purple-900/60 flex items-center justify-center gap-1 cursor-pointer font-medium">
+                        <i class="fa-solid fa-upload"></i> Restore
+                        <input type="file" id="import-file" class="hidden" onchange="importAllData(event)">
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto h-[calc(100vh-57px)] md:h-screen p-4 md:p-8 bg-purple-50/40 dark:bg-[#030108] transition-all">
+            
+            <!-- Dynamic Header Bar -->
+            <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white/80 dark:bg-zinc-950/70 p-5 rounded-2xl border border-purple-100 dark:border-purple-950/90 shadow-sm glass-panel glow-purple-sm">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold text-purple-950 dark:text-white tracking-tight">Dashboard</h2>
+                    <p id="page-subtitle" class="text-xs sm:text-sm text-purple-800/70 dark:text-purple-300/70 mt-0.5">Welcome back! Here is your study overview.</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-left sm:text-right bg-purple-50 dark:bg-purple-950/40 px-4 py-2 rounded-xl border border-purple-100 dark:border-purple-900/50">
+                        <div id="live-clock" class="text-base sm:text-lg font-mono font-bold text-purple-700 dark:text-purple-400">00:00:00</div>
+                        <div id="live-date" class="text-[11px] text-purple-900/60 dark:text-purple-300/60 font-medium">Loading date...</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD TAB -->
+            <section id="tab-dashboard" class="tab-content animate-fade-in space-y-6">
+                <!-- Stats Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-zinc-950/80 border border-purple-100 dark:border-purple-950/80 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:-translate-y-0.5 transition-all">
+                        <div>
+                            <p class="text-xs text-purple-800/70 dark:text-purple-400 font-medium">Classes Today</p>
+                            <h3 id="stat-today-classes" class="text-2xl font-bold text-purple-950 dark:text-white mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-zinc-950/80 border border-purple-100 dark:border-purple-950/80 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:-translate-y-0.5 transition-all">
+                        <div>
+                            <p class="text-xs text-purple-800/70 dark:text-purple-400 font-medium">FlexNotes Saved</p>
+                            <h3 id="stat-flexnotes-count" class="text-2xl font-bold text-purple-950 dark:text-white mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-950/80 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-pen-ruler"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-zinc-950/80 border border-purple-100 dark:border-purple-950/80 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:-translate-y-0.5 transition-all">
+                        <div>
+                            <p class="text-xs text-purple-800/70 dark:text-purple-400 font-medium">Pomodoro Sessions</p>
+                            <h3 id="stat-pomo-count" class="text-2xl font-bold text-purple-950 dark:text-white mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-zinc-950/80 border border-purple-100 dark:border-purple-950/80 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:-translate-y-0.5 transition-all">
+                        <div>
+                            <p class="text-xs text-purple-800/70 dark:text-purple-400 font-medium">Pending Tasks</p>
+                            <h3 id="stat-pending-tasks" class="text-2xl font-bold text-purple-950 dark:text-white mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-950/80 text-violet-600 dark:text-violet-400 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Schedule for Today -->
+                    <div class="lg:col-span-2 bg-white dark:bg-zinc-950/70 border border-purple-100 dark:border-purple-950/80 rounded-2xl p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-purple-100 dark:border-purple-950">
+                            <h3 class="font-bold text-purple-950 dark:text-white text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-day text-purple-600 dark:text-purple-400"></i> Today's Schedule
+                            </h3>
+                            <button onclick="switchTab('timetable')" class="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-semibold flex items-center gap-1">
+                                View Timetable <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </button>
+                        </div>
+                        <div id="dashboard-today-schedule" class="space-y-3">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Tasks & Pomodoro Widget -->
+                    <div class="space-y-6">
+                        <!-- Quick Pomodoro -->
+                        <div class="bg-gradient-to-br from-purple-900 via-purple-950 to-zinc-950 text-white border border-purple-800/60 rounded-2xl p-6 text-center shadow-xl relative overflow-hidden">
+                            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-600/20 rounded-full blur-2xl pointer-events-none"></div>
+                            <h3 class="font-bold mb-1 flex items-center justify-center gap-2 text-purple-200">
+                                <i class="fa-solid fa-stopwatch text-purple-400"></i> Quick Focus
+                            </h3>
+                            <div id="dash-pomo-time" class="text-4xl font-mono font-extrabold my-3 tracking-widest text-white drop-shadow">25:00</div>
+                            <div class="flex justify-center gap-2">
+                                <button onclick="switchTab('pomodoro'); startPomodoroTimer();" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-purple-600/30 flex items-center gap-2">
+                                    <i class="fa-solid fa-play"></i> Start Session
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Priority Tasks -->
+                        <div class="bg-white dark:bg-zinc-950/70 border border-purple-100 dark:border-purple-950/80 rounded-2xl p-6 shadow-sm">
+                            <div class="flex items-center justify-between mb-4 pb-3 border-b border-purple-100 dark:border-purple-950">
+                                <h3 class="font-bold text-purple-950 dark:text-white flex items-center gap-2 text-base">
+                                    <i class="fa-solid fa-star text-amber-500 dark:text-amber-400"></i> Priority Tasks
+                                </h3>
+                                <button onclick="switchTab('tasks')" class="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-semibold flex items-center gap-1">
+                                    Manage <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+                            <div id="dashboard-priority-tasks" class="space-y-2">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TIMETABLE TAB -->
+            <section id="tab-timetable" class="tab-content hidden animate-fade-in space-y-6">
+                <!-- Action Toolbar -->
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-zinc-950/70 p-4 rounded-2xl border border-purple-100 dark:border-purple-950 shadow-sm">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openTimetableModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-purple-600/20">
+                            <i class="fa-solid fa-plus"></i> Add Class / Event
+                        </button>
+                        <button onclick="openTextImportModal()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-fuchsia-600/20">
+                            <i class="fa-solid fa-file-import"></i> Quick Text Import
+                        </button>
+                        <button onclick="downloadTimetableImage()" class="bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 font-medium px-4 py-2.5 rounded-xl text-xs sm:text-sm transition border border-purple-200 dark:border-purple-900/60 flex items-center gap-2">
+                            <i class="fa-solid fa-image"></i> Export Image
+                        </button>
+                        <button onclick="window.print()" class="bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 font-medium px-4 py-2.5 rounded-xl text-xs sm:text-sm transition border border-purple-200 dark:border-purple-900/60 flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i> Print
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="timetable-search" onkeyup="renderTimetable()" placeholder="Search subject/instructor..." class="bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl text-xs px-3 py-2 text-purple-950 dark:text-white focus:outline-none focus:border-purple-500 w-36 sm:w-48">
+                        <select id="timetable-day-filter" onchange="renderTimetable()" class="bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl text-xs px-3 py-2 text-purple-950 dark:text-white focus:outline-none focus:border-purple-500">
+                            <option value="all">Full Week</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                        <button onclick="clearTimetable()" class="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 text-xs px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-950 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Exportable Timetable Container -->
+                <div id="timetable-capture-area" class="bg-white dark:bg-zinc-950/80 border border-purple-100 dark:border-purple-950 rounded-2xl p-4 overflow-x-auto shadow-xl">
+                    <div class="min-w-[800px]">
+                        <div id="timetable-grid" class="grid grid-cols-8 gap-2 text-center text-xs">
+                            <!-- Timetable generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FLEXNOTES CANVAS TAB -->
+            <section id="tab-flexnotes" class="tab-content hidden animate-fade-in space-y-4">
+                <!-- FlexNotes Toolbar -->
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-zinc-950/80 p-3 rounded-2xl border border-purple-100 dark:border-purple-950 shadow-sm">
+                    <!-- Tool Selectors -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button onclick="setFlexTool('pen')" id="flex-tool-pen" title="Handwriting Pen" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-600 text-white flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-pen"></i> Pen
+                        </button>
+                        <button onclick="setFlexTool('highlighter')" id="flex-tool-highlighter" title="Highlighter" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-100 dark:bg-zinc-900 text-purple-900 dark:text-purple-300 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-highlighter"></i> Highlight
+                        </button>
+                        <button onclick="setFlexTool('rect')" id="flex-tool-rect" title="Rectangle Shape" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-100 dark:bg-zinc-900 text-purple-900 dark:text-purple-300 flex items-center gap-1.5 transition">
+                            <i class="fa-regular fa-square"></i> Box
+                        </button>
+                        <button onclick="setFlexTool('circle')" id="flex-tool-circle" title="Circle Shape" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-100 dark:bg-zinc-900 text-purple-900 dark:text-purple-300 flex items-center gap-1.5 transition">
+                            <i class="fa-regular fa-circle"></i> Circle
+                        </button>
+                        <button onclick="setFlexTool('line')" id="flex-tool-line" title="Arrow / Line" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-100 dark:bg-zinc-900 text-purple-900 dark:text-purple-300 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-slash"></i> Line
+                        </button>
+                        <button onclick="setFlexTool('text')" id="flex-tool-text" title="Add Mindmap Text" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-100 dark:bg-zinc-900 text-purple-900 dark:text-purple-300 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-font"></i> Text
+                        </button>
+                        <button onclick="setFlexTool('eraser')" id="flex-tool-eraser" title="Eraser" class="flex-tool-btn px-3 py-2 rounded-xl text-xs font-semibold bg-purple-100 dark:bg-zinc-900 text-purple-900 dark:text-purple-300 flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-eraser"></i> Eraser
+                        </button>
+                    </div>
+
+                    <!-- Color & Stroke Options -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-1">
+                            <label class="text-[11px] text-purple-800 dark:text-purple-300 font-medium">Color:</label>
+                            <input type="color" id="flex-color-picker" value="#a855f7" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-0">
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <label class="text-[11px] text-purple-800 dark:text-purple-300 font-medium">Size:</label>
+                            <input type="range" id="flex-stroke-size" min="1" max="25" value="3" class="w-20 accent-purple-600">
+                        </div>
+
+                        <!-- PDF Upload & Export Actions -->
+                        <div class="flex items-center gap-2">
+                            <label class="bg-pink-600 hover:bg-pink-700 text-white font-medium px-3 py-2 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-lg shadow-pink-600/20">
+                                <i class="fa-solid fa-file-pdf"></i> Upload PDF/Doc
+                                <input type="file" id="flex-pdf-input" accept="application/pdf,image/*" class="hidden" onchange="handleFlexPdfUpload(event)">
+                            </label>
+                            <button onclick="downloadFlexCanvas()" class="bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 font-medium px-3 py-2 rounded-xl text-xs transition border border-purple-200 dark:border-purple-900/60 flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> Save Image
+                            </button>
+                            <button onclick="clearFlexCanvas()" class="text-rose-600 dark:text-rose-400 p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 transition" title="Clear Canvas">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Workspace Container -->
+                <div class="relative bg-white dark:bg-zinc-950 border border-purple-100 dark:border-purple-950 rounded-2xl overflow-hidden shadow-xl min-h-[500px] flex items-center justify-center">
+                    <canvas id="flex-notes-canvas" class="cursor-crosshair block max-w-full"></canvas>
+                    
+                    <div id="pdf-page-controls" class="hidden absolute bottom-4 right-4 bg-zinc-900/90 text-white px-3 py-1.5 rounded-xl border border-purple-800/80 backdrop-blur flex items-center gap-3 text-xs z-20 shadow-xl">
+                        <button onclick="changePdfPage(-1)" class="hover:text-purple-400"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="pdf-page-num">Page 1 / 1</span>
+                        <button onclick="changePdfPage(1)" class="hover:text-purple-400"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- POMODORO TAB -->
+            <section id="tab-pomodoro" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="max-w-2xl mx-auto bg-white dark:bg-zinc-950/80 border border-purple-100 dark:border-purple-950 rounded-3xl p-6 sm:p-8 text-center space-y-8 backdrop-blur shadow-xl glow-purple">
+                    <!-- Mode Switcher -->
+                    <div class="flex justify-center gap-2 p-1.5 bg-purple-50 dark:bg-zinc-900/90 rounded-2xl max-w-sm mx-auto border border-purple-200 dark:border-purple-900/60">
+                        <button onclick="setPomoMode('work')" id="pomo-mode-work" class="flex-1 py-2 rounded-xl text-xs font-bold transition text-white bg-purple-600 shadow">Work</button>
+                        <button onclick="setPomoMode('shortBreak')" id="pomo-mode-short" class="flex-1 py-2 rounded-xl text-xs font-bold transition text-purple-900 dark:text-purple-300 hover:text-purple-600">Short Break</button>
+                        <button onclick="setPomoMode('longBreak')" id="pomo-mode-long" class="flex-1 py-2 rounded-xl text-xs font-bold transition text-purple-900 dark:text-purple-300 hover:text-purple-600">Long Break</button>
+                    </div>
+
+                    <!-- Circular Timer Display -->
+                    <div class="relative w-60 h-60 sm:w-64 sm:h-64 mx-auto flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90 drop-shadow-md" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="5" class="text-purple-100 dark:text-zinc-900" fill="transparent" />
+                            <circle id="pomo-progress-ring" cx="50" cy="50" r="44" stroke="currentColor" stroke-width="5" class="text-purple-600 dark:text-purple-500 transition-all duration-1000" fill="transparent" stroke-dasharray="276.46" stroke-dashoffset="0" stroke-linecap="round" />
+                        </svg>
+                        
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="pomo-timer-display" class="text-5xl font-mono font-extrabold text-purple-950 dark:text-white tracking-wider">25:00</span>
+                            <span id="pomo-current-label" class="text-xs text-purple-600 dark:text-purple-400 font-bold uppercase tracking-widest mt-2">Focus Time</span>
+                        </div>
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="flex justify-center items-center gap-3">
+                        <button onclick="adjustPomoMinutes(-5)" title="Subtract 5 mins" class="p-3 bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 rounded-2xl border border-purple-200 dark:border-purple-900 text-xs font-bold">
+                            -5m
+                        </button>
+                        <button onclick="togglePomodoroTimer()" id="pomo-start-btn" class="w-36 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-purple-600/30 transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> <span>Start</span>
+                        </button>
+                        <button onclick="resetPomodoroTimer()" title="Reset Timer" class="p-3.5 bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 rounded-2xl border border-purple-200 dark:border-purple-900 transition">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <button onclick="adjustPomoMinutes(5)" title="Add 5 mins" class="p-3 bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 rounded-2xl border border-purple-200 dark:border-purple-900 text-xs font-bold">
+                            +5m
+                        </button>
+                    </div>
+
+                    <!-- Settings Box -->
+                    <div class="pt-6 border-t border-purple-100 dark:border-purple-900/60 grid grid-cols-3 gap-4 text-left">
+                        <div>
+                            <label class="block text-xs text-purple-900 dark:text-purple-300 font-medium mb-1">Work (min)</label>
+                            <input type="number" id="pomo-work-input" value="25" min="1" max="120" onchange="updatePomoSettings()" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-1.5 text-xs text-purple-950 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-purple-900 dark:text-purple-300 font-medium mb-1">Short Break</label>
+                            <input type="number" id="pomo-short-input" value="5" min="1" max="60" onchange="updatePomoSettings()" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-1.5 text-xs text-purple-950 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-purple-900 dark:text-purple-300 font-medium mb-1">Long Break</label>
+                            <input type="number" id="pomo-long-input" value="15" min="1" max="60" onchange="updatePomoSettings()" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-1.5 text-xs text-purple-950 dark:text-white">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TASK MANAGER TAB -->
+            <section id="tab-tasks" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-950/70 p-4 rounded-2xl border border-purple-100 dark:border-purple-950 shadow-sm">
+                    <!-- Add Task Form -->
+                    <form id="task-form" onsubmit="handleAddTask(event)" class="flex-1 flex flex-wrap sm:flex-nowrap gap-2 w-full">
+                        <input type="text" id="task-title-input" placeholder="Add a new task..." required class="flex-1 bg-purple-50/50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-4 py-2.5 text-sm text-purple-950 dark:text-white focus:outline-none focus:border-purple-500">
+                        <input type="date" id="task-date-input" class="bg-purple-50/50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2.5 text-sm text-purple-950 dark:text-white focus:outline-none">
+                        <select id="task-priority-input" class="bg-purple-50/50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2.5 text-sm text-purple-950 dark:text-white">
+                            <option value="low">Low Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="high">High Priority</option>
+                        </select>
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition shadow-lg shadow-purple-600/20 shrink-0">
+                            <i class="fa-solid fa-plus mr-1"></i> Add
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Task Filter Tabs -->
+                <div class="flex items-center justify-between border-b border-purple-100 dark:border-purple-950 pb-3">
+                    <div class="flex gap-2">
+                        <button onclick="setTaskFilter('all')" id="task-filter-all" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-600/10 text-purple-700 dark:text-purple-300">All Tasks</button>
+                        <button onclick="setTaskFilter('pending')" id="task-filter-pending" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-purple-900/70 dark:text-purple-400 hover:text-purple-600">Pending</button>
+                        <button onclick="setTaskFilter('completed')" id="task-filter-completed" class="text-xs font-semibold px-3 py-1.5 rounded-lg text-purple-900/70 dark:text-purple-400 hover:text-purple-600">Completed</button>
+                    </div>
+                    <span id="task-count-badge" class="text-xs text-purple-800 dark:text-purple-400 font-medium">0 Tasks</span>
+                </div>
+
+                <!-- Task List -->
+                <div id="tasks-list" class="space-y-2">
+                    <!-- Task items rendered via JS -->
+                </div>
+            </section>
+
+            <!-- NOTES MANAGER TAB -->
+            <section id="tab-notes" class="tab-content hidden animate-fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-14rem)] md:h-[calc(100vh-12rem)]">
+                    <!-- Notes Sidebar -->
+                    <div class="bg-white dark:bg-zinc-950/70 border border-purple-100 dark:border-purple-950 rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-sm">
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-purple-950 dark:text-white text-sm">All Notes</h3>
+                                <button onclick="createNewNote()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                    <i class="fa-solid fa-plus"></i> New Note
+                                </button>
+                            </div>
+                            <input type="text" id="notes-search-input" onkeyup="renderNotesList()" placeholder="Search notes..." class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-xs text-purple-950 dark:text-white focus:outline-none">
+                        </div>
+
+                        <!-- Scrollable Notes List -->
+                        <div id="notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Notes Editor Area -->
+                    <div id="note-editor-container" class="md:col-span-2 bg-white dark:bg-zinc-950/70 border border-purple-100 dark:border-purple-950 rounded-2xl p-6 flex flex-col shadow-sm">
+                        <div id="no-note-selected" class="flex-1 flex flex-col items-center justify-center text-purple-900/40 dark:text-purple-400/40">
+                            <i class="fa-solid fa-book-open text-4xl mb-2"></i>
+                            <p class="text-sm">Select a note or create a new one to start writing</p>
+                        </div>
+
+                        <div id="active-note-editor" class="hidden flex-1 flex flex-col space-y-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <input type="text" id="note-title-input" oninput="saveCurrentNote()" placeholder="Note Title..." class="flex-1 bg-transparent text-xl font-bold text-purple-950 dark:text-white focus:outline-none border-b border-purple-200 dark:border-purple-900 pb-2">
+                                <div class="flex gap-2">
+                                    <button onclick="downloadActiveNote()" class="text-xs bg-purple-100 hover:bg-purple-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-purple-950 dark:text-purple-200 px-3 py-1.5 rounded-lg transition border border-purple-200 dark:border-purple-900/60">
+                                        <i class="fa-solid fa-download mr-1"></i> Download
+                                    </button>
+                                    <button onclick="deleteActiveNote()" class="text-xs bg-rose-100 dark:bg-rose-950/50 hover:bg-rose-200 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 px-3 py-1.5 rounded-lg transition">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 text-xs text-purple-700 dark:text-purple-400">
+                                <i class="fa-solid fa-tag text-purple-500"></i>
+                                <input type="text" id="note-tag-input" oninput="saveCurrentNote()" placeholder="Add category / tag..." class="bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-lg px-2 py-1 text-xs text-purple-900 dark:text-purple-300">
+                                <span id="note-last-saved" class="ml-auto text-[11px] text-purple-400">Saved</span>
+                            </div>
+
+                            <textarea id="note-body-input" oninput="saveCurrentNote()" placeholder="Write your notes here..." class="flex-1 w-full bg-purple-50/40 dark:bg-zinc-900/80 border border-purple-200/80 dark:border-purple-900/60 rounded-xl p-4 text-sm text-purple-950 dark:text-purple-100 focus:outline-none resize-none leading-relaxed font-sans"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: ADD / EDIT TIMETABLE ITEM -->
+    <div id="timetable-modal" class="fixed inset-0 bg-purple-950/40 dark:bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-zinc-950 border border-purple-200 dark:border-purple-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center border-b border-purple-100 dark:border-purple-900 pb-3">
+                <h3 id="modal-timetable-title" class="text-lg font-bold text-purple-950 dark:text-white">Add Class to Timetable</h3>
+                <button onclick="closeTimetableModal()" class="text-purple-500 hover:text-purple-950 dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="timetable-form" onsubmit="handleSaveTimetableSlot(event)" class="space-y-4">
+                <input type="hidden" id="tt-slot-id">
+                <div>
+                    <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Subject Name *</label>
+                    <input type="text" id="tt-subject" required placeholder="e.g. Computer Science, Physics" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Day *</label>
+                        <select id="tt-day" required class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Card Color</label>
+                        <select id="tt-color" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                            <option value="purple">Purple</option>
+                            <option value="fuchsia">Fuchsia</option>
+                            <option value="rose">Rose</option>
+                            <option value="amber">Amber</option>
+                            <option value="violet">Violet</option>
+                            <option value="cyan">Cyan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Start Time *</label>
+                        <input type="time" id="tt-start-time" required class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">End Time *</label>
+                        <input type="time" id="tt-end-time" required class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Room / Location</label>
+                        <input type="text" id="tt-room" placeholder="e.g. Lab 4B" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-purple-900 dark:text-purple-300 mb-1">Instructor</label>
+                        <input type="text" id="tt-instructor" placeholder="e.g. AHMED" class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl px-3 py-2 text-sm text-purple-950 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-purple-100 dark:border-purple-900">
+                    <button type="button" onclick="closeTimetableModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-purple-900 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-zinc-800">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white">Save Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: QUICK TEXT TIMETABLE IMPORT -->
+    <div id="text-import-modal" class="fixed inset-0 bg-purple-950/40 dark:bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-zinc-950 border border-purple-200 dark:border-purple-900 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center border-b border-purple-100 dark:border-purple-900 pb-3">
+                <h3 class="text-lg font-bold text-purple-950 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-import text-fuchsia-500"></i> Import Codenix Text Schedule
+                </h3>
+                <button onclick="closeTextImportModal()" class="text-purple-500 hover:text-purple-950 dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-xs text-purple-900/80 dark:text-purple-300/80">
+                    Paste your schedule text line by line. Supports standard Codenix formats:
+                </p>
+                <div class="bg-purple-50 dark:bg-zinc-900/80 p-3 rounded-xl text-[11px] font-mono text-purple-950 dark:text-purple-200 border border-purple-200 dark:border-purple-900">
+                    Monday : " Math : 4:00 - 5:00 - AHMED "<br>
+                    Tuesday : " Physics : 10:00 - 11:30 - Dr. Sarah : Hall B "<br>
+                    Wednesday : CS50 : 14:00 - 15:30 - Prof. Smith
+                </div>
+
+                <textarea id="text-import-input" rows="6" placeholder='Monday : " Math : 4:00 - 5:00 - AHMED "' class="w-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-purple-900/80 rounded-xl p-3 text-xs text-purple-950 dark:text-white font-mono focus:outline-none focus:border-purple-500 resize-none"></textarea>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-purple-100 dark:border-purple-900">
+                <button onclick="loadSampleTextSchedule()" class="text-xs text-purple-600 dark:text-purple-400 hover:underline font-medium">Load Example Text</button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeTextImportModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-purple-900 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-zinc-800">Cancel</button>
+                    <button type="button" onclick="parseAndImportTextSchedule()" class="px-4 py-2 rounded-xl text-xs font-bold bg-fuchsia-600 hover:bg-fuchsia-700 text-white shadow-lg shadow-fuchsia-600/20">Import Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // COLOR SCHEME MAP FOR CARD VISIBILITY
+        const CARD_COLOR_MAP = {
+            purple: 'bg-purple-100/90 dark:bg-purple-950/80 border-purple-300 dark:border-purple-800 text-purple-950 dark:text-purple-100',
+            fuchsia: 'bg-fuchsia-100/90 dark:bg-fuchsia-950/80 border-fuchsia-300 dark:border-fuchsia-800 text-fuchsia-950 dark:text-fuchsia-100',
+            rose: 'bg-rose-100/90 dark:bg-rose-950/80 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100',
+            amber: 'bg-amber-100/90 dark:bg-amber-950/80 border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-100',
+            violet: 'bg-violet-100/90 dark:bg-violet-950/80 border-violet-300 dark:border-violet-800 text-violet-950 dark:text-violet-100',
+            cyan: 'bg-cyan-100/90 dark:bg-cyan-950/80 border-cyan-300 dark:border-cyan-800 text-cyan-950 dark:text-cyan-100'
+        };
+
+        // GLOBAL APP STATE
+        const CodenixState = {
+            timetable: JSON.parse(localStorage.getItem('codenix_timetable')) || [],
+            tasks: JSON.parse(localStorage.getItem('codenix_tasks')) || [],
+            notes: JSON.parse(localStorage.getItem('codenix_notes')) || [],
+            flexnotesCount: parseInt(localStorage.getItem('codenix_flexnotes_count')) || 0,
+            pomoStats: JSON.parse(localStorage.getItem('codenix_pomo_stats')) || { completedToday: 0, date: new Date().toDateString() },
+            pomoSettings: JSON.parse(localStorage.getItem('codenix_pomo_settings')) || { work: 25, short: 5, long: 15 },
+            theme: localStorage.getItem('codenix_theme') || 'dark',
+            sidebarCollapsed: localStorage.getItem('codenix_sidebar_collapsed') === 'true',
+            activeNoteId: null,
+            taskFilter: 'all'
+        };
+
+        // POMODORO TIMER STATE
+        let pomoInterval = null;
+        let pomoTimeLeft = CodenixState.pomoSettings.work * 60;
+        let pomoTotalTime = CodenixState.pomoSettings.work * 60;
+        let pomoMode = 'work';
+        let pomoIsRunning = false;
+
+        // FLEXNOTES CANVAS STATE
+        let flexCanvas = null;
+        let flexCtx = null;
+        let isFlexDrawing = false;
+        let flexCurrentTool = 'pen'; // pen, highlighter, rect, circle, line, text, eraser
+        let flexStartX = 0;
+        let flexStartY = 0;
+        let flexCanvasSnapshot = null;
+        let pdfDoc = null;
+        let pdfCurrentPage = 1;
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTheme(CodenixState.theme);
+            if (CodenixState.sidebarCollapsed) applyDesktopSidebarCollapse(true);
+            initClock();
+            renderDashboard();
+            renderTimetable();
+            renderTasks();
+            renderNotesList();
+            updatePomoTimerDisplay();
+            initFlexCanvas();
+
+            // Refresh current highlights every 30 seconds
+            setInterval(() => {
+                renderTimetable();
+                renderDashboard();
+            }, 30000);
+
+            if (CodenixState.pomoStats.date !== new Date().toDateString()) {
+                CodenixState.pomoStats = { completedToday: 0, date: new Date().toDateString() };
+                saveState('pomo_stats', CodenixState.pomoStats);
+            }
+        });
+
+        // TOAST NOTIFICATIONS
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const icons = {
+                success: 'fa-circle-check text-emerald-400',
+                error: 'fa-circle-xmark text-rose-400',
+                info: 'fa-circle-info text-purple-400'
+            };
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-900 border border-purple-900/80 text-white text-xs shadow-2xl pointer-events-auto animate-fade-in`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} text-base"></i> <span>${escapeHTML(message)}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // SIDEBAR CONTROL
+        function toggleDesktopSidebar() {
+            CodenixState.sidebarCollapsed = !CodenixState.sidebarCollapsed;
+            localStorage.setItem('codenix_sidebar_collapsed', CodenixState.sidebarCollapsed);
+            applyDesktopSidebarCollapse(CodenixState.sidebarCollapsed);
+        }
+
+        function applyDesktopSidebarCollapse(collapsed) {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('sidebar-collapse-icon');
+            const sidebarTexts = document.querySelectorAll('.sidebar-text');
+
+            if (collapsed) {
+                sidebar.classList.remove('md:w-64');
+                sidebar.classList.add('md:w-20');
+                if (icon) icon.className = 'fa-solid fa-chevron-right text-xs';
+                sidebarTexts.forEach(el => el.classList.add('hidden'));
+            } else {
+                sidebar.classList.remove('md:w-20');
+                sidebar.classList.add('md:w-64');
+                if (icon) icon.className = 'fa-solid fa-chevron-left text-xs';
+                sidebarTexts.forEach(el => el.classList.remove('hidden'));
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+        }
+
+        // THEME MANAGEMENT
+        function toggleTheme() {
+            CodenixState.theme = CodenixState.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('codenix_theme', CodenixState.theme);
+            applyTheme(CodenixState.theme);
+            renderTimetable();
+        }
+
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            const mobileIcon = document.getElementById('mobile-theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (theme === 'dark') {
+                html.classList.add('dark');
+                if (icon) icon.className = 'fa-solid fa-sun text-sm shrink-0';
+                if (mobileIcon) mobileIcon.className = 'fa-solid fa-sun text-base';
+                if (text) text.textContent = 'Light Mode';
+            } else {
+                html.classList.remove('dark');
+                if (icon) icon.className = 'fa-solid fa-moon text-sm shrink-0';
+                if (mobileIcon) mobileIcon.className = 'fa-solid fa-moon text-base';
+                if (text) text.textContent = 'Dark Mode';
+            }
+        }
+
+        // LOCAL STORAGE HELPER
+        function saveState(key, value) {
+            localStorage.setItem(`codenix_${key}`, JSON.stringify(value));
+            const statusEl = document.getElementById('storage-status');
+            statusEl.innerHTML = `<i class="fa-solid fa-check text-[8px] mr-1"></i>Saved`;
+            setTimeout(() => {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle text-[8px] mr-1"></i>Saved`;
+            }, 1200);
+        }
+
+        // CLOCK
+        function initClock() {
+            const clockEl = document.getElementById('live-clock');
+            const dateEl = document.getElementById('live-date');
+            
+            function update() {
+                const now = new Date();
+                clockEl.textContent = now.toLocaleTimeString();
+                dateEl.textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        // NAVIGATION TABS
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-purple-600', 'text-white', 'shadow-lg');
+                el.classList.add('text-slate-700', 'dark:text-purple-200');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.add('bg-purple-600', 'text-white', 'shadow-lg');
+
+            closeMobileSidebar();
+
+            const titles = {
+                dashboard: ['Dashboard', 'Overview of today\'s academic activities'],
+                timetable: ['Timetable Creator', 'Manage and view your weekly schedule'],
+                flexnotes: ['FlexNotes Canvas', 'Handwrite notes, draw mind maps, and annotate PDFs'],
+                pomodoro: ['Pomodoro Focus Timer', 'Boost your productivity with structured intervals'],
+                tasks: ['Task Manager', 'Keep track of assignments and study goals'],
+                notes: ['Notes Manager', 'Quick scratchpad and organized subject notes']
+            };
+            document.getElementById('page-title').textContent = titles[tabId][0];
+            document.getElementById('page-subtitle').textContent = titles[tabId][1];
+
+            if (tabId === 'dashboard') renderDashboard();
+            if (tabId === 'timetable') renderTimetable();
+            if (tabId === 'flexnotes') resizeFlexCanvas();
+        }
+
+        // TIME UTILITY FOR HIGHLIGHTING CURRENT CARD
+        function isCurrentClass(slotDay, startTimeStr, endTimeStr) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const now = new Date();
+            const currentDay = days[now.getDay()];
+
+            if (slotDay.toLowerCase() !== currentDay.toLowerCase()) return false;
+
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const startMinutes = parseTimeToMinutes(startTimeStr);
+            const endMinutes = parseTimeToMinutes(endTimeStr);
+
+            return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+        }
+
+        function parseTimeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const clean = timeStr.trim().toUpperCase();
+            const isPM = clean.includes('PM');
+            const isAM = clean.includes('AM');
+            const raw = clean.replace(/AM|PM/g, '').trim();
+            const parts = raw.split(':');
+            let hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+
+            if (isPM && hours < 12) hours += 12;
+            if (isAM && hours === 12) hours = 0;
+
+            return hours * 60 + minutes;
+        }
+
+        function formatTo24HourStr(timeStr) {
+            const totalMins = parseTimeToMinutes(timeStr);
+            const hrs = Math.floor(totalMins / 60);
+            const mins = totalMins % 60;
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        // DASHBOARD RENDERER
+        function renderDashboard() {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const todayName = days[new Date().getDay()];
+
+            const todayClasses = CodenixState.timetable.filter(slot => slot.day === todayName);
+            document.getElementById('stat-today-classes').textContent = todayClasses.length;
+            
+            const pendingTasks = CodenixState.tasks.filter(t => !t.completed);
+            document.getElementById('stat-pending-tasks').textContent = pendingTasks.length;
+            
+            document.getElementById('stat-pomo-count').textContent = CodenixState.pomoStats.completedToday;
+            document.getElementById('stat-flexnotes-count').textContent = CodenixState.flexnotesCount;
+
+            const scheduleContainer = document.getElementById('dashboard-today-schedule');
+            if (todayClasses.length === 0) {
+                scheduleContainer.innerHTML = `
+                    <div class="text-center py-8 text-purple-800/60 dark:text-purple-400/50 border border-dashed border-purple-200 dark:border-purple-900/60 rounded-xl">
+                        <i class="fa-solid fa-mug-hot text-2xl mb-2"></i>
+                        <p class="text-xs font-medium">No classes scheduled for today (${todayName})!</p>
+                    </div>`;
+            } else {
+                todayClasses.sort((a,b) => parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime));
+                scheduleContainer.innerHTML = todayClasses.map(c => {
+                    const active = isCurrentClass(c.day, c.startTime, c.endTime);
+                    const colorStyle = CARD_COLOR_MAP[c.color] || CARD_COLOR_MAP.purple;
+                    return `
+                    <div class="flex items-center justify-between p-3.5 rounded-xl border ${colorStyle} ${active ? 'ring-2 ring-purple-500 live-card-glow border-purple-400' : ''}">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-sm">${escapeHTML(c.subject)}</h4>
+                                ${active ? `<span class="bg-purple-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wider animate-pulse"><i class="fa-solid fa-circle text-[7px] mr-1"></i>LIVE NOW</span>` : ''}
+                            </div>
+                            <p class="text-xs opacity-80 mt-0.5"><i class="fa-solid fa-clock mr-1"></i>${c.startTime} - ${c.endTime} ${c.room ? '• <i class="fa-solid fa-location-dot mx-1"></i>' + escapeHTML(c.room) : ''}</p>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white/40 dark:bg-black/40 border border-black/10 dark:border-white/10">
+                            ${c.instructor ? escapeHTML(c.instructor) : 'Class'}
+                        </span>
+                    </div>
+                `}).join('');
+            }
+
+            const priorityContainer = document.getElementById('dashboard-priority-tasks');
+            const highPriority = pendingTasks.filter(t => t.priority === 'high' || t.priority === 'medium').slice(0, 4);
+            if (highPriority.length === 0) {
+                priorityContainer.innerHTML = `<p class="text-xs text-purple-800/60 dark:text-purple-400/50 text-center py-4">No priority tasks pending!</p>`;
+            } else {
+                priorityContainer.innerHTML = highPriority.map(t => `
+                    <div class="flex items-center justify-between text-xs bg-purple-50/40 dark:bg-zinc-900/50 p-2.5 rounded-lg border border-purple-100 dark:border-purple-950">
+                        <span class="text-purple-950 dark:text-purple-200 truncate max-w-[160px] font-medium">${escapeHTML(t.title)}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.priority === 'high' ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'}">
+                            ${t.priority.toUpperCase()}
+                        </span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // TIMETABLE LOGIC
+        function renderTimetable() {
+            const grid = document.getElementById('timetable-grid');
+            const dayFilter = document.getElementById('timetable-day-filter').value;
+            const searchVal = (document.getElementById('timetable-search')?.value || '').toLowerCase();
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const displayDays = dayFilter === 'all' ? days : [dayFilter];
+
+            let minHour = 8;
+            let maxHour = 18;
+
+            CodenixState.timetable.forEach(slot => {
+                if (slot.startTime) {
+                    const startH = Math.floor(parseTimeToMinutes(slot.startTime) / 60);
+                    if (!isNaN(startH) && startH < minHour) minHour = startH;
+                }
+                if (slot.endTime) {
+                    const endH = Math.floor(parseTimeToMinutes(slot.endTime) / 60);
+                    if (!isNaN(endH) && endH > maxHour) maxHour = endH;
+                }
+            });
+
+            let html = `
+                <div class="bg-purple-100 dark:bg-zinc-900 font-bold py-3 rounded-xl text-purple-900 dark:text-purple-300">Time</div>
+                ${displayDays.map(d => `<div class="bg-purple-100 dark:bg-zinc-900 font-bold py-3 rounded-xl text-purple-950 dark:text-purple-300">${d}</div>`).join('')}
+            `;
+
+            for (let hour = minHour; hour <= maxHour; hour++) {
+                const timeStr = `${hour < 10 ? '0' + hour : hour}:00`;
+                html += `<div class="py-3 text-purple-900/60 dark:text-purple-400/60 border-b border-purple-100 dark:border-purple-950/60 font-mono text-[11px]">${timeStr}</div>`;
+
+                displayDays.forEach(day => {
+                    const slots = CodenixState.timetable.filter(s => {
+                        const startHour = Math.floor(parseTimeToMinutes(s.startTime) / 60);
+                        const matchDay = s.day === day && startHour === hour;
+                        const matchSearch = !searchVal || s.subject.toLowerCase().includes(searchVal) || (s.instructor && s.instructor.toLowerCase().includes(searchVal));
+                        return matchDay && matchSearch;
+                    });
+
+                    if (slots.length > 0) {
+                        html += `<div class="p-1 border-b border-purple-100 dark:border-purple-950/60 min-h-[65px] space-y-1">
+                            ${slots.map(s => {
+                                const cardStyle = CARD_COLOR_MAP[s.color] || CARD_COLOR_MAP.purple;
+                                const active = isCurrentClass(s.day, s.startTime, s.endTime);
+                                return `
+                                <div class="p-2 rounded-xl text-left border relative group transition hover:scale-[1.02] shadow-sm ${cardStyle} ${active ? 'ring-2 ring-purple-500 live-card-glow border-purple-400 font-semibold' : ''}">
+                                    ${active ? `<div class="text-[8px] bg-purple-600 text-white font-extrabold px-1 rounded inline-block mb-1 tracking-wider uppercase animate-pulse"><i class="fa-solid fa-circle text-[6px] mr-0.5"></i>Live Now</div>` : ''}
+                                    <div class="font-bold truncate text-[11px]">${escapeHTML(s.subject)}</div>
+                                    <div class="text-[10px] opacity-80 font-mono">${s.startTime} - ${s.endTime}</div>
+                                    ${s.room ? `<div class="text-[9px] opacity-75 truncate"><i class="fa-solid fa-location-dot mr-0.5"></i> ${escapeHTML(s.room)}</div>` : ''}
+                                    ${s.instructor ? `<div class="text-[9px] opacity-75 truncate"><i class="fa-solid fa-user-graduate mr-0.5"></i> ${escapeHTML(s.instructor)}</div>` : ''}
+                                    
+                                    <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 flex gap-1 bg-white dark:bg-zinc-900 rounded p-1 shadow border border-purple-200 dark:border-purple-900 z-10">
+                                        <button onclick="editTimetableSlot('${s.id}')" class="text-xs text-purple-600 hover:text-purple-900 dark:hover:text-white"><i class="fa-solid fa-pen"></i></button>
+                                        <button onclick="deleteTimetableSlot('${s.id}')" class="text-xs text-rose-500 hover:text-rose-700 dark:hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            `}).join('')}
+                        </div>`;
+                    } else {
+                        html += `<div class="p-1 border-b border-purple-100 dark:border-purple-950/60 min-h-[65px]"></div>`;
+                    }
+                });
+            }
+
+            grid.style.gridTemplateColumns = `80px repeat(${displayDays.length}, minmax(0, 1fr))`;
+            grid.innerHTML = html;
+        }
+
+        function openTimetableModal(slot = null) {
+            document.getElementById('timetable-modal').classList.remove('hidden');
+            if (slot) {
+                document.getElementById('modal-timetable-title').textContent = 'Edit Class Slot';
+                document.getElementById('tt-slot-id').value = slot.id;
+                document.getElementById('tt-subject').value = slot.subject;
+                document.getElementById('tt-day').value = slot.day;
+                document.getElementById('tt-color').value = slot.color || 'purple';
+                document.getElementById('tt-start-time').value = formatTo24HourStr(slot.startTime);
+                document.getElementById('tt-end-time').value = formatTo24HourStr(slot.endTime);
+                document.getElementById('tt-room').value = slot.room || '';
+                document.getElementById('tt-instructor').value = slot.instructor || '';
+            } else {
+                document.getElementById('modal-timetable-title').textContent = 'Add Class to Timetable';
+                document.getElementById('timetable-form').reset();
+                document.getElementById('tt-slot-id').value = '';
+            }
+        }
+
+        function closeTimetableModal() {
+            document.getElementById('timetable-modal').classList.add('hidden');
+        }
+
+        function handleSaveTimetableSlot(e) {
+            e.preventDefault();
+            const id = document.getElementById('tt-slot-id').value || Date.now().toString();
+            const slotData = {
+                id,
+                subject: document.getElementById('tt-subject').value,
+                day: document.getElementById('tt-day').value,
+                color: document.getElementById('tt-color').value,
+                startTime: document.getElementById('tt-start-time').value,
+                endTime: document.getElementById('tt-end-time').value,
+                room: document.getElementById('tt-room').value,
+                instructor: document.getElementById('tt-instructor').value
+            };
+
+            const existingIdx = CodenixState.timetable.findIndex(s => s.id === id);
+            if (existingIdx > -1) {
+                CodenixState.timetable[existingIdx] = slotData;
+                showToast('Timetable slot updated!', 'success');
+            } else {
+                CodenixState.timetable.push(slotData);
+                showToast('Class added to timetable!', 'success');
+            }
+
+            saveState('timetable', CodenixState.timetable);
+            renderTimetable();
+            renderDashboard();
+            closeTimetableModal();
+        }
+
+        function editTimetableSlot(id) {
+            const slot = CodenixState.timetable.find(s => s.id === id);
+            if (slot) openTimetableModal(slot);
+        }
+
+        function deleteTimetableSlot(id) {
+            CodenixState.timetable = CodenixState.timetable.filter(s => s.id !== id);
+            saveState('timetable', CodenixState.timetable);
+            renderTimetable();
+            renderDashboard();
+            showToast('Slot removed from timetable', 'info');
+        }
+
+        function clearTimetable() {
+            if (CodenixState.timetable.length === 0) return;
+            CodenixState.timetable = [];
+            saveState('timetable', CodenixState.timetable);
+            renderTimetable();
+            renderDashboard();
+            showToast('Timetable cleared', 'info');
+        }
+
+        function downloadTimetableImage() {
+            const element = document.getElementById('timetable-capture-area');
+            const isDark = document.documentElement.classList.contains('dark');
+            html2canvas(element, { backgroundColor: isDark ? '#030108' : '#ffffff' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Codenix_Timetable.png';
+                link.href = canvas.toDataURL();
+                link.click();
+                showToast('Timetable image downloaded!', 'success');
+            });
+        }
+
+        // TEXT IMPORT MODAL & PARSER
+        function openTextImportModal() {
+            document.getElementById('text-import-modal').classList.remove('hidden');
+        }
+
+        function closeTextImportModal() {
+            document.getElementById('text-import-modal').classList.add('hidden');
+        }
+
+        function loadSampleTextSchedule() {
+            document.getElementById('text-import-input').value = 
+`Monday : " Math : 4:00 - 5:00 - AHMED "
+Tuesday : " Physics : 10:00 - 11:30 - Dr. Sarah : Hall B "
+Wednesday : " Computer Science : 13:00 - 14:30 - Prof. Smith : Lab 2 "`;
+        }
+
+        function parseAndImportTextSchedule() {
+            const rawText = document.getElementById('text-import-input').value.trim();
+            if (!rawText) {
+                showToast('Please paste or type schedule text first.', 'error');
+                return;
+            }
+
+            const lines = rawText.split('\n');
+            let addedCount = 0;
+            const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+
+                const daySplit = line.split(':');
+                if (daySplit.length < 2) return;
+
+                let dayPart = daySplit[0].trim();
+                let dayMatch = validDays.find(d => d.toLowerCase() === dayPart.toLowerCase());
+                
+                if (!dayMatch) return;
+
+                let contentPart = daySplit.slice(1).join(':').replace(/["']/g, '').trim();
+                const items = contentPart.split('-').map(s => s.trim());
+
+                if (items.length >= 2) {
+                    let subject = items[0] || 'Class';
+                    let timeRange = items[1] || '09:00 - 10:00';
+                    let instructor = items[2] || '';
+                    let room = items[3] || '';
+
+                    const timeMatches = timeRange.match(/(\d{1,2}:\d{2}\s*(?:AM|PM)?)/gi);
+                    let startTime = '09:00';
+                    let endTime = '10:00';
+
+                    if (timeMatches && timeMatches.length >= 2) {
+                        startTime = formatTo24HourStr(timeMatches[0]);
+                        endTime = formatTo24HourStr(timeMatches[1]);
+                    }
+
+                    const newSlot = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
+                        subject,
+                        day: dayMatch,
+                        color: ['purple', 'fuchsia', 'rose', 'amber', 'violet', 'cyan'][Math.floor(Math.random() * 6)],
+                        startTime,
+                        endTime,
+                        instructor,
+                        room
+                    };
+
+                    CodenixState.timetable.push(newSlot);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveState('timetable', CodenixState.timetable);
+                renderTimetable();
+                renderDashboard();
+                closeTextImportModal();
+                document.getElementById('text-import-input').value = '';
+                showToast(`Successfully imported ${addedCount} schedule items!`, 'success');
+            } else {
+                showToast('Could not parse any valid schedule entries. Check format.', 'error');
+            }
+        }
+
+        // FLEXNOTES CANVAS LOGIC
+        function initFlexCanvas() {
+            flexCanvas = document.getElementById('flex-notes-canvas');
+            if (!flexCanvas) return;
+            flexCtx = flexCanvas.getContext('2d');
+
+            resizeFlexCanvas();
+
+            // Mouse & Touch Event Listeners
+            flexCanvas.addEventListener('mousedown', startFlexDraw);
+            flexCanvas.addEventListener('mousemove', flexDraw);
+            flexCanvas.addEventListener('mouseup', stopFlexDraw);
+            flexCanvas.addEventListener('mouseleave', stopFlexDraw);
+
+            flexCanvas.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                flexCanvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+
+            flexCanvas.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                flexCanvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+
+            flexCanvas.addEventListener('touchend', () => {
+                const mouseEvent = new MouseEvent('mouseup', {});
+                flexCanvas.dispatchEvent(mouseEvent);
+            });
+        }
+
+        function resizeFlexCanvas() {
+            if (!flexCanvas) return;
+            const container = flexCanvas.parentElement;
+            if (container && flexCanvas.width !== container.clientWidth) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = flexCanvas.width;
+                tempCanvas.height = flexCanvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                if (flexCanvas.width > 0) tempCtx.drawImage(flexCanvas, 0, 0);
+
+                flexCanvas.width = container.clientWidth || 800;
+                flexCanvas.height = Math.max(500, window.innerHeight - 280);
+
+                flexCtx.fillStyle = document.documentElement.classList.contains('dark') ? '#090514' : '#ffffff';
+                flexCtx.fillRect(0, 0, flexCanvas.width, flexCanvas.height);
+                flexCtx.drawImage(tempCanvas, 0, 0);
+            }
+        }
+
+        function setFlexTool(tool) {
+            flexCurrentTool = tool;
+            document.querySelectorAll('.flex-tool-btn').forEach(b => {
+                b.classList.remove('bg-purple-600', 'text-white');
+                b.classList.add('bg-purple-100', 'dark:bg-zinc-900', 'text-purple-900', 'dark:text-purple-300');
+            });
+            const activeBtn = document.getElementById(`flex-tool-${tool}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-purple-100', 'dark:bg-zinc-900', 'text-purple-900', 'dark:text-purple-300');
+                activeBtn.classList.add('bg-purple-600', 'text-white');
+            }
+        }
+
+        function getCanvasCoordinates(e) {
+            const rect = flexCanvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function startFlexDraw(e) {
+            isFlexDrawing = true;
+            const pos = getCanvasCoordinates(e);
+            flexStartX = pos.x;
+            flexStartY = pos.y;
+
+            flexCanvasSnapshot = flexCtx.getImageData(0, 0, flexCanvas.width, flexCanvas.height);
+
+            if (flexCurrentTool === 'text') {
+                const text = prompt('Enter text for mind map / note:');
+                if (text) {
+                    flexCtx.font = '14px sans-serif';
+                    flexCtx.fillStyle = document.getElementById('flex-color-picker').value;
+                    flexCtx.fillText(text, pos.x, pos.y);
+                    incrementFlexnotesCount();
+                }
+                isFlexDrawing = false;
+                return;
+            }
+
+            flexCtx.beginPath();
+            flexCtx.moveTo(pos.x, pos.y);
+        }
+
+        function flexDraw(e) {
+            if (!isFlexDrawing) return;
+            const pos = getCanvasCoordinates(e);
+            const color = document.getElementById('flex-color-picker').value;
+            const strokeSize = document.getElementById('flex-stroke-size').value;
+
+            flexCtx.lineWidth = strokeSize;
+            flexCtx.lineCap = 'round';
+            flexCtx.lineJoin = 'round';
+
+            if (flexCurrentTool === 'pen') {
+                flexCtx.strokeStyle = color;
+                flexCtx.globalAlpha = 1.0;
+                flexCtx.lineTo(pos.x, pos.y);
+                flexCtx.stroke();
+            } else if (flexCurrentTool === 'highlighter') {
+                flexCtx.strokeStyle = color;
+                flexCtx.globalAlpha = 0.35;
+                flexCtx.lineWidth = strokeSize * 3;
+                flexCtx.lineTo(pos.x, pos.y);
+                flexCtx.stroke();
+            } else if (flexCurrentTool === 'eraser') {
+                flexCtx.strokeStyle = document.documentElement.classList.contains('dark') ? '#090514' : '#ffffff';
+                flexCtx.globalAlpha = 1.0;
+                flexCtx.lineWidth = strokeSize * 4;
+                flexCtx.lineTo(pos.x, pos.y);
+                flexCtx.stroke();
+            } else {
+                // Shape preview (rect, circle, line)
+                flexCtx.putImageData(flexCanvasSnapshot, 0, 0);
+                flexCtx.strokeStyle = color;
+                flexCtx.globalAlpha = 1.0;
+                flexCtx.beginPath();
+
+                if (flexCurrentTool === 'rect') {
+                    flexCtx.strokeRect(flexStartX, flexStartY, pos.x - flexStartX, pos.y - flexStartY);
+                } else if (flexCurrentTool === 'circle') {
+                    const radius = Math.hypot(pos.x - flexStartX, pos.y - flexStartY);
+                    flexCtx.arc(flexStartX, flexStartY, radius, 0, Math.PI * 2);
+                    flexCtx.stroke();
+                } else if (flexCurrentTool === 'line') {
+                    flexCtx.moveTo(flexStartX, flexStartY);
+                    flexCtx.lineTo(pos.x, pos.y);
+                    flexCtx.stroke();
+                }
+            }
+        }
+
+        function stopFlexDraw() {
+            if (isFlexDrawing) {
+                isFlexDrawing = false;
+                flexCtx.globalAlpha = 1.0;
+                incrementFlexnotesCount();
+            }
+        }
+
+        function clearFlexCanvas() {
+            flexCtx.fillStyle = document.documentElement.classList.contains('dark') ? '#090514' : '#ffffff';
+            flexCtx.fillRect(0, 0, flexCanvas.width, flexCanvas.height);
+            document.getElementById('pdf-page-controls').classList.add('hidden');
+            pdfDoc = null;
+            showToast('Canvas cleared!', 'info');
+        }
+
+        function incrementFlexnotesCount() {
+            CodenixState.flexnotesCount++;
+            localStorage.setItem('codenix_flexnotes_count', CodenixState.flexnotesCount);
+            renderDashboard();
+        }
+
+        function downloadFlexCanvas() {
+            const link = document.createElement('a');
+            link.download = `FlexNotes_${new Date().toISOString().slice(0,10)}.png`;
+            link.href = flexCanvas.toDataURL();
+            link.click();
+            showToast('FlexNotes image downloaded!', 'success');
+        }
+
+        // PDF RENDERING ON CANVAS
+        function handleFlexPdfUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.type === 'application/pdf') {
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                    const typedarray = new Uint8Array(this.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                        pdfDoc = pdf;
+                        pdfCurrentPage = 1;
+                        renderPdfPage(pdfCurrentPage);
+                        document.getElementById('pdf-page-controls').classList.remove('hidden');
+                        showToast(`PDF Loaded: ${pdf.numPages} Pages`, 'success');
+                    });
+                };
+                fileReader.readAsArrayBuffer(file);
+            } else if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        flexCtx.drawImage(img, 0, 0, flexCanvas.width, flexCanvas.height);
+                        showToast('Document image imported onto canvas!', 'success');
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderPdfPage(pageNumber) {
+            if (!pdfDoc) return;
+            pdfDoc.getPage(pageNumber).then(page => {
+                const viewport = page.getViewport({ scale: flexCanvas.width / page.getViewport({ scale: 1 }).width });
+                const renderContext = {
+                    canvasContext: flexCtx,
+                    viewport: viewport
+                };
+                page.render(renderContext).promise.then(() => {
+                    document.getElementById('pdf-page-num').textContent = `Page ${pageNumber} / ${pdfDoc.numPages}`;
+                });
+            });
+        }
+
+        function changePdfPage(offset) {
+            if (!pdfDoc) return;
+            const newPage = pdfCurrentPage + offset;
+            if (newPage >= 1 && newPage <= pdfDoc.numPages) {
+                pdfCurrentPage = newPage;
+                renderPdfPage(pdfCurrentPage);
+            }
+        }
+
+        // POMODORO TIMER LOGIC
+        function setPomoMode(mode) {
+            pomoMode = mode;
+            pomoIsRunning = false;
+            clearInterval(pomoInterval);
+
+            document.querySelectorAll('#tab-pomodoro button[id^="pomo-mode"]').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white', 'shadow');
+                btn.classList.add('text-purple-900', 'dark:text-purple-300');
+            });
+            const modeBtnMap = { work: 'pomo-mode-work', shortBreak: 'pomo-mode-short', longBreak: 'pomo-mode-long' };
+            document.getElementById(modeBtnMap[mode]).classList.add('bg-purple-600', 'text-white', 'shadow');
+
+            const modeMinutes = CodenixState.pomoSettings[mode === 'shortBreak' ? 'short' : mode === 'longBreak' ? 'long' : 'work'];
+            pomoTimeLeft = modeMinutes * 60;
+            pomoTotalTime = pomoTimeLeft;
+
+            document.getElementById('pomo-current-label').textContent = mode === 'work' ? 'Focus Time' : 'Break Time';
+            document.getElementById('pomo-start-btn').innerHTML = `<i class="fa-solid fa-play"></i> <span>Start</span>`;
+
+            updatePomoTimerDisplay();
+        }
+
+        function adjustPomoMinutes(mins) {
+            pomoTimeLeft = Math.max(60, pomoTimeLeft + (mins * 60));
+            pomoTotalTime = Math.max(pomoTimeLeft, pomoTotalTime);
+            updatePomoTimerDisplay();
+        }
+
+        function togglePomodoroTimer() {
+            if (pomoIsRunning) {
+                clearInterval(pomoInterval);
+                pomoIsRunning = false;
+                document.getElementById('pomo-start-btn').innerHTML = `<i class="fa-solid fa-play"></i> <span>Resume</span>`;
+            } else {
+                pomoIsRunning = true;
+                document.getElementById('pomo-start-btn').innerHTML = `<i class="fa-solid fa-pause"></i> <span>Pause</span>`;
+                pomoInterval = setInterval(() => {
+                    pomoTimeLeft--;
+                    updatePomoTimerDisplay();
+
+                    if (pomoTimeLeft <= 0) {
+                        clearInterval(pomoInterval);
+                        pomoIsRunning = false;
+                        playAlarmSound();
+
+                        if (pomoMode === 'work') {
+                            CodenixState.pomoStats.completedToday++;
+                            saveState('pomo_stats', CodenixState.pomoStats);
+                            showToast('Pomodoro session complete! Take a break.', 'success');
+                            setPomoMode('shortBreak');
+                        } else {
+                            showToast('Break time ended! Back to work.', 'info');
+                            setPomoMode('work');
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function startPomodoroTimer() {
+            if (!pomoIsRunning) togglePomodoroTimer();
+        }
+
+        function resetPomodoroTimer() {
+            setPomoMode(pomoMode);
+        }
+
+        function updatePomoTimerDisplay() {
+            const mins = Math.floor(pomoTimeLeft / 60);
+            const secs = pomoTimeLeft % 60;
+            const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            document.getElementById('pomo-timer-display').textContent = timeStr;
+            document.getElementById('dash-pomo-time').textContent = timeStr;
+
+            const circle = document.getElementById('pomo-progress-ring');
+            const circumference = 2 * Math.PI * 44;
+            const offset = circumference - (pomoTimeLeft / pomoTotalTime) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function updatePomoSettings() {
+            CodenixState.pomoSettings.work = parseInt(document.getElementById('pomo-work-input').value) || 25;
+            CodenixState.pomoSettings.short = parseInt(document.getElementById('pomo-short-input').value) || 5;
+            CodenixState.pomoSettings.long = parseInt(document.getElementById('pomo-long-input').value) || 15;
+            saveState('pomo_settings', CodenixState.pomoSettings);
+            setPomoMode(pomoMode);
+        }
+
+        function playAlarmSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.8);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch(e) {}
+        }
+
+        // TASK MANAGER LOGIC
+        function renderTasks() {
+            const list = document.getElementById('tasks-list');
+            let filtered = CodenixState.tasks;
+
+            if (CodenixState.taskFilter === 'pending') filtered = filtered.filter(t => !t.completed);
+            if (CodenixState.taskFilter === 'completed') filtered = filtered.filter(t => t.completed);
+
+            document.getElementById('task-count-badge').textContent = `${filtered.length} Task${filtered.length === 1 ? '' : 's'}`;
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<p class="text-xs text-purple-800/60 dark:text-purple-400/50 py-8 text-center border border-dashed border-purple-200 dark:border-purple-900/60 rounded-xl">No tasks found in this view.</p>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map(t => `
+                <div class="flex items-center justify-between bg-white dark:bg-zinc-950/60 p-3.5 rounded-xl border border-purple-100 dark:border-purple-950/80 hover:border-purple-300 dark:hover:border-purple-900 transition ${t.completed ? 'opacity-60' : ''}">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" class="w-4.5 h-4.5 rounded border-purple-300 dark:border-purple-800 text-purple-600 focus:ring-purple-500 bg-purple-50 dark:bg-zinc-900 cursor-pointer">
+                        <div>
+                            <p class="text-sm font-medium text-purple-950 dark:text-purple-100 ${t.completed ? 'line-through text-purple-800/50 dark:text-purple-400/50' : ''}">${escapeHTML(t.title)}</p>
+                            ${t.dueDate ? `<p class="text-[10px] text-purple-700 dark:text-purple-400 mt-0.5"><i class="fa-solid fa-clock mr-1"></i>Due: ${t.dueDate}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.priority === 'high' ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : t.priority === 'medium' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : 'bg-purple-100 dark:bg-zinc-800 text-purple-800 dark:text-purple-300'}">
+                            ${t.priority}
+                        </span>
+                        <button onclick="deleteTask('${t.id}')" class="text-xs text-purple-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-zinc-900"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAddTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-title-input').value;
+            const dueDate = document.getElementById('task-date-input').value;
+            const priority = document.getElementById('task-priority-input').value;
+
+            CodenixState.tasks.push({
+                id: Date.now().toString(),
+                title,
+                dueDate,
+                priority,
+                completed: false
+            });
+
+            saveState('tasks', CodenixState.tasks);
+            renderTasks();
+            renderDashboard();
+            document.getElementById('task-form').reset();
+            showToast('Task added successfully!', 'success');
+        }
+
+        function toggleTask(id) {
+            const task = CodenixState.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveState('tasks', CodenixState.tasks);
+                renderTasks();
+                renderDashboard();
+            }
+        }
+
+        function deleteTask(id) {
+            CodenixState.tasks = CodenixState.tasks.filter(t => t.id !== id);
+            saveState('tasks', CodenixState.tasks);
+            renderTasks();
+            renderDashboard();
+            showToast('Task deleted', 'info');
+        }
+
+        function setTaskFilter(filter) {
+            CodenixState.taskFilter = filter;
+            document.querySelectorAll('#tab-tasks button[id^="task-filter"]').forEach(b => {
+                b.classList.remove('bg-purple-600/10', 'text-purple-700', 'dark:text-purple-300');
+                b.classList.add('text-purple-900/70', 'dark:text-purple-400');
+            });
+            document.getElementById(`task-filter-${filter}`).classList.add('bg-purple-600/10', 'text-purple-700', 'dark:text-purple-300');
+            renderTasks();
+        }
+
+        // NOTES MANAGER LOGIC
+        function renderNotesList() {
+            const list = document.getElementById('notes-list');
+            const query = document.getElementById('notes-search-input').value.toLowerCase();
+
+            const filtered = CodenixState.notes.filter(n => n.title.toLowerCase().includes(query) || n.body.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<p class="text-xs text-purple-800/60 dark:text-purple-400/50 text-center py-6">No notes found.</p>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map(n => `
+                <div onclick="selectNote('${n.id}')" class="p-3 rounded-xl border transition cursor-pointer ${CodenixState.activeNoteId === n.id ? 'bg-purple-500/10 border-purple-500/60' : 'bg-purple-50/40 dark:bg-zinc-900/60 border-purple-100 dark:border-purple-950 hover:border-purple-300'}">
+                    <h4 class="font-bold text-xs text-purple-950 dark:text-white truncate">${escapeHTML(n.title) || 'Untitled Note'}</h4>
+                    <p class="text-[11px] text-purple-800/70 dark:text-purple-400 truncate mt-1">${escapeHTML(n.body) || 'Empty note...'}</p>
+                    ${n.tag ? `<span class="inline-block mt-2 text-[9px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-medium">${escapeHTML(n.tag)}</span>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function createNewNote() {
+            const newNote = {
+                id: Date.now().toString(),
+                title: 'New Note',
+                tag: '',
+                body: '',
+                updatedAt: new Date().toLocaleTimeString()
+            };
+            CodenixState.notes.unshift(newNote);
+            saveState('notes', CodenixState.notes);
+            selectNote(newNote.id);
+            renderDashboard();
+            showToast('New note created!', 'success');
+        }
+
+        function selectNote(id) {
+            CodenixState.activeNoteId = id;
+            const note = CodenixState.notes.find(n => n.id === id);
+
+            if (!note) return;
+
+            document.getElementById('no-note-selected').classList.add('hidden');
+            document.getElementById('active-note-editor').classList.remove('hidden');
+
+            document.getElementById('note-title-input').value = note.title;
+            document.getElementById('note-tag-input').value = note.tag || '';
+            document.getElementById('note-body-input').value = note.body;
+            document.getElementById('note-last-saved').textContent = `Saved ${note.updatedAt || ''}`;
+
+            renderNotesList();
+        }
+
+        function saveCurrentNote() {
+            if (!CodenixState.activeNoteId) return;
+
+            const note = CodenixState.notes.find(n => n.id === CodenixState.activeNoteId);
+            if (note) {
+                note.title = document.getElementById('note-title-input').value;
+                note.tag = document.getElementById('note-tag-input').value;
+                note.body = document.getElementById('note-body-input').value;
+                note.updatedAt = new Date().toLocaleTimeString();
+
+                saveState('notes', CodenixState.notes);
+                document.getElementById('note-last-saved').textContent = `Saved ${note.updatedAt}`;
+                renderNotesList();
+            }
+        }
+
+        function deleteActiveNote() {
+            CodenixState.notes = CodenixState.notes.filter(n => n.id !== CodenixState.activeNoteId);
+            CodenixState.activeNoteId = null;
+            saveState('notes', CodenixState.notes);
+            
+            document.getElementById('active-note-editor').classList.add('hidden');
+            document.getElementById('no-note-selected').classList.remove('hidden');
+            renderNotesList();
+            renderDashboard();
+            showToast('Note deleted', 'info');
+        }
+
+        function downloadActiveNote() {
+            const note = CodenixState.notes.find(n => n.id === CodenixState.activeNoteId);
+            if (!note) return;
+
+            const blob = new Blob([`${note.title}\nCategory: ${note.tag}\n\n${note.body}`], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${note.title || 'Note'}.txt`;
+            link.click();
+            showToast('Note downloaded!', 'success');
+        }
+
+        // GLOBAL DATA IMPORT / EXPORT
+        function exportAllData() {
+            const backup = {
+                timetable: CodenixState.timetable,
+                tasks: CodenixState.tasks,
+                notes: CodenixState.notes,
+                pomoSettings: CodenixState.pomoSettings,
+                flexnotesCount: CodenixState.flexnotesCount,
+                theme: CodenixState.theme
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Codenix_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+            showToast('Backup JSON exported!', 'success');
+        }
+
+        function importAllData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (data.timetable) {
+                        CodenixState.timetable = data.timetable;
+                        saveState('timetable', CodenixState.timetable);
+                    }
+                    if (data.tasks) {
+                        CodenixState.tasks = data.tasks;
+                        saveState('tasks', CodenixState.tasks);
+                    }
+                    if (data.notes) {
+                        CodenixState.notes = data.notes;
+                        saveState('notes', CodenixState.notes);
+                    }
+                    if (data.pomoSettings) {
+                        CodenixState.pomoSettings = data.pomoSettings;
+                        saveState('pomo_settings', CodenixState.pomoSettings);
+                    }
+                    if (data.flexnotesCount !== undefined) {
+                        CodenixState.flexnotesCount = data.flexnotesCount;
+                        localStorage.setItem('codenix_flexnotes_count', CodenixState.flexnotesCount);
+                    }
+                    if (data.theme) {
+                        CodenixState.theme = data.theme;
+                        localStorage.setItem('codenix_theme', data.theme);
+                    }
+                    showToast('Data restored successfully!', 'success');
+                    setTimeout(() => location.reload(), 800);
+                } catch(err) {
+                    showToast('Invalid JSON file format', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // UTILITY
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
