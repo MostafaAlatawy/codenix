@@ -57,7 +57,36 @@
         /* Popover transition */
         #word-translation-popover {
             transition: opacity 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Inline word translation gloss badge above word */
+        .word-gloss-container {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: bottom;
+            position: relative;
+        }
+
+        .word-translation-badge {
+            font-size: 0.68rem;
+            line-height: 0.85rem;
+            font-weight: 800;
+            color: #198F89;
+            background-color: #E6F7F6;
+            border: 1px solid rgba(32, 178, 170, 0.3);
+            padding: 1px 5px;
+            border-radius: 6px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: translateY(4px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* Pulse recording indicator */
@@ -94,7 +123,7 @@
                 <p class="text-xl text-brand-100 mb-12 text-center">Master languages through reading.</p>
                 
                 <div class="w-full bg-white text-gray-800 rounded-3xl p-8 shadow-2xl">
-                    <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Choose your language</h2>
+                    <h2 class="text-2xl font-bold mb-6 text-center text-gray-900">Choose your target language</h2>
                     <div id="language-selection-list" class="space-y-4">
                         <!-- Populated by JS -->
                     </div>
@@ -104,32 +133,73 @@
 
         <!-- ==================== VIEW: HOME ==================== -->
         <div id="view-home" class="flex-col w-full min-h-screen hidden-view relative">
-            <!-- Header -->
-            <header class="bg-white pt-8 sm:pt-12 pb-4 shadow-sm sticky top-0 z-20">
+            <!-- Header personalized by target language -->
+            <header class="bg-white pt-6 sm:pt-8 pb-5 border-b border-gray-100 shadow-sm sticky top-0 z-20">
                 <div class="max-w-7xl mx-auto px-6 flex justify-between items-center w-full">
                     <div class="flex items-center gap-3">
-                        <i data-lucide="book-open" class="text-brand w-7 h-7 sm:w-8 sm:h-8"></i>
-                        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">LenguaNix</h1>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-brandLight rounded-2xl flex items-center justify-center overflow-hidden shadow-sm border border-brand/20 shrink-0">
+                            <img id="active-lang-flag" src="" alt="Flag" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">LenguaNix</h1>
+                                <span id="active-lang-badge" class="bg-brand text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full shadow-sm uppercase tracking-wider"></span>
+                            </div>
+                            <p id="personalized-greeting" class="text-xs sm:text-sm text-gray-500 font-semibold"></p>
+                        </div>
                     </div>
+
                     <div class="flex items-center gap-2 sm:gap-3">
-                        <button onclick="navigate('library')" class="p-2 sm:p-3 bg-brandLight text-brand rounded-full hover:bg-brand hover:text-white transition flex items-center gap-1.5 font-bold text-xs sm:text-sm px-3 sm:px-4 shadow-sm" title="My Library">
+                        <button onclick="navigate('library')" class="p-2 sm:p-3 bg-brandLight text-brand rounded-2xl hover:bg-brand hover:text-white transition flex items-center gap-1.5 font-bold text-xs sm:text-sm px-3 sm:px-4 shadow-sm" title="My Library">
                             <i data-lucide="bookmark" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                             <span class="hidden sm:inline">Library</span>
                         </button>
-                        <button onclick="navigate('settings')" class="p-2 sm:p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition" title="Settings">
-                            <i data-lucide="settings" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-700"></i>
+                        <button onclick="navigate('settings')" class="p-2.5 sm:p-3 bg-gray-100 rounded-2xl hover:bg-gray-200 transition" title="Change Language / Settings">
+                            <i data-lucide="globe" class="w-5 h-5 text-gray-700"></i>
                         </button>
                     </div>
                 </div>
             </header>
 
+            <!-- Language Learning Progress Card Bar -->
+            <div class="max-w-7xl mx-auto px-6 pt-6 w-full">
+                <div class="bg-gradient-to-r from-brand to-brandDark text-white rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="relative z-10 flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-black uppercase tracking-widest text-brandLight opacity-90">Reading Progress</span>
+                            <span id="progress-percent-badge" class="bg-white/20 text-white font-extrabold text-xs px-2 py-0.5 rounded-full">0%</span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold" id="progress-heading">Articles Progress</h2>
+                        <p id="progress-subtext" class="text-sm text-brandLight opacity-90 mt-1">0 of 0 articles completed in this language</p>
+                    </div>
+
+                    <!-- Progress Bar Visual -->
+                    <div class="w-full md:w-72 relative z-10 shrink-0">
+                        <div class="w-full bg-black/20 rounded-full h-3.5 p-0.5 overflow-hidden">
+                            <div id="progress-bar-fill" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] font-bold text-brandLight mt-1.5">
+                            <span>0 completed</span>
+                            <span id="progress-total-count">0 total</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Search and Filter Module -->
-            <div class="bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm sticky top-[76px] sm:top-[88px] z-10 py-3">
-                <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-4 items-stretch md:items-center w-full">
+            <div class="py-4 mt-2">
+                <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row gap-3 items-stretch md:items-center w-full">
                     <!-- Search Input -->
                     <div class="relative flex-1">
                         <i data-lucide="search" class="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
-                        <input id="search-input" oninput="triggerFilters()" type="text" placeholder="Search titles, vocab or contents..." class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all text-sm">
+                        <input id="search-input" oninput="triggerFilters()" type="text" placeholder="Search titles, vocabulary or text..." class="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-all text-sm shadow-sm">
+                    </div>
+
+                    <!-- Filter by Read / Completion Status -->
+                    <div class="flex bg-gray-200/80 p-1 rounded-2xl shrink-0">
+                        <button onclick="setStatusFilter('All')" id="status-btn-All" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all bg-white text-gray-800 shadow-sm">All</button>
+                        <button onclick="setStatusFilter('Unread')" id="status-btn-Unread" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all text-gray-600 hover:text-gray-900">Unread</button>
+                        <button onclick="setStatusFilter('Completed')" id="status-btn-Completed" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all text-gray-600 hover:text-gray-900">Completed</button>
                     </div>
 
                     <!-- Level Select Container -->
@@ -139,7 +209,7 @@
 
                     <!-- Dialect Select Dropdown -->
                     <div class="relative shrink-0">
-                        <select id="dialect-filter" onchange="triggerFilters()" class="appearance-none bg-gray-50 border border-gray-200 rounded-2xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand cursor-pointer">
+                        <select id="dialect-filter" onchange="triggerFilters()" class="appearance-none bg-white border border-gray-200 rounded-2xl pl-4 pr-10 py-2.5 text-sm font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand cursor-pointer shadow-sm">
                             <option value="All">All Dialects</option>
                         </select>
                         <i data-lucide="chevron-down" class="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none"></i>
@@ -148,7 +218,7 @@
             </div>
 
             <!-- Content List -->
-            <div class="flex-1 w-full max-w-7xl mx-auto p-6">
+            <div class="flex-1 w-full max-w-7xl mx-auto px-6 pb-12">
                 <div id="article-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     <!-- Articles populated by JS -->
                 </div>
@@ -158,13 +228,19 @@
         <!-- ==================== VIEW: ARTICLE ==================== -->
         <div id="view-article" class="flex-col w-full min-h-screen bg-white hidden-view relative">
             
+            <!-- Sticky Header Actions -->
             <div class="fixed top-4 left-4 right-4 sm:top-8 sm:left-8 sm:right-8 z-30 flex justify-between items-center pointer-events-none">
                 <button onclick="stopSpeech(); navigate('home')" class="pointer-events-auto p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-gray-800 hover:bg-gray-100 hover:scale-105 transition-all">
                     <i data-lucide="arrow-left" class="w-6 h-6"></i>
                 </button>
-                <button id="article-fav-btn" onclick="toggleFavoriteCurrentArticle()" class="pointer-events-auto p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-amber-500 hover:bg-amber-50 hover:scale-105 transition-all flex items-center justify-center">
-                    <i data-lucide="star" class="w-6 h-6"></i>
-                </button>
+                <div class="flex items-center gap-2 pointer-events-auto">
+                    <button id="article-read-btn" onclick="toggleReadCurrentArticle()" class="px-4 py-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-xs font-black text-gray-700 hover:bg-gray-100 hover:scale-105 transition-all flex items-center gap-2">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> <span id="article-read-btn-text">Mark Completed</span>
+                    </button>
+                    <button id="article-fav-btn" onclick="toggleFavoriteCurrentArticle()" class="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-amber-500 hover:bg-amber-50 hover:scale-105 transition-all flex items-center justify-center">
+                        <i data-lucide="star" class="w-6 h-6"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Cover Image -->
@@ -172,7 +248,12 @@
                 <img id="article-cover" src="" alt="Cover" class="w-full h-full object-cover opacity-80">
                 <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                 <div class="absolute bottom-6 left-6 right-6 max-w-4xl mx-auto w-full">
-                    <span id="article-level-badge" class="inline-block bg-brand text-white text-sm font-bold px-3 py-1 rounded-lg mb-3 shadow-sm"></span>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="article-level-badge" class="inline-block bg-brand text-white text-xs font-bold px-3 py-1 rounded-lg shadow-sm"></span>
+                        <span id="article-completed-badge" class="hidden bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-sm flex items-center gap-1">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i> Read
+                        </span>
+                    </div>
                     <h2 id="article-title" class="text-white font-black text-3xl sm:text-4xl md:text-5xl leading-tight drop-shadow-lg"></h2>
                 </div>
             </div>
@@ -219,7 +300,7 @@
                         <!-- Populated by JS with clickable interactive words -->
                     </div>
 
-                    <!-- Tab: Shadowing Practice (Replaces old Examen/Test) -->
+                    <!-- Tab: Shadowing Practice -->
                     <div id="tab-shadowing" class="tab-content hidden space-y-6">
                         <div class="bg-white p-6 sm:p-10 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
                             
@@ -306,13 +387,13 @@
                     <button onclick="navigate('home')" class="p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition absolute left-6">
                         <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
                     </button>
-                    <h1 class="flex-1 text-center text-2xl font-bold text-gray-800">Settings</h1>
+                    <h1 class="flex-1 text-center text-2xl font-bold text-gray-800">Target Language</h1>
                 </div>
             </header>
             
             <div class="p-6 w-full max-w-3xl mx-auto mt-6 space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                    <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">Learning Language</h2>
+                    <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">Select Language You Are Learning</h2>
                     <div id="settings-language-list" class="space-y-3">
                         <!-- Populated by JS -->
                     </div>
@@ -375,7 +456,7 @@
 
     </div>
 
-    <!-- Clickable Interactive Word Popover Portal -->
+    <!-- Clickable Interactive Word Detail Card Portal (Positioned Directly ABOVE Clicked Word) -->
     <div id="word-translation-popover" class="fixed z-50 bg-white shadow-2xl rounded-2xl border border-gray-200 p-5 w-80 max-w-[90vw] hidden flex-col transition-all duration-200" style="top: 0; left: 0;">
         <div class="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 mb-3">
             <div class="flex items-center gap-2">
@@ -402,15 +483,18 @@
         <div id="popover-content" class="hidden flex-col space-y-3">
             <div class="bg-brandLight/50 p-3 rounded-xl border border-brand/10">
                 <div class="flex items-center justify-between mb-1">
-                    <span id="popover-lang-badge" class="text-[10px] font-extrabold text-brandDark uppercase tracking-wider">TRANSLATION</span>
+                    <span id="popover-lang-badge" class="text-[10px] font-extrabold text-brandDark uppercase tracking-wider">TRANSLATION ON WORD</span>
                 </div>
                 <p id="popover-translation-text" class="text-lg font-bold text-gray-800 leading-snug"></p>
             </div>
             <p id="popover-definition-text" class="text-xs text-gray-500 italic bg-gray-50 p-2.5 rounded-lg border border-gray-100 leading-relaxed"></p>
             <button onclick="addToTraining()" class="w-full py-2.5 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brandDark transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add to Vocabulary List
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add to Saved Vocabulary
             </button>
         </div>
+
+        <!-- Arrow pointing DOWN to word -->
+        <div class="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-r border-b border-gray-200 rotate-45"></div>
     </div>
 
     <!-- Application Logic -->
@@ -421,7 +505,33 @@
         // ElevenLabs API configuration
         const ELEVENLABS_API_KEY = "sk_7d4dd995a7047ec65ede329a221742ca487cdff8d7695a6f";
 
-        // Multilingual-optimized Voice Mapping
+        // Personalized Language Details & Metadata with Photo Flags
+        const languageDetails = {
+            'Spanish': { flag: 'https://flagcdn.com/w80/es.png', greeting: '¡Hola! Ready to master Spanish today?', nativeName: 'Español' },
+            'English': { flag: 'https://flagcdn.com/w80/gb.png', greeting: 'Welcome! Ready to learn English today?', nativeName: 'English' },
+            'German': { flag: 'https://flagcdn.com/w80/de.png', greeting: 'Hallo! Bereit für dein Deutschtraining?', nativeName: 'Deutsch' },
+            'French': { flag: 'https://flagcdn.com/w80/fr.png', greeting: 'Bonjour! Prêt à lire en français?', nativeName: 'Français' },
+            'Italian': { flag: 'https://flagcdn.com/w80/it.png', greeting: 'Ciao! Pronto per imparare l\'italiano?', nativeName: 'Italiano' },
+            'Turkish': { flag: 'https://flagcdn.com/w80/tr.png', greeting: 'Merhaba! Türkçe okumaya hazır mısın?', nativeName: 'Türkçe' },
+            'Arabic': { flag: 'https://flagcdn.com/w80/sa.png', greeting: 'مرحبا! هل أنت مستعد لتعلم العربية؟', nativeName: 'العربية' },
+            'Portuguese': { flag: 'https://flagcdn.com/w80/pt.png', greeting: 'Olá! Pronto para praticar português?', nativeName: 'Português' },
+            'Russian': { flag: 'https://flagcdn.com/w80/ru.png', greeting: 'Привет! Готовы учить русский язык?', nativeName: 'Русский' },
+            'Japanese': { flag: 'https://flagcdn.com/w80/jp.png', greeting: 'こんにちは！日本語の練習をしましょう', nativeName: '日本語' },
+            'Chinese': { flag: 'https://flagcdn.com/w80/cn.png', greeting: '你好！准备好学习中文了吗？', nativeName: '中文' }
+        };
+
+        function getLanguageDetails(lang) {
+            if (languageDetails[lang]) {
+                return languageDetails[lang];
+            }
+            return {
+                flag: 'https://flagcdn.com/w80/un.png',
+                greeting: `Welcome! Ready to practice ${lang} today?`,
+                nativeName: lang
+            };
+        }
+
+        // Voice Mapping for ElevenLabs
         const voiceMapping = {
             'Spanish': 'ErXwobaYi3019Dkyg5Vj',   // Antoni
             'Turkish': 'EXAVITQu4vr4xnSDxMaL',   // Callum
@@ -459,7 +569,7 @@
         let isSpeakingEntire = false;
         let spokenSentenceIndex = -1;
         let originalArticleSentences = [];
-        let isPopoverPinned = false;
+        let activeWordElement = null;
 
         // Shadowing state
         let shadowingCurrentIndex = 0;
@@ -472,10 +582,62 @@
             currentView: 'onboarding',
             selectedLanguage: localStorage.getItem('lenguanix_selected_language') || null,
             levelFilter: 'All',
+            statusFilter: 'All', // All, Unread, Completed
             currentArticle: null,
             favorites: JSON.parse(localStorage.getItem('lenguanix_favorites') || '[]'),
-            savedWords: JSON.parse(localStorage.getItem('lenguanix_saved_words') || '[]')
+            savedWords: JSON.parse(localStorage.getItem('lenguanix_saved_words') || '[]'),
+            readArticles: JSON.parse(localStorage.getItem('lenguanix_read_articles') || '[]')
         };
+
+        // --- Read Articles & Progress Tracking ---
+        function isArticleRead(articleId) {
+            return appState.readArticles.includes(articleId);
+        }
+
+        function toggleReadArticle(articleId, event) {
+            if (event) event.stopPropagation();
+
+            const idx = appState.readArticles.indexOf(articleId);
+            if (idx > -1) {
+                appState.readArticles.splice(idx, 1);
+                showToast("Marked article as unread.");
+            } else {
+                appState.readArticles.push(articleId);
+                showToast("Article marked as completed! 🎉");
+            }
+
+            localStorage.setItem('lenguanix_read_articles', JSON.stringify(appState.readArticles));
+            
+            if (appState.currentView === 'home') triggerFilters();
+            if (appState.currentView === 'article' && appState.currentArticle && appState.currentArticle.id === articleId) {
+                updateArticleReadButton();
+            }
+        }
+
+        function toggleReadCurrentArticle() {
+            if (appState.currentArticle) {
+                toggleReadArticle(appState.currentArticle.id);
+            }
+        }
+
+        function updateArticleReadButton() {
+            const btn = document.getElementById('article-read-btn');
+            const btnText = document.getElementById('article-read-btn-text');
+            const badge = document.getElementById('article-completed-badge');
+            if (!btn || !appState.currentArticle) return;
+            
+            const isRead = isArticleRead(appState.currentArticle.id);
+            if (isRead) {
+                btn.className = "px-4 py-2.5 bg-emerald-500 text-white rounded-full shadow-lg text-xs font-black hover:bg-emerald-600 transition-all flex items-center gap-2";
+                if (btnText) btnText.textContent = "Completed ✓";
+                if (badge) badge.classList.remove('hidden');
+            } else {
+                btn.className = "px-4 py-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-lg text-xs font-black text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-2";
+                if (btnText) btnText.textContent = "Mark Completed";
+                if (badge) badge.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
 
         // --- Favorites & Vocabulary LocalStorage Management ---
         function isFavorite(articleId) {
@@ -550,7 +712,7 @@
         async function saveWordToLibrary(word, meaning, lang) {
             const wordLang = lang || appState.selectedLanguage || 'Spanish';
             if (isWordSaved(word)) {
-                showToast(`"${word}" is already in your library.`);
+                showToast(`"${word}" is already in your saved vocabulary.`);
                 return;
             }
 
@@ -569,7 +731,7 @@
                 date: new Date().toLocaleDateString()
             });
             localStorage.setItem('lenguanix_saved_words', JSON.stringify(appState.savedWords));
-            showToast(`Saved "${word}" (${finalMeaning}) to library! 📚`);
+            showToast(`Saved "${word}" (${finalMeaning})! 📚`);
 
             if (appState.currentView === 'article') {
                 populatePalabrasTab(appState.currentArticle);
@@ -825,31 +987,78 @@
             appState.selectedLanguage = lang;
             localStorage.setItem('lenguanix_selected_language', lang);
             appState.levelFilter = 'All'; 
+            appState.statusFilter = 'All';
             navigate('home');
         }
 
         function renderOnboarding() {
             const listEl = document.getElementById('language-selection-list');
             if (availableLanguages.length === 0) {
-                 listEl.innerHTML = `<p class="text-center text-gray-500 py-4">No languages found in the database.</p>`;
+                 listEl.innerHTML = `<p class="text-center text-gray-500 py-4">No languages found in database.</p>`;
                  return;
             }
 
-            listEl.innerHTML = availableLanguages.map(lang => `
+            listEl.innerHTML = availableLanguages.map(lang => {
+                const details = getLanguageDetails(lang);
+                return `
                 <button onclick="selectLanguage('${lang}')" 
-                        class="w-full text-left p-5 rounded-2xl border-2 border-gray-100 hover:border-brand hover:bg-brand/5 hover:shadow-md transition-all flex justify-between items-center group">
-                    <span class="font-bold text-xl text-gray-800">${lang}</span>
-                    <i data-lucide="chevron-right" class="text-gray-400 group-hover:text-brand w-6 h-6"></i>
+                        class="w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-gray-100 hover:border-brand hover:bg-brand/5 hover:shadow-md transition-all flex justify-between items-center group">
+                    <div class="flex items-center gap-3.5">
+                        <img src="${details.flag}" alt="${lang}" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-sm border border-gray-200/80 shrink-0">
+                        <div>
+                            <span class="font-extrabold text-lg sm:text-xl text-gray-900 block">${lang}</span>
+                            <span class="text-xs font-semibold text-gray-400">${details.nativeName}</span>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" class="text-gray-400 group-hover:text-brand w-6 h-6 shrink-0"></i>
                 </button>
-            `).join('');
+            `}).join('');
             lucide.createIcons();
+        }
+
+        function setStatusFilter(status) {
+            appState.statusFilter = status;
+            ['All', 'Unread', 'Completed'].forEach(st => {
+                const btn = document.getElementById(`status-btn-${st}`);
+                if (!btn) return;
+                if (st === status) {
+                    btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all bg-white text-gray-800 shadow-sm";
+                } else {
+                    btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all text-gray-600 hover:text-gray-900";
+                }
+            });
+            triggerFilters();
         }
 
         function renderHome() {
             if (!appState.selectedLanguage) return;
 
-            const langData = spreadsheetData.filter(item => item.language === appState.selectedLanguage);
-            
+            const targetLang = appState.selectedLanguage;
+            const details = getLanguageDetails(targetLang);
+
+            // Personalize Header
+            const flagImg = document.getElementById('active-lang-flag');
+            if (flagImg) {
+                flagImg.src = details.flag;
+                flagImg.alt = targetLang;
+            }
+            document.getElementById('active-lang-badge').textContent = targetLang;
+            document.getElementById('personalized-greeting').textContent = details.greeting;
+
+            // Calculate Reading Progress stats
+            const totalLangArticles = spreadsheetData.filter(item => item.language === targetLang);
+            const totalCount = totalLangArticles.length;
+            const completedCount = totalLangArticles.filter(item => isArticleRead(item.id)).length;
+            const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+            document.getElementById('progress-heading').textContent = `${targetLang} Mastery`;
+            document.getElementById('progress-subtext').textContent = `${completedCount} of ${totalCount} articles completed`;
+            document.getElementById('progress-percent-badge').textContent = `${progressPercent}% Completed`;
+            document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+            document.getElementById('progress-total-count').textContent = `${totalCount} total articles`;
+
+            // Filter setup
+            const langData = totalLangArticles;
             const dialectsInLang = [...new Set(langData.map(item => item.dialect).filter(Boolean))];
             const dialectSelect = document.getElementById('dialect-filter');
             dialectSelect.innerHTML = '<option value="All">All Dialects</option>';
@@ -866,7 +1075,7 @@
                         class="px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap
                         ${appState.levelFilter === level 
                             ? 'bg-brand border-brand text-white shadow-md' 
-                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}">
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}">
                     ${level}
                 </button>
             `).join('');
@@ -881,7 +1090,7 @@
                 if (btn.innerText.trim() === level) {
                     btn.className = "px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap bg-brand border-brand text-white shadow-md";
                 } else {
-                    btn.className = "px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100";
+                    btn.className = "px-5 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap bg-white border-gray-200 text-gray-600 hover:bg-gray-50";
                 }
             });
             triggerFilters();
@@ -901,6 +1110,12 @@
                 filtered = filtered.filter(item => item.dialect === chosenDialect);
             }
 
+            if (appState.statusFilter === 'Completed') {
+                filtered = filtered.filter(item => isArticleRead(item.id));
+            } else if (appState.statusFilter === 'Unread') {
+                filtered = filtered.filter(item => !isArticleRead(item.id));
+            }
+
             if (searchQuery !== '') {
                 filtered = filtered.filter(item => {
                     const matchesTitle = item.title.toLowerCase().includes(searchQuery);
@@ -915,28 +1130,42 @@
                 listEl.innerHTML = `
                     <div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-400 bg-white rounded-3xl border border-gray-100 shadow-sm">
                         <i data-lucide="search-code" class="w-16 h-16 mb-4 opacity-50 text-brand"></i>
-                        <p class="text-lg font-semibold">No results match your current filter parameters.</p>
+                        <p class="text-lg font-semibold">No articles match your criteria.</p>
                     </div>`;
             } else {
                 listEl.innerHTML = filtered.map(article => {
                     const fav = isFavorite(article.id);
+                    const read = isArticleRead(article.id);
+
                     return `
                     <div onclick="openArticle(${article.id})" class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col h-full relative">
                         <div class="h-48 sm:h-56 bg-gray-200 relative overflow-hidden shrink-0">
                             <img src="${article.cover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            
+                            <!-- Favorites Toggle -->
                             <button onclick="toggleFavorite(${article.id}, event)" class="absolute top-4 left-4 p-2.5 bg-white/90 backdrop-blur rounded-full shadow-md hover:bg-white transition text-amber-500 z-10" title="Bookmark article">
                                 <i data-lucide="star" class="w-4 h-4 ${fav ? 'fill-amber-500 text-amber-500' : 'text-gray-400'}"></i>
                             </button>
-                            <div class="absolute top-4 right-4 bg-brand/90 backdrop-blur text-white text-xs font-black px-3 py-1.5 rounded-lg shadow-sm tracking-wider">
-                                ${article.level}
+
+                            <!-- Level & Completion Badge -->
+                            <div class="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+                                ${read ? `
+                                    <button onclick="toggleReadArticle(${article.id}, event)" class="bg-emerald-500 text-white p-1.5 rounded-lg shadow-sm font-bold text-xs flex items-center gap-1" title="Completed">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                                <span class="bg-brand/90 backdrop-blur text-white text-xs font-black px-3 py-1.5 rounded-lg shadow-sm tracking-wider">
+                                    ${article.level}
+                                </span>
                             </div>
                         </div>
                         <div class="p-6 flex-1 flex flex-col">
                             <h3 class="font-extrabold text-gray-900 text-xl leading-tight mb-2 group-hover:text-brand transition-colors">${article.title}</h3>
-                            <p class="text-sm font-medium text-gray-500 flex items-center gap-1.5 mt-auto pt-4 border-t border-gray-50">
-                                <i data-lucide="globe" class="w-4 h-4 text-brand"></i> ${article.dialect || 'Standard'}
-                            </p>
+                            <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 text-xs font-semibold text-gray-500">
+                                <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5 text-brand"></i> ${article.dialect || 'Standard'}</span>
+                                <span>${read ? '✓ Completed' : 'Unread'}</span>
+                            </div>
                         </div>
                     </div>
                 `}).join('');
@@ -946,14 +1175,23 @@
 
         function renderSettings() {
             const listEl = document.getElementById('settings-language-list');
-            listEl.innerHTML = availableLanguages.map(lang => `
+            listEl.innerHTML = availableLanguages.map(lang => {
+                const details = getLanguageDetails(lang);
+                const isSelected = appState.selectedLanguage === lang;
+                return `
                 <button onclick="selectLanguage('${lang}')" 
                         class="w-full text-left p-4 rounded-2xl border-2 transition-all flex justify-between items-center
-                        ${appState.selectedLanguage === lang ? 'border-brand bg-brand/5 text-brand shadow-sm' : 'border-gray-100 hover:bg-gray-50 text-gray-700'}">
-                    <span class="font-bold text-lg">${lang}</span>
-                    ${appState.selectedLanguage === lang ? '<i data-lucide="check-circle-2" class="w-6 h-6"></i>' : ''}
+                        ${isSelected ? 'border-brand bg-brand/5 text-brand shadow-sm' : 'border-gray-100 hover:bg-gray-50 text-gray-700'}">
+                    <div class="flex items-center gap-3.5">
+                        <img src="${details.flag}" alt="${lang}" class="w-9 h-9 rounded-xl object-cover shadow-sm border border-gray-200/80 shrink-0">
+                        <div>
+                            <span class="font-bold text-lg block">${lang}</span>
+                            <span class="text-xs text-gray-400 font-semibold">${details.nativeName}</span>
+                        </div>
+                    </div>
+                    ${isSelected ? '<i data-lucide="check-circle-2" class="w-6 h-6 text-brand shrink-0"></i>' : ''}
                 </button>
-            `).join('');
+            `}).join('');
             lucide.createIcons();
         }
 
@@ -969,6 +1207,7 @@
             document.getElementById('article-level-badge').textContent = article.level;
 
             updateArticleFavButton();
+            updateArticleReadButton();
             populateHistoriaTab(article);
             populateShadowingTab(article);
             populatePalabrasTab(article);
@@ -1009,9 +1248,12 @@
                 if (!cleanedWord) return token;
 
                 const safeWord = cleanedWord.replace(/'/g, "\\'");
-                return `<span onclick="handleWordClick(event, '${safeWord}')"
-                              class="interactive-word border-b border-dashed border-gray-300 hover:border-brand hover:text-brand hover:bg-brand/10 px-0.5 rounded cursor-pointer transition-all duration-150 font-semibold text-gray-800" 
-                              data-word="${cleanedWord}">${token}</span>`;
+                return `<span class="word-gloss-container">
+                            <span id="gloss-badge-${cleanedWord.toLowerCase()}" class="word-translation-badge hidden">...</span>
+                            <span onclick="handleWordClick(event, '${safeWord}', this)"
+                                  class="interactive-word border-b-2 border-dotted border-brand/40 hover:border-brand hover:text-brand hover:bg-brand/10 px-1 rounded cursor-pointer transition-all duration-150 font-semibold text-gray-800" 
+                                  data-word="${cleanedWord}">${token}</span>
+                        </span>`;
             }).join('');
 
             return `
@@ -1020,7 +1262,7 @@
                         <i data-lucide="volume-2" class="w-4 h-4"></i>
                     </button>
                     <div class="flex-1">
-                        <p class="text-xl sm:text-2xl leading-relaxed">${spanHTML}</p>
+                        <p class="text-xl sm:text-2xl leading-relaxed flex flex-wrap items-baseline gap-y-3 gap-x-0.5">${spanHTML}</p>
                     </div>
                 </div>
             `;
@@ -1130,7 +1372,7 @@
             }
 
             if (!translation) {
-                translation = sentence; // Fallback
+                translation = sentence;
             }
 
             shadowingTranslations[shadowingCurrentIndex] = translation;
@@ -1161,7 +1403,7 @@
             const lang = appState.selectedLanguage || 'Spanish';
             const config = langConfig[lang] || { sttCode: 'es-ES' };
 
-            stopSpeech(); // Stop any playing audio
+            stopSpeech();
 
             try {
                 speechRecognitionInstance = new SpeechRecognition();
@@ -1241,7 +1483,6 @@
             const feedbackBox = document.getElementById('shadowing-feedback-box');
             const statusBadge = document.getElementById('shadowing-status-badge');
 
-            // Normalize strings for comparison (remove punctuation, lower case)
             const cleanSpoken = spokenText.toLowerCase().replace(/[^\p{L}\s]/gu, '').trim();
             const cleanTarget = targetText.toLowerCase().replace(/[^\p{L}\s]/gu, '').trim();
 
@@ -1250,7 +1491,6 @@
 
             if (targetWords.length === 0) return;
 
-            // Calculate word match overlap percentage
             let matchedCount = 0;
             spokenWords.forEach(w => {
                 if (targetWords.includes(w)) matchedCount++;
@@ -1264,12 +1504,11 @@
             if (isMatch) {
                 feedbackBox.classList.add('bg-green-50', 'border-green-200');
                 statusBadge.className = "inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-sm bg-green-500 text-white shadow-sm";
-                statusBadge.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Excellent! Perfect match. Moving to next...`;
+                statusBadge.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Excellent! Perfect match.`;
 
                 showToast("Great pronunciation! 🎉");
                 lucide.createIcons();
 
-                // Auto-advance after 1.5 seconds if correct
                 setTimeout(() => {
                     if (shadowingCurrentIndex < shadowingSentences.length - 1) {
                         nextShadowingSentence();
@@ -1284,19 +1523,20 @@
             }
         }
 
-        function handleWordClick(event, word) {
+        // --- Interactive Click-on-Word Translation ON TOP OF WORD ---
+        function handleWordClick(event, word, element) {
             event.stopPropagation();
-            isPopoverPinned = true;
+            activeWordElement = element;
 
-            const rect = event.currentTarget.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
             const targetX = rect.left + window.scrollX;
             const targetY = rect.top + window.scrollY;
-            const targetHeight = rect.height;
+            const targetWidth = rect.width;
 
-            triggerWordPopover(targetX, targetY, targetHeight, word);
+            triggerWordPopover(targetX, targetY, targetWidth, word, element);
         }
 
-        function triggerWordPopover(targetLeft, targetTop, targetHeight, word) {
+        function triggerWordPopover(targetLeft, targetTop, targetWidth, word, element) {
             const popover = document.getElementById('word-translation-popover');
             
             document.getElementById('popover-original-word').textContent = word;
@@ -1308,31 +1548,10 @@
             
             popover.classList.remove('hidden');
             popover.classList.add('flex');
-            
-            const popoverWidth = 320; 
-            let topPosition = targetTop + targetHeight + 8;
-            let leftPosition = targetLeft - 20;
-
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            
-            if (leftPosition + popoverWidth > windowWidth - 16) {
-                leftPosition = windowWidth - popoverWidth - 16;
-            }
-            if (leftPosition < 16) {
-                leftPosition = 16;
-            }
-
-            if (topPosition + 220 > window.scrollY + windowHeight) {
-                topPosition = Math.max(10, targetTop - 230);
-            }
-
-            popover.style.top = `${topPosition}px`;
-            popover.style.left = `${leftPosition}px`;
 
             document.getElementById('popover-pronounce-btn').onclick = () => speakSingleText(word, appState.selectedLanguage);
 
-            fetchWordData(word);
+            fetchWordData(word, element, targetLeft, targetTop, targetWidth);
         }
 
         function closePopover() {
@@ -1341,7 +1560,6 @@
                 popover.classList.add('hidden');
                 popover.classList.remove('flex');
             }
-            isPopoverPinned = false;
         }
 
         document.addEventListener('click', (e) => {
@@ -1353,7 +1571,7 @@
             }
         });
 
-        async function fetchWordData(word) {
+        async function fetchWordData(word, element, targetLeft, targetTop, targetWidth) {
             const lang = appState.selectedLanguage || 'Spanish';
             const config = langConfig[lang] || { code: 'es', target: 'en' };
             const srcLang = config.code;
@@ -1384,13 +1602,48 @@
                 translation = "Translation unavailable";
             }
 
+            // 1. SHOW TRANSLATION DIRECTLY ON/ABOVE THE WORD IN THE TEXT
+            const container = element.closest('.word-gloss-container');
+            if (container) {
+                let badge = container.querySelector('.word-translation-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = "word-translation-badge";
+                    container.insertBefore(badge, element);
+                }
+                badge.textContent = translation;
+                badge.classList.remove('hidden');
+            }
+
+            // 2. POSITION DETAIL POPOVER DIRECTLY ABOVE THE WORD
+            const popover = document.getElementById('word-translation-popover');
             document.getElementById('popover-translation-text').textContent = translation;
             document.getElementById('popover-pos-label').textContent = pos;
-            document.getElementById('popover-definition-text').textContent = `Definition in context: "${word}" (${lang})`;
+            document.getElementById('popover-definition-text').textContent = `Translation on top of "${word}" in ${lang}`;
 
             document.getElementById('popover-loading').classList.add('hidden');
             document.getElementById('popover-content').classList.remove('hidden');
             document.getElementById('popover-content').style.display = 'flex';
+
+            // Calculate coordinates ABOVE the word
+            const popoverWidth = 320; 
+            const popoverHeight = popover.offsetHeight || 220;
+            
+            let topPosition = targetTop - popoverHeight - 12; // ABOVE target word
+            let leftPosition = targetLeft + (targetWidth / 2) - (popoverWidth / 2);
+
+            const windowWidth = window.innerWidth;
+            if (leftPosition + popoverWidth > windowWidth - 16) leftPosition = windowWidth - popoverWidth - 16;
+            if (leftPosition < 16) leftPosition = 16;
+
+            // Fallback if near top of screen
+            if (topPosition < window.scrollY + 10) {
+                topPosition = targetTop + 36;
+            }
+
+            popover.style.top = `${topPosition}px`;
+            popover.style.left = `${leftPosition}px`;
+
             lucide.createIcons();
         }
 
