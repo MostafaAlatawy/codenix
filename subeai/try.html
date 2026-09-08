@@ -289,9 +289,9 @@
 
                             <!-- Action Toolbar -->
                             <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-                                <button onclick="addToLibraryCurrent()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-2 shadow-lg shadow-brand-600/20 transition-all">
-                                    <i class="ph ph-bookmark-simple text-base"></i>
-                                    <span>Add to Library</span>
+                                <button onclick="toggleFavoriteCurrent()" id="favCurrentBtn" class="px-4 py-2.5 card-theme hover:border-brand-500 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                                    <i id="favCurrentIcon" class="ph ph-star text-base text-amber-400"></i>
+                                    <span id="favCurrentText">Favorite</span>
                                 </button>
                                 <button onclick="downloadCurrent()" class="px-4 py-2.5 card-theme hover:border-brand-500 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
                                     <i class="ph ph-download text-base text-brand-500"></i>
@@ -304,7 +304,7 @@
                             </div>
                         </div>
 
-                        <!-- Quota Exceeded / Error State (Custom SubeAI Quota Bypass Overlay) -->
+                        <!-- Quota Exceeded / Error State -->
                         <div id="quotaState" class="hidden absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
                             <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-3xl">
                                 <i class="ph ph-hourglass-high"></i>
@@ -323,6 +323,7 @@
         </div>
     </main>
 
+    <!-- Library Modal with Tabs (Generated History vs Favorites) -->
     <div id="libraryModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="card-theme max-w-4xl w-full max-h-[85vh] rounded-3xl border flex flex-col overflow-hidden shadow-2xl">
             <div class="p-6 border-b border-purple-500/10 flex items-center justify-between">
@@ -332,7 +333,7 @@
                     </div>
                     <div>
                         <h3 class="font-bold text-lg">My Image Library</h3>
-                        <p class="text-xs text-purple-400">All your generated AI creations stored securely in your browser session</p>
+                        <p class="text-xs text-purple-400">All generated session history and saved favorites in local storage</p>
                     </div>
                 </div>
                 <button onclick="closeLibraryModal()" class="p-2 rounded-full hover:bg-purple-500/10 transition-colors text-xl">
@@ -340,13 +341,31 @@
                 </button>
             </div>
             
+            <!-- Library Tabs -->
+            <div class="flex items-center space-x-2 border-b border-purple-500/10 px-6 pt-4 bg-black/5">
+                <button onclick="switchLibraryTab('generated')" id="tabGeneratedBtn" class="pb-3 px-4 font-semibold text-sm border-b-2 border-brand-500 text-brand-500 transition-all flex items-center space-x-2">
+                    <i class="ph ph-clock-counter-clockwise text-base"></i>
+                    <span>Generated History</span>
+                    <span id="genCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-brand-500/20 text-brand-600 dark:text-purple-300 font-bold">0</span>
+                </button>
+                <button onclick="switchLibraryTab('favorites')" id="tabFavoritesBtn" class="pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-purple-400 hover:text-purple-200 transition-all flex items-center space-x-2">
+                    <i class="ph ph-star text-base"></i>
+                    <span>Favorites</span>
+                    <span id="favCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-purple-500/10 text-purple-400 font-bold">0</span>
+                </button>
+            </div>
+
+            <!-- Library Content Grid -->
             <div id="libraryGrid" class="flex-1 p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <!-- Dynamically populated library items -->
             </div>
 
+            <!-- Library Footer / Stats -->
             <div class="p-4 border-t border-purple-500/10 flex justify-between items-center bg-black/10">
-                <p id="libraryStats" class="text-xs text-purple-400 font-medium">0 images saved</p>
-                <button onclick="clearLibrary()" class="text-xs text-red-400 hover:underline font-medium">Clear Library</button>
+                <p id="libraryStats" class="text-xs text-purple-400 font-medium">0 items stored in local storage</p>
+                <div class="flex items-center space-x-4">
+                    <button onclick="clearCurrentTabStorage()" class="text-xs text-red-400 hover:underline font-medium" id="clearTabBtn">Clear Current Tab</button>
+                </div>
             </div>
         </div>
     </div>
@@ -381,7 +400,9 @@
         let currentInputImageBase64 = null;
         let lastGeneratedImageUrl = null;
         let lastPromptText = "";
-        let libraryImages = [];
+        let generatedImages = [];
+        let favoriteImages = [];
+        let activeLibraryTab = 'generated'; // 'generated' or 'favorites'
 
         // Initialize application on load
         window.addEventListener('DOMContentLoaded', () => {
@@ -389,12 +410,10 @@
             loadAccountState();
             loadLibraryFromStorage();
             onProviderChange();
-
-            // Intercept Puter quota alerts or UI errors globally
             setupQuotaInterception();
         });
 
-        // Theme management (Light: purple/white, Dark: purple/black)
+        // Theme management
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.classList.toggle('dark');
@@ -404,7 +423,7 @@
 
         function loadThemePreference() {
             const saved = localStorage.getItem('sube_theme');
-            const isDark = saved ? saved === 'dark' : true; // Default dark
+            const isDark = saved ? saved === 'dark' : true;
             if (isDark) {
                 document.documentElement.classList.add('dark');
             } else {
@@ -468,7 +487,6 @@
                         toggleAuthMenu();
                     }
                 } else {
-                    // Fallback simulation
                     const mockUser = { username: "PuterUser_" + Math.floor(Math.random()*1000) };
                     localStorage.setItem('sube_puter_user', JSON.stringify(mockUser));
                     updateAuthUI(mockUser);
@@ -533,7 +551,6 @@
 
         // Quota interception & error handling
         function setupQuotaInterception() {
-            // Override window.alert or detect balance rejections
             const originalAlert = window.alert;
             window.alert = function(msg) {
                 if (String(msg).toLowerCase().includes('balance') || String(msg).toLowerCase().includes('quota') || String(msg).toLowerCase().includes('funding')) {
@@ -570,14 +587,12 @@
             const testMode = document.getElementById('testModeCheck').checked;
             const puterPath = document.getElementById('puterPathInput').value.trim();
 
-            // Switch view to loading
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('resultWrapper').classList.add('hidden');
             document.getElementById('quotaState').classList.add('hidden');
             document.getElementById('loadingState').classList.remove('hidden');
             document.getElementById('loadingStatusText').textContent = testMode ? "Generating sample in test mode..." : "Generating AI masterpiece...";
 
-            // Construct options object per puter.ai.txt2img specs
             const options = {
                 provider: provider,
                 model: model,
@@ -585,10 +600,7 @@
                 test_mode: testMode
             };
 
-            if (puterPath) {
-                options.puter_output_path = puterPath;
-            }
-
+            if (puterPath) options.puter_output_path = puterPath;
             if (currentInputImageBase64) {
                 options.input_image = currentInputImageBase64;
                 options.input_image_mime_type = "image/png";
@@ -597,10 +609,8 @@
             try {
                 let imageElement;
                 if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2img) {
-                    // Call Puter AI txt2img with prompt and options
                     imageElement = await puter.ai.txt2img(prompt, options);
                 } else {
-                    // Fallback simulation if puter is not available in offline preview
                     await new Promise(r => setTimeout(r, 2000));
                     imageElement = document.createElement('img');
                     imageElement.src = "https://placehold.co/1024x1024/6366f1/ffffff?text=" + encodeURIComponent(prompt.substring(0, 30));
@@ -613,6 +623,20 @@
                 lastGeneratedImageUrl = imageElement.src;
                 lastPromptText = prompt;
 
+                // Automatically save into generated session history in LocalStorage
+                const generatedItem = {
+                    id: 'gen_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                    url: lastGeneratedImageUrl,
+                    prompt: lastPromptText,
+                    provider: provider,
+                    model: model,
+                    timestamp: new Date().toLocaleString()
+                };
+
+                generatedImages.unshift(generatedItem);
+                saveLibraryToStorage();
+                updateCurrentFavoriteButtonState();
+
                 // Display result
                 document.getElementById('resultImage').src = lastGeneratedImageUrl;
                 document.getElementById('resultPromptCaption').textContent = prompt;
@@ -623,8 +647,6 @@
             } catch (err) {
                 console.error("Generation error:", err);
                 document.getElementById('loadingState').classList.add('hidden');
-                
-                // Check if error is quota or insufficient funds
                 const errStr = String(err.message || err).toLowerCase();
                 if (errStr.includes('balance') || errStr.includes('funds') || errStr.includes('quota') || errStr.includes('402')) {
                     triggerQuotaModal();
@@ -635,104 +657,187 @@
             }
         }
 
-        // Library Management Functions
+        // Local Storage Library Management
         function loadLibraryFromStorage() {
             try {
-                const saved = localStorage.getItem('sube_image_library');
-                if (saved) {
-                    libraryImages = JSON.parse(saved);
-                    updateLibraryUI();
+                const savedGen = localStorage.getItem('sube_generated_history');
+                if (savedGen) {
+                    generatedImages = JSON.parse(savedGen);
                 }
+
+                const savedFav = localStorage.getItem('sube_favorite_images');
+                if (savedFav) {
+                    favoriteImages = JSON.parse(savedFav);
+                }
+                updateLibraryBadges();
             } catch (e) {
-                console.warn("Failed to load library:", e);
+                console.warn("Failed to load library from storage:", e);
             }
         }
 
         function saveLibraryToStorage() {
             try {
-                localStorage.setItem('sube_image_library', JSON.stringify(libraryImages));
-                updateLibraryUI();
+                localStorage.setItem('sube_generated_history', JSON.stringify(generatedImages));
+                localStorage.setItem('sube_favorite_images', JSON.stringify(favoriteImages));
+                updateLibraryBadges();
+                if (!document.getElementById('libraryModal').classList.contains('hidden')) {
+                    renderLibraryGrid();
+                }
             } catch (e) {
-                console.warn("Failed to save library:", e);
+                console.warn("Failed to save to local storage (storage full?):", e);
+                alert("Warning: Local storage capacity reached or exceeded.");
             }
         }
 
-        function addToLibraryCurrent() {
-            if (!lastGeneratedImageUrl) return;
-
-            const newItem = {
-                id: 'img_' + Date.now(),
-                url: lastGeneratedImageUrl,
-                prompt: lastPromptText,
-                timestamp: new Date().toLocaleDateString()
-            };
-
-            libraryImages.unshift(newItem);
-            saveLibraryToStorage();
-
-            // Success feedback
-            const btn = event.currentTarget;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="ph ph-check text-base"></i><span>Added!</span>`;
-            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+        function updateLibraryBadges() {
+            const totalCount = generatedImages.length + favoriteImages.length;
+            document.getElementById('libraryCountBadge').textContent = totalCount;
+            document.getElementById('genCountBadge').textContent = generatedImages.length;
+            document.getElementById('favCountBadge').textContent = favoriteImages.length;
         }
 
-        function updateLibraryUI() {
+        // Library Modal Tabs & Rendering
+        function switchLibraryTab(tab) {
+            activeLibraryTab = tab;
+            const genBtn = document.getElementById('tabGeneratedBtn');
+            const favBtn = document.getElementById('tabFavoritesBtn');
+
+            if (tab === 'generated') {
+                genBtn.className = "pb-3 px-4 font-semibold text-sm border-b-2 border-brand-500 text-brand-500 transition-all flex items-center space-x-2";
+                favBtn.className = "pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-purple-400 hover:text-purple-200 transition-all flex items-center space-x-2";
+            } else {
+                favBtn.className = "pb-3 px-4 font-semibold text-sm border-b-2 border-brand-500 text-brand-500 transition-all flex items-center space-x-2";
+                genBtn.className = "pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-purple-400 hover:text-purple-200 transition-all flex items-center space-x-2";
+            }
+            renderLibraryGrid();
+        }
+
+        function renderLibraryGrid() {
             const grid = document.getElementById('libraryGrid');
-            const countBadge = document.getElementById('libraryCountBadge');
             const stats = document.getElementById('libraryStats');
+            const items = activeLibraryTab === 'generated' ? generatedImages : favoriteImages;
 
-            countBadge.textContent = libraryImages.length;
-            stats.textContent = `${libraryImages.length} image(s) saved in library`;
+            stats.textContent = `${items.length} item(s) in ${activeLibraryTab === 'generated' ? 'Generated History' : 'Favorites'}`;
 
-            if (libraryImages.length === 0) {
+            if (items.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full py-12 text-center space-y-2 text-purple-400">
-                        <i class="ph ph-image-square text-4xl"></i>
-                        <p class="text-sm font-medium">Your library is empty</p>
-                        <p class="text-xs">Save your generated creations here for quick access.</p>
+                    <div class="col-span-full py-16 text-center space-y-3 text-purple-400">
+                        <i class="ph ${activeLibraryTab === 'generated' ? 'ph-clock-counter-clockwise' : 'ph-star'} text-5xl opacity-50"></i>
+                        <p class="text-sm font-medium">No images found in ${activeLibraryTab === 'generated' ? 'Generated History' : 'Favorites'}</p>
+                        <p class="text-xs">Generated creations are automatically recorded here, and starred items appear in Favorites.</p>
                     </div>
                 `;
                 return;
             }
 
-            grid.innerHTML = libraryImages.map(item => `
-                <div class="card-theme rounded-2xl overflow-hidden border group relative flex flex-col">
-                    <div class="h-40 overflow-hidden bg-black/25 relative">
-                        <img src="${item.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    </div>
-                    <div class="p-3 flex-1 flex flex-col justify-between space-y-2">
-                        <p class="text-xs font-medium line-clamp-2" title="${item.prompt}">${item.prompt}</p>
-                        <div class="flex items-center justify-between pt-2 border-t border-purple-500/10">
-                            <span class="text-[10px] text-purple-400">${item.timestamp}</span>
-                            <div class="flex items-center space-x-2">
-                                <a href="${item.url}" download="subeai_${item.id}.png" class="p-1.5 rounded-lg bg-brand-500/10 text-brand-500 hover:bg-brand-500/20 transition-colors" title="Download">
-                                    <i class="ph ph-download text-sm"></i>
-                                </a>
-                                <button onclick="deleteLibraryItem('${item.id}')" class="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors" title="Delete">
-                                    <i class="ph ph-trash text-sm"></i>
-                                </button>
+            grid.innerHTML = items.map(item => {
+                const isFav = favoriteImages.some(f => f.url === item.url || f.id === item.id);
+                return `
+                    <div class="card-theme rounded-2xl overflow-hidden border group relative flex flex-col shadow-md">
+                        <div class="h-44 overflow-hidden bg-black/30 relative">
+                            <img src="${item.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <button onclick="toggleFavoriteById('${item.id}')" class="absolute top-2 right-2 p-2 rounded-xl bg-black/60 backdrop-blur-md text-amber-400 hover:scale-110 transition-transform shadow-lg" title="${isFav ? 'Remove from Favorites' : 'Add to Favorites'}">
+                                <i class="ph ${isFav ? 'ph-star-fill text-amber-400' : 'ph-star text-white'} text-base"></i>
+                            </button>
+                        </div>
+                        <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+                            <div>
+                                <p class="text-xs font-semibold line-clamp-2" title="${item.prompt}">${item.prompt}</p>
+                                <p class="text-[10px] text-purple-400 mt-0.5">${item.provider || 'AI'} • ${item.timestamp || ''}</p>
+                            </div>
+                            <div class="flex items-center justify-between pt-2 border-t border-purple-500/10">
+                                <span class="text-[10px] text-purple-400">Saved</span>
+                                <div class="flex items-center space-x-2">
+                                    <a href="${item.url}" download="subeai_${item.id}.png" class="p-1.5 rounded-lg bg-brand-500/10 text-brand-500 hover:bg-brand-500/20 transition-colors" title="Download">
+                                        <i class="ph ph-download text-sm"></i>
+                                    </a>
+                                    <button onclick="deleteLibraryItem('${item.id}')" class="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors" title="Delete">
+                                        <i class="ph ph-trash text-sm"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        // Favoriting and management
+        function toggleFavoriteCurrent() {
+            if (!lastGeneratedImageUrl) return;
+
+            const existingIndex = favoriteImages.findIndex(f => f.url === lastGeneratedImageUrl);
+            if (existingIndex > -1) {
+                favoriteImages.splice(existingIndex, 1);
+            } else {
+                const favItem = {
+                    id: 'fav_' + Date.now(),
+                    url: lastGeneratedImageUrl,
+                    prompt: lastPromptText,
+                    timestamp: new Date().toLocaleString()
+                };
+                favoriteImages.unshift(favItem);
+            }
+            saveLibraryToStorage();
+            updateCurrentFavoriteButtonState();
+        }
+
+        function toggleFavoriteById(id) {
+            const allItems = [...generatedImages, ...favoriteImages];
+            const target = allItems.find(i => i.id === id);
+            if (!target) return;
+
+            const favIndex = favoriteImages.findIndex(f => f.id === id || f.url === target.url);
+            if (favIndex > -1) {
+                favoriteImages.splice(favIndex, 1);
+            } else {
+                favoriteImages.unshift({ ...target, id: 'fav_' + Date.now() });
+            }
+            saveLibraryToStorage();
+            renderLibraryGrid();
+            updateCurrentFavoriteButtonState();
+        }
+
+        function updateCurrentFavoriteButtonState() {
+            if (!lastGeneratedImageUrl) return;
+            const isFav = favoriteImages.some(f => f.url === lastGeneratedImageUrl);
+            const icon = document.getElementById('favCurrentIcon');
+            const text = document.getElementById('favCurrentText');
+            if (isFav) {
+                icon.className = "ph ph-star-fill text-base text-amber-400";
+                text.textContent = "Favorited";
+            } else {
+                icon.className = "ph ph-star text-base text-amber-400";
+                text.textContent = "Favorite";
+            }
         }
 
         function deleteLibraryItem(id) {
-            libraryImages = libraryImages.filter(item => item.id !== id);
+            if (activeLibraryTab === 'generated') {
+                generatedImages = generatedImages.filter(i => i.id !== id);
+            } else {
+                favoriteImages = favoriteImages.filter(i => i.id !== id);
+            }
             saveLibraryToStorage();
+            renderLibraryGrid();
         }
 
-        function clearLibrary() {
-            if (confirm("Are you sure you want to clear your entire image library?")) {
-                libraryImages = [];
+        function clearCurrentTabStorage() {
+            const tabName = activeLibraryTab === 'generated' ? 'Generated History' : 'Favorites';
+            if (confirm(`Are you sure you want to clear all items in ${tabName}?`)) {
+                if (activeLibraryTab === 'generated') {
+                    generatedImages = [];
+                } else {
+                    favoriteImages = [];
+                }
                 saveLibraryToStorage();
+                renderLibraryGrid();
             }
         }
 
         function openLibraryModal() {
             document.getElementById('libraryModal').classList.remove('hidden');
+            renderLibraryGrid();
         }
 
         function closeLibraryModal() {
