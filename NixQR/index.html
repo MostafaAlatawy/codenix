@@ -1,104 +1,534 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NixQR | Powered by Codenix</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛶</text></svg>">
+    <title>NixQR - Professional QR Code Generator by Codenix</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        purple: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                        dark: {
+                            DEFAULT: '#09090b',
+                            card: '#121118',
+                            border: '#27272a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8b5cf6;
+            border-radius: 4px;
+        }
     </style>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+<body class="bg-purple-50 text-slate-900 dark:bg-dark dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <div class="w-full max-w-lg glass rounded-3xl shadow-2xl overflow-hidden p-8 border border-white/20">
-        <div class="flex flex-col items-center mb-8">
-            <img src="/logo.png" alt="Codenix Logo" class="w-20 h-20 rounded-full mb-4 shadow-lg border-4 border-blue-500">
-            <h1 class="text-3xl font-bold text-slate-800">NixQR</h1>
-            <p class="text-slate-500">by Codenix</p>
-        </div>
-
-        <div class="space-y-4">
-            <input type="text" id="urlInput" placeholder="Enter your link here..." 
-                   class="w-full p-4 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-lg">
-            
-            <button onclick="generateQR()" 
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transform transition-all active:scale-95">
-                Generate QR Code
-            </button>
-        </div>
-
-        <div id="statusArea" class="mt-8 flex flex-col items-center justify-center min-h-[300px]">
-            <div id="loader" class="loader hidden"></div>
-            <div id="resultContainer" class="hidden flex flex-col items-center animate-in fade-in zoom-in duration-500">
-                <img id="qrImage" src="" alt="Generated QR" class="w-64 h-64 border-4 border-white shadow-xl rounded-lg mb-6">
-                <button onclick="downloadQR()" class="text-blue-600 font-semibold hover:underline">Download QR Code</button>
+    <!-- Navigation Bar -->
+    <header class="w-full border-b border-purple-200 dark:border-dark-border bg-white/80 dark:bg-dark/80 glass-panel sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white shadow-lg shadow-purple-500/30">
+                    <i class="fa-solid fa-qrcode text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">NixQR</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 font-medium border border-purple-200 dark:border-purple-800/50">v2.4</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">by Codenix</p>
+                </div>
             </div>
-            <p id="placeholderText" class="text-slate-400">Your QR code will appear here</p>
+
+            <div class="flex items-center space-x-4">
+                <!-- Dashboard Button -->
+                <a href="/dashboard/" class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 border border-purple-300 dark:border-purple-800 transition-all duration-200 shadow-sm hover:shadow">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-800 flex items-center justify-center text-purple-700 dark:text-purple-300 hover:scale-105 transition-transform" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+            </div>
         </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div class="text-center max-w-3xl mx-auto mb-10">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4">
+                Next-Gen <span class="bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">QR Code Generator</span>
+            </h1>
+            <p class="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+                Generate high-performance QR codes in seconds using free public APIs, customize styling, and instantly embed your brand logo in the center.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Column: Configuration Controls -->
+            <div class="lg:col-span-7 bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-xl border border-purple-200/80 dark:border-dark-border">
+                
+                <!-- Content Type Tabs -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">QR Content Type</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="switchTab('url')" id="tab-url" class="tab-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-purple-600 text-white shadow-md shadow-purple-500/20 flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-link"></i>
+                            <span>URL</span>
+                        </button>
+                        <button type="button" onclick="switchTab('text')" id="tab-text" class="tab-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-font"></i>
+                            <span>Text</span>
+                        </button>
+                        <button type="button" onclick="switchTab('email')" id="tab-email" class="tab-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span>Email</span>
+                        </button>
+                        <button type="button" onclick="switchTab('wifi')" id="tab-wifi" class="tab-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-wifi"></i>
+                            <span>WiFi</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Forms -->
+                <div id="form-content" class="space-y-5 mb-6">
+                    <!-- URL Input Form (Default) -->
+                    <div id="input-group-url" class="input-form-group">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Website URL</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                                <i class="fa-solid fa-globe"></i>
+                            </span>
+                            <input type="url" id="qr-url" value="https://codenix.io" placeholder="https://example.com" class="w-full pl-10 pr-4 py-3 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                        </div>
+                    </div>
+
+                    <!-- Text Input Form -->
+                    <div id="input-group-text" class="input-form-group hidden">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Plain Text / Message</label>
+                        <textarea id="qr-text" rows="3" placeholder="Enter your custom message or text here..." class="w-full p-3.5 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">Welcome to NixQR by Codenix!</textarea>
+                    </div>
+
+                    <!-- Email Input Form -->
+                    <div id="input-group-email" class="input-form-group hidden space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Recipient Email</label>
+                            <input type="email" id="qr-email-address" placeholder="contact@example.com" class="w-full px-4 py-3 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Subject</label>
+                            <input type="text" id="qr-email-subject" placeholder="Inquiry about NixQR" class="w-full px-4 py-3 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                        </div>
+                    </div>
+
+                    <!-- WiFi Input Form -->
+                    <div id="input-group-wifi" class="input-form-group hidden space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Network SSID (Name)</label>
+                            <input type="text" id="qr-wifi-ssid" placeholder="MyHomeNetwork" class="w-full px-4 py-3 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Encryption</label>
+                                <select id="qr-wifi-type" class="w-full px-4 py-3 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                                    <option value="WPA">WPA/WPA2</option>
+                                    <option value="WEP">WEP</option>
+                                    <option value="nopass">None</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+                                <input type="password" id="qr-wifi-pass" placeholder="Network Password" class="w-full px-4 py-3 rounded-xl bg-purple-50/50 dark:bg-dark border border-purple-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium transition">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customization Controls -->
+                <div class="border-t border-purple-100 dark:border-dark-border pt-6 space-y-5">
+                    <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Customization & Branding</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Color Pickers -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">QR Code Color</label>
+                            <div class="flex items-center space-x-3">
+                                <input type="color" id="qr-color" value="#7c3aed" class="w-12 h-10 rounded-xl cursor-pointer bg-transparent border border-purple-200 dark:border-dark-border">
+                                <span id="qr-color-val" class="text-xs font-mono font-bold text-purple-600">#7C3AED</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">Background Color</label>
+                            <div class="flex items-center space-x-3">
+                                <input type="color" id="qr-bg" value="#ffffff" class="w-12 h-10 rounded-xl cursor-pointer bg-transparent border border-purple-200 dark:border-dark-border">
+                                <span id="qr-bg-val" class="text-xs font-mono font-bold text-slate-600">#FFFFFF</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center Logo Upload -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400">Center Logo (Optional)</label>
+                            <button type="button" id="remove-logo" class="text-xs text-rose-500 hover:underline hidden">Remove Logo</button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex-1 flex flex-col items-center justify-center p-4 border-2 border-dashed border-purple-300 dark:border-purple-800 rounded-xl cursor-pointer hover:border-purple-500 bg-purple-50/30 dark:bg-dark/50 transition group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-9 h-9 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200" id="logo-file-label">Upload Brand Logo (PNG/JPG)</p>
+                                        <p class="text-[10px] text-slate-500">Auto-centered with high error correction</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="logo-file-input" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button type="button" id="generate-btn" class="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 text-white font-bold text-base shadow-lg shadow-purple-600/30 hover:opacity-95 active:scale-[0.99] transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Generate & Embed Logo</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Preview & Output -->
+            <div class="lg:col-span-5 bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-xl border border-purple-200/80 dark:border-dark-border flex flex-col items-center text-center">
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-6 w-full text-left">Live QR Preview</h3>
+                
+                <!-- QR Canvas Display Box -->
+                <div class="relative p-5 rounded-2xl bg-white dark:bg-dark border border-purple-200 dark:border-purple-800/60 shadow-inner flex items-center justify-center mb-6 group">
+                    <div id="loading-spinner" class="absolute inset-0 bg-white/80 dark:bg-dark/80 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-10 hidden">
+                        <div class="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <span class="text-xs font-semibold text-purple-600">Generating via API...</span>
+                    </div>
+
+                    <canvas id="qr-canvas" width="280" height="280" class="rounded-xl shadow-md w-64 h-64 sm:w-72 sm:h-72 object-contain"></canvas>
+                    
+                    <!-- Center Logo Overlay element for live reference -->
+                    <div id="preview-logo-badge" class="absolute w-14 h-14 bg-white dark:bg-slate-900 rounded-full shadow-md border-2 border-purple-500 flex items-center justify-center overflow-hidden hidden">
+                        <img id="preview-logo-img" src="" alt="Logo" class="w-10 h-10 object-contain rounded-full">
+                    </div>
+                </div>
+
+                <!-- API Status Tag -->
+                <div class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-6 bg-purple-50 dark:bg-purple-950/40 px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-900/50">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Powered by Free Public QR API & Canvas Engine</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button type="button" id="download-png" class="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-600/20 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download PNG</span>
+                    </button>
+                    <button type="button" id="copy-link" class="py-3 px-4 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 border border-purple-300 dark:border-purple-800 font-semibold text-xs sm:text-sm transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Copy Data</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-purple-200 dark:border-dark-border py-6 mt-12 bg-white/50 dark:bg-dark/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <p>&copy; 2026 NixQR by Codenix. All rights reserved.</p>
+            <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+                <a href="/dashboard/" class="hover:text-purple-600 transition">Dashboard</a>
+                <span>&bull;</span>
+                <span class="text-purple-600 dark:text-purple-400 font-medium">Free Public API Powered</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Modal (No alert/confirm used) -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 text-sm font-semibold border border-purple-500/30">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message">QR Code generated successfully!</span>
     </div>
 
+    <!-- JavaScript Application Logic -->
     <script>
-        function generateQR() {
-            const input = document.getElementById('urlInput').value.trim();
-            const loader = document.getElementById('loader');
-            const resultContainer = document.getElementById('resultContainer');
-            const qrImage = document.getElementById('qrImage');
-            const placeholder = document.getElementById('placeholderText');
-            const statusArea = document.getElementById('statusArea');
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
 
-            if (!input) {
-                alert('Please enter a valid link');
+        themeToggle.addEventListener('click', () => {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('nixqr_theme', 'light');
+            } else {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('nixqr_theme', 'dark');
+            }
+        });
+
+        // Initialize saved theme
+        if (localStorage.getItem('nixqr_theme') === 'light') {
+            htmlElement.classList.remove('dark');
+        }
+
+        // Tab Switching Logic
+        let currentTab = 'url';
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 flex items-center justify-center space-x-1.5";
+            });
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.className = "tab-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-purple-600 text-white shadow-md shadow-purple-500/20 flex items-center justify-center space-x-1.5";
+
+            document.querySelectorAll('.input-form-group').forEach(group => group.classList.add('hidden'));
+            document.getElementById(`input-group-${tab}`).classList.remove('hidden');
+        }
+
+        // Color input sync
+        const qrColorInput = document.getElementById('qr-color');
+        const qrColorVal = document.getElementById('qr-color-val');
+        qrColorInput.addEventListener('input', (e) => {
+            qrColorVal.textContent = e.target.value.toUpperCase();
+        });
+
+        const qrBgInput = document.getElementById('qr-bg');
+        const qrBgVal = document.getElementById('qr-bg-val');
+        qrBgInput.addEventListener('input', (e) => {
+            qrBgVal.textContent = e.target.value.toUpperCase();
+        });
+
+        // Logo upload state
+        let uploadedLogoDataUrl = null;
+        const logoFileInput = document.getElementById('logo-file-input');
+        const logoFileLabel = document.getElementById('logo-file-label');
+        const removeLogoBtn = document.getElementById('remove-logo');
+        const previewLogoBadge = document.getElementById('preview-logo-badge');
+        const previewLogoImg = document.getElementById('preview-logo-img');
+
+        logoFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedLogoDataUrl = event.target.result;
+                    logoFileLabel.textContent = file.name;
+                    removeLogoBtn.classList.remove('hidden');
+                    previewLogoBadge.classList.remove('hidden');
+                    previewLogoImg.src = uploadedLogoDataUrl;
+                    showToast("Logo uploaded and ready for embedding!");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeLogoBtn.addEventListener('click', () => {
+            uploadedLogoDataUrl = null;
+            logoFileInput.value = '';
+            logoFileLabel.textContent = "Upload Brand Logo (PNG/JPG)";
+            removeLogoBtn.classList.add('hidden');
+            previewLogoBadge.classList.add('hidden');
+            previewLogoImg.src = '';
+            showToast("Logo removed");
+            generateQRCode();
+        });
+
+        // Toast Notification Function
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = message;
+            if (isError) {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Get QR Content based on active tab
+        function getQRContent() {
+            if (currentTab === 'url') {
+                return document.getElementById('qr-url').value.trim() || 'https://codenix.io';
+            } else if (currentTab === 'text') {
+                return document.getElementById('qr-text').value.trim() || 'NixQR Code';
+            } else if (currentTab === 'email') {
+                const email = document.getElementById('qr-email-address').value.trim() || 'contact@codenix.io';
+                const subject = document.getElementById('qr-email-subject').value.trim();
+                return `mailto:${email}${subject ? '?subject=' + encodeURIComponent(subject) : ''}`;
+            } else if (currentTab === 'wifi') {
+                const ssid = document.getElementById('qr-wifi-ssid').value.trim() || 'NixNetwork';
+                const type = document.getElementById('qr-wifi-type').value;
+                const pass = document.getElementById('qr-wifi-pass').value.trim();
+                return `WIFI:S:${ssid};T:${type};P:${pass};;`;
+            }
+            return 'https://codenix.io';
+        }
+
+        // Generate QR Code using Free Public API and draw with logo onto Canvas
+        async function generateQRCode() {
+            const content = getQRContent();
+            if (!content) {
+                showToast("Please enter valid content for the QR code.", true);
                 return;
             }
 
-            // UI Reset
-            placeholder.classList.add('hidden');
-            resultContainer.classList.add('hidden');
-            loader.classList.remove('hidden');
+            const spinner = document.getElementById('loading-spinner');
+            spinner.classList.remove('hidden');
 
-            // Simulate generation latency
-            setTimeout(() => {
-                // Updated to use the reliable goQR.me API
-                const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(input)}`;
-                qrImage.src = apiUrl;
-                
-                loader.classList.add('hidden');
-                resultContainer.classList.remove('hidden');
-            }, 800);
+            const fgColor = qrColorInput.value.replace('#', '');
+            const bgColor = qrBgInput.value.replace('#', '');
+            
+            // Using free public QR API: api.qrserver.com
+            const size = 300;
+            const apiURL = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(content)}&color=${fgColor}&bgcolor=${bgColor}&ecc=H`;
+
+            const canvas = document.getElementById('qr-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const qrImage = new Image();
+            qrImage.crossOrigin = "anonymous";
+            qrImage.src = apiURL;
+
+            qrImage.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(qrImage, 0, 0, canvas.width, canvas.height);
+
+                // If logo is uploaded, draw it in the center
+                if (uploadedLogoDataUrl) {
+                    const logoImg = new Image();
+                    logoImg.src = uploadedLogoDataUrl;
+                    logoImg.onload = function() {
+                        const logoSize = 70;
+                        const x = (canvas.width - logoSize) / 2;
+                        const y = (canvas.height - logoSize) / 2;
+
+                        // Draw white circular background badge behind logo for high scan contrast
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 2 + 6, 0, Math.PI * 2);
+                        ctx.fillStyle = qrBgInput.value;
+                        ctx.fill();
+                        ctx.lineWidth = 4;
+                        ctx.strokeStyle = qrColorInput.value;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Clip and draw logo
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 2, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(logoImg, x, y, logoSize, logoSize);
+                        ctx.restore();
+
+                        spinner.classList.add('hidden');
+                        showToast("QR Code successfully generated with center logo!");
+                    };
+                    logoImg.onerror = function() {
+                        spinner.classList.add('hidden');
+                        showToast("Generated QR code, but failed to load logo image.", true);
+                    };
+                } else {
+                    spinner.classList.add('hidden');
+                    showToast("QR Code generated successfully!");
+                }
+            };
+
+            qrImage.onerror = function() {
+                spinner.classList.add('hidden');
+                showToast("Failed to connect to public QR API. Please check your network.", true);
+            };
         }
 
-        // Helper to download the image
-        async function downloadQR() {
-            const image = document.getElementById('qrImage');
-            const imageSrc = image.src;
-            
+        // Event listener for generate button
+        document.getElementById('generate-btn').addEventListener('click', generateQRCode);
+
+        // Download PNG button
+        document.getElementById('download-png').addEventListener('click', () => {
+            const canvas = document.getElementById('qr-canvas');
+            const link = document.createElement('a');
+            link.download = 'NixQR-Code.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast("QR Code downloaded as PNG!");
+        });
+
+        // Copy Data button
+        document.getElementById('copy-link').addEventListener('click', () => {
+            const content = getQRContent();
+            const textArea = document.createElement('textarea');
+            textArea.value = content;
+            document.body.appendChild(textArea);
+            textArea.select();
             try {
-                const response = await fetch(imageSrc);
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'NixQR-Code.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                document.execCommand('copy');
+                showToast("QR Code content copied to clipboard!");
             } catch (err) {
-                console.error('Download failed', err);
-                alert('Could not download the image directly. Please right-click the QR code and select "Save Image As".');
+                showToast("Failed to copy content.", true);
             }
+            document.body.removeChild(textArea);
+        });
+
+        // Initial generation on window load
+        window.onload = function() {
+            generateQRCode();
         }
     </script>
 </body>
