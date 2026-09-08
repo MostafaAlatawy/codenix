@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubeAI | Advanced Multi-Model AI Image Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.puter.com/v2/"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            900: '#4c1d95',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Light mode: Purple and White */
+        html:not(.dark) body {
+            background-color: #f8fafc;
+            color: #1e1b4b;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 40%);
+        }
+
+        /* Dark mode: Purple and Black */
+        html.dark body {
+            background-color: #030307;
+            color: #f3e8ff;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(76, 29, 149, 0.2) 0%, transparent 40%);
+        }
+
+        /* Glassmorphism helpers */
+        .glass-light {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+
+        .glass-dark {
+            background: rgba(15, 13, 26, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        html:not(.dark) .card-theme { background: #ffffff; border-color: #ede9fe; box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.08); }
+        html.dark .card-theme { background: #0c0a1d; border-color: rgba(139, 92, 246, 0.2); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        html.dark ::-webkit-scrollbar-thumb { background: #2e1065; border-radius: 4px; }
+        html:not(.dark) ::-webkit-scrollbar-thumb { background: #ddd6fe; border-radius: 4px; }
+
+        @keyframes pulse-sube {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.98); }
+        }
+        .animate-sube { animation: pulse-sube 3s infinite ease-in-out; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <header class="sticky top-0 z-40 backdrop-blur-xl border-b transition-colors duration-300" id="mainHeader">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-purple-400 flex items-center justify-center shadow-lg shadow-brand-600/30 text-white font-bold text-xl">
+                    <i class="ph ph-sparkle"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-purple-400 bg-clip-text text-transparent">SubeAI</h1>
+                    <p class="text-xs text-purple-500/80 font-medium">Advanced Multi-Model AI Image Generator</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl card-theme hover:scale-105 transition-transform" title="Toggle Theme">
+                    <i id="themeIcon" class="ph ph-moon text-lg"></i>
+                </button>
+
+                <!-- Library Button -->
+                <button onclick="openLibraryModal()" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl card-theme hover:border-brand-500 transition-all font-medium text-sm">
+                    <i class="ph ph-images text-brand-600 text-lg"></i>
+                    <span class="hidden sm:inline">My Library</span>
+                    <span id="libraryCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-brand-500/20 text-brand-600 dark:text-purple-300 font-bold">0</span>
+                </button>
+
+                <!-- Account / Puter Auth Widget -->
+                <div id="authWidget" class="relative">
+                    <button onclick="toggleAuthMenu()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl card-theme hover:border-brand-500 transition-all text-sm font-medium">
+                        <div id="authAvatar" class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
+                            <i class="ph ph-user"></i>
+                        </div>
+                        <span id="authUsername" class="max-w-[100px] truncate">Sign In</span>
+                        <i class="ph ph-caret-down text-xs"></i>
+                    </button>
+
+                    <!-- Auth Dropdown Menu -->
+                    <div id="authDropdown" class="hidden absolute right-0 mt-2 w-64 card-theme rounded-2xl shadow-2xl p-4 z-50 border">
+                        <div class="mb-3 pb-3 border-b border-purple-500/10">
+                            <p class="text-xs text-purple-400 font-medium">Puter Account Session</p>
+                            <p id="authDropdownEmail" class="text-sm font-semibold truncate mt-0.5">Not Signed In</p>
+                        </div>
+                        <div id="authActions" class="space-y-2">
+                            <button onclick="handlePuterSignIn()" class="w-full py-2 px-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors flex items-center justify-center space-x-2">
+                                <i class="ph ph-sign-in"></i>
+                                <span>Sign In with Puter</span>
+                            </button>
+                            <button onclick="handleClearAccount()" class="w-full py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-medium transition-colors flex items-center justify-center space-x-2">
+                                <i class="ph ph-sign-out"></i>
+                                <span>Sign Out / Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Controls & Prompt Studio -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="card-theme p-6 rounded-3xl border space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold flex items-center space-x-2">
+                            <i class="ph ph-paint-brush-broad text-brand-500"></i>
+                            <span>Generation Studio</span>
+                        </h2>
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-purple-300 font-semibold">puter.ai.txt2img()</span>
+                    </div>
+
+                    <!-- Prompt Input -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold">Prompt Description</label>
+                        <textarea id="promptInput" rows="4" placeholder="Describe the image you want to create in vivid detail (e.g., A cybernetic samurai meditating in a neon-lit cyberpunk bamboo forest)..." class="w-full rounded-2xl p-4 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm resize-none transition-all"></textarea>
+                    </div>
+
+                    <!-- Provider Selection -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold">AI Provider</label>
+                        <select id="providerSelect" onchange="onProviderChange()" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                            <option value="openai-image-generation">OpenAI (GPT Image)</option>
+                            <option value="gemini">Gemini</option>
+                            <option value="xai">xAI (Grok Image)</option>
+                            <option value="together">Together AI</option>
+                            <option value="replicate-image-generation">Replicate (FLUX / Leonardo)</option>
+                        </select>
+                    </div>
+
+                    <!-- Model Selection (Dynamic) -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold">Model</label>
+                        <select id="modelSelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                            <!-- Populated dynamically via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Quality / Ratio Options -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold">Quality / Tier</label>
+                            <select id="qualitySelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                                <option value="low">Low (Fast & Default)</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold">Aspect Ratio</label>
+                            <select id="aspectRatioSelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                                <option value="1:1">Square (1:1)</option>
+                                <option value="16:9">Widescreen (16:9)</option>
+                                <option value="9:16">Portrait (9:16)</option>
+                                <option value="4:3">Standard (4:3)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Image-to-Image Input Section -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-semibold">Input Image (Optional Img2Img)</label>
+                            <button onclick="clearInputImage()" id="clearImgBtn" class="hidden text-xs text-red-400 hover:underline">Remove image</button>
+                        </div>
+                        <div id="dropZone" class="drop-zone rounded-2xl p-4 text-center cursor-pointer relative overflow-hidden flex flex-col items-center justify-center min-h-[100px]">
+                            <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div id="dropZoneContent" class="flex flex-col items-center space-y-2">
+                                <i class="ph ph-cloud-arrow-up text-2xl text-brand-500"></i>
+                                <p class="text-xs font-medium">Drop an image here or click to upload</p>
+                                <p class="text-[10px] text-purple-400">Supports URL, Data-URI, or Base64</p>
+                            </div>
+                            <img id="inputImagePreview" class="hidden max-h-32 object-contain rounded-xl z-0">
+                        </div>
+                    </div>
+
+                    <!-- Test Mode & Path Options -->
+                    <div class="space-y-3 pt-2 border-t border-purple-500/10">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="testModeCheck" class="w-4 h-4 text-brand-600 rounded focus:ring-brand-500">
+                                <label for="testModeCheck" class="text-sm font-medium cursor-pointer">Test Mode (No Credits Used)</label>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-purple-400">Puter Filesystem Path (Optional)</label>
+                            <input type="text" id="puterPathInput" placeholder="images/my-creation.png" class="w-full rounded-xl p-2.5 card-theme border text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button onclick="generateImage()" id="generateBtn" class="w-full btn-primary text-white font-semibold py-4 rounded-2xl shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 text-base transition-all">
+                        <i class="ph ph-magic-wand text-xl"></i>
+                        <span>Generate Image</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Canvas Output & Results -->
+            <div class="lg:col-span-7 flex flex-col space-y-6">
+                <div class="card-theme p-6 rounded-3xl border flex-1 flex flex-col min-h-[500px] relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-purple-400">Output Canvas</h3>
+                        <div id="generationMeta" class="text-xs text-purple-400 font-medium">Ready to create</div>
+                    </div>
+
+                    <!-- Output Viewer Container -->
+                    <div id="outputContainer" class="flex-1 flex flex-col items-center justify-center rounded-2xl border border-dashed border-purple-500/20 relative p-4 min-h-[400px] bg-black/20 overflow-hidden">
+                        
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center space-y-3 max-w-sm">
+                            <div class="w-20 h-20 rounded-3xl bg-brand-500/10 flex items-center justify-center mx-auto text-brand-500 animate-sube">
+                                <i class="ph ph-image text-4xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg">No Image Generated Yet</h4>
+                            <p class="text-xs text-purple-400">Configure your prompt and settings on the left, then click Generate Image to unleash Puter AI.</p>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="loadingState" class="hidden flex flex-col items-center space-y-4">
+                            <div class="relative w-20 h-20">
+                                <div class="absolute inset-0 rounded-full border-4 border-brand-500/20 animate-ping"></div>
+                                <div class="absolute inset-0 rounded-full border-4 border-brand-600 border-t-transparent animate-spin"></div>
+                                <div class="absolute inset-0 flex items-center justify-center text-brand-500">
+                                    <i class="ph ph-sparkle text-2xl animate-pulse"></i>
+                                </div>
+                            </div>
+                            <div class="text-center space-y-1">
+                                <p class="font-bold text-sm" id="loadingStatusText">Generating masterpiece...</p>
+                                <p class="text-xs text-purple-400">Communicating with AI Provider via Puter.ai</p>
+                            </div>
+                        </div>
+
+                        <!-- Result Display -->
+                        <div id="resultWrapper" class="hidden w-full h-full flex flex-col items-center justify-center space-y-4">
+                            <div class="relative group max-h-[450px] overflow-hidden rounded-2xl shadow-2xl border border-purple-500/30">
+                                <img id="resultImage" class="max-h-[420px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" alt="Generated AI Masterpiece">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                                    <p id="resultPromptCaption" class="text-xs text-white truncate"></p>
+                                </div>
+                            </div>
+
+                            <!-- Action Toolbar -->
+                            <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                                <button onclick="addToLibraryCurrent()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-2 shadow-lg shadow-brand-600/20 transition-all">
+                                    <i class="ph ph-bookmark-simple text-base"></i>
+                                    <span>Add to Library</span>
+                                </button>
+                                <button onclick="downloadCurrent()" class="px-4 py-2.5 card-theme hover:border-brand-500 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                                    <i class="ph ph-download text-base text-brand-500"></i>
+                                    <span>Download</span>
+                                </button>
+                                <button onclick="copyImageToClipboard()" class="px-4 py-2.5 card-theme hover:border-brand-500 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                                    <i class="ph ph-copy text-base text-brand-500"></i>
+                                    <span>Copy URL</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quota Exceeded / Error State (Custom SubeAI Quota Bypass Overlay) -->
+                        <div id="quotaState" class="hidden absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
+                            <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-3xl">
+                                <i class="ph ph-hourglass-high"></i>
+                            </div>
+                            <h4 class="text-xl font-bold">Quota Limit Reached</h4>
+                            <p class="text-sm text-zinc-300 max-w-sm">Get back tomorrow for more quota or try enabling <span class="text-brand-400 font-semibold">Test Mode</span> to continue experimenting instantly without credits!</p>
+                            <button onclick="dismissQuotaModal()" class="px-6 py-3 btn-primary text-white font-semibold rounded-xl text-sm shadow-lg">
+                                Got it, let's use Test Mode
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="libraryModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="card-theme max-w-4xl w-full max-h-[85vh] rounded-3xl border flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-purple-500/10 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center text-xl">
+                        <i class="ph ph-images"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg">My Image Library</h3>
+                        <p class="text-xs text-purple-400">All your generated AI creations stored securely in your browser session</p>
+                    </div>
+                </div>
+                <button onclick="closeLibraryModal()" class="p-2 rounded-full hover:bg-purple-500/10 transition-colors text-xl">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            
+            <div id="libraryGrid" class="flex-1 p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Dynamically populated library items -->
+            </div>
+
+            <div class="p-4 border-t border-purple-500/10 flex justify-between items-center bg-black/10">
+                <p id="libraryStats" class="text-xs text-purple-400 font-medium">0 images saved</p>
+                <button onclick="clearLibrary()" class="text-xs text-red-400 hover:underline font-medium">Clear Library</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Model definitions per provider matching Puter AI docs
+        const providerModels = {
+            "openai-image-generation": [
+                { id: "gpt-image-1-mini", name: "GPT Image 1 Mini (Default)" },
+                { id: "gpt-image-1", name: "GPT Image 1" },
+                { id: "gpt-image-1.5", name: "GPT Image 1.5" },
+                { id: "gpt-image-2", name: "GPT Image 2" }
+            ],
+            "gemini": [
+                { id: "gemini-3.1-flash-image-preview", name: "Gemini 3.1 Flash Image" }
+            ],
+            "xai": [
+                { id: "grok-imagine-image", name: "Grok Imagine Image (Default)" },
+                { id: "grok-imagine-image-quality", name: "Grok Imagine Quality" }
+            ],
+            "together": [
+                { id: "black-forest-labs/flux-schnell", name: "FLUX Schnell (Together)" },
+                { id: "black-forest-labs/flux-dev", name: "FLUX Dev (Together)" }
+            ],
+            "replicate-image-generation": [
+                { id: "black-forest-labs/flux-schnell", name: "FLUX Schnell (Replicate)" },
+                { id: "black-forest-labs/flux-dev", name: "FLUX Dev (Replicate)" },
+                { id: "leonardoai/lucid-origin", name: "Leonardo Lucid Origin" }
+            ]
+        };
+
+        let currentInputImageBase64 = null;
+        let lastGeneratedImageUrl = null;
+        let lastPromptText = "";
+        let libraryImages = [];
+
+        // Initialize application on load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadThemePreference();
+            loadAccountState();
+            loadLibraryFromStorage();
+            onProviderChange();
+
+            // Intercept Puter quota alerts or UI errors globally
+            setupQuotaInterception();
+        });
+
+        // Theme management (Light: purple/white, Dark: purple/black)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            localStorage.setItem('sube_theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+        }
+
+        function loadThemePreference() {
+            const saved = localStorage.getItem('sube_theme');
+            const isDark = saved ? saved === 'dark' : true; // Default dark
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeIcon(isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            icon.className = isDark ? 'ph ph-sun text-lg text-amber-400' : 'ph ph-moon text-lg text-brand-600';
+        }
+
+        // Puter Authentication and Persistence
+        function loadAccountState() {
+            try {
+                const savedUser = localStorage.getItem('sube_puter_user');
+                if (savedUser) {
+                    const user = JSON.parse(savedUser);
+                    updateAuthUI(user);
+                } else if (typeof puter !== 'undefined' && puter.auth) {
+                    puter.auth.getUser().then(user => {
+                        if (user) {
+                            localStorage.setItem('sube_puter_user', JSON.stringify(user));
+                            updateAuthUI(user);
+                        }
+                    }).catch(() => {});
+                }
+            } catch (e) {
+                console.warn("Account state load error:", e);
+            }
+        }
+
+        function updateAuthUI(user) {
+            const usernameEl = document.getElementById('authUsername');
+            const emailEl = document.getElementById('authDropdownEmail');
+            const avatarEl = document.getElementById('authAvatar');
+            if (user && user.username) {
+                usernameEl.textContent = user.username;
+                emailEl.textContent = user.email || user.username + "@puter.com";
+                avatarEl.innerHTML = `<span class="font-bold text-xs">${user.username.charAt(0).toUpperCase()}</span>`;
+            } else {
+                usernameEl.textContent = "Sign In";
+                emailEl.textContent = "Not Signed In";
+                avatarEl.innerHTML = `<i class="ph ph-user"></i>`;
+            }
+        }
+
+        function toggleAuthMenu() {
+            const dropdown = document.getElementById('authDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        async function handlePuterSignIn() {
+            try {
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    const user = await puter.auth.signIn();
+                    if (user) {
+                        localStorage.setItem('sube_puter_user', JSON.stringify(user));
+                        updateAuthUI(user);
+                        toggleAuthMenu();
+                    }
+                } else {
+                    // Fallback simulation
+                    const mockUser = { username: "PuterUser_" + Math.floor(Math.random()*1000) };
+                    localStorage.setItem('sube_puter_user', JSON.stringify(mockUser));
+                    updateAuthUI(mockUser);
+                    toggleAuthMenu();
+                }
+            } catch (e) {
+                console.error("Sign in error:", e);
+            }
+        }
+
+        function handleClearAccount() {
+            localStorage.removeItem('sube_puter_user');
+            try {
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    puter.auth.signOut();
+                }
+            } catch(e) {}
+            updateAuthUI(null);
+            toggleAuthMenu();
+        }
+
+        // Provider change handler
+        function onProviderChange() {
+            const provider = document.getElementById('providerSelect').value;
+            const modelSelect = document.getElementById('modelSelect');
+            modelSelect.innerHTML = '';
+            
+            const models = providerModels[provider] || [];
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name;
+                modelSelect.appendChild(opt);
+            });
+        }
+
+        // Image upload and Img2Img handling
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentInputImageBase64 = e.target.result;
+                const preview = document.getElementById('inputImagePreview');
+                preview.src = currentInputImageBase64;
+                preview.classList.remove('hidden');
+                document.getElementById('dropZoneContent').classList.add('hidden');
+                document.getElementById('clearImgBtn').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearInputImage() {
+            currentInputImageBase64 = null;
+            document.getElementById('imageFileInput').value = '';
+            document.getElementById('inputImagePreview').src = '';
+            document.getElementById('inputImagePreview').classList.add('hidden');
+            document.getElementById('dropZoneContent').classList.remove('hidden');
+            document.getElementById('clearImgBtn').classList.add('hidden');
+        }
+
+        // Quota interception & error handling
+        function setupQuotaInterception() {
+            // Override window.alert or detect balance rejections
+            const originalAlert = window.alert;
+            window.alert = function(msg) {
+                if (String(msg).toLowerCase().includes('balance') || String(msg).toLowerCase().includes('quota') || String(msg).toLowerCase().includes('funding')) {
+                    triggerQuotaModal();
+                    return true;
+                }
+                return originalAlert.apply(this, arguments);
+            };
+        }
+
+        function triggerQuotaModal() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('quotaState').classList.remove('hidden');
+        }
+
+        function dismissQuotaModal() {
+            document.getElementById('quotaState').classList.add('hidden');
+            document.getElementById('testModeCheck').checked = true;
+            document.getElementById('emptyState').classList.remove('hidden');
+        }
+
+        // Main Generation Execution via puter.ai.txt2img()
+        async function generateImage() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                alert("Please enter a prompt description for the image generation.");
+                return;
+            }
+
+            const provider = document.getElementById('providerSelect').value;
+            const model = document.getElementById('modelSelect').value;
+            const quality = document.getElementById('qualitySelect').value;
+            const testMode = document.getElementById('testModeCheck').checked;
+            const puterPath = document.getElementById('puterPathInput').value.trim();
+
+            // Switch view to loading
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultWrapper').classList.add('hidden');
+            document.getElementById('quotaState').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('loadingStatusText').textContent = testMode ? "Generating sample in test mode..." : "Generating AI masterpiece...";
+
+            // Construct options object per puter.ai.txt2img specs
+            const options = {
+                provider: provider,
+                model: model,
+                quality: quality,
+                test_mode: testMode
+            };
+
+            if (puterPath) {
+                options.puter_output_path = puterPath;
+            }
+
+            if (currentInputImageBase64) {
+                options.input_image = currentInputImageBase64;
+                options.input_image_mime_type = "image/png";
+            }
+
+            try {
+                let imageElement;
+                if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2img) {
+                    // Call Puter AI txt2img with prompt and options
+                    imageElement = await puter.ai.txt2img(prompt, options);
+                } else {
+                    // Fallback simulation if puter is not available in offline preview
+                    await new Promise(r => setTimeout(r, 2000));
+                    imageElement = document.createElement('img');
+                    imageElement.src = "https://placehold.co/1024x1024/6366f1/ffffff?text=" + encodeURIComponent(prompt.substring(0, 30));
+                }
+
+                if (!imageElement || !imageElement.src) {
+                    throw new Error("Invalid image response received from AI provider.");
+                }
+
+                lastGeneratedImageUrl = imageElement.src;
+                lastPromptText = prompt;
+
+                // Display result
+                document.getElementById('resultImage').src = lastGeneratedImageUrl;
+                document.getElementById('resultPromptCaption').textContent = prompt;
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('resultWrapper').classList.remove('hidden');
+                document.getElementById('generationMeta').textContent = `${provider} • ${model}`;
+
+            } catch (err) {
+                console.error("Generation error:", err);
+                document.getElementById('loadingState').classList.add('hidden');
+                
+                // Check if error is quota or insufficient funds
+                const errStr = String(err.message || err).toLowerCase();
+                if (errStr.includes('balance') || errStr.includes('funds') || errStr.includes('quota') || errStr.includes('402')) {
+                    triggerQuotaModal();
+                } else {
+                    alert("Generation failed: " + (err.message || "Unknown error occurred. Try enabling Test Mode."));
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            }
+        }
+
+        // Library Management Functions
+        function loadLibraryFromStorage() {
+            try {
+                const saved = localStorage.getItem('sube_image_library');
+                if (saved) {
+                    libraryImages = JSON.parse(saved);
+                    updateLibraryUI();
+                }
+            } catch (e) {
+                console.warn("Failed to load library:", e);
+            }
+        }
+
+        function saveLibraryToStorage() {
+            try {
+                localStorage.setItem('sube_image_library', JSON.stringify(libraryImages));
+                updateLibraryUI();
+            } catch (e) {
+                console.warn("Failed to save library:", e);
+            }
+        }
+
+        function addToLibraryCurrent() {
+            if (!lastGeneratedImageUrl) return;
+
+            const newItem = {
+                id: 'img_' + Date.now(),
+                url: lastGeneratedImageUrl,
+                prompt: lastPromptText,
+                timestamp: new Date().toLocaleDateString()
+            };
+
+            libraryImages.unshift(newItem);
+            saveLibraryToStorage();
+
+            // Success feedback
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="ph ph-check text-base"></i><span>Added!</span>`;
+            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+        }
+
+        function updateLibraryUI() {
+            const grid = document.getElementById('libraryGrid');
+            const countBadge = document.getElementById('libraryCountBadge');
+            const stats = document.getElementById('libraryStats');
+
+            countBadge.textContent = libraryImages.length;
+            stats.textContent = `${libraryImages.length} image(s) saved in library`;
+
+            if (libraryImages.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center space-y-2 text-purple-400">
+                        <i class="ph ph-image-square text-4xl"></i>
+                        <p class="text-sm font-medium">Your library is empty</p>
+                        <p class="text-xs">Save your generated creations here for quick access.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = libraryImages.map(item => `
+                <div class="card-theme rounded-2xl overflow-hidden border group relative flex flex-col">
+                    <div class="h-40 overflow-hidden bg-black/25 relative">
+                        <img src="${item.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-between space-y-2">
+                        <p class="text-xs font-medium line-clamp-2" title="${item.prompt}">${item.prompt}</p>
+                        <div class="flex items-center justify-between pt-2 border-t border-purple-500/10">
+                            <span class="text-[10px] text-purple-400">${item.timestamp}</span>
+                            <div class="flex items-center space-x-2">
+                                <a href="${item.url}" download="subeai_${item.id}.png" class="p-1.5 rounded-lg bg-brand-500/10 text-brand-500 hover:bg-brand-500/20 transition-colors" title="Download">
+                                    <i class="ph ph-download text-sm"></i>
+                                </a>
+                                <button onclick="deleteLibraryItem('${item.id}')" class="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors" title="Delete">
+                                    <i class="ph ph-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteLibraryItem(id) {
+            libraryImages = libraryImages.filter(item => item.id !== id);
+            saveLibraryToStorage();
+        }
+
+        function clearLibrary() {
+            if (confirm("Are you sure you want to clear your entire image library?")) {
+                libraryImages = [];
+                saveLibraryToStorage();
+            }
+        }
+
+        function openLibraryModal() {
+            document.getElementById('libraryModal').classList.remove('hidden');
+        }
+
+        function closeLibraryModal() {
+            document.getElementById('libraryModal').classList.add('hidden');
+        }
+
+        function downloadCurrent() {
+            if (!lastGeneratedImageUrl) return;
+            const a = document.createElement('a');
+            a.href = lastGeneratedImageUrl;
+            a.download = `subeai_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function copyImageToClipboard() {
+            if (!lastGeneratedImageUrl) return;
+            const temp = document.createElement('textarea');
+            temp.value = lastGeneratedImageUrl;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            alert("Image data URL copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
