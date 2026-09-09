@@ -45,7 +45,6 @@
 </head>
 <body class="h-full bg-slate-950 text-slate-100 antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- Custom Modal Component -->
     <div id="customModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all">
             <div class="flex items-center space-x-3 mb-4">
@@ -61,7 +60,6 @@
         </div>
     </div>
 
-    <!-- Login / Session Gate View -->
     <div id="loginView" class="min-h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -72,7 +70,7 @@
                     <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
                 </div>
                 <h2 class="text-2xl font-bold tracking-tight text-white">Codenix Admin Portal</h2>
-                <p class="mt-2 text-sm text-slate-400">Verifying signed-in email from Supabase & Admin Password</p>
+                <p class="mt-2 text-sm text-slate-400">Verifying session from Supabase Project 1 & Admin Password</p>
             </div>
 
             <div id="sessionStatusBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1">
@@ -83,12 +81,12 @@
             <form id="adminLoginForm" class="mt-6 space-y-6 hidden" onsubmit="handleLogin(event)">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Detected Signed-In Email</label>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Signed-In Email</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                                 <i class="fa-solid fa-user-check"></i>
                             </span>
-                            <input id="loginEmail" type="email" readonly class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-sm cursor-not-allowed" placeholder="Waiting for Supabase session...">
+                            <input id="loginEmail" type="email" readonly class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-sm cursor-not-allowed">
                         </div>
                     </div>
                     <div>
@@ -110,7 +108,7 @@
             </form>
 
             <div id="startRedirectWrapper" class="text-center pt-2 hidden space-y-3">
-                <p class="text-xs text-amber-400 font-medium">Please sign in first on the main website to access admin privileges.</p>
+                <p class="text-xs text-amber-400 font-medium">Please sign in first on the website to access admin privileges.</p>
                 <a href="/Start/" class="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl shadow-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 transition-all">
                     <i class="fa-solid fa-arrow-left mr-2"></i> Sign In First (Go to /Start/)
                 </a>
@@ -118,10 +116,9 @@
         </div>
     </div>
 
-    <!-- Main Dashboard View -->
     <div id="dashboardView" class="h-full flex h-screen overflow-hidden hidden">
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-20">
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-25">
             <div>
                 <!-- Brand Header -->
                 <div class="h-16 flex items-center px-6 border-b border-slate-800 space-x-3">
@@ -146,7 +143,7 @@
                     </button>
                     <button onclick="switchTab('feedbacks')" id="nav-feedbacks" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
                         <i class="fa-solid fa-comments w-5 text-center"></i>
-                        <span>Feedbacks Dashboard</span>
+                        <span>Feedbacks Analytics</span>
                     </button>
                     <button onclick="switchTab('tickets')" id="nav-tickets" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
                         <i class="fa-solid fa-ticket w-5 text-center"></i>
@@ -179,7 +176,6 @@
             </div>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="flex-1 flex flex-col min-w-0 bg-slate-950 overflow-hidden">
             <!-- Top Header bar -->
             <header class="h-16 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 px-8 flex items-center justify-between flex-shrink-0">
@@ -259,7 +255,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="text-xl font-bold text-white">Registered Auth Users</h3>
-                            <p class="text-xs text-slate-400 mt-1">Fetched from Supabase Project 1 auth & public tables</p>
+                            <p class="text-xs text-slate-400 mt-1">Fetched from Supabase Project 1 session & public user tables</p>
                         </div>
                         <span id="userCountBadge" class="px-3 py-1 bg-slate-800 text-brand-400 rounded-full text-xs font-semibold">0 Users</span>
                     </div>
@@ -285,7 +281,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 3: FEEDBACKS DASHBOARD (Interactive Charts & Cards) -->
+                <!-- TAB 3: FEEDBACKS ANALYTICS -->
                 <section id="tab-feedbacks" class="space-y-6 hidden">
                     <div class="flex justify-between items-center">
                         <div>
@@ -298,7 +294,7 @@
                     <!-- Charts Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                            <h4 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-bar text-brand-500 mr-2"></i> Average Ratings Across Tools</h4>
+                            <h4 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-bar text-brand-500 mr-2"></i> Average Tool Ratings (1-5 ★)</h4>
                             <div class="h-64 relative flex items-center justify-center">
                                 <canvas id="toolsChart"></canvas>
                             </div>
@@ -340,7 +336,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 5: COMPANY MAILER (Activepieces Webhook /sync) -->
+                <!-- TAB 5: COMPANY MAILER -->
                 <section id="tab-mailer" class="space-y-6 hidden">
                     <div>
                         <h3 class="text-xl font-bold text-white">Company Mailer (Activepieces Webhook /sync)</h3>
@@ -402,6 +398,11 @@
                                 <button type="button" onclick="loadTemplate('security')" class="w-full text-left p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all group">
                                     <p class="text-xs font-bold text-white group-hover:text-brand-400">4. Account Security Notice</p>
                                     <p class="text-[11px] text-slate-400 truncate mt-0.5">Hello {name}, This is a routine security check for your...</p>
+                                </button>
+
+                                <button type="button" onclick="loadTemplate('promotion')" class="w-full text-left p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all group">
+                                    <p class="text-xs font-bold text-white group-hover:text-brand-400">5. Special Offer & Promo</p>
+                                    <p class="text-[11px] text-slate-400 truncate mt-0.5">Hello {name}, Enjoy exclusive access to premium tools...</p>
                                 </button>
 
                                 <button type="button" onclick="loadTemplate('blank')" class="w-full text-left p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all group">
@@ -469,10 +470,10 @@
                     document.getElementById('adminLoginForm').classList.remove('hidden');
                     document.getElementById('startRedirectWrapper').classList.add('hidden');
                 } else {
-                    // No session found -> Require sign in first and show button redirect to /Start/
+                    // No session found -> Sign in first and redirect to /Start/
                     document.getElementById('sessionStatusBox').innerHTML = `
                         <p class="font-semibold text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Sign in first! No active session found.</p>
-                        <p class="text-slate-400 text-xs mt-1">You must be signed in on the main website to access the admin portal.</p>
+                        <p class="text-slate-400 text-xs mt-1">You must be signed in on the website to access the admin portal.</p>
                     `;
                     document.getElementById('adminLoginForm').classList.add('hidden');
                     document.getElementById('startRedirectWrapper').classList.remove('hidden');
@@ -597,13 +598,13 @@
 
         async function fetchUsers() {
             const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500">Querying auth.users and profile tables...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500">Querying users from Supabase Project 1...</td></tr>`;
             try {
                 if (!supabaseProject1) throw new Error("Supabase Project 1 not initialized");
                 
                 let usersList = [];
                 
-                // Try querying public user tables
+                // Query public profile/user tables if any exist
                 const tables = ['users', 'profiles', 'accounts'];
                 for (const tbl of tables) {
                     try {
@@ -615,7 +616,7 @@
                     } catch(e) {}
                 }
 
-                // Also check if current session user exists
+                // Get current session user
                 const { data: { session } } = await supabaseProject1.auth.getSession();
                 if (session && session.user) {
                     const exists = usersList.some(u => u.id === session.user.id || u.email === session.user.email);
@@ -624,8 +625,9 @@
                     }
                 }
 
-                document.getElementById('statTotalUsers').innerText = usersList.length > 0 ? usersList.length : 1;
-                document.getElementById('userCountBadge').innerText = `${usersList.length > 0 ? usersList.length : 1} Users`;
+                const totalUsersCount = usersList.length > 0 ? usersList.length : 1;
+                document.getElementById('statTotalUsers').innerText = totalUsersCount;
+                document.getElementById('userCountBadge').innerText = `${totalUsersCount} Users`;
 
                 if (usersList.length === 0) {
                     tbody.innerHTML = `
@@ -685,14 +687,19 @@
                     const feedbackId = f.id || 'N/A';
                     const createdAt = f.created_at ? new Date(f.created_at).toLocaleString() : 'N/A';
                     const comments = f.comments || f.feedback || f.message || 'No comments';
-                    const nextFeature = f.next_feature || 'None';
+                    const nextFeature = f.next_feature || f.next_feature_other || 'None';
                     const agreed = f.agreed_to_terms ? true : false;
                     
-                    // Parse ratings if JSON object
                     let ratingsObj = f.ratings || {};
                     if (typeof ratingsObj === 'string') {
                         try { ratingsObj = JSON.parse(ratingsObj); } catch(e) {}
                     }
+
+                    // Extract sub-ratings
+                    const uiRating = ratingsObj.website?.ui || ratingsObj.ui || 'N/A';
+                    const uxRating = ratingsObj.website?.ux || ratingsObj.ux || 'N/A';
+                    const speedRating = ratingsObj.ai_outputs?.speed || ratingsObj.speed || 'N/A';
+                    const qualityRating = ratingsObj.ai_outputs?.quality || ratingsObj.quality || 'N/A';
 
                     return `
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
@@ -714,12 +721,12 @@
 
                                 <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
                                     <div class="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/60">
-                                        <span class="text-slate-400 block text-[10px] uppercase">Website UI/UX</span>
-                                        <span class="text-amber-400 font-bold">${ratingsObj.website ? 'UI: ' + ratingsObj.website.ui + ' ★, UX: ' + ratingsObj.website.ux + ' ★' : 'N/A'}</span>
+                                        <span class="text-slate-400 block text-[10px] uppercase">Website UI / UX</span>
+                                        <span class="text-amber-400 font-bold">UI: ${uiRating} ★, UX: ${uxRating} ★</span>
                                     </div>
                                     <div class="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/60">
-                                        <span class="text-slate-400 block text-[10px] uppercase">AI Outputs Speed</span>
-                                        <span class="text-amber-400 font-bold">${ratingsObj.ai_outputs ? ratingsObj.ai_outputs.speed + ' / 5 ★' : 'N/A'}</span>
+                                        <span class="text-slate-400 block text-[10px] uppercase">AI Speed & Quality</span>
+                                        <span class="text-amber-400 font-bold">Spd: ${speedRating} ★, Ql: ${qualityRating} ★</span>
                                     </div>
                                 </div>
                             </div>
@@ -747,7 +754,28 @@
                 if (!supabaseProject2) throw new Error("Supabase 2 not initialized");
 
                 const { data, error } = await supabaseProject2.from('tickets').select('*');
-                if (error) throw error;
+                if (error) {
+                    // Check if error is due to RLS SELECT policy
+                    if (error.code === '42501' || error.message.includes('policy')) {
+                        grid.innerHTML = `
+                            <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 text-center col-span-2 space-y-3">
+                                <div class="w-10 h-10 mx-auto rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <h4 class="text-base font-bold text-white">RLS SELECT Policy Required for Tickets</h4>
+                                <p class="text-xs text-slate-300 max-w-md mx-auto">
+                                    Your Supabase `+ "`tickets`" + ` table has RLS enabled but is missing a SELECT policy. Run this SQL in your Supabase SQL editor to allow reading tickets:
+                                </p>
+                                <div class="bg-slate-950 p-3 rounded-xl font-mono text-xs text-brand-400 text-left overflow-x-auto">
+                                    CREATE POLICY "Allow anon read tickets" ON tickets FOR SELECT TO anon USING (true);
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('statTotalTickets').innerText = "0";
+                        return;
+                    }
+                    throw error;
+                }
 
                 const tickets = data || [];
                 document.getElementById('statTotalTickets').innerText = tickets.length;
@@ -811,11 +839,9 @@
 
         function renderCharts() {
             try {
-                // Destroy previous charts if any
                 if (chartsInstance.tools) chartsInstance.tools.destroy();
                 if (chartsInstance.metrics) chartsInstance.metrics.destroy();
 
-                // Aggregate tool ratings from feedbackDataGlobal
                 let toolScores = { Jose: 0, NixAI: 0, NixQr: 0, DaleAI: 0, SubeAI: 0, LenguaNix: 0 };
                 let count = feedbackDataGlobal.length || 1;
 
@@ -895,6 +921,9 @@
             } else if (type === 'security') {
                 subjectInput.value = "Codenix Account Security Notice";
                 bodyInput.value = "Hello {name},\n\nThis is a routine security check for your Codenix account session. If you authorized this login, no further action is needed.\n\nBest regards,\nCodenix Security Team";
+            } else if (type === 'promotion') {
+                subjectInput.value = "Exclusive Access to Premium Codenix AI Tools";
+                bodyInput.value = "Hello {name},\n\nEnjoy exclusive access to our premium AI tools and advanced models on Codenix. We appreciate having you as part of our community!\n\nBest regards,\nCodenix Team";
             } else {
                 subjectInput.value = "";
                 bodyInput.value = "";
