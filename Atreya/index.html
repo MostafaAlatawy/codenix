@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniVoice AI - ChatGPT Voice Mode Clone</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gpt: {
+                            bg: '#000000',
+                            card: '#111113',
+                            border: '#27272a',
+                            accent: '#8b5cf6',
+                            violet: '#a855f7',
+                            pink: '#ec4899'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Puter.js SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #f4f4f5;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(18, 18, 20, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* ChatGPT Voice Mode Fluid Orb Animations */
+        .voice-orb-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-orb-core {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #c084fc 0%, #7c3aed 50%, #09090b 100%);
+            box-shadow: 0 0 80px rgba(139, 92, 246, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.4);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Orb State: Idle */
+        .orb-idle .voice-orb-core {
+            animation: orbBreath 4s ease-in-out infinite;
+            background: radial-gradient(circle at 35% 35%, #8b5cf6 0%, #4c1d95 60%, #09090b 100%);
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.35);
+        }
+
+        /* Orb State: Listening */
+        .orb-listening .voice-orb-core {
+            transform: scale(1.15);
+            background: radial-gradient(circle at 35% 35%, #34d399 0%, #059669 60%, #022c22 100%);
+            box-shadow: 0 0 90px rgba(16, 185, 129, 0.7);
+        }
+
+        .orb-listening::before, .orb-listening::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            animation: ringRipple 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+
+        .orb-listening::after {
+            animation-delay: 0.7s;
+        }
+
+        /* Orb State: Thinking */
+        .orb-thinking .voice-orb-core {
+            animation: orbSpin 2s linear infinite, orbGlowPulse 1.2s ease-in-out infinite alternate;
+            background: radial-gradient(circle at 35% 35%, #38bdf8 0%, #0284c7 60%, #082f49 100%);
+            box-shadow: 0 0 90px rgba(56, 189, 248, 0.7);
+        }
+
+        /* Orb State: Speaking */
+        .orb-speaking .voice-orb-core {
+            animation: orbSpeakPulse 0.7s ease-in-out infinite alternate;
+            background: radial-gradient(circle at 35% 35%, #f43f5e 0%, #be185d 60%, #4c0519 100%);
+            box-shadow: 0 0 100px rgba(244, 63, 94, 0.8);
+        }
+
+        .orb-speaking::before {
+            content: '';
+            position: absolute;
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            border: 2px dashed rgba(244, 63, 94, 0.5);
+            animation: ringRotate 4s linear infinite;
+        }
+
+        @keyframes orbBreath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes orbSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes orbSpeakPulse {
+            0% { transform: scale(1); box-shadow: 0 0 50px rgba(244, 63, 94, 0.6); }
+            100% { transform: scale(1.22); box-shadow: 0 0 110px rgba(244, 63, 94, 0.95); }
+        }
+
+        @keyframes ringRipple {
+            0% { width: 150px; height: 150px; opacity: 1; }
+            100% { width: 300px; height: 300px; opacity: 0; }
+        }
+
+        @keyframes ringRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .bg-ambient-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(100px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .toast-notification {
+            animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen justify-between relative overflow-hidden select-none">
+
+    <div class="bg-ambient-glow"></div>
+
+    <!-- Top Header Bar (ChatGPT Voice Mode minimalist style) -->
+    <header class="relative z-30 flex items-center justify-between px-6 py-4">
+        <!-- Brand & Language Pill -->
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-medium text-zinc-200">
+                <div class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></div>
+                <span class="font-bold tracking-tight">OmniVoice</span>
+                <span class="text-zinc-500">|</span>
+                <button onclick="openLanguageModal()" id="header-lang-btn" class="text-violet-400 hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-globe text-[11px]"></i>
+                    <span id="current-lang-label">English (US)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Top Right Actions -->
+        <div class="flex items-center gap-2">
+            <button onclick="toggleTranscriptDrawer()" class="w-9 h-9 rounded-full bg-zinc-900/80 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 flex items-center justify-center text-xs transition" title="View Transcript">
+                <i class="fa-solid fa-comments"></i>
+            </button>
+            <button onclick="toggleSettingsModal()" class="w-9 h-9 rounded-full bg-zinc-900/80 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 flex items-center justify-center text-xs transition" title="Settings">
+                <i class="fa-solid fa-sliders"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="relative z-20 flex flex-col items-center justify-center flex-grow px-4 py-2">
+        
+        <!-- Center Voice Orb Container -->
+        <div class="flex flex-col items-center justify-center my-auto">
+            <div id="voice-orb-wrapper" class="voice-orb-container orb-idle" onclick="toggleVoiceRecording()" title="Tap to Speak">
+                <div class="voice-orb-core flex items-center justify-center">
+                    <i id="orb-center-icon" class="fa-solid fa-microphone text-3xl text-white/90"></i>
+                </div>
+            </div>
+
+            <!-- Status Label -->
+            <div id="status-orb-label" class="text-xs font-medium text-zinc-400 tracking-wide mt-6 uppercase">
+                Tap Orb to Speak
+            </div>
+
+            <!-- Live Subtitles Box -->
+            <div id="live-captions-container" class="mt-6 max-w-lg w-full text-center px-6 py-3 rounded-2xl bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-md shadow-2xl transition-all">
+                <p id="live-captions-role" class="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1">
+                    OmniVoice Assistant
+                </p>
+                <p id="live-captions-text" class="text-sm sm:text-base text-zinc-200 font-normal italic">
+                    "I am listening. I automatically remember your preferences in the background as we talk."
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="relative z-30 pb-6 pt-2 px-4 flex flex-col items-center gap-3">
+        
+        <!-- Text Input Drawer (Collapsible) -->
+        <div id="text-input-drawer" class="hidden w-full max-w-md mb-2">
+            <div class="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800 p-1.5 rounded-2xl shadow-2xl backdrop-blur-md">
+                <input type="text" id="input-text-message" placeholder="Type a message..." onkeydown="if(event.key === 'Enter') sendTextMessage()" class="flex-grow bg-transparent border-none px-3 py-2 text-sm text-zinc-100 focus:outline-none placeholder-zinc-500">
+                <button onclick="sendTextMessage()" class="w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center text-xs transition shadow-lg">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Pill Toolbar (GPT Voice Mode Style) -->
+        <div class="flex items-center gap-3 bg-zinc-900/85 border border-zinc-800/80 px-5 py-2.5 rounded-full shadow-2xl backdrop-blur-xl">
+            <!-- Mic Mute/Unmute -->
+            <button id="btn-mic-toggle" onclick="toggleMic()" class="w-10 h-10 rounded-full bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 flex items-center justify-center text-sm transition" title="Toggle Microphone">
+                <i id="icon-mic-toggle" class="fa-solid fa-microphone text-emerald-400"></i>
+            </button>
+
+            <!-- Keyboard Type Toggle -->
+            <button onclick="toggleTextInputDrawer()" class="w-10 h-10 rounded-full bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 flex items-center justify-center text-sm transition" title="Type Message">
+                <i class="fa-solid fa-keyboard"></i>
+            </button>
+
+            <!-- TTS Sound Mute/Unmute -->
+            <button id="btn-tts-toggle" onclick="toggleMuteTTS()" class="w-10 h-10 rounded-full bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 flex items-center justify-center text-sm transition" title="Toggle Voice Sound">
+                <i id="icon-tts" class="fa-solid fa-volume-high text-violet-400"></i>
+            </button>
+
+            <div class="h-5 w-px bg-zinc-800"></div>
+
+            <!-- Disconnect / End Voice Session -->
+            <button onclick="resetVoiceSession()" class="px-4 py-2 rounded-full bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-300 text-xs font-semibold transition flex items-center gap-1.5" title="Reset Session">
+                <i class="fa-solid fa-power-off text-xs"></i>
+                <span class="hidden sm:inline">End</span>
+            </button>
+        </div>
+    </footer>
+
+    <div id="drawer-transcript" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex justify-end">
+        <div class="w-full max-w-md bg-zinc-950 border-l border-zinc-800 h-full flex flex-col p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+                <h3 class="text-sm font-bold text-zinc-200 flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-violet-400"></i> Conversation Transcript
+                </h3>
+                <button onclick="toggleTranscriptDrawer()" class="text-zinc-400 hover:text-white text-base">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div id="transcript-messages-feed" class="flex-grow py-4 overflow-y-auto space-y-4 pr-1">
+                <div class="text-xs text-zinc-500 text-center py-6">Your voice conversation history appears here.</div>
+            </div>
+
+            <div class="pt-3 border-t border-zinc-800 flex justify-between items-center text-[11px] text-zinc-500">
+                <span>Auto-learning memory active in background</span>
+                <button onclick="clearTranscript()" class="hover:text-rose-400 transition">Clear Transcript</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-language" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-3xl p-6 flex flex-col gap-5 shadow-2xl relative">
+            <button onclick="openLanguageModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-base">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center flex flex-col items-center gap-2">
+                <div class="w-12 h-12 rounded-2xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-xl text-violet-400 mb-1">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Select Language</h3>
+                <p class="text-xs text-zinc-400">OmniVoice speaks and understands fluently in multiple languages.</p>
+            </div>
+
+            <select id="select-language-main" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-violet-500 font-medium">
+                <option value="en-US">English (United States)</option>
+                <option value="es-ES">Spanish (Español)</option>
+                <option value="fr-FR">French (Français)</option>
+                <option value="de-DE">German (Deutsch)</option>
+                <option value="it-IT">Italian (Italiano)</option>
+                <option value="ja-JP">Japanese (日本語)</option>
+                <option value="ar-SA">Arabic (العربية)</option>
+                <option value="zh-CN">Mandarin Chinese (中文)</option>
+                <option value="ru-RU">Russian (Русский)</option>
+                <option value="pt-BR">Portuguese (Português)</option>
+                <option value="ko-KR">Korean (한국어)</option>
+                <option value="hi-IN">Hindi (हिन्दी)</option>
+            </select>
+
+            <button onclick="saveLanguageSelection()" class="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-violet-600/30">
+                Apply Language
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-3xl p-6 flex flex-col gap-5 shadow-2xl relative">
+            <button onclick="toggleSettingsModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-base">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Voice Settings</h3>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">AI Model</label>
+                    <select id="select-puter-model" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-zinc-200">
+                        <option value="gpt-5.6-luna" selected>gpt-5.6-luna (Fastest)</option>
+                        <option value="gpt-5.6-terra">gpt-5.6-terra (Balanced)</option>
+                        <option value="gpt-5.6-sol">gpt-5.6-sol (Flagship)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">TTS Engine</label>
+                    <select id="select-tts-engine" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-zinc-200">
+                        <option value="elevenlabs" selected>ElevenLabs Ultra-Realistic</option>
+                        <option value="browser">Browser Web Speech API</option>
+                        <option value="puter">Puter OpenAI TTS</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="toggleSettingsModal()" class="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs rounded-xl transition">
+                Save & Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        const ELEVENLABS_API_KEY = 'sk_1c16a2b6b9df8191415254b5270b24991175f45e9911cc75';
+        
+        const ELEVENLABS_VOICES = {
+            'en-US': '21m00Tcm4TlvDq8ikWAM', // Rachel
+            'es-ES': 'pFZP5JQG7iQjIQuC4Bku', // Lily
+            'fr-FR': 'XB0fDUnXU5powFXDhCwa', // Charlotte
+            'de-DE': 'ErXwobaYiN019PkySvjV', // Antoni
+            'it-IT': 'cgSgspJ2msm6clMCkdW9', // Jessica
+            'ja-JP': 'XB0fDUnXU5powFXDhCwa',
+            'ar-SA': 'EXAVITQu4vr4xnSDxMaL',
+            'zh-CN': '21m00Tcm4TlvDq8ikWAM',
+            'ru-RU': 'ErXwobaYiN019PkySvjV',
+            'pt-BR': 'pFZP5JQG7iQjIQuC4Bku',
+            'ko-KR': 'XB0fDUnXU5powFXDhCwa',
+            'hi-IN': 'EXAVITQu4vr4xnSDxMaL'
+        };
+
+        const LANGUAGE_NAMES = {
+            'en-US': 'English (US)',
+            'es-ES': 'Spanish',
+            'fr-FR': 'French',
+            'de-DE': 'German',
+            'it-IT': 'Italian',
+            'ja-JP': 'Japanese',
+            'ar-SA': 'Arabic',
+            'zh-CN': 'Mandarin',
+            'ru-RU': 'Russian',
+            'pt-BR': 'Portuguese',
+            'ko-KR': 'Korean',
+            'hi-IN': 'Hindi'
+        };
+
+        // App state
+        let appState = {
+            targetLanguage: 'en-US',
+            isRecording: false,
+            isProcessing: false,
+            isSpeaking: false,
+            micEnabled: true,
+            muteTTS: false,
+            memory: [],            // Auto-learned facts stored securely in localStorage (invisible to user)
+            conversationLog: []
+        };
+
+        let recognition = null;
+        let synthesis = window.speechSynthesis;
+        let silenceTimer = null;
+        let currentSpeechTranscript = '';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStateFromStorage();
+            initSpeechRecognition();
+        });
+
+        function getLangName(code) {
+            return LANGUAGE_NAMES[code] || 'English';
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast-notification px-4 py-3 rounded-2xl bg-zinc-900 border ${type === 'success' ? 'border-emerald-500/40 text-emerald-200' : 'border-violet-500/40 text-zinc-200'} text-xs font-medium shadow-2xl pointer-events-auto flex items-center gap-2`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check text-emerald-400' : 'fa-circle-info text-violet-400'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- BACKGROUND AUTO-MEMORY (INVISIBLE TO USER) ---
+        function loadStateFromStorage() {
+            try {
+                const savedMem = localStorage.getItem('omni_voice_auto_memory');
+                if (savedMem) appState.memory = JSON.parse(savedMem);
+
+                const savedLang = localStorage.getItem('omni_voice_lang');
+                if (savedLang) {
+                    appState.targetLanguage = savedLang;
+                    document.getElementById('current-lang-label').textContent = getLangName(savedLang);
+                    document.getElementById('select-language-main').value = savedLang;
+                }
+            } catch (e) {}
+        }
+
+        function saveAutoMemoryToStorage() {
+            try {
+                localStorage.setItem('omni_voice_auto_memory', JSON.stringify(appState.memory));
+            } catch (e) {}
+        }
+
+        // --- MODALS & DRAWERS ---
+        function openLanguageModal() {
+            const modal = document.getElementById('modal-language');
+            if (modal) modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function saveLanguageSelection() {
+            const select = document.getElementById('select-language-main');
+            if (select) {
+                appState.targetLanguage = select.value;
+                localStorage.setItem('omni_voice_lang', appState.targetLanguage);
+                document.getElementById('current-lang-label').textContent = getLangName(appState.targetLanguage);
+                openLanguageModal();
+                showToast(`Language set to ${getLangName(appState.targetLanguage)}`, 'success');
+                if (recognition) recognition.lang = appState.targetLanguage;
+            }
+        }
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('modal-settings');
+            if (modal) {
+                modal.classList.toggle('hidden');
+                modal.classList.toggle('flex');
+            }
+        }
+
+        function toggleTranscriptDrawer() {
+            const drawer = document.getElementById('drawer-transcript');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+
+        function toggleTextInputDrawer() {
+            const drawer = document.getElementById('text-input-drawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+
+        // --- ORB & UI STATES ---
+        function setCaptions(role, text) {
+            const roleEl = document.getElementById('live-captions-role');
+            const textEl = document.getElementById('live-captions-text');
+            if (roleEl) roleEl.textContent = role;
+            if (textEl) textEl.textContent = `"${text}"`;
+        }
+
+        function setOrbState(state, label) {
+            const wrapper = document.getElementById('voice-orb-wrapper');
+            const icon = document.getElementById('orb-center-icon');
+            const labelEl = document.getElementById('status-orb-label');
+            
+            if (!wrapper || !icon || !labelEl) return;
+            
+            wrapper.className = `voice-orb-container orb-${state}`;
+            labelEl.textContent = label;
+            
+            if (state === 'idle') {
+                icon.className = 'fa-solid fa-microphone text-3xl text-white/90';
+            } else if (state === 'listening') {
+                icon.className = 'fa-solid fa-waveform text-3xl text-emerald-400 animate-pulse';
+            } else if (state === 'thinking') {
+                icon.className = 'fa-solid fa-spinner text-3xl text-sky-400 fa-spin';
+            } else if (state === 'speaking') {
+                icon.className = 'fa-solid fa-volume-high text-3xl text-rose-300 animate-bounce';
+            }
+        }
+
+        // --- SPEECH RECOGNITION ---
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                setCaptions('System', 'Speech Recognition not supported in this browser. Use the keyboard icon to type.');
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = appState.targetLanguage;
+
+            recognition.onstart = () => {
+                appState.isRecording = true;
+                setOrbState('listening', 'Listening...');
+            };
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                let final = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        final += event.results[i][0].transcript;
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+
+                const liveText = (final || interim).trim();
+                if (liveText) {
+                    currentSpeechTranscript = final ? (currentSpeechTranscript ? currentSpeechTranscript + " " + final : final) : liveText;
+                    setCaptions('You', liveText);
+
+                    clearTimeout(silenceTimer);
+                    silenceTimer = setTimeout(() => {
+                        if (currentSpeechTranscript && !appState.isProcessing) {
+                            const textToSend = currentSpeechTranscript;
+                            currentSpeechTranscript = '';
+                            processUserMessage(textToSend);
+                        }
+                    }, 1700);
+                }
+            };
+
+            recognition.onerror = () => {
+                appState.isRecording = false;
+                if (appState.micEnabled && !appState.isProcessing && !appState.isSpeaking) {
+                    setTimeout(() => startListening(), 400);
+                } else if (!appState.isProcessing && !appState.isSpeaking) {
+                    setOrbState('idle', 'Tap Orb to Speak');
+                }
+            };
+
+            recognition.onend = () => {
+                appState.isRecording = false;
+                if (appState.micEnabled && !appState.isProcessing && !appState.isSpeaking) {
+                    setTimeout(() => startListening(), 300);
+                } else if (!appState.isProcessing && !appState.isSpeaking) {
+                    setOrbState('idle', 'Tap Orb to Speak');
+                }
+            };
+        }
+
+        function toggleVoiceRecording() {
+            if (!appState.micEnabled) {
+                appState.micEnabled = true;
+                updateMicUI();
+                startListening();
+            } else if (appState.isRecording) {
+                stopListening();
+            } else {
+                startListening();
+            }
+        }
+
+        function startListening() {
+            if (!recognition) initSpeechRecognition();
+            if (recognition && !appState.isRecording && !appState.isProcessing && !appState.isSpeaking) {
+                try {
+                    recognition.lang = appState.targetLanguage;
+                    recognition.start();
+                } catch (e) {}
+            }
+        }
+
+        function stopListening() {
+            if (recognition && appState.isRecording) {
+                try { recognition.stop(); } catch (e) {}
+            }
+            appState.isRecording = false;
+            setOrbState('idle', 'Mic Muted');
+        }
+
+        function toggleMic() {
+            appState.micEnabled = !appState.micEnabled;
+            updateMicUI();
+            if (appState.micEnabled) {
+                startListening();
+                showToast("Microphone unmuted", "success");
+            } else {
+                stopListening();
+                showToast("Microphone muted", "info");
+            }
+        }
+
+        function updateMicUI() {
+            const btn = document.getElementById('btn-mic-toggle');
+            const icon = document.getElementById('icon-mic-toggle');
+            if (!btn || !icon) return;
+            if (appState.micEnabled) {
+                btn.className = "w-10 h-10 rounded-full bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 flex items-center justify-center text-sm transition";
+                icon.className = "fa-solid fa-microphone text-emerald-400";
+            } else {
+                btn.className = "w-10 h-10 rounded-full bg-rose-950/60 border border-rose-500/30 text-rose-300 flex items-center justify-center text-sm transition";
+                icon.className = "fa-solid fa-microphone-slash text-rose-400";
+            }
+        }
+
+        function toggleMuteTTS() {
+            appState.muteTTS = !appState.muteTTS;
+            const icon = document.getElementById('icon-tts');
+            if (appState.muteTTS) {
+                if (synthesis) synthesis.cancel();
+                if (icon) icon.className = "fa-solid fa-volume-xmark text-rose-400";
+                showToast("AI voice muted", "info");
+            } else {
+                if (icon) icon.className = "fa-solid fa-volume-high text-violet-400";
+                showToast("AI voice active", "success");
+            }
+        }
+
+        function sendTextMessage() {
+            const input = document.getElementById('input-text-message');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            processUserMessage(text);
+        }
+
+        function resetVoiceSession() {
+            if (synthesis) synthesis.cancel();
+            if (recognition) { try { recognition.stop(); } catch(e){} }
+            appState.isProcessing = false;
+            appState.isSpeaking = false;
+            setOrbState('idle', 'Tap Orb to Speak');
+            setCaptions('OmniVoice Assistant', 'Session reset. Ready when you are.');
+            showToast('Voice session reset', 'info');
+        }
+
+        function clearTranscript() {
+            appState.conversationLog = [];
+            const feed = document.getElementById('transcript-messages-feed');
+            if (feed) feed.innerHTML = '<div class="text-xs text-zinc-500 text-center py-6">Transcript cleared.</div>';
+            showToast('Transcript cleared', 'info');
+        }
+
+        // --- AI PROCESSING & AUTO-MEMORY EXTRACTION ---
+        async function processUserMessage(userText) {
+            if (!userText || appState.isProcessing) return;
+
+            appState.isProcessing = true;
+            if (recognition) { try { recognition.stop(); } catch(e){} }
+
+            setOrbState('thinking', 'Thinking...');
+            setCaptions('You', userText);
+            appendTranscript('You', userText);
+
+            const model = document.getElementById('select-puter-model')?.value || 'gpt-5.6-luna';
+            const memoryContext = appState.memory.map(m => `- ${m}`).join('\n');
+
+            const systemPrompt = `You are OmniVoice, an advanced, highly natural conversational voice companion modeled after ChatGPT Voice.
+Target Language: ${getLangName(appState.targetLanguage)} (${appState.targetLanguage})
+
+Background Auto-Learned Memory about user:
+${memoryContext || 'None yet.'}
+
+Instructions:
+1. Reply naturally and concisely in ${getLangName(appState.targetLanguage)} (1-3 sentences for ideal voice pacing).
+2. Silently learn any new facts, preferences, or personal details about the user from their message.
+3. Return ONLY valid JSON in this exact structure:
+{
+  "replyText": "spoken response",
+  "newBackgroundMemories": ["fact 1", "fact 2"]
+}`;
+
+            try {
+                let resText = '';
+                if (window.puter && puter.ai) {
+                    const res = await puter.ai.chat(
+                        [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userText }
+                        ],
+                        { model }
+                    );
+                    resText = typeof res === 'object' && res.message ? res.message.content : String(res);
+                } else {
+                    resText = JSON.stringify({
+                        replyText: "That's really interesting! Tell me more.",
+                        newBackgroundMemories: []
+                    });
+                }
+
+                resText = resText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                let parsed;
+                try {
+                    parsed = JSON.parse(resText);
+                } catch(e) {
+                    parsed = { replyText: resText, newBackgroundMemories: [] };
+                }
+
+                // Silently auto-save extracted facts to localStorage without showing any memory UI
+                if (parsed.newBackgroundMemories && parsed.newBackgroundMemories.length > 0) {
+                    parsed.newBackgroundMemories.forEach(fact => {
+                        if (!appState.memory.includes(fact) && fact.length > 3) {
+                            appState.memory.push(fact);
+                        }
+                    });
+                    saveAutoMemoryToStorage();
+                }
+
+                setCaptions('OmniVoice', parsed.replyText);
+                appendTranscript('OmniVoice', parsed.replyText);
+
+                appState.isProcessing = false;
+
+                if (!appState.muteTTS && parsed.replyText) {
+                    speakResponse(parsed.replyText, appState.targetLanguage);
+                } else {
+                    finishSpeaking();
+                }
+
+            } catch (err) {
+                console.error("AI Error:", err);
+                appState.isProcessing = false;
+                setOrbState('idle', 'Tap Orb to Speak');
+                setCaptions('System', 'Connection issue. Tap orb to retry.');
+                if (appState.micEnabled) setTimeout(() => startListening(), 800);
+            }
+        }
+
+        // --- SPEECH SYNTHESIS (ELEVENLABS / BROWSER) ---
+        function speakResponse(text, lang) {
+            const engine = document.getElementById('select-tts-engine')?.value || 'elevenlabs';
+            appState.isSpeaking = true;
+            setOrbState('speaking', 'AI Speaking...');
+
+            if (engine === 'elevenlabs') {
+                speakElevenLabs(text, lang).catch(() => speakBrowserTTS(text, lang));
+            } else {
+                speakBrowserTTS(text, lang);
+            }
+        }
+
+        async function speakElevenLabs(text, lang) {
+            const voiceId = ELEVENLABS_VOICES[lang] || ELEVENLABS_VOICES['en-US'];
+            const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?optimize_streaming_latency=0`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'audio/mpeg',
+                    'Content-Type': 'application/json',
+                    'xi-api-key': ELEVENLABS_API_KEY
+                },
+                body: JSON.stringify({
+                    text: text,
+                    model_id: 'eleven_multilingual_v2',
+                    voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+                })
+            });
+
+            if (!res.ok) throw new Error('ElevenLabs failed');
+            const blob = await res.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.onended = () => finishSpeaking();
+            audio.onerror = () => finishSpeaking();
+            await audio.play();
+        }
+
+        function speakBrowserTTS(text, lang) {
+            if (!synthesis) {
+                finishSpeaking();
+                return;
+            }
+            synthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = lang;
+            utter.onend = () => finishSpeaking();
+            utter.onerror = () => finishSpeaking();
+            synthesis.speak(utter);
+        }
+
+        function finishSpeaking() {
+            appState.isSpeaking = false;
+            setOrbState('idle', 'Tap Orb to Speak');
+            if (appState.micEnabled) {
+                setTimeout(() => startListening(), 400);
+            }
+        }
+
+        function appendTranscript(sender, text) {
+            appState.conversationLog.push({ sender, text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            const feed = document.getElementById('transcript-messages-feed');
+            if (!feed) return;
+            const isUser = sender === 'You';
+            const div = document.createElement('div');
+            div.className = `p-3 rounded-2xl ${isUser ? 'bg-violet-950/30 border border-violet-500/20 ml-6' : 'bg-zinc-900 border border-zinc-800 mr-6'}`;
+            div.innerHTML = `
+                <div class="flex items-center justify-between text-[10px] text-zinc-500 mb-1">
+                    <span class="font-bold ${isUser ? 'text-violet-400' : 'text-zinc-300'}">${sender}</span>
+                    <span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <p class="text-xs text-zinc-200 leading-relaxed">${text}</p>
+            `;
+            feed.appendChild(div);
+            feed.scrollTop = feed.scrollHeight;
+        }
+    </script>
+</body>
+</html>
