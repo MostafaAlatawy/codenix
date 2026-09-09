@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVoice AI - ChatGPT Voice Mode Clone</title>
+    <title>Astreya - AI Voice Companion</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -187,13 +187,13 @@
 
     <div class="bg-ambient-glow"></div>
 
-    <!-- Top Header Bar (ChatGPT Voice Mode minimalist style) -->
+    <!-- Top Header Bar -->
     <header class="relative z-30 flex items-center justify-between px-6 py-4">
         <!-- Brand & Language Pill -->
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/80 px-3.5 py-1.5 rounded-full text-xs font-medium text-zinc-200">
                 <div class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></div>
-                <span class="font-bold tracking-tight">OmniVoice</span>
+                <span class="font-bold tracking-tight">Astreya</span>
                 <span class="text-zinc-500">|</span>
                 <button onclick="openLanguageModal()" id="header-lang-btn" class="text-violet-400 hover:underline flex items-center gap-1">
                     <i class="fa-solid fa-globe text-[11px]"></i>
@@ -231,10 +231,10 @@
             <!-- Live Subtitles Box -->
             <div id="live-captions-container" class="mt-6 max-w-lg w-full text-center px-6 py-3 rounded-2xl bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-md shadow-2xl transition-all">
                 <p id="live-captions-role" class="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1">
-                    OmniVoice Assistant
+                    Astreya Assistant
                 </p>
                 <p id="live-captions-text" class="text-sm sm:text-base text-zinc-200 font-normal italic">
-                    "I am listening. I automatically remember your preferences in the background as we talk."
+                    "I am Astreya, your voice companion. I automatically remember your preferences in the background as we talk."
                 </p>
             </div>
         </div>
@@ -253,7 +253,7 @@
             </div>
         </div>
 
-        <!-- Pill Toolbar (GPT Voice Mode Style) -->
+        <!-- Pill Toolbar -->
         <div class="flex items-center gap-3 bg-zinc-900/85 border border-zinc-800/80 px-5 py-2.5 rounded-full shadow-2xl backdrop-blur-xl">
             <!-- Mic Mute/Unmute -->
             <button id="btn-mic-toggle" onclick="toggleMic()" class="w-10 h-10 rounded-full bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 flex items-center justify-center text-sm transition" title="Toggle Microphone">
@@ -312,7 +312,7 @@
                     <i class="fa-solid fa-globe"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">Select Language</h3>
-                <p class="text-xs text-zinc-400">OmniVoice speaks and understands fluently in multiple languages.</p>
+                <p class="text-xs text-zinc-400">Astreya speaks and understands fluently in multiple languages.</p>
             </div>
 
             <select id="select-language-main" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-violet-500 font-medium">
@@ -418,7 +418,7 @@
             isSpeaking: false,
             micEnabled: true,
             muteTTS: false,
-            memory: [],            // Auto-learned facts stored securely in localStorage (invisible to user)
+            memory: [],            // Auto-learned facts stored securely in localStorage
             conversationLog: []
         };
 
@@ -449,13 +449,13 @@
             }, 3000);
         }
 
-        // --- BACKGROUND AUTO-MEMORY (INVISIBLE TO USER) ---
+        // --- BACKGROUND AUTO-MEMORY ---
         function loadStateFromStorage() {
             try {
-                const savedMem = localStorage.getItem('omni_voice_auto_memory');
+                const savedMem = localStorage.getItem('astreya_auto_memory');
                 if (savedMem) appState.memory = JSON.parse(savedMem);
 
-                const savedLang = localStorage.getItem('omni_voice_lang');
+                const savedLang = localStorage.getItem('astreya_lang');
                 if (savedLang) {
                     appState.targetLanguage = savedLang;
                     document.getElementById('current-lang-label').textContent = getLangName(savedLang);
@@ -466,7 +466,7 @@
 
         function saveAutoMemoryToStorage() {
             try {
-                localStorage.setItem('omni_voice_auto_memory', JSON.stringify(appState.memory));
+                localStorage.setItem('astreya_auto_memory', JSON.stringify(appState.memory));
             } catch (e) {}
         }
 
@@ -487,7 +487,7 @@
             const select = document.getElementById('select-language-main');
             if (select) {
                 appState.targetLanguage = select.value;
-                localStorage.setItem('omni_voice_lang', appState.targetLanguage);
+                localStorage.setItem('astreya_lang', appState.targetLanguage);
                 document.getElementById('current-lang-label').textContent = getLangName(appState.targetLanguage);
                 openLanguageModal();
                 showToast(`Language set to ${getLangName(appState.targetLanguage)}`, 'success');
@@ -689,7 +689,7 @@
             appState.isProcessing = false;
             appState.isSpeaking = false;
             setOrbState('idle', 'Tap Orb to Speak');
-            setCaptions('OmniVoice Assistant', 'Session reset. Ready when you are.');
+            setCaptions('Astreya Assistant', 'Session reset. Ready when you are.');
             showToast('Voice session reset', 'info');
         }
 
@@ -714,7 +714,7 @@
             const model = document.getElementById('select-puter-model')?.value || 'gpt-5.6-luna';
             const memoryContext = appState.memory.map(m => `- ${m}`).join('\n');
 
-            const systemPrompt = `You are OmniVoice, an advanced, highly natural conversational voice companion modeled after ChatGPT Voice.
+            const systemPrompt = `You are Astreya, an advanced, highly natural conversational voice companion modeled after ChatGPT Voice.
 Target Language: ${getLangName(appState.targetLanguage)} (${appState.targetLanguage})
 
 Background Auto-Learned Memory about user:
@@ -755,7 +755,7 @@ Instructions:
                     parsed = { replyText: resText, newBackgroundMemories: [] };
                 }
 
-                // Silently auto-save extracted facts to localStorage without showing any memory UI
+                // Silently auto-save extracted facts to localStorage
                 if (parsed.newBackgroundMemories && parsed.newBackgroundMemories.length > 0) {
                     parsed.newBackgroundMemories.forEach(fact => {
                         if (!appState.memory.includes(fact) && fact.length > 3) {
@@ -765,8 +765,8 @@ Instructions:
                     saveAutoMemoryToStorage();
                 }
 
-                setCaptions('OmniVoice', parsed.replyText);
-                appendTranscript('OmniVoice', parsed.replyText);
+                setCaptions('Astreya', parsed.replyText);
+                appendTranscript('Astreya', parsed.replyText);
 
                 appState.isProcessing = false;
 
@@ -785,7 +785,7 @@ Instructions:
             }
         }
 
-        // --- SPEECH SYNTHESIS (ELEVENLABS / BROWSER) ---
+        // --- SPEECH SYNTHESIS ---
         function speakResponse(text, lang) {
             const engine = document.getElementById('select-tts-engine')?.value || 'elevenlabs';
             appState.isSpeaking = true;
