@@ -28,14 +28,16 @@
                             950: '#2e1065',
                         },
                         surface: {
-                            dark: '#0b0f19',
-                            darkCard: '#111827',
+                            dark: '#080c14',
+                            darkCard: '#0f172a',
+                            darkCardHover: '#131d33',
                             light: '#f8fafc',
                             lightCard: '#ffffff'
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
             }
@@ -48,12 +50,12 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --primary-accent: #8b5cf6;
-            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-glow: rgba(139, 92, 246, 0.2);
         }
 
         /* Custom Cursor styling */
@@ -62,49 +64,64 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.4s ease, color 0.4s ease;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-x: hidden;
         }
 
-        /* Smooth Custom Triangle Cursor */
+        /* Ambient Grid Pattern Overlay */
+        .bg-grid-pattern {
+            background-size: 32px 32px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        .light .bg-grid-pattern {
+            background-image: 
+                linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+        }
+
+        /* Custom Pointer */
         #custom-cursor {
             width: 0;
             height: 0;
-            border-left: 7px solid transparent;
-            border-right: 7px solid transparent;
-            border-bottom: 15px solid var(--primary-accent);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 14px solid var(--primary-accent);
             position: fixed;
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
-            transition: transform 0.08s cubic-bezier(0.2, 0.8, 0.2, 1);
-            filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.5));
+            transition: transform 0.06s cubic-bezier(0.2, 0.8, 0.2, 1), border-bottom-color 0.2s ease;
+            filter: drop-shadow(0 2px 10px rgba(139, 92, 246, 0.6));
         }
 
-        /* Serene Glassmorphism Cards */
+        /* Premium Glassmorphism Cards */
         .glass-card {
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .dark .glass-card {
-            background: rgba(17, 24, 39, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
         }
 
         .dark .glass-card:hover {
-            border-color: rgba(139, 92, 246, 0.35);
-            background: rgba(24, 32, 51, 0.75);
+            border-color: rgba(139, 92, 246, 0.4);
+            background: rgba(20, 30, 52, 0.85);
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5), 0 0 20px -5px rgba(139, 92, 246, 0.15);
+            box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6), 0 0 25px -5px rgba(139, 92, 246, 0.25);
         }
 
         .light .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.03);
         }
 
         .light .glass-card:hover {
@@ -114,23 +131,23 @@
             box-shadow: 0 16px 32px -8px rgba(139, 92, 246, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
         }
 
-        /* Nav Glassmorphism */
+        /* Header Navigation Glass Effect */
         .dark nav {
-            background: rgba(11, 15, 25, 0.75);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(8, 12, 20, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
         }
 
         .light nav {
-            background: rgba(248, 250, 252, 0.82);
+            background: rgba(248, 250, 252, 0.85);
             border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
 
-        /* Dropdown Popover Menu */
+        /* Dropdown Popover */
         .dropdown-menu {
             transform-origin: top right;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
-            transform: scale(0.96) translateY(-8px);
+            transform: scale(0.95) translateY(-6px);
             pointer-events: none;
         }
 
@@ -140,9 +157,9 @@
             pointer-events: auto;
         }
 
-        /* Avatar Loading Pulse Shimmer */
+        /* Shimmer Loading State */
         .avatar-shimmer {
-            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.05) 75%);
             background-size: 200% 100%;
             animation: shimmer 1.8s infinite;
         }
@@ -152,7 +169,7 @@
             100% { background-position: -200% 0; }
         }
 
-        /* Custom Scrollbar for smooth UI */
+        /* Custom Scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -168,7 +185,7 @@
             background: rgba(139, 92, 246, 0.5);
         }
 
-        /* Mobile Adjustments */
+        /* Touch Device Cursor Override */
         @media (max-width: 640px) {
             #custom-cursor { display: none; }
             *, body, html, button, a, div, img, input {
@@ -177,93 +194,104 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-surface-dark text-slate-800 dark:text-slate-100 min-h-screen selection:bg-brand-500/30 selection:text-brand-300 antialiased transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-surface-dark text-slate-800 dark:text-slate-100 min-h-screen selection:bg-brand-500/30 selection:text-brand-300 antialiased relative transition-colors duration-300">
 
-    <!-- Custom Triangle Cursor Pointer -->
+    <!-- Background Atmospheric Glows & Grid -->
+    <div class="fixed inset-0 bg-grid-pattern pointer-events-none opacity-60 z-0"></div>
+    <div class="fixed top-0 right-1/4 w-[500px] h-[500px] bg-brand-600/10 dark:bg-brand-500/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-10 left-10 w-[400px] h-[400px] bg-indigo-600/10 dark:bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <!-- Custom Triangle Cursor -->
     <div id="custom-cursor"></div>
 
-    <nav class="sticky top-0 z-50 backdrop-blur-xl transition-colors duration-300">
-        <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+    <!-- Navigation Header -->
+    <nav class="sticky top-0 z-50 backdrop-blur-xl transition-all duration-300">
+        <div class="flex justify-between items-center px-4 md:px-8 py-3.5 max-w-7xl mx-auto">
             
             <!-- Brand Logo -->
-            <div class="flex items-center gap-3 cursor-pointer group" onclick="window.location.reload()">
-                <div class="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center bg-slate-800">
-                    <img src="logo.png" alt="Codenix AI Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/36x36/8b5cf6/ffffff?text=C';">
+            <div class="flex items-center gap-3.5 cursor-pointer group" onclick="window.location.reload()">
+                <div class="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-all duration-300 flex items-center justify-center bg-slate-900 border border-slate-700/50">
+                    <img src="/logo.png" alt="Codenix AI Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/40x40/8b5cf6/ffffff?text=C';">
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-lg font-extrabold tracking-tight dark:text-white text-slate-900 leading-tight">
-                        CODENIX<span class="text-brand-500 font-normal">AI</span>
-                    </span>
-                    <span class="text-[10px] uppercase font-medium tracking-widest text-slate-500 dark:text-slate-400 -mt-0.5">Workspace</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg font-extrabold tracking-tight dark:text-white text-slate-900 leading-none">
+                            CODENIX<span class="text-brand-500 font-semibold">AI</span>
+                        </span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-500 bg-brand-500/10 border border-brand-500/20 rounded-md">STUDIO</span>
+                    </div>
+                    <span class="text-[10px] uppercase font-semibold tracking-widest text-slate-400 dark:text-slate-500 mt-1">Workspace Portal</span>
                 </div>
             </div>
 
-            <!-- Header Action Controls -->
-            <div class="flex items-center gap-3">
+            <!-- Right Controls -->
+            <div class="flex items-center gap-2.5">
 
                 <!-- Notifications Dropdown -->
                 <div class="relative">
-                    <button id="notif-btn" class="relative p-2.5 rounded-2xl bg-slate-200/70 dark:bg-slate-800/50 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-300/80 dark:border-slate-800 transition-all duration-200" aria-label="Notifications">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button id="notif-btn" class="relative p-2.5 rounded-xl bg-slate-200/60 dark:bg-slate-800/60 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-300/60 dark:border-slate-700/50 transition-all duration-200" aria-label="Notifications">
+                        <svg class="h-4 h-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <!-- Unread pulse dot -->
+                        <!-- Ping badge -->
                         <span id="notif-badge" class="hidden absolute top-2 right-2 flex h-2 w-2">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
                         </span>
                     </button>
 
-                    <!-- Notifications Menu Dropdown -->
-                    <div id="notif-dropdown" class="dropdown-menu absolute right-0 mt-3 w-80 rounded-3xl dark:bg-slate-900/95 bg-white/95 border dark:border-slate-800 border-slate-200 shadow-2xl backdrop-blur-2xl p-4 z-50 text-left">
-                        <div class="flex items-center justify-between pb-3 border-b dark:border-slate-800/80 border-slate-200/80 mb-3">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Updates & Broadcasts</h4>
-                            <span id="notif-count" class="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-300 font-bold px-2.5 py-0.5 rounded-full border border-brand-500/20">0</span>
+                    <!-- Notifications Dropdown Menu -->
+                    <div id="notif-dropdown" class="dropdown-menu absolute right-0 mt-3 w-80 md:w-96 rounded-2xl dark:bg-slate-900/95 bg-white/95 border dark:border-slate-800 border-slate-200 shadow-2xl backdrop-blur-2xl p-4 z-50 text-left">
+                        <div class="flex items-center justify-between pb-3 border-b dark:border-slate-800 border-slate-200 mb-3">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Broadcasts & Notices</h4>
+                                <span id="notif-count" class="text-[10px] bg-brand-500/10 text-brand-500 font-bold px-2 py-0.5 rounded-full border border-brand-500/20">0</span>
+                            </div>
                         </div>
                         <div id="notif-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
-                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center py-6">Checking for broadcasts & updates...</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center py-6">Checking for updates...</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Theme Toggle Button -->
-                <button id="theme-toggle" class="p-2.5 rounded-2xl bg-slate-200/70 dark:bg-slate-800/50 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-300/80 dark:border-slate-800 transition-all duration-200" aria-label="Toggle Theme">
-                    <svg id="theme-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-200/60 dark:bg-slate-800/60 hover:bg-brand-500/10 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 border border-slate-300/60 dark:border-slate-700/50 transition-all duration-200" aria-label="Toggle Theme">
+                    <svg id="theme-icon" class="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
                     </svg>
                 </button>
 
-                <!-- Profile Pill Menu -->
+                <!-- Profile Menu -->
                 <div class="relative">
-                    <button id="profile-btn" class="flex items-center gap-3 p-1.5 pr-4 rounded-full dark:bg-slate-800/50 bg-slate-200/70 border dark:border-slate-800 border-slate-300/80 hover:border-brand-500/40 transition-all duration-200">
-                        <div class="relative h-8 w-8 rounded-full overflow-hidden border border-brand-500/30 bg-slate-800">
+                    <button id="profile-btn" class="flex items-center gap-2.5 p-1.5 pr-3.5 rounded-full dark:bg-slate-800/60 bg-slate-200/60 border dark:border-slate-700/50 border-slate-300/60 hover:border-brand-500/50 transition-all duration-200">
+                        <div class="relative h-7 w-7 rounded-full overflow-hidden border border-brand-500/40 bg-slate-900">
                             <div id="avatar-loader" class="absolute inset-0 avatar-shimmer"></div>
                             <img id="user-avatar" src="" alt="Profile" class="h-full w-full object-cover opacity-0 transition-opacity duration-300">
                         </div>
-                        <span id="user-name-abbr" class="text-xs font-semibold dark:text-slate-200 text-slate-800 tracking-tight">Syncing...</span>
+                        <span id="user-name-abbr" class="text-xs font-semibold dark:text-slate-200 text-slate-800 tracking-tight max-w-[100px] truncate">Syncing...</span>
                     </button>
 
-                    <!-- Profile Dropdown -->
-                    <div id="profile-dropdown" class="dropdown-menu absolute right-0 mt-3 w-64 rounded-3xl dark:bg-slate-900/95 bg-white/95 border dark:border-slate-800 border-slate-200 shadow-2xl backdrop-blur-2xl p-3 z-50">
-                        <div class="px-4 py-3 border-b dark:border-slate-800/80 border-slate-200/80 mb-2">
-                            <p class="text-[10px] uppercase tracking-wider text-brand-500 dark:text-brand-400 font-bold">Logged In As</p>
-                            <p id="user-email-display" class="text-xs font-medium truncate dark:text-slate-200 text-slate-800 mt-0.5">loading account...</p>
+                    <!-- Profile Dropdown Popover -->
+                    <div id="profile-dropdown" class="dropdown-menu absolute right-0 mt-3 w-64 rounded-2xl dark:bg-slate-900/95 bg-white/95 border dark:border-slate-800 border-slate-200 shadow-2xl backdrop-blur-2xl p-3 z-50">
+                        <div class="px-3.5 py-3 border-b dark:border-slate-800 border-slate-200 mb-2">
+                            <p class="text-[10px] uppercase tracking-wider text-brand-500 font-bold">Logged In As</p>
+                            <p id="user-email-display" class="text-xs font-semibold truncate dark:text-slate-200 text-slate-800 mt-0.5">loading account...</p>
                         </div>
                         
                         <div class="space-y-1">
-                            <a href="profile/" class="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl dark:hover:bg-slate-800/60 hover:bg-slate-100 transition-colors text-xs font-medium dark:text-slate-300 text-slate-700">
+                            <a href="profile/" class="flex items-center gap-3 px-3 py-2 rounded-xl dark:hover:bg-slate-800/70 hover:bg-slate-100 transition-colors text-xs font-semibold dark:text-slate-300 text-slate-700">
                                 <svg class="h-4 w-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 <span>My Profile</span>
                             </a>
-                            <a href="profile/#settings" class="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl dark:hover:bg-slate-800/60 hover:bg-slate-100 transition-colors text-xs font-medium dark:text-slate-300 text-slate-700">
+                            <a href="profile/#settings" class="flex items-center gap-3 px-3 py-2 rounded-xl dark:hover:bg-slate-800/70 hover:bg-slate-100 transition-colors text-xs font-semibold dark:text-slate-300 text-slate-700">
                                 <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                 <span>Settings</span>
                             </a>
                         </div>
 
-                        <div class="h-px dark:bg-slate-800 bg-slate-200 my-2 mx-2"></div>
+                        <div class="h-px dark:bg-slate-800 bg-slate-200 my-2"></div>
                         
-                        <button onclick="signOut()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-rose-500/10 text-rose-500 dark:text-rose-400 transition-colors text-xs font-semibold">
+                        <button onclick="signOut()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-rose-500/10 text-rose-500 dark:text-rose-400 transition-colors text-xs font-semibold">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                             <span>Sign Out</span>
                         </button>
@@ -274,53 +302,51 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-6 pt-8 pb-20">
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 md:px-8 pt-6 pb-20 relative z-10">
         
         <!-- Welcome Hero Banner -->
-        <section class="mb-10">
-            <div class="p-8 md:p-10 rounded-[2.5rem] relative overflow-hidden glass-card bg-gradient-to-br dark:from-slate-900/90 dark:via-slate-900/70 dark:to-brand-950/40 from-white via-purple-50/50 to-indigo-50/30 border dark:border-slate-800/80 border-slate-200/80">
-                <!-- Atmospheric Soft Background Glows -->
-                <div class="absolute -top-24 -right-24 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
+        <section class="mb-8">
+            <div class="p-6 md:p-10 rounded-3xl relative overflow-hidden glass-card bg-gradient-to-br dark:from-slate-900/90 dark:via-slate-900/60 dark:to-brand-950/30 from-white via-purple-50/40 to-indigo-50/20 border dark:border-slate-800 border-slate-200/80">
                 <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div class="space-y-3">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full dark:bg-brand-500/10 bg-brand-50 border dark:border-brand-500/20 border-brand-200 text-[11px] font-semibold text-brand-600 dark:text-brand-300">
-                            <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Workspace Connected
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full dark:bg-brand-500/10 bg-brand-50 border dark:border-brand-500/20 border-brand-200/80 text-[11px] font-semibold text-brand-600 dark:text-brand-300">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            Cloud Ecosystem Connected
                         </div>
                         
-                        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight dark:text-white text-slate-900">
-                            <span id="greeting-text">Welcome back</span>, <span class="text-brand-500" id="user-display-name">Member</span>
+                        <h1 class="text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-tight dark:text-white text-slate-900">
+                            <span id="greeting-text">Welcome back</span>, <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400" id="user-display-name">Member</span>
                         </h1>
-                        <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-xl font-normal leading-relaxed">
-                            Your Codenix AI ecosystem is active and synchronized. Explore your integrated tools, quick applications, and workspace updates below.
+                        <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 max-w-xl font-normal leading-relaxed">
+                            Access your active AI models, developer tools, and connected ecosystem platforms from one unified SaaS console.
                         </p>
                     </div>
 
-                    <!-- Clean KPI / Quick Info Widget -->
-                    <div class="flex flex-row md:flex-col gap-3 min-w-[220px]">
-                        <div class="flex-1 p-4 rounded-2xl dark:bg-slate-950/50 bg-white/80 border dark:border-slate-800/80 border-slate-200/80 backdrop-blur-md">
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block mb-0.5">LOCAL TIME</span>
-                            <span id="runtime-clock" class="text-lg font-mono font-bold text-slate-800 dark:text-slate-200">00:00:00 AM</span>
+                    <!-- Quick Workspace Stats -->
+                    <div class="grid grid-cols-2 md:flex md:flex-col gap-2.5 min-w-[210px]">
+                        <div class="p-3.5 rounded-2xl dark:bg-slate-950/60 bg-white/80 border dark:border-slate-800 border-slate-200/80 backdrop-blur-md">
+                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1">LOCAL RUNTIME</span>
+                            <span id="runtime-clock" class="text-base font-mono font-semibold text-slate-800 dark:text-slate-200">00:00:00 AM</span>
                         </div>
-                        <div class="flex-1 p-4 rounded-2xl dark:bg-slate-950/50 bg-white/80 border dark:border-slate-800/80 border-slate-200/80 backdrop-blur-md flex items-center justify-between">
-                            <div>
-                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block mb-0.5">ECOSYSTEM STATUS</span>
-                                <span class="text-xs font-semibold text-emerald-500 dark:text-emerald-400 flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Fully Operational
-                                </span>
-                            </div>
+                        <div class="p-3.5 rounded-2xl dark:bg-slate-950/60 bg-white/80 border dark:border-slate-800 border-slate-200/80 backdrop-blur-md">
+                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1">SYSTEM STATUS</span>
+                            <span class="text-xs font-semibold text-emerald-500 dark:text-emerald-400 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Fully Operational
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Live Feed Broadcast Section -->
-        <section id="main-notifications-panel" class="mb-10 hidden">
-            <div class="p-6 md:p-8 rounded-[2rem] glass-card dark:bg-slate-900/60 bg-white/80 border dark:border-slate-800 border-slate-200">
-                <div class="flex items-center justify-between mb-5 pb-3 border-b dark:border-slate-800/80 border-slate-200/80">
+        <!-- Dynamic Announcements / Broadcast Banner Panel -->
+        <section id="main-notifications-panel" class="mb-8 hidden">
+            <div class="p-5 md:p-6 rounded-3xl glass-card dark:bg-slate-900/60 bg-white/80 border dark:border-slate-800 border-slate-200">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b dark:border-slate-800 border-slate-200">
                     <div class="flex items-center gap-3">
                         <div class="p-2 rounded-xl bg-brand-500/10 text-brand-500 dark:text-brand-400 border border-brand-500/20">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -328,56 +354,73 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-bold dark:text-white text-slate-900">Workspace Announcements</h2>
-                            <p class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Real-time updates and notices</p>
+                            <h2 class="text-sm md:text-base font-bold dark:text-white text-slate-900">Workspace Announcements</h2>
+                            <p class="text-[11px] text-slate-400 font-medium">Platform notices & broadcasts</p>
                         </div>
                     </div>
                     <span class="px-2.5 py-1 text-[10px] font-semibold bg-brand-500/10 text-brand-500 dark:text-brand-300 border border-brand-500/20 rounded-full" id="main-notif-badge-count">0 ACTIVE</span>
                 </div>
 
-                <!-- Live Announcements Grid -->
-                <div id="main-notifications-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    <!-- Dynamic notification elements populated here -->
+                <!-- Announcements List -->
+                <div id="main-notifications-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Notifications JS injection -->
                 </div>
             </div>
         </section>
 
-        <!-- Search & Filter Control Bar -->
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+        <!-- Tools Toolbar (Category Filters & Live Search) -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             
             <!-- Category Tabs -->
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto" id="category-tabs">
-                <button onclick="filterCategory('all')" class="tab-btn px-5 py-2 rounded-full text-xs font-semibold transition-all duration-200 border bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20" data-category="all">
-                    All Tools
+            <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none" id="category-tabs">
+                <button onclick="filterCategory('all')" class="tab-btn shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20" data-category="all">
+                    All Apps
                 </button>
             </div>
 
-            <!-- Live Tool Search Input -->
-            <div class="relative w-full md:w-72 shrink-0">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <!-- Tool Search Bar + View Toggle -->
+            <div class="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="tool-search-input" onkeyup="handleToolSearch(this.value)" placeholder="Search tools (Press / to focus)..." class="w-full pl-9 pr-8 py-2 rounded-xl text-xs dark:bg-slate-900/80 bg-white border dark:border-slate-800 border-slate-200 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-all shadow-sm">
+                    <span class="hidden md:inline-block absolute right-2.5 top-2 text-[10px] font-mono px-1.5 py-0.5 rounded border dark:border-slate-700 border-slate-200 text-slate-400 bg-slate-100 dark:bg-slate-800">/</span>
                 </div>
-                <input type="text" id="tool-search-input" onkeyup="handleToolSearch(this.value)" placeholder="Search tools..." class="w-full pl-9 pr-4 py-2 rounded-2xl text-xs dark:bg-slate-900/80 bg-white border dark:border-slate-800 border-slate-200 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 dark:focus:border-brand-400 transition-colors">
+
+                <!-- View Mode Switcher -->
+                <div class="flex items-center p-1 rounded-xl dark:bg-slate-900 bg-slate-200/80 border dark:border-slate-800 border-slate-200">
+                    <button id="view-grid-btn" onclick="setViewMode('grid')" class="p-1.5 rounded-lg text-brand-500 bg-white dark:bg-slate-800 shadow-sm transition-all" aria-label="Grid View">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    </button>
+                    <button id="view-list-btn" onclick="setViewMode('list')" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all" aria-label="List View">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                </div>
             </div>
 
         </div>
 
-        <!-- Portal Tools Dynamic Sections Grid -->
-        <div id="portal-sections" class="space-y-10">
-            <div class="py-16 flex flex-col items-center justify-center gap-3">
-                <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Loading Ecosystem Applications...</p>
+        <!-- Ecosystem Tools Dynamic Grid -->
+        <div id="portal-sections" class="space-y-8">
+            <!-- Loading Skeleton -->
+            <div class="py-20 flex flex-col items-center justify-center gap-3">
+                <div class="relative w-10 h-10">
+                    <div class="absolute inset-0 rounded-full border-2 border-brand-500/20"></div>
+                    <div class="absolute inset-0 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></div>
+                </div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Syncing Workspace Applications...</p>
             </div>
         </div>
 
     </main>
 
     <!-- Broadcast / Alert Modal Overlay -->
-    <div id="system-alert-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm hidden transition-opacity duration-300 opacity-0">
-        <div class="relative w-full max-w-xl rounded-[2rem] dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 shadow-2xl overflow-hidden p-6 md:p-8">
-            <button id="close-alert-btn" class="absolute top-5 right-5 p-2 rounded-xl dark:bg-slate-800/60 bg-slate-100 hover:bg-brand-500/10 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
+    <div id="system-alert-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div class="relative w-full max-w-xl rounded-3xl dark:bg-slate-900 bg-white border dark:border-slate-800 border-slate-200 shadow-2xl overflow-hidden p-6 md:p-8">
+            <button id="close-alert-btn" class="absolute top-5 right-5 p-2 rounded-xl dark:bg-slate-800/80 bg-slate-100 hover:bg-brand-500/10 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -388,7 +431,7 @@
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-[10px] font-bold text-brand-500 dark:text-brand-400 uppercase tracking-wider mb-2">
                     <span class="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse"></span> Announcement
                 </span>
-                <h3 id="alert-title" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-snug">System Message</h3>
+                <h3 id="alert-title" class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-snug">System Notice</h3>
             </div>
 
             <!-- Modal Media Player Container -->
@@ -405,24 +448,37 @@
 
             <!-- Action Buttons -->
             <div class="flex justify-end">
-                <button id="acknowledge-alert-btn" class="px-5 py-2.5 rounded-full bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold tracking-wide shadow-md shadow-brand-500/20 transition-all active:scale-95">
-                    Got it, close
+                <button id="acknowledge-alert-btn" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold tracking-wide shadow-md shadow-brand-500/20 transition-all active:scale-95">
+                    Acknowledge & Close
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Minimal Clean Footer -->
-    <footer class="text-center py-10 text-[11px] font-medium text-slate-400 dark:text-slate-600 border-t dark:border-slate-800/40 border-slate-200/60 mt-12">
-        &copy; 2026 Codenix AI Studio &bull; All Systems Operational
+    <!-- SaaS Footer -->
+    <footer class="text-center py-8 text-[11px] font-medium text-slate-400 dark:text-slate-600 border-t dark:border-slate-800/60 border-slate-200/80 mt-16 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <img src="/logo.png" alt="Logo" class="h-4 w-4" onerror="this.style.display='none'">
+                <span>&copy; 2026 Codenix AI Studio &bull; All Systems Operational</span>
+            </div>
+            <div class="flex items-center gap-4 text-[10px] uppercase font-semibold tracking-wider">
+                <a href="/jose/" class="hover:text-brand-500 transition-colors">Support</a>
+                <span>&bull;</span>
+                <a href="/feedback/" class="hover:text-brand-500 transition-colors">Feedback</a>
+                <span>&bull;</span>
+                <a href="/Blog/" class="hover:text-brand-500 transition-colors">Blog</a>
+            </div>
+        </div>
     </footer>
 
+    <!-- Logic & Functionality -->
     <script>
-        // Supabase Setup
+        // Supabase Initialization
         const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
         const SUPABASE_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
         
-        // Google Sheet Link ID
+        // Google Sheet ID
         const GOOGLE_SHEET_ID = "12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk";
         
         let supabaseClient;
@@ -430,8 +486,7 @@
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 
-        // DOM Elements
-        const body = document.body;
+        // DOM References
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const cursor = document.getElementById('custom-cursor');
@@ -465,11 +520,12 @@
         let rawEcosystemData = {}; 
         let activeCategoryFilter = "all";
         let searchQuery = "";
+        let currentViewMode = "grid"; // 'grid' or 'list'
 
         let parsedNotifications = [];
         let parsedMessages = [];
 
-        // Fallback layout structure matching spreadsheet design
+        // Fallback Layout Structure
         const FALLBACK_SECTIONS = {
             "New": [
                 { name: "SubeAI", link: "/subeai/", image: "" },
@@ -496,7 +552,7 @@
             ]
         };
 
-        // Theme Switcher Logic
+        // Theme Toggle Logic
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
@@ -512,10 +568,8 @@
 
         function updateThemeIcon(isDark) {
             if (isDark) {
-                // Moon to Sun icon
                 themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />`;
             } else {
-                // Sun to Moon icon
                 themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />`;
             }
         }
@@ -535,7 +589,7 @@
             }
         });
 
-        // Time-based Greeting & Realtime Clock
+        // Realtime Clock & Greeting
         function initClockAndGreeting() {
             const update = () => {
                 const now = new Date();
@@ -550,7 +604,7 @@
             setInterval(update, 1000);
         }
 
-        // Clean Image URLs from Google Sheets formula outputs
+        // Clean Image URLs from Google Sheet formula exports
         function cleanImageUrl(url) {
             if (!url) return '';
             let cleaned = url.toString().trim();
@@ -560,7 +614,7 @@
             return cleaned.trim();
         }
 
-        // Parse embeddable video / image / drive URLs
+        // Parse Embeddable Media HTML
         function getEmbeddableMediaHTML(url) {
             if (!url || url === '#') return '';
             url = cleanImageUrl(url);
@@ -585,18 +639,13 @@
 
             const isVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg') || url.includes('video');
             if (isVideo) {
-                return `
-                    <video controls autoplay muted class="w-full h-full object-cover">
-                        <source src="${url}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                `;
+                return `<video controls autoplay muted class="w-full h-full object-cover"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
             }
 
             return `<img src="${url}" alt="Attachment" class="w-full h-full object-cover" onerror="this.outerHTML='<iframe class=\\'w-full h-full border-0\\' src=\\'${url}\\'></iframe>'">`;
         }
 
-        // Google Sheets Fetcher
+        // Fetch Spreadsheet Sections
         async function fetchSpreadsheetSections() {
             try {
                 const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
@@ -622,7 +671,6 @@
 
                     const typeLower = sectionType.toLowerCase();
 
-                    // Process Notifications and Broadcasts
                     if (['notifications', 'notification', 'broadcasts', 'broadcast'].includes(typeLower)) {
                         const title = getValue(1).toString().trim();
                         const link = cleanImageUrl(getValue(2).toString());
@@ -680,15 +728,15 @@
 
                 return Object.keys(parsedGrouped).length > 0 ? parsedGrouped : FALLBACK_SECTIONS;
             } catch (err) {
-                console.warn("Spreadsheet lookup fallback triggered.", err);
+                console.warn("Spreadsheet fallback activated.", err);
                 return FALLBACK_SECTIONS;
             }
         }
 
-        // Notification Setup
+        // Notification UI setup
         function setupNotificationUI(notifications) {
             if (notifications.length === 0) {
-                notifList.innerHTML = `<p class="text-xs text-slate-500 dark:text-slate-400 text-center py-6">No announcements right now.</p>`;
+                notifList.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No broadcasts active right now.</p>`;
                 notifCount.textContent = "0";
                 notifBadge.classList.add('hidden');
                 mainNotificationsPanel.classList.add('hidden');
@@ -704,7 +752,7 @@
                 const badgeColor = notif.isBroadcast ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-brand-500/10 text-brand-600 dark:text-brand-300 border-brand-500/20';
                 
                 return `
-                    <a href="${targetLink}" ${targetLink !== 'javascript:void(0)' ? 'target="_blank"' : ''} class="block p-2.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all duration-200 group">
+                    <a href="${targetLink}" ${targetLink !== 'javascript:void(0)' ? 'target="_blank"' : ''} class="block p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all duration-200 group">
                         <div class="flex items-start gap-2.5">
                             <span class="flex-shrink-0 mt-1 h-2 w-2 rounded-full ${notif.isBroadcast ? 'bg-amber-500' : 'bg-brand-500'}"></span>
                             <div class="flex-1 min-w-0">
@@ -723,30 +771,22 @@
 
             mainNotificationsList.innerHTML = notifications.map(notif => {
                 const targetLink = notif.link && notif.link !== '#' ? notif.link : 'javascript:void(0)';
-                const iconBg = notif.isBroadcast ? 'bg-amber-500/10 text-amber-500 dark:text-amber-400' : 'bg-brand-500/10 text-brand-500 dark:text-brand-400';
+                const iconBg = notif.isBroadcast ? 'bg-amber-500/10 text-amber-500' : 'bg-brand-500/10 text-brand-500';
                 
                 return `
-                    <div onclick="if('${targetLink}' !== 'javascript:void(0)') { window.open('${targetLink}', '_blank'); }" class="glass-card p-4 rounded-2xl cursor-pointer group flex items-start gap-3.5 transition-all">
-                        <div class="p-2.5 rounded-xl ${iconBg} group-hover:bg-brand-500 group-hover:text-white transition-all">
+                    <div onclick="if('${targetLink}' !== 'javascript:void(0)') { window.open('${targetLink}', '_blank'); }" class="glass-card p-3.5 rounded-2xl cursor-pointer group flex items-start gap-3 transition-all">
+                        <div class="p-2 rounded-xl ${iconBg} group-hover:bg-brand-500 group-hover:text-white transition-all shrink-0">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${notif.isBroadcast ? 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c.41 0 .789.21 1.01.558l1.158 1.831 border-0' : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'}" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${notif.isBroadcast ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-brand-500/10 text-brand-600 dark:text-brand-300 border-brand-500/20'}">
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${notif.isBroadcast ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-brand-500/10 text-brand-600 dark:text-brand-300 border-brand-500/20'}">
                                     ${notif.isBroadcast ? 'Broadcast' : 'Notice'}
                                 </span>
                             </div>
                             <p class="text-xs font-semibold dark:text-slate-200 text-slate-800 group-hover:text-brand-500 transition-colors leading-relaxed">${notif.title}</p>
-                            ${notif.link && notif.link !== '#' ? `
-                                <span class="inline-flex items-center gap-1 text-[11px] text-brand-500 font-semibold mt-1">
-                                    Read details
-                                    <svg class="h-3 w-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                </span>
-                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -755,7 +795,7 @@
             applyHoverBindings();
         }
 
-        // System Broadcast Modal Setup
+        // System Broadcast Modal
         function setupSystemMessages(messages) {
             if (messages.length === 0) return;
             
@@ -794,7 +834,7 @@
             acknowledgeAlertBtn.addEventListener('click', dismissAction);
         }
 
-        // Dropdown Click Handlers
+        // Dropdown Handlers
         notifBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             profileDropdown.classList.remove('active');
@@ -812,7 +852,7 @@
             notifDropdown.classList.remove('active');
         });
 
-        // Fallback Vector SVG generator for missing tool icons
+        // SVG Fallbacks for Missing Tool Logos
         function getSvgFallback(toolName) {
             const lowerName = toolName.toLowerCase();
             let pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z" />`;
@@ -823,8 +863,10 @@
                 pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v1m6 11h2m-6 0h-2v4m0-6v-3m6 3h-2m-2 0h-2m-4-6h2m-2 4h2m-2 4h2m10-8h2m-2 4h2" />`;
             } else if (lowerName.includes('service') || lowerName.includes('feedback') || lowerName.includes('blog') || lowerName.includes('jose')) {
                 pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />`;
+            } else if (lowerName.includes('speak') || lowerName.includes('lengua') || lowerName.includes('chat')) {
+                pathContent = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />`;
             }
-            return `<svg class="h-6 w-6 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">${pathContent}</svg>`;
+            return `<svg class="h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">${pathContent}</svg>`;
         }
 
         function handleToolImageError(imgElement, toolName) {
@@ -842,7 +884,23 @@
             return getSvgFallback(tool.name);
         }
 
-        // Render Ecosystem Application Cards
+        // View Mode Switcher
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const gridBtn = document.getElementById('view-grid-btn');
+            const listBtn = document.getElementById('view-list-btn');
+
+            if (mode === 'grid') {
+                gridBtn.className = "p-1.5 rounded-lg text-brand-500 bg-white dark:bg-slate-800 shadow-sm transition-all";
+                listBtn.className = "p-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all";
+            } else {
+                listBtn.className = "p-1.5 rounded-lg text-brand-500 bg-white dark:bg-slate-800 shadow-sm transition-all";
+                gridBtn.className = "p-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all";
+            }
+            renderEcosystem();
+        }
+
+        // Render Cards
         function renderEcosystem() {
             let sectionsHtml = '';
             let totalRenderedTools = 0;
@@ -862,44 +920,46 @@
 
                 totalRenderedTools += toolsList.length;
 
+                const isGrid = currentViewMode === 'grid';
+                const gridClass = isGrid 
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5" 
+                    : "flex flex-col gap-2.5";
+
                 sectionsHtml += `
-                    <div class="space-y-4">
-                        <!-- Section Heading -->
+                    <div class="space-y-3">
                         <div class="flex items-center gap-3">
-                            <h2 class="text-base md:text-lg font-bold dark:text-white text-slate-900 tracking-tight">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                                 ${sectionTitle}
                             </h2>
                             <div class="h-px flex-1 dark:bg-slate-800/80 bg-slate-200/80"></div>
-                            <span class="px-2.5 py-0.5 text-[10px] font-semibold dark:bg-slate-800/80 bg-slate-100 text-slate-500 dark:text-slate-400 rounded-full border dark:border-slate-700/50 border-slate-200">
+                            <span class="px-2 py-0.5 text-[10px] font-mono dark:bg-slate-900 bg-slate-100 text-slate-500 rounded-md border dark:border-slate-800 border-slate-200">
                                 ${toolsList.length} ${toolsList.length === 1 ? 'app' : 'apps'}
                             </span>
                         </div>
 
-                        <!-- Tool Cards Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="${gridClass}">
                             ${toolsList.map(tool => {
                                 return `
-                                    <div onclick="window.location.href='${tool.link}'" class="glass-card p-4 rounded-2xl cursor-pointer group flex items-center justify-between gap-4">
-                                        <div class="flex items-center gap-3.5 min-w-0">
-                                            <!-- Tool Icon Box -->
-                                            <div class="w-12 h-12 shrink-0 rounded-xl dark:bg-slate-800/80 bg-slate-100 text-brand-500 border dark:border-slate-700/50 border-slate-200/80 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                                    <div onclick="window.location.href='${tool.link}'" class="glass-card ${isGrid ? 'p-3.5 rounded-2xl' : 'p-3 rounded-xl'} cursor-pointer group flex items-center justify-between gap-3.5">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="${isGrid ? 'w-11 h-11' : 'w-9 h-9'} shrink-0 rounded-xl dark:bg-slate-900/90 bg-slate-100 text-brand-500 border dark:border-slate-800 border-slate-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-200">
                                                 ${getToolIconHTML(tool)}
                                             </div>
                                             
-                                            <!-- Tool Meta Info -->
                                             <div class="min-w-0">
-                                                <h3 class="text-sm font-semibold dark:text-slate-100 text-slate-800 group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate">
-                                                    ${tool.name}
-                                                </h3>
-                                                <p class="text-[11px] text-slate-400 dark:text-slate-500 font-mono truncate mt-0.5">
+                                                <div class="flex items-center gap-2">
+                                                    <h3 class="text-xs font-bold dark:text-slate-100 text-slate-800 group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate">
+                                                        ${tool.name}
+                                                    </h3>
+                                                </div>
+                                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono truncate mt-0.5">
                                                     ${tool.link}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <!-- Launch Arrow Indicator -->
-                                        <div class="p-2 rounded-xl dark:bg-slate-800/40 bg-slate-100 text-slate-400 group-hover:text-brand-500 group-hover:bg-brand-500/10 transition-all duration-200">
-                                            <svg class="h-4 w-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div class="p-1.5 rounded-lg dark:bg-slate-800/50 bg-slate-100 text-slate-400 group-hover:text-brand-500 group-hover:bg-brand-500/10 transition-all">
+                                            <svg class="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                             </svg>
                                         </div>
@@ -913,11 +973,11 @@
 
             if (totalRenderedTools === 0) {
                 sectionsHtml = `
-                    <div class="py-16 text-center rounded-3xl dark:bg-slate-900/30 bg-slate-100/50 border dark:border-slate-800/50 border-slate-200/50">
+                    <div class="py-16 text-center rounded-2xl dark:bg-slate-900/40 bg-slate-100/50 border dark:border-slate-800 border-slate-200">
                         <svg class="h-8 w-8 mx-auto text-slate-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <p class="text-xs font-semibold text-slate-400">No matching applications found.</p>
+                        <p class="text-xs font-semibold text-slate-400">No applications found matching your query.</p>
                     </div>
                 `;
             }
@@ -926,24 +986,32 @@
             applyHoverBindings();
         }
 
-        // Search Input Event Handler
+        // Live Search Input Handler
         function handleToolSearch(val) {
             searchQuery = val;
             renderEcosystem();
         }
 
-        // Category Tab Generator
+        // Search Focus Keyboard Shortcut (/ Key)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                document.getElementById('tool-search-input').focus();
+            }
+        });
+
+        // Dynamic Category Pills
         function generateCategoryTabs() {
             let tabsHtml = `
-                <button onclick="filterCategory('all')" class="tab-btn px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 border ${activeCategoryFilter === 'all' ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20' : 'dark:bg-slate-900/60 bg-white dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-600 hover:border-brand-500/40'}" data-category="all">
-                    All Tools
+                <button onclick="filterCategory('all')" class="tab-btn shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${activeCategoryFilter === 'all' ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20' : 'dark:bg-slate-900/60 bg-white dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-600 hover:border-brand-500/40'}" data-category="all">
+                    All Apps
                 </button>
             `;
 
             Object.keys(rawEcosystemData).forEach(sectionTitle => {
                 const isActive = activeCategoryFilter.toLowerCase() === sectionTitle.toLowerCase();
                 tabsHtml += `
-                    <button onclick="filterCategory('${sectionTitle.toLowerCase()}')" class="tab-btn px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 border ${isActive ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20' : 'dark:bg-slate-900/60 bg-white dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-600 hover:border-brand-500/40'}" data-category="${sectionTitle.toLowerCase()}">
+                    <button onclick="filterCategory('${sectionTitle.toLowerCase()}')" class="tab-btn shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 border ${isActive ? 'bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20' : 'dark:bg-slate-900/60 bg-white dark:border-slate-800 border-slate-200 dark:text-slate-300 text-slate-600 hover:border-brand-500/40'}" data-category="${sectionTitle.toLowerCase()}">
                         ${sectionTitle}
                     </button>
                 `;
@@ -958,7 +1026,7 @@
             renderEcosystem();
         }
 
-        // Smooth Custom Triangle Cursor Movement
+        // Pointer Motion
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
             cursor.style.top = e.clientY + 'px';
@@ -984,7 +1052,7 @@
             cursor.style.borderBottomColor = '#8b5cf6';
         }
 
-        // Supabase Auth Guard & User Sync
+        // Supabase Profile Check
         async function checkUser() {
             if (!supabaseClient) return;
             
@@ -1010,10 +1078,8 @@
 
                 let finalAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6d28d9&color=fff&bold=true`;
                 
-                if (profile?.avatar_url) {
-                    if (profile.avatar_url.startsWith('http')) {
-                        finalAvatarUrl = profile.avatar_url;
-                    }
+                if (profile?.avatar_url && profile.avatar_url.startsWith('http')) {
+                    finalAvatarUrl = profile.avatar_url;
                 }
 
                 userAvatar.src = finalAvatarUrl;
