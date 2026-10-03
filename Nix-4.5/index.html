@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nix 4.5 — Next-Gen AI Assistant</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nix: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#0c0a13',
+                            bgdark: '#09080e',
+                            carddark: '#13111c',
+                            borderdark: '#26203b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Puter.js v2 SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <!-- Supabase JS v2 Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Marked JS for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
+        }
+
+        /* Glassmorphism & Visual Glow Effects */
+        .nix-glow {
+            box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.35);
+        }
+        .nix-glow-sm {
+            box-shadow: 0 0 12px -2px rgba(124, 58, 237, 0.25);
+        }
+        .nix-border-glow {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .nix-border-glow:focus-within {
+            border-color: rgba(167, 139, 250, 0.8);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+        }
+
+        /* Markdown Styles */
+        .prose pre {
+            background-color: #0d0c15 !important;
+            border: 1px solid #26203b;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            overflow-x: auto;
+        }
+        .prose p {
+            margin-bottom: 0.75rem;
+            line-height: 1.65;
+        }
+        .prose p:last-child {
+            margin-bottom: 0;
+        }
+        .prose code:not(pre code) {
+            background-color: rgba(139, 92, 246, 0.15);
+            color: #c4b5fd;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.875em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose blockquote {
+            border-left: 3px solid #7c3aed;
+            padding-left: 1rem;
+            color: #a78bfa;
+            font-style: italic;
+            margin: 0.75rem 0;
+        }
+
+        /* Typing Caret Animation */
+        .typing-cursor::after {
+            content: '▋';
+            display: inline-block;
+            margin-left: 2px;
+            color: #8b5cf6;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-nix-bgdark text-zinc-100 dark:bg-nix-bgdark dark:text-zinc-100 light:bg-slate-50 light:text-zinc-900 transition-colors duration-200 antialiased font-sans h-screen flex overflow-hidden">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobileBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden md:hidden transition-opacity duration-300" onclick="toggleMobileSidebar()"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex h-full w-full overflow-hidden relative">
+
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-nix-carddark border-r border-nix-borderdark flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 select-none shrink-0">
+            
+            <!-- Sidebar Header & New Chat -->
+            <div class="p-3 border-b border-nix-borderdark/60">
+                <!-- App Brand -->
+                <div class="flex items-center justify-between px-2 py-1.5 mb-3">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nix-700 via-nix-500 to-purple-400 flex items-center justify-center nix-glow-sm">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-purple-100 to-nix-300 bg-clip-text text-transparent">Nix 4.5</span>
+                            <span class="text-[10px] font-semibold px-1.5 py-0.5 ml-1.5 bg-nix-600/30 text-nix-300 border border-nix-500/30 rounded-full">v4.5 PRO</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-1 text-zinc-400 hover:text-white rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- New Chat Button -->
+                <button onclick="createNewConversation()" class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-gradient-to-r from-nix-600 to-nix-700 hover:from-nix-500 hover:to-nix-600 text-white rounded-xl font-medium text-sm transition-all duration-200 shadow-lg shadow-nix-700/20 active:scale-[0.98]">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>New Conversation</span>
+                </button>
+
+                <!-- Search Bar -->
+                <div class="mt-3 relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+                    <input type="text" id="searchInput" oninput="filterConversations()" placeholder="Search chats..." class="w-full bg-nix-bgdark/80 border border-nix-borderdark rounded-lg pl-8 pr-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-nix-500 transition-colors">
+                </div>
+            </div>
+
+            <!-- Conversations History List -->
+            <div class="flex-1 overflow-y-auto p-2 space-y-1" id="conversationsList">
+                <!-- Dynamic Conversation items populated here -->
+            </div>
+
+            <!-- Sidebar Footer & Auth Bar -->
+            <div class="p-3 border-t border-nix-borderdark/60 bg-nix-bgdark/40 space-y-2">
+                <!-- Puter & Supabase Status Pill -->
+                <div id="authStatusPill" class="flex items-center justify-between p-2 rounded-xl bg-nix-carddark/90 border border-nix-borderdark text-xs">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="authIndicator"></div>
+                        <span id="accountLabel" class="text-zinc-300 truncate max-w-[130px] font-medium">Guest User</span>
+                    </div>
+                    <button onclick="openSettingsModal('account')" title="Account Settings" class="text-nix-400 hover:text-nix-300 p-1">
+                        <i data-lucide="user-cog" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Footer Quick Actions -->
+                <div class="flex items-center justify-between text-xs text-zinc-400 px-1 pt-1">
+                    <button onclick="openMemoryModal()" class="flex items-center space-x-1.5 hover:text-nix-300 transition-colors py-1">
+                        <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-nix-400"></i>
+                        <span>Memory (<span id="memoryCountBadge">0</span>)</span>
+                    </button>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="toggleTheme()" class="p-1.5 hover:bg-nix-borderdark/50 rounded-lg hover:text-zinc-200 transition-colors" title="Toggle Theme">
+                            <i data-lucide="sun-moon" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openSettingsModal('general')" class="p-1.5 hover:bg-nix-borderdark/50 rounded-lg hover:text-zinc-200 transition-colors" title="Settings">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CHAT AREA -->
+        <main class="flex-1 flex flex-col h-full bg-nix-bgdark relative overflow-hidden">
+            
+            <!-- Workspace Top Bar -->
+            <header class="h-14 border-b border-nix-borderdark/70 bg-nix-bgdark/80 backdrop-blur-md px-4 flex items-center justify-between z-20 shrink-0">
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-nix-carddark">
+                        <i data-lucide="panel-left" class="w-5 h-5"></i>
+                    </button>
+
+                    <!-- Model Selector Dropdown -->
+                    <div class="relative inline-block text-left">
+                        <button id="modelSelectBtn" onclick="toggleModelDropdown()" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-nix-carddark border border-nix-borderdark hover:border-nix-500/50 text-xs font-semibold text-zinc-200 transition-all">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5 text-nix-400"></i>
+                            <span id="selectedModelName">Claude 3.5 Sonnet</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-zinc-400"></i>
+                        </button>
+
+                        <div id="modelDropdown" class="hidden absolute left-0 mt-2 w-56 rounded-xl bg-nix-carddark border border-nix-borderdark shadow-2xl z-50 p-1 space-y-0.5">
+                            <button onclick="selectModel('claude-3-5-sonnet', 'Claude 3.5 Sonnet')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
+                                <span class="font-medium">Claude 3.5 Sonnet</span>
+                                <span class="text-[10px] text-nix-400 bg-nix-900/60 px-1.5 py-0.5 rounded">Fast</span>
+                            </button>
+                            <button onclick="selectModel('gpt-4o', 'GPT-4o')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
+                                <span class="font-medium">GPT-4o</span>
+                                <span class="text-[10px] text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded">Smart</span>
+                            </button>
+                            <button onclick="selectModel('gpt-4o-mini', 'GPT-4o Mini')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
+                                <span class="font-medium">GPT-4o Mini</span>
+                                <span class="text-[10px] text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded">Light</span>
+                            </button>
+                            <button onclick="selectModel('deepseek-chat', 'DeepSeek V3')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
+                                <span class="font-medium">DeepSeek V3</span>
+                                <span class="text-[10px] text-purple-400 bg-purple-950 px-1.5 py-0.5 rounded">Logic</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Header Right Actions -->
+                <div class="flex items-center space-x-2">
+                    <!-- Memory Toggle Indicator -->
+                    <button onclick="openMemoryModal()" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-nix-600/10 border border-nix-500/20 text-nix-300 text-xs hover:bg-nix-600/20 transition-all">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 text-nix-400"></i>
+                        <span>Memory Active</span>
+                    </button>
+
+                    <!-- Export Chat Button -->
+                    <button onclick="exportCurrentChat()" title="Export Conversation" class="p-2 text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-nix-carddark transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                    </button>
+
+                    <!-- Clear Active Chat -->
+                    <button onclick="clearCurrentChat()" title="Clear Messages" class="p-2 text-zinc-400 hover:text-rose-400 rounded-lg hover:bg-nix-carddark transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- MESSAGES CONTAINER -->
+            <div id="messagesContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-6 max-w-4xl w-full mx-auto scroll-smooth">
+                
+                <!-- EMPTY HERO STATE -->
+                <div id="emptyHero" class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 my-auto">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-nix-700 via-nix-500 to-purple-300 flex items-center justify-center nix-glow mb-6 transform hover:scale-105 transition-transform duration-300">
+                        <i data-lucide="sparkles" class="w-8 h-8 text-white"></i>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
+                        How can <span class="bg-gradient-to-r from-nix-400 via-purple-300 to-white bg-clip-text text-transparent">Nix 4.5</span> assist you today?
+                    </h1>
+                    
+                    <p class="text-zinc-400 text-sm max-w-md mb-8">
+                        Powered by Puter.js multi-model AI engine. Intelligent, context-aware, personalized with memory persistence.
+                    </p>
+
+                    <!-- QUICK SUGGESTIONS GRID -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl text-left">
+                        <button onclick="sendQuickPrompt('Write a high-performance Python script using asyncio and custom logging.')" class="p-3.5 rounded-xl bg-nix-carddark border border-nix-borderdark hover:border-nix-500/50 hover:bg-nix-carddark/80 text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-400 group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="code" class="w-4 h-4"></i>
+                                <span>Code Development</span>
+                            </div>
+                            <p class="text-zinc-300 text-xs line-clamp-2">Write a high-performance Python script using asyncio and custom logging.</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Architect a scalable cloud REST API system with authentication and rate limiting.')" class="p-3.5 rounded-xl bg-nix-carddark border border-nix-borderdark hover:border-nix-500/50 hover:bg-nix-carddark/80 text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-400 group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="layers" class="w-4 h-4"></i>
+                                <span>System Architecture</span>
+                            </div>
+                            <p class="text-zinc-300 text-xs line-clamp-2">Architect a scalable cloud REST API system with authentication and rate limiting.</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Draft a concise executive technical proposal for integrating generative AI.')" class="p-3.5 rounded-xl bg-nix-carddark border border-nix-borderdark hover:border-nix-500/50 hover:bg-nix-carddark/80 text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-400 group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span>Technical Strategy</span>
+                            </div>
+                            <p class="text-zinc-300 text-xs line-clamp-2">Draft a concise executive technical proposal for integrating generative AI.</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Explain quantum key distribution protocols with clear mathematical analogies.')" class="p-3.5 rounded-xl bg-nix-carddark border border-nix-borderdark hover:border-nix-500/50 hover:bg-nix-carddark/80 text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-400 group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="brain" class="w-4 h-4"></i>
+                                <span>Complex Concepts</span>
+                            </div>
+                            <p class="text-zinc-300 text-xs line-clamp-2">Explain quantum key distribution protocols with clear mathematical analogies.</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Feed Stream List -->
+                <div id="messagesList" class="space-y-6"></div>
+            </div>
+
+            <!-- BOTTOM MESSAGE COMPOSER -->
+            <div class="p-3 sm:p-4 border-t border-nix-borderdark/60 bg-nix-bgdark/90 backdrop-blur-md shrink-0">
+                <div class="max-w-4xl mx-auto relative">
+                    
+                    <!-- File Attachment Preview Area -->
+                    <div id="filePreview" class="hidden mb-2 p-2 bg-nix-carddark border border-nix-borderdark rounded-lg flex items-center justify-between text-xs text-zinc-300">
+                        <div class="flex items-center space-x-2 truncate">
+                            <i data-lucide="file-code" class="w-4 h-4 text-nix-400"></i>
+                            <span id="fileName" class="truncate font-mono">attachment.txt</span>
+                        </div>
+                        <button onclick="clearAttachedFile()" class="p-1 hover:text-rose-400"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                    </div>
+
+                    <!-- Input Box Bar -->
+                    <div class="flex items-end bg-nix-carddark rounded-2xl border border-nix-borderdark nix-border-glow p-2 transition-all shadow-xl">
+                        
+                        <!-- Attach File Button -->
+                        <button onclick="triggerFileInput()" class="p-2.5 text-zinc-400 hover:text-nix-300 hover:bg-nix-borderdark/50 rounded-xl transition-colors shrink-0" title="Attach file context">
+                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                        </button>
+                        <input type="file" id="fileInput" class="hidden" accept=".txt,.js,.ts,.py,.html,.css,.json,.md,.csv" onchange="handleFileSelect(event)">
+
+                        <!-- Speech Dictation Button -->
+                        <button id="dictationBtn" onclick="toggleDictation()" class="p-2.5 text-zinc-400 hover:text-nix-300 hover:bg-nix-borderdark/50 rounded-xl transition-colors shrink-0" title="Voice Dictation">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
+                        </button>
+
+                        <!-- Main Auto-expanding Textarea -->
+                        <textarea id="userInput" rows="1" placeholder="Ask Nix 4.5 anything... (Shift+Enter for newline)" onkeydown="handleKeyDown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none resize-none max-h-36 min-h-[40px] leading-relaxed"></textarea>
+
+                        <!-- Submit / Stop Button -->
+                        <button id="sendBtn" onclick="sendMessage()" class="p-2.5 bg-gradient-to-tr from-nix-600 to-nix-500 hover:from-nix-500 hover:to-nix-400 text-white rounded-xl shadow-md shadow-nix-700/30 transition-all shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[11px] text-zinc-500 mt-2 px-2">
+                        <span>Nix 4.5 may produce precise information. Verify key specs.</span>
+                        <span id="charCounter">0 chars</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PERSONALIZATION & MEMORY MODAL -->
+    <div id="memoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-nix-carddark border border-nix-borderdark rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <!-- Header -->
+            <div class="p-4 border-b border-nix-borderdark flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="brain-circuit" class="w-5 h-5 text-nix-400"></i>
+                    <h3 class="text-base font-bold text-white">Nix Personalization & Memory</h3>
+                </div>
+                <button onclick="closeMemoryModal()" class="text-zinc-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-4 overflow-y-auto space-y-4 flex-1">
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                    Nix remembers key details you share to tailor responses to your preferences, tech stack, and writing style.
+                </p>
+
+                <!-- Add New Memory -->
+                <div class="space-y-2 bg-nix-bgdark/60 p-3 rounded-xl border border-nix-borderdark/60">
+                    <label class="text-xs font-semibold text-zinc-300">Add New Memory / Custom Instruction</label>
+                    <div class="flex space-x-2">
+                        <select id="memoryCategory" class="bg-nix-carddark border border-nix-borderdark rounded-lg px-2 text-xs text-zinc-300 focus:outline-none">
+                            <option value="Preference">Preference</option>
+                            <option value="Coding">Coding</option>
+                            <option value="Identity">Identity</option>
+                            <option value="Format">Format</option>
+                        </select>
+                        <input type="text" id="newMemoryInput" placeholder="e.g. Always write Python with type hints" class="flex-1 bg-nix-carddark border border-nix-borderdark rounded-lg px-3 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-nix-500">
+                        <button onclick="addMemory()" class="px-3 py-1.5 bg-nix-600 hover:bg-nix-500 text-white rounded-lg text-xs font-medium transition-colors">Add</button>
+                    </div>
+                </div>
+
+                <!-- Stored Memories List -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-zinc-400">Active Stored Memories</span>
+                        <button onclick="clearAllMemories()" class="text-[11px] text-rose-400 hover:underline">Clear All</button>
+                    </div>
+                    <div id="memoriesListContainer" class="space-y-2">
+                        <!-- Items rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 border-t border-nix-borderdark bg-nix-bgdark/40 text-right">
+                <button onclick="closeMemoryModal()" class="px-4 py-1.5 bg-nix-borderdark hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-nix-carddark border border-nix-borderdark rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-nix-borderdark flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-nix-400"></i>
+                    <h3 class="text-base font-bold text-white">Nix 4.5 Settings</h3>
+                </div>
+                <button onclick="closeSettingsModal()" class="text-zinc-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Modal Body Tabs & Pane -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Navigation Tabs -->
+                <div class="w-44 bg-nix-bgdark/60 border-r border-nix-borderdark/60 p-2 space-y-1 shrink-0">
+                    <button onclick="switchSettingsTab('general')" id="tabBtn-general" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-300 bg-nix-600/20">
+                        <i data-lucide="sliders" class="w-4 h-4"></i>
+                        <span>General</span>
+                    </button>
+                    <button onclick="switchSettingsTab('account')" id="tabBtn-account" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:bg-nix-borderdark/50">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <span>Auth & Account</span>
+                    </button>
+                    <button onclick="switchSettingsTab('supabase')" id="tabBtn-supabase" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:bg-nix-borderdark/50">
+                        <i data-lucide="database" class="w-4 h-4"></i>
+                        <span>Supabase DB</span>
+                    </button>
+                    <button onclick="switchSettingsTab('data')" id="tabBtn-data" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:bg-nix-borderdark/50">
+                        <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                        <span>Data Storage</span>
+                    </button>
+                </div>
+
+                <!-- Tab Content Panels -->
+                <div class="flex-1 p-5 overflow-y-auto space-y-6 text-xs text-zinc-300">
+                    
+                    <!-- General Tab -->
+                    <div id="tabContent-general" class="tab-content space-y-4">
+                        <h4 class="font-bold text-sm text-white pb-2 border-b border-nix-borderdark">Appearance & Behavior</h4>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold text-zinc-200">Color Theme</p>
+                                <p class="text-zinc-500 text-[11px]">Toggle between Dark Purple and Light mode.</p>
+                            </div>
+                            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-nix-bgdark border border-nix-borderdark rounded-lg font-medium text-nix-300">Switch Theme</button>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <div>
+                                <p class="font-semibold text-zinc-200">Default AI Model</p>
+                                <p class="text-zinc-500 text-[11px]">Primary model used for new conversations.</p>
+                            </div>
+                            <select id="settingDefaultModel" onchange="updateDefaultModelSetting(this.value)" class="bg-nix-bgdark border border-nix-borderdark rounded-lg px-2 py-1 text-zinc-200">
+                                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                <option value="gpt-4o">GPT-4o</option>
+                                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                                <option value="deepseek-chat">DeepSeek V3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Account Tab -->
+                    <div id="tabContent-account" class="tab-content hidden space-y-4">
+                        <h4 class="font-bold text-sm text-white pb-2 border-b border-nix-borderdark">Puter.js Platform Authentication</h4>
+                        
+                        <div class="bg-nix-bgdark p-4 rounded-xl border border-nix-borderdark space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-full bg-nix-600/30 flex items-center justify-center text-nix-300 font-bold text-base" id="puterAvatar">P</div>
+                                    <div>
+                                        <p class="font-bold text-white text-sm" id="puterUsername">Checking Puter status...</p>
+                                        <p class="text-zinc-500 text-[11px]" id="puterUserSub">Puter.js Persistent Session</p>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" id="puterStatusBadge">Connected</span>
+                            </div>
+
+                            <div class="pt-2 flex space-x-2">
+                                <button onclick="loginPuter()" class="px-3 py-1.5 bg-nix-600 hover:bg-nix-500 text-white rounded-lg font-medium">Connect Puter Account</button>
+                                <button onclick="logoutPuter()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-medium">Log Out</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supabase Tab -->
+                    <div id="tabContent-supabase" class="tab-content hidden space-y-4">
+                        <h4 class="font-bold text-sm text-white pb-2 border-b border-nix-borderdark">Supabase Ecosystem Authentication</h4>
+                        <p class="text-zinc-400">Connected to main application user management database.</p>
+                        
+                        <div class="bg-nix-bgdark p-3 rounded-xl border border-nix-borderdark space-y-2 font-mono text-[11px]">
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Project URL:</span>
+                                <span class="text-nix-300 truncate">https://rnlwrngfgvznndlekmrz.supabase.co</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Supabase User Status:</span>
+                                <span class="text-emerald-400" id="supabaseUserStatus">Session Active</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-purple-950/30 border border-nix-500/30 rounded-xl space-y-2">
+                            <p class="font-semibold text-nix-300">Supabase SQL Schema Script</p>
+                            <p class="text-zinc-400 text-[11px]">Run this query in your Supabase SQL editor to create message history tables:</p>
+                            <pre class="bg-nix-bgdark p-2 rounded text-[10px] text-zinc-300 overflow-x-auto font-mono">
+CREATE TABLE nix_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id),
+  title TEXT NOT NULL,
+  model TEXT DEFAULT 'claude-3-5-sonnet',
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+CREATE TABLE nix_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID REFERENCES nix_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);</pre>
+                        </div>
+                    </div>
+
+                    <!-- Data Tab -->
+                    <div id="tabContent-data" class="tab-content hidden space-y-4">
+                        <h4 class="font-bold text-sm text-white pb-2 border-b border-nix-borderdark">Local Storage & Reset</h4>
+                        
+                        <div class="space-y-3">
+                            <button onclick="exportAllData()" class="w-full flex items-center justify-between p-3 bg-nix-bgdark border border-nix-borderdark rounded-xl hover:bg-nix-carddark transition-colors">
+                                <div class="text-left">
+                                    <p class="font-semibold text-zinc-200">Export All Data (JSON)</p>
+                                    <p class="text-zinc-500 text-[11px]">Download backup of history, memories & settings.</p>
+                                </div>
+                                <i data-lucide="download" class="w-4 h-4 text-nix-400"></i>
+                            </button>
+
+                            <button onclick="clearAllLocalData()" class="w-full flex items-center justify-between p-3 bg-rose-950/20 border border-rose-900/50 rounded-xl hover:bg-rose-900/30 transition-colors text-rose-300">
+                                <div class="text-left">
+                                    <p class="font-semibold">Clear All Local Data</p>
+                                    <p class="text-rose-400/70 text-[11px]">Wipes all conversations, history and stored memories.</p>
+                                </div>
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // APP STATE & CONSTANTS
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        let supabaseClient = null;
+
+        const STORAGE_KEY = 'nix_45_app_state';
+
+        let appState = {
+            theme: 'dark',
+            selectedModel: 'claude-3-5-sonnet',
+            activeConversationId: null,
+            conversations: [],
+            memories: [
+                { id: 'm1', category: 'Coding', content: 'Prefer modern TypeScript, Python, and clean modular code with clear comments.', createdAt: Date.now() }
+            ],
+            settings: {
+                defaultModel: 'claude-3-5-sonnet',
+                streamResponse: true,
+                autoSpeech: false
+            }
+        };
+
+        let currentAttachedFileText = null;
+        let isGenerating = false;
+        let dictationRecognition = null;
+        let isDictating = false;
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Lucide Icons
+            lucide.createIcons();
+
+            // Initialize Supabase Client
+            if (window.supabase) {
+                try {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    checkSupabaseAuth();
+                } catch (e) {
+                    console.warn('Supabase initialization fallback:', e);
+                }
+            }
+
+            // Load saved state from LocalStorage
+            loadState();
+
+            // Configure Marked parser
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return hljs.highlightAuto(code).value;
+                },
+                breaks: true
+            });
+
+            // Initialize Puter Auth State
+            initPuterAuth();
+
+            // Set default active conversation if none exists
+            if (appState.conversations.length === 0) {
+                createNewConversation(false);
+            } else if (!appState.activeConversationId) {
+                appState.activeConversationId = appState.conversations[0].id;
+            }
+
+            // Render initial UI components
+            applyTheme(appState.theme);
+            renderConversationsList();
+            renderActiveConversationMessages();
+            updateMemoryBadge();
+        });
+
+        async function initPuterAuth() {
+            const userStatusEl = document.getElementById('accountLabel');
+            const puterUsernameEl = document.getElementById('puterUsername');
+            const puterBadgeEl = document.getElementById('puterStatusBadge');
+
+            if (window.puter) {
+                try {
+                    const signedIn = await puter.auth.isSignedIn();
+                    if (signedIn) {
+                        const user = await puter.auth.getUser();
+                        userStatusEl.innerText = user.username || 'Puter Account';
+                        puterUsernameEl.innerText = user.username || 'Puter User';
+                        puterBadgeEl.innerText = 'Connected';
+                        puterBadgeEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                    } else {
+                        userStatusEl.innerText = 'Puter Guest';
+                        puterUsernameEl.innerText = 'Puter Guest (Not Signed In)';
+                        puterBadgeEl.innerText = 'Guest Mode';
+                        puterBadgeEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                    }
+                } catch (e) {
+                    console.warn('Puter Auth Check Error:', e);
+                }
+            }
+        }
+
+        async function loginPuter() {
+            if (window.puter) {
+                try {
+                    await puter.auth.signIn();
+                    initPuterAuth();
+                } catch (err) {
+                    showToast('Puter login cancelled or failed.');
+                }
+            }
+        }
+
+        async function logoutPuter() {
+            if (window.puter) {
+                try {
+                    await puter.auth.signOut();
+                    initPuterAuth();
+                    showToast('Logged out from Puter.');
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        async function checkSupabaseAuth() {
+            if (!supabaseClient) return;
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const statusEl = document.getElementById('supabaseUserStatus');
+                if (session) {
+                    statusEl.innerText = `Signed In (${session.user.email || session.user.id})`;
+                } else {
+                    statusEl.innerText = 'No Supabase session (Standard Auth fallback active)';
+                }
+            } catch (err) {
+                console.warn('Supabase session check:', err);
+            }
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    appState = { ...appState, ...parsed };
+                }
+            } catch (e) {
+                console.error('Failed to parse localStorage appState:', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error('Failed to save appState to localStorage:', e);
+            }
+        }
+
+        function createNewConversation(autoSwitch = true) {
+            const newConv = {
+                id: 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                title: 'New Conversation',
+                model: appState.selectedModel,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+                messages: []
+            };
+
+            appState.conversations.unshift(newConv);
+            if (autoSwitch) {
+                appState.activeConversationId = newConv.id;
+            }
+            saveState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+        }
+
+        function switchConversation(convId) {
+            appState.activeConversationId = convId;
+            saveState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+            
+            // Close mobile sidebar if open
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('-translate-x-full');
+            document.getElementById('mobileBackdrop').classList.add('hidden');
+        }
+
+        function deleteConversation(convId, event) {
+            event.stopPropagation();
+            appState.conversations = appState.conversations.filter(c => c.id !== convId);
+            
+            if (appState.activeConversationId === convId) {
+                appState.activeConversationId = appState.conversations[0]?.id || null;
+            }
+
+            if (appState.conversations.length === 0) {
+                createNewConversation(false);
+            }
+
+            saveState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+        }
+
+        function renderConversationsList() {
+            const container = document.getElementById('conversationsList');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+
+            container.innerHTML = '';
+
+            const filtered = appState.conversations.filter(c => 
+                c.title.toLowerCase().includes(searchVal) ||
+                c.messages.some(m => m.content.toLowerCase().includes(searchVal))
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">No conversations found.</p>`;
+                return;
+            }
+
+            filtered.forEach(conv => {
+                const isActive = conv.id === appState.activeConversationId;
+                const el = document.createElement('div');
+                el.className = `group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs transition-all ${
+                    isActive 
+                    ? 'bg-nix-600/25 border border-nix-500/40 text-white font-medium shadow-sm' 
+                    : 'text-zinc-400 hover:bg-nix-bgdark/60 hover:text-zinc-200'
+                }`;
+                el.onclick = () => switchConversation(conv.id);
+
+                el.innerHTML = `
+                    <div class="flex items-center space-x-2.5 truncate flex-1 pr-2">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0 ${isActive ? 'text-nix-400' : 'text-zinc-500'}"></i>
+                        <span class="truncate">${escapeHtml(conv.title)}</span>
+                    </div>
+                    <button onclick="deleteConversation('${conv.id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-400 p-1 rounded transition-opacity">
+                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                    </button>
+                `;
+                container.appendChild(el);
+            });
+
+            lucide.createIcons();
+        }
+
+        function filterConversations() {
+            renderConversationsList();
+        }
+
+        function toggleModelDropdown() {
+            const drop = document.getElementById('modelDropdown');
+            drop.classList.toggle('hidden');
+        }
+
+        function selectModel(modelId, displayName) {
+            appState.selectedModel = modelId;
+            document.getElementById('selectedModelName').innerText = displayName;
+            document.getElementById('modelDropdown').classList.add('hidden');
+            
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (activeConv) {
+                activeConv.model = modelId;
+            }
+            saveState();
+        }
+
+        function buildSystemPrompt() {
+            let sys = "You are Nix 4.5, an elite, highly competent AI assistant built with a purple aesthetic visual identity. You provide articulate, accurate, clean, and directly helpful answers using markdown formatting, bullet points, and code blocks.";
+            
+            if (appState.memories.length > 0) {
+                sys += "\n\n[USER PERSONALIZATION MEMORIES - ALWAYS ADHERE TO THESE INSTRUCTIONS]:\n";
+                appState.memories.forEach(m => {
+                    sys += `- (${m.category}): ${m.content}\n`;
+                });
+            }
+            return sys;
+        }
+
+        async function sendMessage() {
+            if (isGenerating) return;
+
+            const inputEl = document.getElementById('userInput');
+            let content = inputEl.value.trim();
+
+            if (!content && !currentAttachedFileText) return;
+
+            // Append attached file context if available
+            if (currentAttachedFileText) {
+                content = `[Attached Context File Content]:\n${currentAttachedFileText}\n\n[User Prompt]: ${content}`;
+                clearAttachedFile();
+            }
+
+            let activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (!activeConv) {
+                createNewConversation(true);
+                activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            }
+
+            // Add User Message
+            const userMsg = { role: 'user', content: content, timestamp: Date.now() };
+            activeConv.messages.push(userMsg);
+
+            // Auto title generation if first message
+            if (activeConv.messages.length === 1) {
+                activeConv.title = content.slice(0, 32) + (content.length > 32 ? '...' : '');
+            }
+
+            activeConv.updatedAt = Date.now();
+            saveState();
+
+            inputEl.value = '';
+            autoResizeTextarea(inputEl);
+            document.getElementById('charCounter').innerText = '0 chars';
+
+            renderConversationsList();
+            renderActiveConversationMessages();
+
+            // Prepare AI Placeholder Message
+            const aiMsg = { role: 'assistant', content: '', timestamp: Date.now() };
+            activeConv.messages.push(aiMsg);
+            saveState();
+
+            isGenerating = true;
+            updateSendButtonState(true);
+
+            const msgListEl = document.getElementById('messagesList');
+            const aiBubbleEl = renderSingleMessage(aiMsg, activeConv.messages.length - 1);
+            msgListEl.appendChild(aiBubbleEl);
+            scrollToBottom();
+
+            const textContainer = aiBubbleEl.querySelector('.prose-body');
+
+            try {
+                // Construct payload array for Puter AI
+                const systemPrompt = buildSystemPrompt();
+                
+                // Prepare message history array
+                const historyPayload = activeConv.messages.slice(0, -1).map(m => ({
+                    role: m.role,
+                    content: m.content
+                }));
+
+                // Call Puter.js AI Engine
+                if (window.puter && puter.ai) {
+                    const promptText = `${systemPrompt}\n\n${historyPayload.map(h => `${h.role.toUpperCase()}: ${h.content}`).join('\n\n')}`;
+                    
+                    // Call Puter.js multi-model API
+                    const response = await puter.ai.chat(promptText, { model: appState.selectedModel });
+                    
+                    let finalResponseText = '';
+                    if (typeof response === 'string') {
+                        finalResponseText = response;
+                    } else if (response && response.message && response.message.content) {
+                        finalResponseText = response.message.content;
+                    } else if (response && response.text) {
+                        finalResponseText = response.text;
+                    } else {
+                        finalResponseText = String(response);
+                    }
+
+                    // Update AI Message state
+                    aiMsg.content = finalResponseText;
+                    textContainer.innerHTML = marked.parse(finalResponseText);
+                    textContainer.classList.remove('typing-cursor');
+                } else {
+                    // Fallback simulation if Puter object is offline or restricted
+                    aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or disconnected. Please verify internet access or Puter authentication state in settings.";
+                    textContainer.innerHTML = marked.parse(aiMsg.content);
+                }
+            } catch (err) {
+                console.error('Puter AI generation error:', err);
+                aiMsg.content = `**Error Generating Response:** ${err.message || 'Unable to connect to Puter.js AI service. Please try again.'}`;
+                textContainer.innerHTML = marked.parse(aiMsg.content);
+            } finally {
+                isGenerating = false;
+                updateSendButtonState(false);
+                saveState();
+                highlightCodeBlocks();
+                scrollToBottom();
+            }
+        }
+
+        function renderActiveConversationMessages() {
+            const container = document.getElementById('messagesList');
+            const emptyHero = document.getElementById('emptyHero');
+            container.innerHTML = '';
+
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            
+            if (!activeConv || activeConv.messages.length === 0) {
+                emptyHero.classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            }
+
+            emptyHero.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            activeConv.messages.forEach((msg, idx) => {
+                const msgEl = renderSingleMessage(msg, idx);
+                container.appendChild(msgEl);
+            });
+
+            highlightCodeBlocks();
+            scrollToBottom();
+        }
+
+        function renderSingleMessage(msg, index) {
+            const wrapper = document.createElement('div');
+            const isUser = msg.role === 'user';
+
+            wrapper.className = `flex gap-3 sm:gap-4 ${isUser ? 'justify-end' : 'justify-start'} text-sm leading-relaxed`;
+
+            if (isUser) {
+                wrapper.innerHTML = `
+                    <div class="max-w-[85%] sm:max-w-[75%] bg-nix-600/20 border border-nix-500/30 text-zinc-100 rounded-2xl rounded-tr-sm p-4 shadow-sm">
+                        <div class="whitespace-pre-wrap font-sans">${escapeHtml(msg.content)}</div>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-4 h-4 text-zinc-300"></i>
+                    </div>
+                `;
+            } else {
+                const parsedContent = msg.content ? marked.parse(msg.content) : '<span class="typing-cursor text-zinc-400">Nix is thinking...</span>';
+                
+                wrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nix-700 to-nix-500 flex items-center justify-center shrink-0 nix-glow-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="max-w-[90%] sm:max-w-[82%] bg-nix-carddark/90 border border-nix-borderdark text-zinc-200 rounded-2xl rounded-tl-sm p-4 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between border-b border-nix-borderdark/60 pb-2 text-xs text-zinc-400">
+                            <span class="font-bold bg-gradient-to-r from-nix-300 to-purple-200 bg-clip-text text-transparent">Nix 4.5</span>
+                            <div class="flex items-center space-x-1.5">
+                                <button onclick="copyToClipboard(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-300 p-1" title="Copy text"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="speakText(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-300 p-1" title="Read Aloud"><i data-lucide="volume-2" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                        <div class="prose prose-invert prose-purple max-w-none prose-body text-xs sm:text-sm">
+                            ${parsedContent}
+                        </div>
+                    </div>
+                `;
+            }
+
+            setTimeout(() => lucide.createIcons(), 0);
+            return wrapper;
+        }
+
+        function openMemoryModal() {
+            renderMemoriesList();
+            document.getElementById('memoryModal').classList.remove('hidden');
+        }
+
+        function closeMemoryModal() {
+            document.getElementById('memoryModal').classList.add('hidden');
+        }
+
+        function addMemory() {
+            const input = document.getElementById('newMemoryInput');
+            const category = document.getElementById('memoryCategory').value;
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            appState.memories.push({
+                id: 'mem_' + Date.now(),
+                category: category,
+                content: content,
+                createdAt: Date.now()
+            });
+
+            input.value = '';
+            saveState();
+            renderMemoriesList();
+            updateMemoryBadge();
+            showToast('Memory item saved.');
+        }
+
+        function deleteMemory(id) {
+            appState.memories = appState.memories.filter(m => m.id !== id);
+            saveState();
+            renderMemoriesList();
+            updateMemoryBadge();
+        }
+
+        function clearAllMemories() {
+            appState.memories = [];
+            saveState();
+            renderMemoriesList();
+            updateMemoryBadge();
+            showToast('All memories cleared.');
+        }
+
+        function renderMemoriesList() {
+            const container = document.getElementById('memoriesListContainer');
+            container.innerHTML = '';
+
+            if (appState.memories.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-2">No active memories stored.</p>`;
+                return;
+            }
+
+            appState.memories.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-nix-bgdark border border-nix-borderdark text-xs';
+                item.innerHTML = `
+                    <div class="space-y-0.5 truncate pr-2">
+                        <span class="text-[10px] font-bold px-1.5 py-0.2 bg-nix-600/30 text-nix-300 rounded">${m.category}</span>
+                        <p class="text-zinc-200 truncate mt-0.5">${escapeHtml(m.content)}</p>
+                    </div>
+                    <button onclick="deleteMemory('${m.id}')" class="text-zinc-500 hover:text-rose-400 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                `;
+                container.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        function updateMemoryBadge() {
+            document.getElementById('memoryCountBadge').innerText = appState.memories.length;
+        }
+
+        function openSettingsModal(defaultTab = 'general') {
+            switchSettingsTab(defaultTab);
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function switchSettingsTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:bg-nix-borderdark/50';
+            });
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+            if (activeBtn) activeBtn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-300 bg-nix-600/20';
+
+            const activeContent = document.getElementById(`tabContent-${tabId}`);
+            if (activeContent) activeContent.classList.remove('hidden');
+        }
+
+        function exportAllData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `nix_45_backup_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function clearAllLocalData() {
+            if (confirm("Are you sure you want to erase all conversations, history and settings?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function toggleTheme() {
+            appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(appState.theme);
+            saveState();
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function sendQuickPrompt(text) {
+            const input = document.getElementById('userInput');
+            input.value = text;
+            autoResizeTextarea(input);
+            sendMessage();
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function autoResizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+            document.getElementById('charCounter').innerText = `${el.value.length} chars`;
+        }
+
+        function triggerFileInput() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentAttachedFileText = e.target.result;
+                document.getElementById('fileName').innerText = file.name;
+                document.getElementById('filePreview').classList.remove('hidden');
+                showToast(`Attached ${file.name}`);
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAttachedFile() {
+            currentAttachedFileText = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').classList.add('hidden');
+        }
+
+        function toggleDictation() {
+            const btn = document.getElementById('dictationBtn');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                showToast('Speech recognition not supported in this browser.');
+                return;
+            }
+
+            if (!dictationRecognition) {
+                dictationRecognition = new SpeechRecognition();
+                dictationRecognition.continuous = false;
+                dictationRecognition.interimResults = false;
+
+                dictationRecognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript;
+                    const input = document.getElementById('userInput');
+                    input.value += (input.value ? ' ' : '') + transcript;
+                    autoResizeTextarea(input);
+                };
+
+                dictationRecognition.onend = () => {
+                    isDictating = false;
+                    btn.classList.remove('text-rose-400', 'animate-pulse');
+                };
+            }
+
+            if (isDictating) {
+                dictationRecognition.stop();
+            } else {
+                dictationRecognition.start();
+                isDictating = true;
+                btn.classList.add('text-rose-400', 'animate-pulse');
+                showToast('Listening...');
+            }
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                showToast('Text-to-speech not supported.');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('Copied to clipboard!');
+        }
+
+        function exportCurrentChat() {
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (!activeConv || activeConv.messages.length === 0) {
+                showToast('No active messages to export.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(activeConv, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${activeConv.title.replace(/[^a-z0-9]/gi, '_')}.json`;
+            a.click();
+        }
+
+        function clearCurrentChat() {
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (activeConv) {
+                activeConv.messages = [];
+                saveState();
+                renderActiveConversationMessages();
+                showToast('Chat history cleared.');
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobileBackdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
+        function updateSendButtonState(generating) {
+            const btn = document.getElementById('sendBtn');
+            if (generating) {
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = `<i data-lucide="arrow-up" class="w-4 h-4"></i>`;
+                btn.disabled = false;
+            }
+            lucide.createIcons();
+        }
+
+        function highlightCodeBlocks() {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-20 right-6 bg-nix-carddark border border-nix-500/50 text-nix-200 px-4 py-2 rounded-xl text-xs shadow-2xl z-50 transition-all duration-300 transform translate-y-2 opacity-0';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function escapeJsString(str) {
+            return (str || '').replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        }
+    </script>
+</body>
+</html>
