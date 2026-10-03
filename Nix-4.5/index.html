@@ -623,14 +623,22 @@
                     .eq('user_id', supabaseUser.id)
                     .order('updated_at', { ascending: false });
 
-                if (!convErr && convs) {
+                if (convErr) {
+                    console.warn('Supabase conversations sync error (403/RLS):', convErr.message);
+                    showToast('Supabase permission error: Run updated schema SQL in Supabase editor.');
+                    return;
+                }
+
+                if (convs) {
                     const formattedConvs = [];
                     for (const c of convs) {
-                        const { data: msgs } = await supabaseClient
+                        const { data: msgs, error: msgsErr } = await supabaseClient
                             .from('nix_messages')
                             .select('*')
                             .eq('conversation_id', c.id)
                             .order('created_at', { ascending: true });
+
+                        if (msgsErr) console.warn('Supabase messages error:', msgsErr.message);
 
                         formattedConvs.push({
                             id: c.id,
@@ -656,12 +664,14 @@
                 }
 
                 // Fetch memories
-                const { data: mems } = await supabaseClient
+                const { data: mems, error: memsErr } = await supabaseClient
                     .from('nix_memories')
                     .select('*')
                     .eq('user_id', supabaseUser.id);
 
-                if (mems && mems.length > 0) {
+                if (memsErr) {
+                    console.warn('Supabase memories error:', memsErr.message);
+                } else if (mems && mems.length > 0) {
                     appState.memories = mems.map(m => ({
                         id: m.id,
                         category: m.category,
@@ -708,7 +718,9 @@
                     id: supabaseUser.id,
                     theme: appState.theme,
                     updated_at: new Date().toISOString()
-                }).then(() => {}).catch(() => {});
+                }).then(({ error }) => {
+                    if (error) console.warn('Profile theme sync warning:', error.message);
+                }).catch(() => {});
             }
         }
 
@@ -740,12 +752,13 @@
 
             if (supabaseUser && supabaseClient) {
                 try {
-                    await supabaseClient.from('nix_conversations').insert({
+                    const { error } = await supabaseClient.from('nix_conversations').insert({
                         id: newConv.id,
                         user_id: supabaseUser.id,
                         title: newConv.title,
                         model: newConv.model
                     });
+                    if (error) console.warn('Conversation insert warning:', error.message);
                 } catch (e) {
                     console.warn('Failed to insert conversation to Supabase:', e);
                 }
@@ -886,7 +899,9 @@
                     user_id: supabaseUser.id,
                     role: 'user',
                     content: userMsg.content
-                }).then(() => {}).catch(() => {});
+                }).then(({ error }) => {
+                    if (error) console.warn('User message insert warning:', error.message);
+                }).catch(() => {});
             }
 
             const aiMsg = { role: 'assistant', content: '', timestamp: Date.now() };
@@ -926,12 +941,16 @@
                             user_id: supabaseUser.id,
                             role: 'assistant',
                             content: finalResponseText
-                        }).then(() => {}).catch(() => {});
+                        }).then(({ error }) => {
+                            if (error) console.warn('AI message insert warning:', error.message);
+                        }).catch(() => {});
 
                         supabaseClient.from('nix_conversations').update({
                             title: activeConv.title,
                             updated_at: new Date().toISOString()
-                        }).eq('id', activeConv.id).then(() => {}).catch(() => {});
+                        }).eq('id', activeConv.id).then(({ error }) => {
+                            if (error) console.warn('Conversation update warning:', error.message);
+                        }).catch(() => {});
                     }
                 } else {
                     aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or offline. Please check connection.";
