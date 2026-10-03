@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nix Arena - AI Chat & Model Comparison Engine</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nix: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            900: '#1e1b4b',
+                            accent: '#00f2fe',
+                            pink: '#4facfe'
+                        },
+                        darkbg: '#0b0f19',
+                        darkcard: '#131b2e',
+                        darkborder: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Puter.js SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f1f5f9;
+        }
+
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1322;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        .nix-glow {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.4);
+        }
+        
+        .nix-glow-border {
+            border: 1px solid rgba(99, 102, 241, 0.5);
+            box-shadow: inset 0 0 15px rgba(99, 102, 241, 0.15);
+        }
+
+        .nix-gradient-text {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .prose code {
+            background-color: #1a2336;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.875em;
+        }
+
+        .prose pre {
+            background-color: #0f172a !important;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #1e293b;
+        }
+
+        .grid-dynamic-1 { grid-template-columns: minmax(0, 1fr); }
+        .grid-dynamic-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-dynamic-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-dynamic-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+        @media (max-width: 1024px) {
+            .grid-dynamic-3, .grid-dynamic-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 640px) {
+            .grid-dynamic-2, .grid-dynamic-3, .grid-dynamic-4 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-[#080c14] text-slate-100">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 border-b border-darkborder bg-darkcard/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 z-30 shrink-0">
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid font-bold text-xl text-white fa-bolt"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <span class="font-black text-xl tracking-tight nix-gradient-text">NIX ARENA</span>
+                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">v4.5 PRO</span>
+                </div>
+                <p class="text-[11px] text-slate-400 hidden sm:block">Multi-AI Benchmarking & Chat Environment</p>
+            </div>
+        </div>
+
+        <!-- Center Nav Options -->
+        <div class="hidden md:flex items-center space-x-1 bg-darkbg/60 p-1 rounded-xl border border-darkborder">
+            <button id="nav-arena-btn" onclick="switchTab('arena')" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-swords"></i>
+                <span>Arena Grid</span>
+            </button>
+            <button id="nav-leaderboard-btn" onclick="switchTab('leaderboard')" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-darkcard transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-trophy"></i>
+                <span>Leaderboard</span>
+            </button>
+            <button id="nav-prompt-btn" onclick="openPromptModal()" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-darkcard transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Nix 4.5 Power Prompt</span>
+            </button>
+        </div>
+
+        <!-- Account Controls & User Badge -->
+        <div class="flex items-center space-x-3">
+            <div id="user-profile-badge" onclick="openAccountModal()" class="cursor-pointer flex items-center space-x-2.5 bg-darkbg/80 hover:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-darkborder transition-all">
+                <div id="user-avatar-circle" class="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-xs text-white uppercase">
+                    U
+                </div>
+                <div class="text-left hidden sm:block">
+                    <div id="user-display-name" class="text-xs font-bold text-slate-200">User</div>
+                    <div id="user-display-role" class="text-[10px] text-indigo-400">Standard Tier</div>
+                </div>
+                <i class="fa-solid fa-chevron-down text-slate-500 text-xs ml-1"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Playground Wrapper -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+        
+        <!-- ARENA TAB VIEW -->
+        <div id="tab-arena" class="flex-1 flex flex-col overflow-hidden">
+            <!-- Model Selection Bar -->
+            <div class="p-3 sm:px-6 bg-darkbg/90 border-b border-darkborder flex flex-wrap items-center justify-between gap-3 shrink-0 z-10">
+                
+                <!-- Quick Preset Selector -->
+                <div class="flex items-center space-x-2 overflow-x-auto py-1 scrollbar-none">
+                    <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-1 hidden lg:inline">Matchup:</span>
+                    <button onclick="setPreset(['nix-4.5', 'gpt-4o'])" class="px-3 py-1 rounded-lg text-xs bg-darkcard hover:bg-indigo-900/30 border border-darkborder hover:border-indigo-500/50 text-slate-300 font-medium whitespace-nowrap transition-all">
+                        <i class="fa-solid fa-bolt text-cyan-400 mr-1"></i> Nix 4.5 vs GPT-4o
+                    </button>
+                    <button onclick="setPreset(['nix-4.5', 'claude-3-5-sonnet'])" class="px-3 py-1 rounded-lg text-xs bg-darkcard hover:bg-indigo-900/30 border border-darkborder hover:border-indigo-500/50 text-slate-300 font-medium whitespace-nowrap transition-all">
+                        <i class="fa-solid fa-bolt text-cyan-400 mr-1"></i> Nix 4.5 vs Claude 3.5
+                    </button>
+                    <button onclick="setPreset(['nix-4.5', 'deepseek-reasoner', 'gpt-4o', 'claude-3-5-sonnet'])" class="px-3 py-1 rounded-lg text-xs bg-darkcard hover:bg-indigo-900/30 border border-darkborder hover:border-indigo-500/50 text-slate-300 font-medium whitespace-nowrap transition-all">
+                        <i class="fa-solid fa-fire text-amber-400 mr-1"></i> 4-Way Titan Battle
+                    </button>
+                </div>
+
+                <!-- Model Count Selector & Controls -->
+                <div class="flex items-center space-x-3 ml-auto">
+                    <div class="flex items-center bg-darkcard rounded-lg p-1 border border-darkborder text-xs">
+                        <span class="text-slate-400 px-2 font-medium">Split Screen:</span>
+                        <button onclick="setGridColumns(1)" id="split-1-btn" class="w-7 h-6 rounded flex items-center justify-center font-semibold text-slate-400 hover:text-white transition-all">1</button>
+                        <button onclick="setGridColumns(2)" id="split-2-btn" class="w-7 h-6 rounded flex items-center justify-center font-semibold bg-indigo-600 text-white transition-all">2</button>
+                        <button onclick="setGridColumns(3)" id="split-3-btn" class="w-7 h-6 rounded flex items-center justify-center font-semibold text-slate-400 hover:text-white transition-all">3</button>
+                        <button onclick="setGridColumns(4)" id="split-4-btn" class="w-7 h-6 rounded flex items-center justify-center font-semibold text-slate-400 hover:text-white transition-all">4</button>
+                    </div>
+
+                    <button onclick="clearArenaChat()" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span class="hidden sm:inline">Clear Chat</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Response Columns Container (Dynamic Grid) -->
+            <div id="arena-grid" class="flex-1 p-3 sm:p-4 grid gap-4 overflow-y-auto min-h-0 grid-dynamic-2">
+                <!-- Columns dynamically injected via JS -->
+            </div>
+
+            <!-- Bottom Prompt Form Bar -->
+            <div class="p-3 sm:p-4 border-t border-darkborder bg-darkcard/90 backdrop-blur-md shrink-0 z-20">
+                <div class="max-w-5xl mx-auto space-y-2">
+                    
+                    <!-- Quick Sample Prompts -->
+                    <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-[11px] scrollbar-none text-slate-400">
+                        <span class="font-semibold text-indigo-400 shrink-0"><i class="fa-solid fa-lightbulb mr-1"></i> Try:</span>
+                        <button onclick="useSamplePrompt('Write an optimized Python async web scraper with error handling.')" class="bg-darkbg px-2.5 py-1 rounded-md border border-darkborder hover:border-slate-600 hover:text-slate-200 shrink-0 transition-all">Async Python Scraper</button>
+                        <button onclick="useSamplePrompt('Compare Quantum Computing vs Classical Computing in 3 key paragraphs.')" class="bg-darkbg px-2.5 py-1 rounded-md border border-darkborder hover:border-slate-600 hover:text-slate-200 shrink-0 transition-all">Quantum vs Classical</button>
+                        <button onclick="useSamplePrompt('Write a poetic sci-fi short story about an AI discovering emotions.')" class="bg-darkbg px-2.5 py-1 rounded-md border border-darkborder hover:border-slate-600 hover:text-slate-200 shrink-0 transition-all">Sci-Fi Story</button>
+                    </div>
+
+                    <!-- Input Box + Submit Button -->
+                    <form id="prompt-form" onsubmit="handleSendPrompt(event)" class="relative flex items-center">
+                        <textarea 
+                            id="user-prompt" 
+                            rows="2" 
+                            placeholder="Type your prompt to test and compare models... (Press Enter to send, Shift+Enter for newline)"
+                            class="w-full bg-darkbg border border-darkborder rounded-xl pl-4 pr-28 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all"
+                            onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); handleSendPrompt(event); }"
+                        ></textarea>
+                        
+                        <div class="absolute right-3 flex items-center space-x-2">
+                            <button 
+                                type="submit" 
+                                id="send-btn"
+                                class="bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+                            >
+                                <span>Send</span>
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEADERBOARD TAB VIEW -->
+        <div id="tab-leaderboard" class="hidden flex-1 overflow-y-auto p-4 sm:p-8">
+            <div class="max-w-4xl mx-auto space-y-6">
+                
+                <div class="flex items-center justify-between border-b border-darkborder pb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-trophy text-amber-400"></i>
+                            <span>Nix Arena Global Leaderboard</span>
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Real-time stats, latency, and win ratings based on user prompt benchmarks.</p>
+                    </div>
+                    <button onclick="resetStats()" class="text-xs text-red-400 hover:underline">Reset Benchmarks</button>
+                </div>
+
+                <!-- Leaderboard Table -->
+                <div class="bg-darkcard border border-darkborder rounded-2xl overflow-hidden shadow-xl">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-darkbg text-xs uppercase text-slate-400 border-b border-darkborder">
+                            <tr>
+                                <th class="p-4">Rank & Model</th>
+                                <th class="p-4">Elo Rating</th>
+                                <th class="p-4">Avg Speed</th>
+                                <th class="p-4">User Votes</th>
+                                <th class="p-4">Win Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-tbody" class="divide-y divide-darkborder">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-4 bg-indigo-950/30 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 flex items-start space-x-3">
+                    <i class="fa-solid fa-circle-info text-base mt-0.5"></i>
+                    <div>
+                        <strong class="font-bold">How Ratings Work:</strong> Model Elo ratings increase when you vote a model's response as "Best Answer" in the Arena. Nix 4.5 utilizes Puter.js accelerated reasoning combined with the Nix Power System Prompt.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Account Switcher Modal -->
+    <div id="account-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-darkcard border border-darkborder rounded-2xl w-full max-w-md p-6 space-y-6 shadow-2xl relative">
+            
+            <button onclick="closeAccountModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div>
+                <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-user-gear text-indigo-400"></i>
+                    <span>Account Manager</span>
+                </h3>
+                <p class="text-xs text-slate-400">Switch accounts or create a new user profile in local storage.</p>
+            </div>
+
+            <!-- Active User Card -->
+            <div class="bg-darkbg p-4 rounded-xl border border-indigo-500/30 flex items-center space-x-4">
+                <div id="modal-active-avatar" class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center font-black text-lg text-white">
+                    U
+                </div>
+                <div class="flex-1">
+                    <div id="modal-active-name" class="font-bold text-sm text-white">User Name</div>
+                    <div class="text-xs text-indigo-400">Active Account</div>
+                    <div id="modal-active-id" class="text-[10px] text-slate-500 code-font">ID: nix_usr_123</div>
+                </div>
+                <button onclick="logoutCurrentAccount()" class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs rounded-lg border border-red-500/30 font-semibold transition-all">
+                    Log Out
+                </button>
+            </div>
+
+            <!-- Saved Accounts List -->
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Switch Saved Accounts</label>
+                <div id="account-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <!-- Add New Account Form -->
+            <div class="border-t border-darkborder pt-4 space-y-3">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Create New Account</label>
+                <div class="flex space-x-2">
+                    <input id="new-username-input" type="text" placeholder="Enter new account name..." class="flex-1 bg-darkbg border border-darkborder rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    <button onclick="createNewAccount()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg transition-all">
+                        Create
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Power Prompt Editor Modal -->
+    <div id="prompt-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-darkcard border border-darkborder rounded-2xl w-full max-w-xl p-6 space-y-4 shadow-2xl relative">
+            
+            <button onclick="closePromptModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-xl font-bold">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Nix 4.5 Power System Prompt</h3>
+                    <p class="text-xs text-slate-400">Configure the system prompt guiding the flagship Nix 4.5 model.</p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-slate-300">System Instructions:</label>
+                <textarea id="power-prompt-input" rows="8" class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-slate-200 code-font focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-darkborder pt-3">
+                <button onclick="resetPowerPrompt()" class="text-xs text-slate-400 hover:text-white">Reset to Default</button>
+                <div class="flex space-x-2">
+                    <button onclick="closePromptModal()" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-700">Cancel</button>
+                    <button onclick="savePowerPrompt()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-500 shadow-lg shadow-indigo-600/30">Save System Prompt</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-20 right-6 bg-indigo-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center space-x-2 translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toast-msg">Action completed!</span>
+    </div>
+
+    <script>
+        /* Modern Nix Arena JS Engine */
+
+        // 1. Available Models Registry
+        const AI_MODELS = [
+            {
+                id: 'nix-4.5',
+                name: 'Nix 4.5 Ultra',
+                provider: 'Nix Engine',
+                badge: 'FLAGSHIP',
+                color: 'from-cyan-500 to-indigo-600',
+                puterModel: 'gpt-4o', // Puter AI backend model mapping
+                rating: 1285,
+                votes: 42,
+                speed: '0.4s',
+                isNix: true,
+                description: 'Hyper-tuned precision model with power prompt augmentation.'
+            },
+            {
+                id: 'gpt-4o',
+                name: 'GPT-4o',
+                provider: 'OpenAI',
+                badge: 'POPULAR',
+                color: 'from-emerald-500 to-teal-600',
+                puterModel: 'gpt-4o',
+                rating: 1250,
+                votes: 38,
+                speed: '0.6s',
+                isNix: false,
+                description: 'Omni-capable high intelligence model.'
+            },
+            {
+                id: 'claude-3-5-sonnet',
+                name: 'Claude 3.5 Sonnet',
+                provider: 'Anthropic',
+                badge: 'TOP REASONING',
+                color: 'from-orange-500 to-amber-600',
+                puterModel: 'claude-3-5-sonnet',
+                rating: 1270,
+                votes: 35,
+                speed: '0.7s',
+                isNix: false,
+                description: 'Exceptional nuanced reasoning and code writing.'
+            },
+            {
+                id: 'deepseek-reasoner',
+                name: 'DeepSeek R1',
+                provider: 'DeepSeek',
+                badge: 'MATH & CODE',
+                color: 'from-blue-600 to-cyan-600',
+                puterModel: 'deepseek-reasoner',
+                rating: 1240,
+                votes: 29,
+                speed: '0.9s',
+                isNix: false,
+                description: 'Advanced logical reasoning and math synthesis.'
+            }
+        ];
+
+        // Default Power Prompt for Nix 4.5
+        const DEFAULT_NIX_POWER_PROMPT = `You are Nix 4.5 Ultra, a next-generation high-tier artificial intelligence engine created for extreme precision, rapid problem solving, clean code architecture, and clear analytical responses. 
+
+Key Behaviors:
+1. Always maintain a confident, highly intelligent, and helpful tone.
+2. Structure responses logically using clear headings, bullet points, and syntax-highlighted code blocks.
+3. Deliver optimized, accurate, and ready-to-run solutions.
+4. When asked about yourself, proudly identify as Nix 4.5 Ultra, the flagship AI powerhouse of Nix Arena.`;
+
+        // 2. State Management
+        let activeGridCount = 2;
+        let selectedModelIds = ['nix-4.5', 'gpt-4o'];
+        let users = [];
+        let activeUser = null;
+        let chatHistories = {}; // { modelId: Array of messages }
+        let currentPowerPrompt = DEFAULT_NIX_POWER_PROMPT;
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            initUsers();
+            initPowerPrompt();
+            initGrid();
+            renderLeaderboard();
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return hljs.highlightAuto(code).value;
+                }
+            });
+        });
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 3. User Account Management via Local Storage
+        function initUsers() {
+            const savedUsers = localStorage.getItem('nix_users');
+            const savedActiveId = localStorage.getItem('nix_active_user_id');
+
+            if (savedUsers) {
+                users = JSON.parse(savedUsers);
+            } else {
+                // Default account
+                users = [
+                    { id: 'usr_default', name: 'Nix Challenger', role: 'Arena Master', avatar: 'N' }
+                ];
+                localStorage.setItem('nix_users', JSON.stringify(users));
+            }
+
+            if (savedActiveId && users.find(u => u.id === savedActiveId)) {
+                activeUser = users.find(u => u.id === savedActiveId);
+            } else {
+                activeUser = users[0];
+                localStorage.setItem('nix_active_user_id', activeUser.id);
+            }
+
+            updateUserUI();
+        }
+
+        function updateUserUI() {
+            if (!activeUser) return;
+            document.getElementById('user-display-name').innerText = activeUser.name;
+            document.getElementById('user-display-role').innerText = activeUser.role || 'Standard Tier';
+            
+            const circle = document.getElementById('user-avatar-circle');
+            circle.innerText = activeUser.avatar || activeUser.name.charAt(0).toUpperCase();
+
+            // Modal updates
+            document.getElementById('modal-active-name').innerText = activeUser.name;
+            document.getElementById('modal-active-id').innerText = `ID: ${activeUser.id}`;
+            document.getElementById('modal-active-avatar').innerText = activeUser.avatar || activeUser.name.charAt(0).toUpperCase();
+
+            renderAccountList();
+        }
+
+        function renderAccountList() {
+            const container = document.getElementById('account-list');
+            container.innerHTML = '';
+
+            users.forEach(u => {
+                const isCurrent = u.id === activeUser.id;
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border flex items-center justify-between ${isCurrent ? 'bg-indigo-600/10 border-indigo-500/50' : 'bg-darkbg hover:bg-slate-800/50 border-darkborder cursor-pointer'}`;
+                
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full ${isCurrent ? 'bg-indigo-600' : 'bg-slate-700'} flex items-center justify-center font-bold text-xs text-white">
+                            ${u.avatar || u.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-white">${u.name}</div>
+                            <div class="text-[10px] text-slate-400">${isCurrent ? 'Currently Active' : 'Click to Switch'}</div>
+                        </div>
+                    </div>
+                    ${!isCurrent ? `<button onclick="switchAccount('${u.id}')" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold rounded-lg">Switch</button>` : '<span class="text-[10px] text-indigo-400 font-bold">Active</span>'}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function createNewAccount() {
+            const input = document.getElementById('new-username-input');
+            const name = input.value.trim();
+            if (!name) return;
+
+            const newAcc = {
+                id: 'usr_' + Date.now().toString(36),
+                name: name,
+                role: 'Arena Competitor',
+                avatar: name.charAt(0).toUpperCase()
+            };
+
+            users.push(newAcc);
+            activeUser = newAcc;
+            localStorage.setItem('nix_users', JSON.stringify(users));
+            localStorage.setItem('nix_active_user_id', newAcc.id);
+            
+            input.value = '';
+            updateUserUI();
+            showToast(`Switched to new account: ${name}`);
+        }
+
+        function switchAccount(userId) {
+            const found = users.find(u => u.id === userId);
+            if (found) {
+                activeUser = found;
+                localStorage.setItem('nix_active_user_id', activeUser.id);
+                updateUserUI();
+                showToast(`Switched account to ${activeUser.name}`);
+            }
+        }
+
+        function logoutCurrentAccount() {
+            if (users.length <= 1) {
+                // If only 1 account, create guest
+                const guest = { id: 'usr_guest', name: 'Guest User', role: 'Guest', avatar: 'G' };
+                users = [guest];
+                activeUser = guest;
+            } else {
+                users = users.filter(u => u.id !== activeUser.id);
+                activeUser = users[0];
+            }
+            localStorage.setItem('nix_users', JSON.stringify(users));
+            localStorage.setItem('nix_active_user_id', activeUser.id);
+            updateUserUI();
+            showToast('Logged out of account');
+        }
+
+        function openAccountModal() { document.getElementById('account-modal').classList.remove('hidden'); }
+        function closeAccountModal() { document.getElementById('account-modal').classList.add('hidden'); }
+
+        // 4. Power Prompt Management
+        function initPowerPrompt() {
+            const savedPrompt = localStorage.getItem('nix_power_prompt');
+            if (savedPrompt) {
+                currentPowerPrompt = savedPrompt;
+            }
+            document.getElementById('power-prompt-input').value = currentPowerPrompt;
+        }
+
+        function openPromptModal() { document.getElementById('prompt-modal').classList.remove('hidden'); }
+        function closePromptModal() { document.getElementById('prompt-modal').classList.add('hidden'); }
+
+        function savePowerPrompt() {
+            const val = document.getElementById('power-prompt-input').value.trim();
+            if (val) {
+                currentPowerPrompt = val;
+                localStorage.setItem('nix_power_prompt', currentPowerPrompt);
+                showToast('Nix 4.5 Power System Prompt Updated!');
+                closePromptModal();
+            }
+        }
+
+        function resetPowerPrompt() {
+            currentPowerPrompt = DEFAULT_NIX_POWER_PROMPT;
+            document.getElementById('power-prompt-input').value = DEFAULT_NIX_POWER_PROMPT;
+            localStorage.removeItem('nix_power_prompt');
+            showToast('Reset prompt to default');
+        }
+
+        // 5. Grid Layout & Selection Engine
+        function setGridColumns(count) {
+            activeGridCount = count;
+            
+            // Highlight button
+            [1,2,3,4].forEach(i => {
+                const btn = document.getElementById(`split-${i}-btn`);
+                if (i === count) {
+                    btn.className = 'w-7 h-6 rounded flex items-center justify-center font-semibold bg-indigo-600 text-white transition-all';
+                } else {
+                    btn.className = 'w-7 h-6 rounded flex items-center justify-center font-semibold text-slate-400 hover:text-white transition-all';
+                }
+            });
+
+            // Adjust selected models list size
+            if (selectedModelIds.length < count) {
+                // Add models to fill
+                const remaining = AI_MODELS.filter(m => !selectedModelIds.includes(m.id));
+                for (let i = 0; i < (count - selectedModelIds.length); i++) {
+                    if (remaining[i]) selectedModelIds.push(remaining[i].id);
+                }
+            } else if (selectedModelIds.length > count) {
+                selectedModelIds = selectedModelIds.slice(0, count);
+            }
+
+            initGrid();
+        }
+
+        function setPreset(presetModelIds) {
+            selectedModelIds = [...presetModelIds];
+            activeGridCount = selectedModelIds.length;
+            setGridColumns(activeGridCount);
+            showToast(`Loaded Preset (${activeGridCount} Models)`);
+        }
+
+        function initGrid() {
+            const container = document.getElementById('arena-grid');
+            container.className = `flex-1 p-3 sm:p-4 grid gap-4 overflow-y-auto min-h-0 grid-dynamic-${activeGridCount}`;
+            container.innerHTML = '';
+
+            for (let i = 0; i < activeGridCount; i++) {
+                const currentModelId = selectedModelIds[i] || AI_MODELS[i % AI_MODELS.length].id;
+                const modelObj = AI_MODELS.find(m => m.id === currentModelId) || AI_MODELS[0];
+
+                const col = document.createElement('div');
+                col.className = `flex flex-col bg-darkcard rounded-2xl border ${modelObj.isNix ? 'nix-glow-border' : 'border-darkborder'} overflow-hidden shadow-xl transition-all duration-300 h-full`;
+                col.id = `grid-col-${i}`;
+
+                col.innerHTML = `
+                    <!-- Column Header -->
+                    <div class="p-3 bg-darkbg/90 border-b border-darkborder flex items-center justify-between shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-7 h-7 rounded-lg bg-gradient-to-r ${modelObj.color} flex items-center justify-center text-white text-xs font-bold">
+                                <i class="fa-solid ${modelObj.isNix ? 'fa-bolt' : 'fa-brain'}"></i>
+                            </div>
+                            <!-- Model Select Dropdown -->
+                            <select onchange="changeColumnModel(${i}, this.value)" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-2">
+                                ${AI_MODELS.map(m => `<option value="${m.id}" ${m.id === modelObj.id ? 'selected' : ''} class="bg-darkcard text-slate-200">${m.name} (${m.provider})</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <!-- Status & Vote Badge -->
+                        <div class="flex items-center space-x-2">
+                            ${modelObj.isNix ? '<span class="text-[9px] bg-cyan-500/20 text-cyan-300 font-bold px-2 py-0.5 rounded-full border border-cyan-500/40">POWERED</span>' : ''}
+                            <button onclick="voteWinner('${modelObj.id}')" title="Vote Best Answer" class="hover:text-amber-400 text-slate-500 transition-colors">
+                                <i class="fa-solid fa-crown text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Log Scroll View -->
+                    <div id="chat-body-${i}" class="flex-1 p-4 overflow-y-auto space-y-4 text-xs leading-relaxed">
+                        <!-- Messages render here -->
+                        <div class="flex flex-col items-center justify-center h-full text-center text-slate-500 space-y-2 my-auto">
+                            <i class="fa-solid ${modelObj.isNix ? 'fa-bolt text-indigo-400' : 'fa-robot'} text-2xl mb-1"></i>
+                            <p class="font-semibold text-slate-400">${modelObj.name}</p>
+                            <p class="text-[11px] max-w-xs">${modelObj.description}</p>
+                        </div>
+                    </div>
+
+                    <!-- Column Footer Latency Stats -->
+                    <div id="col-footer-${i}" class="px-3 py-2 bg-darkbg/50 border-t border-darkborder/50 text-[10px] text-slate-500 flex items-center justify-between shrink-0">
+                        <span>Speed: ${modelObj.speed}</span>
+                        <span id="col-status-${i}">Ready</span>
+                    </div>
+                `;
+
+                container.appendChild(col);
+
+                // Initialize chat history for this slot if prompt exists
+                if (!chatHistories[i]) chatHistories[i] = [];
+            }
+        }
+
+        function changeColumnModel(colIndex, modelId) {
+            selectedModelIds[colIndex] = modelId;
+            initGrid();
+        }
+
+        // 6. AI Interaction Engine with Puter.js
+        async function handleSendPrompt(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('user-prompt');
+            const promptText = input.value.trim();
+
+            if (!promptText) return;
+
+            // Clear input box
+            input.value = '';
+
+            // Render User Prompt in all columns
+            for (let i = 0; i < activeGridCount; i++) {
+                const chatBody = document.getElementById(`chat-body-${i}`);
+                
+                // Clear placeholder on first query
+                if (chatHistories[i].length === 0) {
+                    chatBody.innerHTML = '';
+                }
+
+                chatHistories[i].push({ role: 'user', content: promptText });
+
+                // Append user message bubble
+                const userMsgDiv = document.createElement('div');
+                userMsgDiv.className = 'flex justify-end';
+                userMsgDiv.innerHTML = `
+                    <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-md">
+                        <div class="font-semibold text-[10px] text-indigo-200 mb-1">You (${activeUser ? activeUser.name : 'User'})</div>
+                        <div class="whitespace-pre-wrap">${escapeHtml(promptText)}</div>
+                    </div>
+                `;
+                chatBody.appendChild(userMsgDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            // Trigger AI Requests in Parallel across columns
+            const fetchPromises = [];
+            for (let i = 0; i < activeGridCount; i++) {
+                fetchPromises.push(generateModelResponse(i, promptText));
+            }
+
+            await Promise.all(fetchPromises);
+        }
+
+        async function generateModelResponse(colIndex, userPrompt) {
+            const modelObj = AI_MODELS.find(m => m.id === selectedModelIds[colIndex]) || AI_MODELS[0];
+            const chatBody = document.getElementById(`chat-body-${colIndex}`);
+            const statusSpan = document.getElementById(`col-status-${colIndex}`);
+
+            // Create Assistant Message Shell
+            const assistantMsgDiv = document.createElement('div');
+            assistantMsgDiv.className = 'flex justify-start';
+            
+            const messageId = `msg-${colIndex}-${Date.now()}`;
+            
+            assistantMsgDiv.innerHTML = `
+                <div class="bg-darkbg border border-darkborder text-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[90%] shadow-md space-y-1 w-full">
+                    <div class="flex items-center justify-between border-b border-darkborder/50 pb-1 mb-2">
+                        <span class="font-bold text-[10px] text-indigo-400 flex items-center space-x-1">
+                            <i class="fa-solid ${modelObj.isNix ? 'fa-bolt text-cyan-400' : 'fa-robot'}"></i>
+                            <span>${modelObj.name}</span>
+                        </span>
+                        <button onclick="copyMessageText('${messageId}')" class="text-slate-500 hover:text-slate-300 text-[10px]" title="Copy Answer">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                    </div>
+                    <div id="${messageId}" class="prose text-xs text-slate-200 leading-relaxed">
+                        <div class="flex items-center space-x-2 text-slate-400 py-2">
+                            <i class="fa-solid fa-spinner fa-spin text-indigo-400"></i>
+                            <span>Nix AI processing query...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            chatBody.appendChild(assistantMsgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            statusSpan.innerText = 'Generating...';
+
+            const startTime = Date.now();
+
+            try {
+                // Prepare System Prompt for Nix 4.5
+                let fullPrompt = userPrompt;
+                if (modelObj.isNix) {
+                    fullPrompt = `${currentPowerPrompt}\n\nUser Question:\n${userPrompt}`;
+                }
+
+                let responseText = "";
+
+                // Puter.js AI Chat API Integration
+                if (window.puter && window.puter.ai) {
+                    // Stream or standard call
+                    try {
+                        const streamResponse = await puter.ai.chat(fullPrompt, {
+                            model: modelObj.puterModel,
+                            stream: true
+                        });
+
+                        const msgContentEl = document.getElementById(messageId);
+                        msgContentEl.innerHTML = '';
+
+                        for await (const chunk of streamResponse) {
+                            if (chunk?.text) {
+                                responseText += chunk.text;
+                                msgContentEl.innerHTML = marked.parse(responseText);
+                                chatBody.scrollTop = chatBody.scrollHeight;
+                            }
+                        }
+                    } catch (streamErr) {
+                        // Stream fallback
+                        const res = await puter.ai.chat(fullPrompt, { model: modelObj.puterModel });
+                        responseText = typeof res === 'string' ? res : (res?.message?.content || res?.toString() || 'Response generated successfully.');
+                        document.getElementById(messageId).innerHTML = marked.parse(responseText);
+                    }
+                } else {
+                    // Fallback simulation if puter object is offline
+                    responseText = `**[Offline Simulation for ${modelObj.name}]**\n\nTo view real AI answers, ensure Puter.js SDK is loaded. Here is the answer to your prompt:\n\n> "${userPrompt}"\n\nNix 4.5 excels in speed and precision.`;
+                    document.getElementById(messageId).innerHTML = marked.parse(responseText);
+                }
+
+                // Apply Syntax Highlighting
+                document.querySelectorAll(`#${messageId} pre code`).forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                statusSpan.innerText = `Done (${elapsed}s)`;
+                chatHistories[colIndex].push({ role: 'assistant', content: responseText });
+
+            } catch (err) {
+                console.error("Puter AI Error:", err);
+                document.getElementById(messageId).innerHTML = `<span class="text-red-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Error generating response from ${modelObj.name}. (${err.message || 'Check connection'})</span>`;
+                statusSpan.innerText = 'Error';
+            }
+        }
+
+        function useSamplePrompt(promptText) {
+            document.getElementById('user-prompt').value = promptText;
+        }
+
+        function clearArenaChat() {
+            for (let i = 0; i < activeGridCount; i++) {
+                chatHistories[i] = [];
+            }
+            initGrid();
+            showToast('Arena chat log cleared');
+        }
+
+        function copyMessageText(elementId) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                const text = el.innerText;
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Copied to clipboard!');
+            }
+        }
+
+        function voteWinner(modelId) {
+            const model = AI_MODELS.find(m => m.id === modelId);
+            if (model) {
+                model.votes += 1;
+                model.rating += 12;
+                renderLeaderboard();
+                showToast(`Voted ${model.name} as Winner! (+12 Elo)`);
+            }
+        }
+
+        // 7. Navigation & Leaderboard
+        function switchTab(tabName) {
+            const arenaTab = document.getElementById('tab-arena');
+            const leaderboardTab = document.getElementById('tab-leaderboard');
+            const arenaBtn = document.getElementById('nav-arena-btn');
+            const leaderboardBtn = document.getElementById('nav-leaderboard-btn');
+
+            if (tabName === 'arena') {
+                arenaTab.classList.remove('hidden');
+                leaderboardTab.classList.add('hidden');
+                arenaBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all flex items-center space-x-2';
+                leaderboardBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-darkcard transition-all flex items-center space-x-2';
+            } else {
+                arenaTab.classList.add('hidden');
+                leaderboardTab.classList.remove('hidden');
+                leaderboardBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all flex items-center space-x-2';
+                arenaBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-darkcard transition-all flex items-center space-x-2';
+            }
+        }
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-tbody');
+            tbody.innerHTML = '';
+
+            // Sort by Elo rating descending
+            const sorted = [...AI_MODELS].sort((a, b) => b.rating - a.rating);
+
+            sorted.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/30 transition-colors';
+                
+                let rankBadge = `<span class="font-bold text-slate-400">#${idx + 1}</span>`;
+                if (idx === 0) rankBadge = `<span class="text-amber-400 font-black flex items-center"><i class="fa-solid fa-trophy mr-1"></i> #1</span>`;
+                if (idx === 1) rankBadge = `<span class="text-slate-300 font-black">#2</span>`;
+                if (idx === 2) rankBadge = `<span class="text-amber-600 font-black">#3</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-4 flex items-center space-x-3">
+                        ${rankBadge}
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-r ${m.color} flex items-center justify-center text-white text-xs font-bold">
+                            <i class="fa-solid ${m.isNix ? 'fa-bolt' : 'fa-brain'}"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white flex items-center space-x-1.5">
+                                <span>${m.name}</span>
+                                ${m.isNix ? '<span class="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/40">FLAGSHIP</span>' : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-400">${m.provider}</div>
+                        </div>
+                    </td>
+                    <td class="p-4 font-bold code-font text-indigo-400">${m.rating}</td>
+                    <td class="p-4 text-xs text-slate-300">${m.speed}</td>
+                    <td class="p-4 text-xs text-slate-300">${m.votes} votes</td>
+                    <td class="p-4">
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden w-24">
+                            <div class="bg-indigo-500 h-full" style="width: ${Math.min(100, (m.rating / 1400) * 100)}%"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function resetStats() {
+            AI_MODELS[0].rating = 1285;
+            AI_MODELS[1].rating = 1250;
+            AI_MODELS[2].rating = 1270;
+            AI_MODELS[3].rating = 1240;
+            renderLeaderboard();
+            showToast('Leaderboard stats reset');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
