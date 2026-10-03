@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nix 4.5 — Next-Gen AI Assistant</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nix: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#0c0a13',
+                            bgdark: '#09080e',
+                            carddark: '#13111c',
+                            borderdark: '#26203b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Puter.js v2 SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Marked JS for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.6);
+        }
+
+        /* Glassmorphism & Visual Glow Effects */
+        .nix-glow {
+            box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.35);
+        }
+        .nix-glow-sm {
+            box-shadow: 0 0 12px -2px rgba(124, 58, 237, 0.25);
+        }
+        .nix-border-glow {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .nix-border-glow:focus-within {
+            border-color: rgba(167, 139, 250, 0.8);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+        }
+
+        /* Markdown Formatting Styles */
+        .prose pre {
+            background-color: #0d0c15 !important;
+            border: 1px solid #26203b;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            overflow-x: auto;
+        }
+        .dark .prose pre {
+            background-color: #0d0c15 !important;
+            border-color: #26203b;
+        }
+        .html:not(.dark) .prose pre {
+            background-color: #1e1e2e !important;
+            color: #f8f8f2;
+        }
+        .prose p {
+            margin-bottom: 0.75rem;
+            line-height: 1.65;
+        }
+        .prose p:last-child {
+            margin-bottom: 0;
+        }
+        .prose code:not(pre code) {
+            background-color: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.875em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .dark .prose code:not(pre code) {
+            color: #c4b5fd;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Typing Cursor Animation */
+        .typing-cursor::after {
+            content: '▋';
+            display: inline-block;
+            margin-left: 2px;
+            color: #8b5cf6;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-nix-bgdark dark:text-zinc-100 transition-colors duration-200 antialiased font-sans h-screen flex overflow-hidden">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobileBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden md:hidden transition-opacity duration-300" onclick="toggleMobileSidebar()"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex h-full w-full overflow-hidden relative">
+
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-white dark:bg-nix-carddark border-r border-slate-200 dark:border-nix-borderdark flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 select-none shrink-0">
+            
+            <!-- Sidebar Header & New Chat -->
+            <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark/60">
+                <div class="flex items-center justify-between px-2 py-1.5 mb-3">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nix-700 via-nix-500 to-purple-400 flex items-center justify-center nix-glow-sm">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-nix-700 via-purple-600 to-nix-500 dark:from-white dark:via-purple-100 dark:to-nix-300 bg-clip-text text-transparent">Nix 4.5</span>
+                            <span class="text-[10px] font-semibold px-1.5 py-0.5 ml-1.5 bg-nix-600/10 dark:bg-nix-600/30 text-nix-700 dark:text-nix-300 border border-nix-500/30 rounded-full">v4.5 PRO</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-1 text-slate-400 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-white rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- New Chat Button -->
+                <button onclick="createNewConversation()" class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-gradient-to-r from-nix-600 to-nix-700 hover:from-nix-500 hover:to-nix-600 text-white rounded-xl font-medium text-sm transition-all duration-200 shadow-lg shadow-nix-700/20 active:scale-[0.98]">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>New Conversation</span>
+                </button>
+
+                <!-- Search Bar -->
+                <div class="mt-3 relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400"></i>
+                    <input type="text" id="searchInput" oninput="filterConversations()" placeholder="Search chats..." class="w-full bg-slate-100 dark:bg-nix-bgdark/80 border border-slate-200 dark:border-nix-borderdark rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-nix-500 transition-colors">
+                </div>
+            </div>
+
+            <!-- Conversations History List -->
+            <div class="flex-1 overflow-y-auto p-2 space-y-1" id="conversationsList">
+                <!-- Dynamic Conversation items -->
+            </div>
+
+            <!-- Sidebar Footer & Auth Bar -->
+            <div class="p-3 border-t border-slate-200 dark:border-nix-borderdark/60 bg-slate-50 dark:bg-nix-bgdark/40 space-y-2">
+                <!-- Account Status Pill -->
+                <div id="authStatusPill" onclick="openAuthModal()" class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs cursor-pointer hover:border-nix-500/50 transition-colors">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="authIndicator"></div>
+                        <span id="accountLabel" class="text-slate-700 dark:text-zinc-300 truncate max-w-[130px] font-medium">Guest User</span>
+                    </div>
+                    <button class="text-nix-600 dark:text-nix-400 hover:text-nix-500 p-1">
+                        <i data-lucide="log-in" id="authActionIcon" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Footer Quick Actions -->
+                <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 px-1 pt-1">
+                    <button onclick="openMemoryModal()" class="flex items-center space-x-1.5 hover:text-nix-600 dark:hover:text-nix-300 transition-colors py-1">
+                        <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-nix-600 dark:text-nix-400"></i>
+                        <span>Memory (<span id="memoryCountBadge">0</span>)</span>
+                    </button>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="toggleTheme()" class="p-1.5 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50 rounded-lg text-slate-600 dark:text-zinc-300 transition-colors" title="Toggle Light/Dark Theme">
+                            <i data-lucide="sun-moon" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openSettingsModal('general')" class="p-1.5 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50 rounded-lg text-slate-600 dark:text-zinc-300 transition-colors" title="Settings">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CHAT AREA -->
+        <main class="flex-1 flex flex-col h-full bg-slate-50 dark:bg-nix-bgdark relative overflow-hidden">
+            
+            <!-- Workspace Top Bar -->
+            <header class="h-14 border-b border-slate-200 dark:border-nix-borderdark/70 bg-white/80 dark:bg-nix-bgdark/80 backdrop-blur-md px-4 flex items-center justify-between z-20 shrink-0">
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-nix-carddark">
+                        <i data-lucide="panel-left" class="w-5 h-5"></i>
+                    </button>
+
+                    <!-- Active Model Indicator -->
+                    <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5 text-nix-600 dark:text-nix-400"></i>
+                        <span>GPT-4o Mini</span>
+                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">Puter AI</span>
+                    </div>
+
+                    <!-- Supabase Sync Badge -->
+                    <div id="supabaseSyncBadge" class="hidden sm:flex items-center space-x-1.5 text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                        <i data-lucide="database" class="w-3 h-3"></i>
+                        <span id="syncText">Supabase Sync</span>
+                    </div>
+                </div>
+
+                <!-- Top Header Actions -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openAuthModal()" id="headerSignInBtn" class="px-3 py-1.5 bg-nix-600 hover:bg-nix-700 text-white rounded-lg text-xs font-medium transition-all shadow-sm">
+                        Sign In
+                    </button>
+
+                    <button onclick="openMemoryModal()" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-nix-600/10 border border-nix-500/20 text-nix-700 dark:text-nix-300 text-xs hover:bg-nix-600/20 transition-all">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 text-nix-600 dark:text-nix-400"></i>
+                        <span>Memory Active</span>
+                    </button>
+
+                    <button onclick="exportCurrentChat()" title="Export Conversation" class="p-2 text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 rounded-lg hover:bg-slate-100 dark:hover:bg-nix-carddark transition-colors">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                    </button>
+
+                    <button onclick="clearCurrentChat()" title="Clear Messages" class="p-2 text-slate-500 dark:text-zinc-400 hover:text-rose-500 rounded-lg hover:bg-slate-100 dark:hover:bg-nix-carddark transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- MESSAGES CONTAINER -->
+            <div id="messagesContainer" class="flex-1 overflow-y-auto px-4 py-6 space-y-6 max-w-4xl w-full mx-auto scroll-smooth">
+                
+                <!-- HERO EMPTY STATE -->
+                <div id="emptyHero" class="flex flex-col items-center justify-center min-h-[65vh] text-center px-4 my-auto">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-nix-700 via-nix-500 to-purple-400 flex items-center justify-center nix-glow mb-6 transform hover:scale-105 transition-transform duration-300">
+                        <i data-lucide="sparkles" class="w-8 h-8 text-white"></i>
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-3">
+                        How can <span class="bg-gradient-to-r from-nix-600 via-purple-500 to-nix-400 dark:from-nix-400 dark:via-purple-300 dark:to-white bg-clip-text text-transparent">Nix 4.5</span> assist you today?
+                    </h1>
+                    
+                    <p class="text-slate-600 dark:text-zinc-400 text-sm max-w-md mb-8">
+                        Powered by Puter.js AI and Supabase Cloud Persistence.
+                    </p>
+
+                    <!-- QUICK SUGGESTIONS GRID -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl text-left">
+                        <button onclick="sendQuickPrompt('Write a high-performance Python script using asyncio and custom logging.')" class="p-3.5 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500/50 hover:shadow-md text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-600 dark:text-nix-400 group-hover:text-nix-500 dark:group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="code" class="w-4 h-4"></i>
+                                <span>Code Development</span>
+                            </div>
+                            <p class="text-slate-700 dark:text-zinc-300 text-xs line-clamp-2">Write a high-performance Python script using asyncio and custom logging.</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Architect a scalable cloud REST API system with authentication and rate limiting.')" class="p-3.5 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500/50 hover:shadow-md text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-600 dark:text-nix-400 group-hover:text-nix-500 dark:group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="layers" class="w-4 h-4"></i>
+                                <span>System Architecture</span>
+                            </div>
+                            <p class="text-slate-700 dark:text-zinc-300 text-xs line-clamp-2">Architect a scalable cloud REST API system with authentication and rate limiting.</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Draft a concise executive technical proposal for integrating generative AI.')" class="p-3.5 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500/50 hover:shadow-md text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-600 dark:text-nix-400 group-hover:text-nix-500 dark:group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span>Technical Strategy</span>
+                            </div>
+                            <p class="text-slate-700 dark:text-zinc-300 text-xs line-clamp-2">Draft a concise executive technical proposal for integrating generative AI.</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Explain quantum key distribution protocols with clear mathematical analogies.')" class="p-3.5 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500/50 hover:shadow-md text-left transition-all group">
+                            <div class="flex items-center space-x-2 text-nix-600 dark:text-nix-400 group-hover:text-nix-500 dark:group-hover:text-nix-300 font-medium text-xs mb-1">
+                                <i data-lucide="brain" class="w-4 h-4"></i>
+                                <span>Complex Concepts</span>
+                            </div>
+                            <p class="text-slate-700 dark:text-zinc-300 text-xs line-clamp-2">Explain quantum key distribution protocols with clear mathematical analogies.</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Feed Stream List -->
+                <div id="messagesList" class="space-y-6"></div>
+            </div>
+
+            <!-- BOTTOM MESSAGE COMPOSER -->
+            <div class="p-3 sm:p-4 border-t border-slate-200 dark:border-nix-borderdark/60 bg-white/90 dark:bg-nix-bgdark/90 backdrop-blur-md shrink-0">
+                <div class="max-w-4xl mx-auto relative">
+                    
+                    <!-- File Attachment Preview Area -->
+                    <div id="filePreview" class="hidden mb-2 p-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-lg flex items-center justify-between text-xs text-slate-700 dark:text-zinc-300">
+                        <div class="flex items-center space-x-2 truncate">
+                            <i data-lucide="file-code" class="w-4 h-4 text-nix-600 dark:text-nix-400"></i>
+                            <span id="fileName" class="truncate font-mono">attachment.txt</span>
+                        </div>
+                        <button onclick="clearAttachedFile()" class="p-1 hover:text-rose-500"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                    </div>
+
+                    <!-- Input Box Bar -->
+                    <div class="flex items-end bg-slate-100 dark:bg-nix-carddark rounded-2xl border border-slate-300 dark:border-nix-borderdark nix-border-glow p-2 transition-all shadow-lg">
+                        
+                        <!-- Attach File Button -->
+                        <button onclick="triggerFileInput()" class="p-2.5 text-slate-400 dark:text-zinc-400 hover:text-nix-600 dark:hover:text-nix-300 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50 rounded-xl transition-colors shrink-0" title="Attach file context">
+                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                        </button>
+                        <input type="file" id="fileInput" class="hidden" accept=".txt,.js,.ts,.py,.html,.css,.json,.md,.csv" onchange="handleFileSelect(event)">
+
+                        <!-- Speech Dictation Button -->
+                        <button id="dictationBtn" onclick="toggleDictation()" class="p-2.5 text-slate-400 dark:text-zinc-400 hover:text-nix-600 dark:hover:text-nix-300 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50 rounded-xl transition-colors shrink-0" title="Voice Dictation">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
+                        </button>
+
+                        <!-- Main Auto-expanding Textarea -->
+                        <textarea id="userInput" rows="1" placeholder="Ask Nix 4.5 anything... (Shift+Enter for newline)" onkeydown="handleKeyDown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none max-h-36 min-h-[40px] leading-relaxed"></textarea>
+
+                        <!-- Submit Button -->
+                        <button id="sendBtn" onclick="sendMessage()" class="p-2.5 bg-gradient-to-tr from-nix-600 to-nix-500 hover:from-nix-500 hover:to-nix-400 text-white rounded-xl shadow-md shadow-nix-700/30 transition-all shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500 mt-2 px-2">
+                        <span>Nix 4.5 may produce precise information. Verify key specs.</span>
+                        <span id="charCounter">0 chars</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SUPABASE AUTH MODAL -->
+    <div id="authModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-nix-600 dark:text-nix-400"></i>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white" id="authModalTitle">Account Sign In</h3>
+                </div>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="p-5 space-y-4">
+                <div id="authLoggedState" class="hidden space-y-3 text-center py-3">
+                    <div class="w-12 h-12 rounded-full bg-nix-600/20 text-nix-600 dark:text-nix-300 font-bold text-lg flex items-center justify-center mx-auto" id="userAvatar">U</div>
+                    <div>
+                        <p class="font-bold text-slate-900 dark:text-white text-sm" id="loggedInEmail">user@example.com</p>
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Supabase Cloud Sync Active</p>
+                    </div>
+                    <button onclick="handleSignOut()" class="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition-colors">Sign Out</button>
+                </div>
+
+                <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Email Address</label>
+                        <input type="email" id="authEmail" required placeholder="you@example.com" class="w-full bg-slate-100 dark:bg-nix-bgdark border border-slate-300 dark:border-nix-borderdark rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-nix-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Password</label>
+                        <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-slate-100 dark:bg-nix-bgdark border border-slate-300 dark:border-nix-borderdark rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-nix-500">
+                    </div>
+                    
+                    <button type="submit" id="authSubmitBtn" class="w-full py-2.5 bg-nix-600 hover:bg-nix-700 text-white rounded-xl text-xs font-semibold transition-all shadow-md">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 pt-2 border-t border-slate-200 dark:border-nix-borderdark">
+                    <span id="authToggleText">Need an account?</span>
+                    <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-nix-600 dark:text-nix-400 hover:underline font-semibold">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERSONALIZATION & MEMORY MODAL -->
+    <div id="memoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="p-4 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="brain-circuit" class="w-5 h-5 text-nix-600 dark:text-nix-400"></i>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Nix Personalization & Memory</h3>
+                </div>
+                <button onclick="closeMemoryModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="p-4 overflow-y-auto space-y-4 flex-1">
+                <p class="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">
+                    Nix remembers key details you share to tailor responses to your preferences, tech stack, and writing style.
+                </p>
+
+                <!-- Add New Memory -->
+                <div class="space-y-2 bg-slate-50 dark:bg-nix-bgdark/60 p-3 rounded-xl border border-slate-200 dark:border-nix-borderdark/60">
+                    <label class="text-xs font-semibold text-slate-700 dark:text-zinc-300">Add New Memory / Custom Instruction</label>
+                    <div class="flex space-x-2">
+                        <select id="memoryCategory" class="bg-white dark:bg-nix-carddark border border-slate-300 dark:border-nix-borderdark rounded-lg px-2 text-xs text-slate-800 dark:text-zinc-300 focus:outline-none">
+                            <option value="Preference">Preference</option>
+                            <option value="Coding">Coding</option>
+                            <option value="Identity">Identity</option>
+                            <option value="Format">Format</option>
+                        </select>
+                        <input type="text" id="newMemoryInput" placeholder="e.g. Always write Python with type hints" class="flex-1 bg-white dark:bg-nix-carddark border border-slate-300 dark:border-nix-borderdark rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-nix-500">
+                        <button onclick="addMemory()" class="px-3 py-1.5 bg-nix-600 hover:bg-nix-700 text-white rounded-lg text-xs font-medium transition-colors">Add</button>
+                    </div>
+                </div>
+
+                <!-- Stored Memories List -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-zinc-400">Active Stored Memories</span>
+                        <button onclick="clearAllMemories()" class="text-[11px] text-rose-500 hover:underline">Clear All</button>
+                    </div>
+                    <div id="memoriesListContainer" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="p-3 border-t border-slate-200 dark:border-nix-borderdark bg-slate-50 dark:bg-nix-bgdark/40 text-right">
+                <button onclick="closeMemoryModal()" class="px-4 py-1.5 bg-slate-200 dark:bg-nix-borderdark hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-lg text-xs font-medium">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-nix-600 dark:text-nix-400"></i>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white">Nix 4.5 Settings</h3>
+                </div>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="flex flex-1 overflow-hidden">
+                <div class="w-44 bg-slate-50 dark:bg-nix-bgdark/60 border-r border-slate-200 dark:border-nix-borderdark/60 p-2 space-y-1 shrink-0">
+                    <button onclick="switchSettingsTab('general')" id="tabBtn-general" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-600 dark:text-nix-300 bg-nix-600/10 dark:bg-nix-600/20">
+                        <i data-lucide="sliders" class="w-4 h-4"></i>
+                        <span>General</span>
+                    </button>
+                    <button onclick="switchSettingsTab('data')" id="tabBtn-data" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50">
+                        <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                        <span>Data Storage</span>
+                    </button>
+                </div>
+
+                <div class="flex-1 p-5 overflow-y-auto space-y-6 text-xs text-slate-700 dark:text-zinc-300">
+                    <div id="tabContent-general" class="tab-content space-y-4">
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-nix-borderdark">Appearance & Theme</h4>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold text-slate-800 dark:text-zinc-200">Color Theme Mode</p>
+                                <p class="text-slate-500 dark:text-zinc-500 text-[11px]">Toggle between Light Mode and Dark Purple Mode.</p>
+                            </div>
+                            <button onclick="toggleTheme()" class="px-3 py-1.5 bg-slate-100 dark:bg-nix-bgdark border border-slate-300 dark:border-nix-borderdark rounded-lg font-medium text-nix-600 dark:text-nix-300">Switch Theme</button>
+                        </div>
+                    </div>
+
+                    <div id="tabContent-data" class="tab-content hidden space-y-4">
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white pb-2 border-b border-slate-200 dark:border-nix-borderdark">Data & Backup</h4>
+                        <div class="space-y-3">
+                            <button onclick="exportAllData()" class="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark rounded-xl hover:bg-slate-100 dark:hover:bg-nix-carddark transition-colors">
+                                <div class="text-left">
+                                    <p class="font-semibold text-slate-800 dark:text-zinc-200">Export Backup (JSON)</p>
+                                    <p class="text-slate-500 dark:text-zinc-500 text-[11px]">Download backup of conversations & memories.</p>
+                                </div>
+                                <i data-lucide="download" class="w-4 h-4 text-nix-600 dark:text-nix-400"></i>
+                            </button>
+
+                            <button onclick="clearAllLocalData()" class="w-full flex items-center justify-between p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors text-rose-600 dark:text-rose-300">
+                                <div class="text-left">
+                                    <p class="font-semibold">Clear Local Cache</p>
+                                    <p class="text-rose-500/80 dark:text-rose-400/70 text-[11px]">Wipes client-side localStorage history.</p>
+                                </div>
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION & SUPABASE INITIALIZATION
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        const LOCAL_STORAGE_KEY = 'nix_45_app_state_v2';
+
+        let supabaseClient = null;
+        if (window.supabase) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch(e) {
+                console.warn('Supabase initialization failed:', e);
+            }
+        }
+
+        // Utility to generate valid RFC4122 UUID v4 strings for PostgreSQL compatibility
+        function generateUUID() {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // APP STATE
+        let appState = {
+            theme: 'dark',
+            selectedModel: 'gpt-4o-mini',
+            activeConversationId: null,
+            conversations: [],
+            memories: [
+                { id: 'm1', category: 'Coding', content: 'Prefer modern TypeScript, Python, and clean modular code with clear comments.', createdAt: Date.now() }
+            ]
+        };
+
+        let supabaseUser = null;
+        let isAuthSignUpMode = false;
+        let currentAttachedFileText = null;
+        let isGenerating = false;
+        let dictationRecognition = null;
+        let isDictating = false;
+
+        // Load application state from localStorage cache
+        function loadLocalState() {
+            try {
+                const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === 'object') {
+                        appState = { ...appState, ...parsed };
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load local state from localStorage:', e);
+            }
+        }
+
+        // Persist current state to localStorage
+        function saveLocalState() {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn('Failed to save state to localStorage:', e);
+            }
+        }
+
+        // Apply dark or light theme class to HTML root element
+        function applyTheme(theme) {
+            appState.theme = theme || 'dark';
+            if (appState.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // Toggle between dark and light themes
+        function toggleTheme() {
+            const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            saveLocalState();
+            showToast(`Theme switched to ${newTheme} mode`);
+        }
+
+        // Synchronize conversations and memories with Supabase cloud database
+        async function syncFromSupabase() {
+            if (!supabaseUser || !supabaseClient) return;
+
+            try {
+                const syncBadge = document.getElementById('syncText');
+                if (syncBadge) syncBadge.innerText = 'Syncing...';
+
+                // Fetch user conversations from Supabase
+                const { data: convs, error: convErr } = await supabaseClient
+                    .from('nix_conversations')
+                    .select('*')
+                    .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
+                    .order('updated_at', { ascending: false });
+
+                if (!convErr && convs && convs.length > 0) {
+                    const updatedConvs = await Promise.all(convs.map(async (c) => {
+                        const { data: msgs } = await supabaseClient
+                            .from('nix_messages')
+                            .select('*')
+                            .eq('conversation_id', c.id)
+                            .order('created_at', { ascending: true });
+
+                        return {
+                            id: c.id,
+                            title: c.title,
+                            model: c.model || 'gpt-4o-mini',
+                            createdAt: new Date(c.created_at).getTime(),
+                            updatedAt: new Date(c.updated_at).getTime(),
+                            messages: (msgs || []).map(m => ({
+                                id: m.id,
+                                role: m.role,
+                                content: m.content,
+                                timestamp: new Date(m.created_at).getTime()
+                            }))
+                        };
+                    }));
+
+                    appState.conversations = updatedConvs;
+                    if (!appState.activeConversationId || !appState.conversations.some(c => c.id === appState.activeConversationId)) {
+                        appState.activeConversationId = appState.conversations[0]?.id || null;
+                    }
+                }
+
+                // Fetch user memories from Supabase
+                const { data: mems, error: memErr } = await supabaseClient
+                    .from('nix_memories')
+                    .select('*')
+                    .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
+                    .order('created_at', { ascending: false });
+
+                if (!memErr && mems) {
+                    appState.memories = mems.map(m => ({
+                        id: m.id,
+                        category: m.category,
+                        content: m.content,
+                        createdAt: new Date(m.created_at).getTime()
+                    }));
+                }
+
+                saveLocalState();
+                renderConversationsList();
+                renderActiveConversationMessages();
+                updateMemoryBadge();
+
+                if (syncBadge) syncBadge.innerText = 'Supabase Sync';
+            } catch (err) {
+                console.warn('Error syncing with Supabase:', err);
+                const syncBadge = document.getElementById('syncText');
+                if (syncBadge) syncBadge.innerText = 'Sync Offline';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            loadLocalState();
+
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return hljs.highlightAuto(code).value;
+                },
+                breaks: true
+            });
+
+            // Extract conversation ID from URL parameters (?chat=UUID or ?id=UUID)
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetChatId = urlParams.get('chat') || urlParams.get('id');
+
+            // Initialize Supabase Auth Session
+            if (supabaseClient) {
+                try {
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session) {
+                        supabaseUser = session.user;
+                        updateAuthUI(true);
+                        await syncFromSupabase();
+                    } else {
+                        updateAuthUI(false);
+                    }
+
+                    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                        if (session) {
+                            supabaseUser = session.user;
+                            updateAuthUI(true);
+                            await syncFromSupabase();
+                            if (targetChatId) await loadAndVerifyUrlChat(targetChatId);
+                        } else {
+                            supabaseUser = null;
+                            updateAuthUI(false);
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Supabase Auth error:', e);
+                }
+            }
+
+            if (targetChatId) {
+                await loadAndVerifyUrlChat(targetChatId);
+            } else {
+                if (appState.conversations.length === 0) {
+                    createNewConversation(false);
+                } else if (!appState.activeConversationId) {
+                    appState.activeConversationId = appState.conversations[0].id;
+                }
+                updateUrlChatId(appState.activeConversationId);
+            }
+
+            applyTheme(appState.theme);
+            renderConversationsList();
+            renderActiveConversationMessages();
+            updateMemoryBadge();
+        });
+
+        // Updates browser address bar query param without triggering full reload
+        function updateUrlChatId(chatId) {
+            if (!chatId) return;
+            const url = new URL(window.location.href);
+            if (url.searchParams.get('chat') !== chatId) {
+                url.searchParams.set('chat', chatId);
+                window.history.pushState({ chatId }, '', url.toString());
+            }
+        }
+
+        // Verifies if conversation belongs to user and loads it safely
+        async function loadAndVerifyUrlChat(chatId) {
+            let found = appState.conversations.find(c => c.id === chatId);
+
+            // Fetch from Supabase if not found in local cache
+            if (!found && supabaseUser && supabaseClient) {
+                try {
+                    const { data: conv, error: convErr } = await supabaseClient
+                        .from('nix_conversations')
+                        .select('*')
+                        .eq('id', chatId)
+                        .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
+                        .maybeSingle();
+
+                    if (conv) {
+                        const { data: msgs } = await supabaseClient
+                            .from('nix_messages')
+                            .select('*')
+                            .eq('conversation_id', chatId)
+                            .order('created_at', { ascending: true });
+
+                        found = {
+                            id: conv.id,
+                            title: conv.title,
+                            model: conv.model || 'gpt-4o-mini',
+                            createdAt: new Date(conv.created_at).getTime(),
+                            updatedAt: new Date(conv.updated_at).getTime(),
+                            messages: (msgs || []).map(m => ({
+                                id: m.id,
+                                role: m.role,
+                                content: m.content,
+                                timestamp: new Date(m.created_at).getTime()
+                            }))
+                        };
+
+                        appState.conversations.unshift(found);
+                        saveLocalState();
+                    }
+                } catch (err) {
+                    console.warn('Error verifying conversation URL:', err);
+                }
+            }
+
+            if (found) {
+                appState.activeConversationId = found.id;
+                updateUrlChatId(found.id);
+                showToast('Loaded conversation #' + chatId.slice(0, 8));
+            } else {
+                showToast('Conversation not found or access denied.');
+                if (appState.conversations.length > 0) {
+                    appState.activeConversationId = appState.conversations[0].id;
+                } else {
+                    await createNewConversation(false);
+                }
+                updateUrlChatId(appState.activeConversationId);
+            }
+
+            renderConversationsList();
+            renderActiveConversationMessages();
+        }
+
+        // Handle Browser History Back / Forward navigation
+        window.addEventListener('popstate', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get('chat') || urlParams.get('id');
+            if (chatId && chatId !== appState.activeConversationId) {
+                loadAndVerifyUrlChat(chatId);
+            }
+        });
+
+        async function createNewConversation(autoSwitch = true) {
+            const newConv = {
+                id: generateUUID(),
+                title: 'New Conversation',
+                model: 'gpt-4o-mini',
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+                messages: []
+            };
+
+            appState.conversations.unshift(newConv);
+            if (autoSwitch) {
+                appState.activeConversationId = newConv.id;
+                updateUrlChatId(newConv.id);
+            }
+
+            saveLocalState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+
+            if (supabaseUser && supabaseClient) {
+                try {
+                    const { error } = await supabaseClient.from('nix_conversations').insert({
+                        id: newConv.id,
+                        user_id: supabaseUser.id,
+                        title: newConv.title,
+                        model: newConv.model
+                    });
+                    if (error) console.warn('Conversation insert warning:', error.message);
+                } catch (e) {
+                    console.warn('Failed to insert conversation to Supabase:', e);
+                }
+            }
+        }
+
+        function switchConversation(convId) {
+            appState.activeConversationId = convId;
+            updateUrlChatId(convId);
+            saveLocalState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+            
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('-translate-x-full');
+            document.getElementById('mobileBackdrop').classList.add('hidden');
+        }
+
+        async function deleteConversation(convId, event) {
+            event.stopPropagation();
+            appState.conversations = appState.conversations.filter(c => c.id !== convId);
+            
+            if (appState.activeConversationId === convId) {
+                appState.activeConversationId = appState.conversations[0]?.id || null;
+                if (appState.activeConversationId) {
+                    updateUrlChatId(appState.activeConversationId);
+                }
+            }
+
+            if (appState.conversations.length === 0) {
+                createNewConversation(false);
+            }
+
+            saveLocalState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+
+            if (supabaseUser && supabaseClient) {
+                try {
+                    await supabaseClient.from('nix_conversations').delete().eq('id', convId);
+                } catch (e) {
+                    console.warn('Failed to delete conversation from Supabase:', e);
+                }
+            }
+        }
+
+        function renderConversationsList() {
+            const container = document.getElementById('conversationsList');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            container.innerHTML = '';
+
+            const filtered = appState.conversations.filter(c => 
+                c.title.toLowerCase().includes(searchVal) ||
+                c.messages.some(m => m.content.toLowerCase().includes(searchVal))
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 dark:text-zinc-500 text-center py-4">No conversations found.</p>`;
+                return;
+            }
+
+            filtered.forEach(conv => {
+                const isActive = conv.id === appState.activeConversationId;
+                const el = document.createElement('div');
+                el.className = `group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs transition-all ${
+                    isActive 
+                    ? 'bg-nix-600/15 dark:bg-nix-600/25 border border-nix-500/40 text-nix-700 dark:text-white font-medium shadow-sm' 
+                    : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60 hover:text-slate-900 dark:hover:text-zinc-200'
+                }`;
+                el.onclick = () => switchConversation(conv.id);
+
+                el.innerHTML = `
+                    <div class="flex items-center space-x-2.5 truncate flex-1 pr-2">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0 ${isActive ? 'text-nix-600 dark:text-nix-400' : 'text-slate-400 dark:text-zinc-500'}"></i>
+                        <span class="truncate">${escapeHtml(conv.title)}</span>
+                    </div>
+                    <button onclick="deleteConversation('${conv.id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-500 p-1 rounded transition-opacity">
+                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                    </button>
+                `;
+                container.appendChild(el);
+            });
+
+            lucide.createIcons();
+        }
+
+        function filterConversations() {
+            renderConversationsList();
+        }
+
+        function buildSystemPrompt() {
+            let sys = "You are Nix 4.5, an elite AI assistant with a purple visual identity. Provide articulate, accurate, clean, and structured responses with Markdown formatting.";
+            if (appState.memories.length > 0) {
+                sys += "\n\n[USER PERSONALIZATION MEMORIES]:\n";
+                appState.memories.forEach(m => {
+                    sys += `- (${m.category}): ${m.content}\n`;
+                });
+            }
+            return sys;
+        }
+
+        async function sendMessage() {
+            if (isGenerating) return;
+
+            const inputEl = document.getElementById('userInput');
+            let content = inputEl.value.trim();
+
+            if (!content && !currentAttachedFileText) return;
+
+            if (currentAttachedFileText) {
+                content = `[Attached File Context]:\n${currentAttachedFileText}\n\n[User Prompt]: ${content}`;
+                clearAttachedFile();
+            }
+
+            let activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (!activeConv) {
+                createNewConversation(true);
+                activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            }
+
+            const userMsg = { role: 'user', content: content, timestamp: Date.now() };
+            activeConv.messages.push(userMsg);
+
+            if (activeConv.messages.length === 1) {
+                activeConv.title = content.slice(0, 32) + (content.length > 32 ? '...' : '');
+            }
+
+            activeConv.updatedAt = Date.now();
+            saveLocalState();
+
+            inputEl.value = '';
+            autoResizeTextarea(inputEl);
+            document.getElementById('charCounter').innerText = '0 chars';
+
+            renderConversationsList();
+            renderActiveConversationMessages();
+
+            // Save user message to Supabase
+            if (supabaseUser && supabaseClient) {
+                supabaseClient.from('nix_messages').insert({
+                    conversation_id: activeConv.id,
+                    user_id: supabaseUser.id,
+                    role: 'user',
+                    content: userMsg.content
+                }).then(({ error }) => {
+                    if (error) console.warn('User message insert warning:', error.message);
+                }).catch(() => {});
+            }
+
+            const aiMsg = { role: 'assistant', content: '', timestamp: Date.now() };
+            activeConv.messages.push(aiMsg);
+
+            isGenerating = true;
+            updateSendButtonState(true);
+
+            const msgListEl = document.getElementById('messagesList');
+            const aiBubbleEl = renderSingleMessage(aiMsg, activeConv.messages.length - 1);
+            msgListEl.appendChild(aiBubbleEl);
+            scrollToBottom();
+
+            const textContainer = aiBubbleEl.querySelector('.prose-body');
+
+            try {
+                const systemPrompt = buildSystemPrompt();
+                const historyPayload = activeConv.messages.slice(0, -1).map(m => ({
+                    role: m.role,
+                    content: m.content
+                }));
+
+                const promptText = `${systemPrompt}\n\n${historyPayload.map(h => `${h.role.toUpperCase()}: ${h.content}`).join('\n\n')}`;
+
+                if (window.puter && puter.ai) {
+                    const response = await puter.ai.chat(promptText, { model: 'gpt-4o-mini' });
+                    let finalResponseText = typeof response === 'string' ? response : (response?.message?.content || response?.text || String(response));
+                    
+                    aiMsg.content = finalResponseText;
+                    textContainer.innerHTML = marked.parse(finalResponseText);
+                    textContainer.classList.remove('typing-cursor');
+
+                    // Save AI response to Supabase
+                    if (supabaseUser && supabaseClient) {
+                        supabaseClient.from('nix_messages').insert({
+                            conversation_id: activeConv.id,
+                            user_id: supabaseUser.id,
+                            role: 'assistant',
+                            content: finalResponseText
+                        }).then(({ error }) => {
+                            if (error) console.warn('AI message insert warning:', error.message);
+                        }).catch(() => {});
+
+                        supabaseClient.from('nix_conversations').update({
+                            title: activeConv.title,
+                            updated_at: new Date().toISOString()
+                        }).eq('id', activeConv.id).then(({ error }) => {
+                            if (error) console.warn('Conversation update warning:', error.message);
+                        }).catch(() => {});
+                    }
+                } else {
+                    aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or offline. Please check connection.";
+                    textContainer.innerHTML = marked.parse(aiMsg.content);
+                }
+            } catch (err) {
+                console.error('Puter AI error:', err);
+                aiMsg.content = `**Generation Error:** ${err.message || 'Failed to connect to Puter.js AI.'}`;
+                textContainer.innerHTML = marked.parse(aiMsg.content);
+            } finally {
+                isGenerating = false;
+                updateSendButtonState(false);
+                saveLocalState();
+                highlightCodeBlocks();
+                scrollToBottom();
+            }
+        }
+
+        function renderActiveConversationMessages() {
+            const container = document.getElementById('messagesList');
+            const emptyHero = document.getElementById('emptyHero');
+            container.innerHTML = '';
+
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            
+            if (!activeConv || activeConv.messages.length === 0) {
+                emptyHero.classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            }
+
+            emptyHero.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            activeConv.messages.forEach((msg, idx) => {
+                const msgEl = renderSingleMessage(msg, idx);
+                container.appendChild(msgEl);
+            });
+
+            highlightCodeBlocks();
+            scrollToBottom();
+        }
+
+        function renderSingleMessage(msg, index) {
+            const wrapper = document.createElement('div');
+            const isUser = msg.role === 'user';
+
+            wrapper.className = `flex gap-3 sm:gap-4 ${isUser ? 'justify-end' : 'justify-start'} text-sm leading-relaxed`;
+
+            if (isUser) {
+                wrapper.innerHTML = `
+                    <div class="max-w-[85%] sm:max-w-[75%] bg-nix-600 text-white dark:bg-nix-600/25 dark:border dark:border-nix-500/30 dark:text-zinc-100 rounded-2xl rounded-tr-sm p-4 shadow-sm">
+                        <div class="whitespace-pre-wrap font-sans">${escapeHtml(msg.content)}</div>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-600 dark:text-zinc-300"></i>
+                    </div>
+                `;
+            } else {
+                const parsedContent = msg.content ? marked.parse(msg.content) : '<span class="typing-cursor text-slate-400 dark:text-zinc-400">Nix is thinking...</span>';
+                
+                wrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nix-700 to-nix-500 flex items-center justify-center shrink-0 nix-glow-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="max-w-[90%] sm:max-w-[82%] bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-slate-800 dark:text-zinc-200 rounded-2xl rounded-tl-sm p-4 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-nix-borderdark/60 pb-2 text-xs text-slate-400 dark:text-zinc-400">
+                            <span class="font-bold bg-gradient-to-r from-nix-600 to-purple-500 dark:from-nix-300 dark:to-purple-200 bg-clip-text text-transparent">Nix 4.5</span>
+                            <div class="flex items-center space-x-1.5">
+                                <button onclick="copyToClipboard(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-600 dark:hover:text-nix-300 p-1" title="Copy text"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="speakText(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-600 dark:hover:text-nix-300 p-1" title="Read Aloud"><i data-lucide="volume-2" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                        <div class="prose max-w-none prose-body text-xs sm:text-sm">
+                            ${parsedContent}
+                        </div>
+                    </div>
+                `;
+            }
+
+            setTimeout(() => lucide.createIcons(), 0);
+            return wrapper;
+        }
+
+        function openAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function toggleAuthMode() {
+            isAuthSignUpMode = !isAuthSignUpMode;
+            document.getElementById('authModalTitle').innerText = isAuthSignUpMode ? 'Create Account' : 'Account Sign In';
+            document.getElementById('authSubmitBtn').innerText = isAuthSignUpMode ? 'Sign Up' : 'Sign In';
+            document.getElementById('authToggleText').innerText = isAuthSignUpMode ? 'Already have an account?' : 'Need an account?';
+            document.getElementById('authToggleBtn').innerText = isAuthSignUpMode ? 'Sign In' : 'Sign Up';
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            if (!supabaseClient) return;
+
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            try {
+                if (isAuthSignUpMode) {
+                    const { error } = await supabaseClient.auth.signUp({ email, password });
+                    if (error) throw error;
+                    showToast('Sign up successful! Please check email.');
+                } else {
+                    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    showToast('Signed in successfully!');
+                }
+                closeAuthModal();
+            } catch (err) {
+                showToast(err.message || 'Authentication error');
+            }
+        }
+
+        async function handleSignOut() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+                showToast('Signed out.');
+                closeAuthModal();
+            }
+        }
+
+        function updateAuthUI(isLoggedIn) {
+            const label = document.getElementById('accountLabel');
+            const icon = document.getElementById('authActionIcon');
+            const badge = document.getElementById('supabaseSyncBadge');
+            const loggedState = document.getElementById('authLoggedState');
+            const form = document.getElementById('authForm');
+            const headerSignIn = document.getElementById('headerSignInBtn');
+
+            if (isLoggedIn && supabaseUser) {
+                label.innerText = supabaseUser.email || 'Cloud Account';
+                icon.setAttribute('data-lucide', 'user-check');
+                badge.classList.remove('hidden');
+                loggedState.classList.remove('hidden');
+                form.classList.add('hidden');
+                headerSignIn.classList.add('hidden');
+                document.getElementById('loggedInEmail').innerText = supabaseUser.email;
+                document.getElementById('userAvatar').innerText = (supabaseUser.email || 'U')[0].toUpperCase();
+            } else {
+                label.innerText = 'Guest User';
+                icon.setAttribute('data-lucide', 'log-in');
+                badge.classList.add('hidden');
+                loggedState.classList.add('hidden');
+                form.classList.remove('hidden');
+                headerSignIn.classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        function openMemoryModal() {
+            renderMemoriesList();
+            document.getElementById('memoryModal').classList.remove('hidden');
+        }
+
+        function closeMemoryModal() {
+            document.getElementById('memoryModal').classList.add('hidden');
+        }
+
+        async function addMemory() {
+            const input = document.getElementById('newMemoryInput');
+            const category = document.getElementById('memoryCategory').value;
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            const mem = { id: 'mem_' + Date.now(), category, content, createdAt: Date.now() };
+            appState.memories.push(mem);
+
+            input.value = '';
+            saveLocalState();
+            renderMemoriesList();
+            updateMemoryBadge();
+
+            if (supabaseUser && supabaseClient) {
+                supabaseClient.from('nix_memories').insert({
+                    user_id: supabaseUser.id,
+                    category,
+                    content
+                }).then(() => {}).catch(() => {});
+            }
+
+            showToast('Memory saved.');
+        }
+
+        async function deleteMemory(id) {
+            appState.memories = appState.memories.filter(m => m.id !== id);
+            saveLocalState();
+            renderMemoriesList();
+            updateMemoryBadge();
+
+            if (supabaseUser && supabaseClient) {
+                supabaseClient.from('nix_memories').delete().eq('id', id).then(() => {}).catch(() => {});
+            }
+        }
+
+        function clearAllMemories() {
+            appState.memories = [];
+            saveLocalState();
+            renderMemoriesList();
+            updateMemoryBadge();
+            showToast('All memories cleared.');
+        }
+
+        function renderMemoriesList() {
+            const container = document.getElementById('memoriesListContainer');
+            container.innerHTML = '';
+
+            if (appState.memories.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 dark:text-zinc-500 italic text-center py-2">No active memories stored.</p>`;
+                return;
+            }
+
+            appState.memories.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs';
+                item.innerHTML = `
+                    <div class="space-y-0.5 truncate pr-2">
+                        <span class="text-[10px] font-bold px-1.5 py-0.2 bg-nix-600/20 text-nix-600 dark:text-nix-300 rounded">${m.category}</span>
+                        <p class="text-slate-800 dark:text-zinc-200 truncate mt-0.5">${escapeHtml(m.content)}</p>
+                    </div>
+                    <button onclick="deleteMemory('${m.id}')" class="text-slate-400 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                `;
+                container.appendChild(item);
+            });
+
+            lucide.createIcons();
+        }
+
+        function updateMemoryBadge() {
+            document.getElementById('memoryCountBadge').innerText = appState.memories.length;
+        }
+
+        function openSettingsModal(defaultTab = 'general') {
+            switchSettingsTab(defaultTab);
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function switchSettingsTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50';
+            });
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+            if (activeBtn) activeBtn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-600 dark:text-nix-300 bg-nix-600/10 dark:bg-nix-600/20';
+
+            const activeContent = document.getElementById(`tabContent-${tabId}`);
+            if (activeContent) activeContent.classList.remove('hidden');
+        }
+
+        function exportAllData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `nix_45_backup_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function clearAllLocalData() {
+            if (confirm("Clear local cache? This will reset offline memory.")) {
+                localStorage.removeItem(LOCAL_STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function sendQuickPrompt(text) {
+            const input = document.getElementById('userInput');
+            input.value = text;
+            autoResizeTextarea(input);
+            sendMessage();
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function autoResizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+            document.getElementById('charCounter').innerText = `${el.value.length} chars`;
+        }
+
+        function triggerFileInput() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentAttachedFileText = e.target.result;
+                document.getElementById('fileName').innerText = file.name;
+                document.getElementById('filePreview').classList.remove('hidden');
+                showToast(`Attached ${file.name}`);
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAttachedFile() {
+            currentAttachedFileText = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').classList.add('hidden');
+        }
+
+        function toggleDictation() {
+            const btn = document.getElementById('dictationBtn');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                showToast('Voice dictation not supported.');
+                return;
+            }
+
+            if (!dictationRecognition) {
+                dictationRecognition = new SpeechRecognition();
+                dictationRecognition.continuous = false;
+                dictationRecognition.interimResults = false;
+
+                dictationRecognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript;
+                    const input = document.getElementById('userInput');
+                    input.value += (input.value ? ' ' : '') + transcript;
+                    autoResizeTextarea(input);
+                };
+
+                dictationRecognition.onend = () => {
+                    isDictating = false;
+                    btn.classList.remove('text-rose-500', 'animate-pulse');
+                };
+            }
+
+            if (isDictating) {
+                dictationRecognition.stop();
+            } else {
+                dictationRecognition.start();
+                isDictating = true;
+                btn.classList.add('text-rose-500', 'animate-pulse');
+                showToast('Listening...');
+            }
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) {
+                showToast('Text-to-speech not supported.');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('Copied to clipboard!');
+        }
+
+        function exportCurrentChat() {
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (!activeConv || activeConv.messages.length === 0) {
+                showToast('No active messages to export.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(activeConv, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${activeConv.title.replace(/[^a-z0-9]/gi, '_')}.json`;
+            a.click();
+        }
+
+        function clearCurrentChat() {
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            if (activeConv) {
+                activeConv.messages = [];
+                saveLocalState();
+                renderActiveConversationMessages();
+                showToast('Chat history cleared.');
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobileBackdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
+        function updateSendButtonState(generating) {
+            const btn = document.getElementById('sendBtn');
+            if (generating) {
+                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = `<i data-lucide="arrow-up" class="w-4 h-4"></i>`;
+                btn.disabled = false;
+            }
+            lucide.createIcons();
+        }
+
+        function highlightCodeBlocks() {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-20 right-6 bg-slate-900 text-white dark:bg-nix-carddark border border-nix-500/50 px-4 py-2.5 rounded-xl text-xs shadow-2xl z-50 transition-all duration-300 transform translate-y-2 opacity-0';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function escapeJsString(str) {
+            return (str || '').replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        }
+    </script>
+</body>
+</html>
