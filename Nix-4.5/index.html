@@ -571,6 +571,121 @@
         let dictationRecognition = null;
         let isDictating = false;
 
+        // Load application state from localStorage cache
+        function loadLocalState() {
+            try {
+                const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === 'object') {
+                        appState = { ...appState, ...parsed };
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load local state from localStorage:', e);
+            }
+        }
+
+        // Persist current state to localStorage
+        function saveLocalState() {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn('Failed to save state to localStorage:', e);
+            }
+        }
+
+        // Apply dark or light theme class to HTML root element
+        function applyTheme(theme) {
+            appState.theme = theme || 'dark';
+            if (appState.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // Toggle between dark and light themes
+        function toggleTheme() {
+            const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            saveLocalState();
+            showToast(`Theme switched to ${newTheme} mode`);
+        }
+
+        // Synchronize conversations and memories with Supabase cloud database
+        async function syncFromSupabase() {
+            if (!supabaseUser || !supabaseClient) return;
+
+            try {
+                const syncBadge = document.getElementById('syncText');
+                if (syncBadge) syncBadge.innerText = 'Syncing...';
+
+                // Fetch user conversations from Supabase
+                const { data: convs, error: convErr } = await supabaseClient
+                    .from('nix_conversations')
+                    .select('*')
+                    .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
+                    .order('updated_at', { ascending: false });
+
+                if (!convErr && convs && convs.length > 0) {
+                    const updatedConvs = await Promise.all(convs.map(async (c) => {
+                        const { data: msgs } = await supabaseClient
+                            .from('nix_messages')
+                            .select('*')
+                            .eq('conversation_id', c.id)
+                            .order('created_at', { ascending: true });
+
+                        return {
+                            id: c.id,
+                            title: c.title,
+                            model: c.model || 'gpt-4o-mini',
+                            createdAt: new Date(c.created_at).getTime(),
+                            updatedAt: new Date(c.updated_at).getTime(),
+                            messages: (msgs || []).map(m => ({
+                                id: m.id,
+                                role: m.role,
+                                content: m.content,
+                                timestamp: new Date(m.created_at).getTime()
+                            }))
+                        };
+                    }));
+
+                    appState.conversations = updatedConvs;
+                    if (!appState.activeConversationId || !appState.conversations.some(c => c.id === appState.activeConversationId)) {
+                        appState.activeConversationId = appState.conversations[0]?.id || null;
+                    }
+                }
+
+                // Fetch user memories from Supabase
+                const { data: mems, error: memErr } = await supabaseClient
+                    .from('nix_memories')
+                    .select('*')
+                    .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
+                    .order('created_at', { ascending: false });
+
+                if (!memErr && mems) {
+                    appState.memories = mems.map(m => ({
+                        id: m.id,
+                        category: m.category,
+                        content: m.content,
+                        createdAt: new Date(m.created_at).getTime()
+                    }));
+                }
+
+                saveLocalState();
+                renderConversationsList();
+                renderActiveConversationMessages();
+                updateMemoryBadge();
+
+                if (syncBadge) syncBadge.innerText = 'Supabase Sync';
+            } catch (err) {
+                console.warn('Error syncing with Supabase:', err);
+                const syncBadge = document.getElementById('syncText');
+                if (syncBadge) syncBadge.innerText = 'Sync Offline';
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             loadLocalState();
@@ -584,6 +699,10 @@
                 },
                 breaks: true
             });
+
+            // Extract conversation ID from URL parameters (?chat=UUID or ?id=UUID)
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetChatId = urlParams.get('chat') || urlParams.get('id');
 
             // Initialize Supabase Auth Session
             if (supabaseClient) {
@@ -602,6 +721,7 @@
                             supabaseUser = session.user;
                             updateAuthUI(true);
                             await syncFromSupabase();
+                            if (targetChatId) await loadAndVerifyUrlChat(targetChatId);
                         } else {
                             supabaseUser = null;
                             updateAuthUI(false);
@@ -612,10 +732,15 @@
                 }
             }
 
-            if (appState.conversations.length === 0) {
-                createNewConversation(false);
-            } else if (!appState.activeConversationId) {
-                appState.activeConversationId = appState.conversations[0].id;
+            if (targetChatId) {
+                await loadAndVerifyUrlChat(targetChatId);
+            } else {
+                if (appState.conversations.length === 0) {
+                    createNewConversation(false);
+                } else if (!appState.activeConversationId) {
+                    appState.activeConversationId = appState.conversations[0].id;
+                }
+                updateUrlChatId(appState.activeConversationId);
             }
 
             applyTheme(appState.theme);
@@ -624,139 +749,85 @@
             updateMemoryBadge();
         });
 
-        async function syncFromSupabase() {
-            if (!supabaseUser || !supabaseClient) return;
+        // Updates browser address bar query param without triggering full reload
+        function updateUrlChatId(chatId) {
+            if (!chatId) return;
+            const url = new URL(window.location.href);
+            if (url.searchParams.get('chat') !== chatId) {
+                url.searchParams.set('chat', chatId);
+                window.history.pushState({ chatId }, '', url.toString());
+            }
+        }
 
-            try {
-                // Fetch conversations
-                const { data: convs, error: convErr } = await supabaseClient
-                    .from('nix_conversations')
-                    .select('*')
-                    .eq('user_id', supabaseUser.id)
-                    .order('updated_at', { ascending: false });
+        // Verifies if conversation belongs to user and loads it safely
+        async function loadAndVerifyUrlChat(chatId) {
+            let found = appState.conversations.find(c => c.id === chatId);
 
-                if (convErr) {
-                    console.warn('Supabase conversations sync error (403/RLS):', convErr.message);
-                    showToast('Supabase permission error: Run updated schema SQL in Supabase editor.');
-                    return;
-                }
+            // Fetch from Supabase if not found in local cache
+            if (!found && supabaseUser && supabaseClient) {
+                try {
+                    const { data: conv, error: convErr } = await supabaseClient
+                        .from('nix_conversations')
+                        .select('*')
+                        .eq('id', chatId)
+                        .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
+                        .maybeSingle();
 
-                if (convs) {
-                    const formattedConvs = [];
-                    for (const c of convs) {
-                        const { data: msgs, error: msgsErr } = await supabaseClient
+                    if (conv) {
+                        const { data: msgs } = await supabaseClient
                             .from('nix_messages')
                             .select('*')
-                            .eq('conversation_id', c.id)
+                            .eq('conversation_id', chatId)
                             .order('created_at', { ascending: true });
 
-                        if (msgsErr) console.warn('Supabase messages error:', msgsErr.message);
-
-                        formattedConvs.push({
-                            id: c.id,
-                            title: c.title,
-                            model: c.model || 'gpt-4o-mini',
-                            createdAt: new Date(c.created_at).getTime(),
-                            updatedAt: new Date(c.updated_at).getTime(),
+                        found = {
+                            id: conv.id,
+                            title: conv.title,
+                            model: conv.model || 'gpt-4o-mini',
+                            createdAt: new Date(conv.created_at).getTime(),
+                            updatedAt: new Date(conv.updated_at).getTime(),
                             messages: (msgs || []).map(m => ({
                                 id: m.id,
                                 role: m.role,
                                 content: m.content,
                                 timestamp: new Date(m.created_at).getTime()
                             }))
-                        });
-                    }
+                        };
 
-                    if (formattedConvs.length > 0) {
-                        appState.conversations = formattedConvs;
-                        if (!appState.activeConversationId || !appState.conversations.some(c => c.id === appState.activeConversationId)) {
-                            appState.activeConversationId = appState.conversations[0].id;
-                        }
+                        appState.conversations.unshift(found);
+                        saveLocalState();
                     }
+                } catch (err) {
+                    console.warn('Error verifying conversation URL:', err);
                 }
-
-                // Fetch memories
-                const { data: mems, error: memsErr } = await supabaseClient
-                    .from('nix_memories')
-                    .select('*')
-                    .eq('user_id', supabaseUser.id);
-
-                if (memsErr) {
-                    console.warn('Supabase memories error:', memsErr.message);
-                } else if (mems && mems.length > 0) {
-                    appState.memories = mems.map(m => ({
-                        id: m.id,
-                        category: m.category,
-                        content: m.content,
-                        createdAt: new Date(m.created_at).getTime()
-                    }));
-                }
-
-                saveLocalState();
-                renderConversationsList();
-                renderActiveConversationMessages();
-                updateMemoryBadge();
-            } catch (err) {
-                console.warn('Sync from Supabase failed:', err);
             }
-        }
 
-        function loadLocalState() {
-            try {
-                const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (raw) {
-                    appState = { ...appState, ...JSON.parse(raw) };
-                    
-                    // Migrate any legacy 'conv_...' non-UUID IDs to valid PostgreSQL UUID format
-                    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-                    if (Array.isArray(appState.conversations)) {
-                        appState.conversations.forEach(conv => {
-                            if (!uuidRegex.test(conv.id)) {
-                                conv.id = generateUUID();
-                            }
-                        });
-                    }
-                    if (appState.activeConversationId && !uuidRegex.test(appState.activeConversationId)) {
-                        appState.activeConversationId = appState.conversations[0]?.id || null;
-                    }
-                }
-            } catch (e) {
-                console.error('Failed to parse localStorage:', e);
-            }
-        }
-
-        function saveLocalState() {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
-            } catch (e) {
-                console.error('Failed to save state:', e);
-            }
-        }
-
-        function toggleTheme() {
-            appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
-            applyTheme(appState.theme);
-            saveLocalState();
-
-            if (supabaseUser && supabaseClient) {
-                supabaseClient.from('nix_profiles').upsert({
-                    id: supabaseUser.id,
-                    theme: appState.theme,
-                    updated_at: new Date().toISOString()
-                }).then(({ error }) => {
-                    if (error) console.warn('Profile theme sync warning:', error.message);
-                }).catch(() => {});
-            }
-        }
-
-        function applyTheme(theme) {
-            const html = document.documentElement;
-            if (theme === 'dark') {
-                html.classList.add('dark');
+            if (found) {
+                appState.activeConversationId = found.id;
+                updateUrlChatId(found.id);
+                showToast('Loaded conversation #' + chatId.slice(0, 8));
             } else {
-                html.classList.remove('dark');
+                showToast('Conversation not found or access denied.');
+                if (appState.conversations.length > 0) {
+                    appState.activeConversationId = appState.conversations[0].id;
+                } else {
+                    await createNewConversation(false);
+                }
+                updateUrlChatId(appState.activeConversationId);
             }
+
+            renderConversationsList();
+            renderActiveConversationMessages();
         }
+
+        // Handle Browser History Back / Forward navigation
+        window.addEventListener('popstate', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get('chat') || urlParams.get('id');
+            if (chatId && chatId !== appState.activeConversationId) {
+                loadAndVerifyUrlChat(chatId);
+            }
+        });
 
         async function createNewConversation(autoSwitch = true) {
             const newConv = {
@@ -769,7 +840,10 @@
             };
 
             appState.conversations.unshift(newConv);
-            if (autoSwitch) appState.activeConversationId = newConv.id;
+            if (autoSwitch) {
+                appState.activeConversationId = newConv.id;
+                updateUrlChatId(newConv.id);
+            }
 
             saveLocalState();
             renderConversationsList();
@@ -792,6 +866,7 @@
 
         function switchConversation(convId) {
             appState.activeConversationId = convId;
+            updateUrlChatId(convId);
             saveLocalState();
             renderConversationsList();
             renderActiveConversationMessages();
@@ -807,6 +882,9 @@
             
             if (appState.activeConversationId === convId) {
                 appState.activeConversationId = appState.conversations[0]?.id || null;
+                if (appState.activeConversationId) {
+                    updateUrlChatId(appState.activeConversationId);
+                }
             }
 
             if (appState.conversations.length === 0) {
