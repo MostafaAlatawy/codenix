@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NaN - Cyber Runner (Overdrive Edition)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #030308;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Neon Glow Utility Effects */
+        .neon-glow-cyan { filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.9)); }
+        .neon-glow-pink { filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.9)); }
+        .neon-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            border-color: rgba(0, 243, 255, 0.7);
+        }
+        .neon-border-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4), inset 0 0 15px rgba(255, 0, 127, 0.2);
+            border-color: rgba(255, 0, 127, 0.7);
+        }
+        .neon-border-purple {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.7);
+        }
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-3px, 2px) }
+            40% { transform: translate(-2px, -3px) }
+            60% { transform: translate(3px, 1px) }
+            80% { transform: translate(1px, -2px) }
+            100% { transform: translate(0) }
+        }
+        .animate-glitch {
+            animation: glitch 0.25s infinite alternate;
+        }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080914; }
+        ::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 3px; }
+        .glass-panel {
+            background: rgba(10, 12, 28, 0.8);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+        /* Banner Slide Animation */
+        @keyframes bannerSlide {
+            0% { transform: translateY(-100%); opacity: 0; }
+            15% { transform: translateY(0); opacity: 1; }
+            85% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100%); opacity: 0; }
+        }
+        .animate-banner {
+            animation: bannerSlide 3s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-black text-white relative select-none">
+
+    <div id="gameContainer" class="relative w-full h-full flex items-center justify-center overflow-hidden">
+        <!-- Main Game Canvas -->
+        <canvas id="gameCanvas" class="w-full h-full block bg-black"></canvas>
+
+        <!-- Biome Banner Notification Overlay -->
+        <div id="biomeBanner" class="absolute top-16 z-20 pointer-events-none hidden flex flex-col items-center">
+            <div id="biomeBannerBox" class="px-6 py-2.5 bg-gradient-to-r from-cyan-600/90 via-purple-600/90 to-pink-600/90 border border-cyan-400 rounded-full font-orbitron font-extrabold text-sm md:text-base text-white tracking-widest shadow-[0_0_25px_rgba(0,243,255,0.8)] flex items-center gap-3">
+                <i class="fa-solid fa-layer-group text-yellow-300"></i>
+                <span id="biomeBannerText">BIOME SHIFT: NEON HIGHWAY</span>
+            </div>
+        </div>
+
+        <!-- Main Menu Overlay -->
+        <div id="mainMenu" class="absolute inset-0 flex flex-col items-center justify-between p-6 z-20 glass-panel transition-all duration-300">
+            <!-- Top Audio Control -->
+            <div class="w-full flex justify-between items-center max-w-4xl pt-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                    <span class="text-xs font-mono text-cyan-400 tracking-widest">SYSTEM ONLINE // V3.0 OVERDRIVE</span>
+                </div>
+                <button id="menuAudioBtn" class="px-3 py-1.5 bg-slate-900/90 border border-slate-700 hover:border-cyan-400 rounded-full text-xs font-orbitron text-gray-300 flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-volume-high text-cyan-400" id="menuAudioIcon"></i>
+                    <span id="menuAudioText">AUDIO: ON</span>
+                </button>
+            </div>
+
+            <!-- Header Logo -->
+            <div class="text-center my-auto">
+                <div class="inline-flex items-center px-4 py-1.5 bg-cyan-950/60 border border-cyan-500/50 rounded-full text-cyan-400 text-xs tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
+                    <i class="fa-solid fa-shield-halved mr-2 text-pink-500"></i> Cyberpunk Boss Runner
+                </div>
+                <h1 class="text-7xl sm:text-8xl md:text-9xl font-black font-orbitron tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 animate-glitch drop-shadow-[0_0_35px_rgba(0,243,255,0.8)]">
+                    NaN
+                </h1>
+                <p class="text-gray-400 text-sm md:text-lg tracking-widest mt-2 font-mono">
+                    [NOT A NUMBER] // OVERDRIVE EDITION
+                </p>
+            </div>
+
+            <!-- Central Buttons -->
+            <div class="flex flex-col items-center gap-4 w-full max-w-xs mb-6">
+                <button id="startBtn" class="w-full py-4 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 rounded-2xl font-orbitron font-extrabold text-xl tracking-wider text-black shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play text-2xl"></i> INITIALIZE RUN
+                </button>
+                
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button id="shopBtn" class="py-3 bg-slate-900/90 border border-pink-500/50 rounded-xl font-orbitron font-bold text-pink-400 hover:bg-pink-950/40 hover:border-pink-400 transition-all flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(255,0,127,0.2)]">
+                        <i class="fa-solid fa-store"></i> SHOP
+                    </button>
+                    <button id="howToBtn" class="py-3 bg-slate-900/90 border border-purple-500/50 rounded-xl font-orbitron font-bold text-purple-400 hover:bg-purple-950/40 hover:border-purple-400 transition-all flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                        <i class="fa-solid fa-gamepad"></i> CONTROLS
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="w-full max-w-md bg-slate-950/90 border border-slate-800 rounded-2xl p-4 flex justify-around items-center backdrop-blur-md mb-2 shadow-2xl">
+                <div class="text-center">
+                    <div class="text-[10px] text-gray-400 uppercase tracking-widest font-orbitron">High Score</div>
+                    <div id="menuHighScore" class="text-2xl font-orbitron font-extrabold text-cyan-400 drop-shadow-[0_0_8px_rgba(0,243,255,0.5)]">000000</div>
+                </div>
+                <div class="h-8 w-px bg-slate-800"></div>
+                <div class="text-center">
+                    <div class="text-[10px] text-gray-400 uppercase tracking-widest font-orbitron">Data Bits</div>
+                    <div id="menuBits" class="text-2xl font-orbitron font-extrabold text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gameplay HUD -->
+        <div id="gameHUD" class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-4 md:p-6 hidden">
+            <!-- Top HUD Bar -->
+            <div class="flex flex-col gap-2 w-full">
+                <div class="flex justify-between items-start w-full">
+                    <!-- Score & Multiplier -->
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-baseline gap-3">
+                            <span class="text-xs text-cyan-400 font-orbitron font-bold tracking-widest">SCORE</span>
+                            <span id="hudScore" class="text-3xl md:text-5xl font-black font-orbitron text-white drop-shadow-[0_0_15px_rgba(0,243,255,0.9)]">000000</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="hudMultiplier" class="px-2.5 py-0.5 bg-gradient-to-r from-pink-500 to-purple-600 border border-pink-400 rounded-md text-xs font-orbitron font-black text-white shadow-[0_0_10px_rgba(255,0,127,0.5)]">1x MULTI</span>
+                            <span id="hudCombo" class="text-xs text-yellow-400 font-orbitron font-bold hidden">COMBO x2!</span>
+                            <span id="hudSpeed" class="text-xs text-gray-400 font-mono">320 KM/H</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Powerup Badges -->
+                    <div id="powerupContainer" class="flex gap-2"></div>
+
+                    <!-- Collectibles & Control Buttons -->
+                    <div class="flex items-center gap-2 md:gap-3 pointer-events-auto">
+                        <div class="flex items-center gap-2 bg-slate-900/90 border border-yellow-500/50 px-3 py-1.5 rounded-full shadow-[0_0_12px_rgba(234,179,8,0.3)]">
+                            <i class="fa-solid fa-cube text-yellow-400 text-sm animate-pulse"></i>
+                            <span id="hudBits" class="font-orbitron font-extrabold text-yellow-400 text-sm md:text-base">0</span>
+                        </div>
+                        <button id="hudAudioBtn" class="w-10 h-10 bg-slate-900/90 border border-slate-700 hover:border-cyan-400 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-all">
+                            <i class="fa-solid fa-volume-high text-cyan-400" id="hudAudioIcon"></i>
+                        </button>
+                        <button id="pauseBtn" class="w-10 h-10 bg-slate-900/90 border border-slate-700 hover:border-cyan-400 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-all">
+                            <i class="fa-solid fa-pause"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Boss Health Bar Overlay (Appears during Boss Battle) -->
+                <div id="bossHud" class="w-full max-w-md mx-auto hidden flex flex-col items-center bg-red-950/80 border border-red-500/60 rounded-xl p-2 shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+                    <div class="w-full flex justify-between text-xs font-orbitron font-black text-red-400 mb-1 px-1">
+                        <span><i class="fa-solid fa-robot mr-1"></i> CYBER ENFORCER</span>
+                        <span id="bossHpPercent">100%</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-red-800">
+                        <div id="bossHpBar" class="bg-gradient-to-r from-red-600 to-pink-500 h-full w-full transition-all duration-200"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Gameplay Bar: Active Skill Button & Mobile Touch Guide -->
+            <div class="flex justify-between items-end w-full pointer-events-auto">
+                <!-- Skill Action Button -->
+                <button id="skillBtn" class="relative group p-3 bg-slate-950/90 border-2 border-slate-700 rounded-2xl flex items-center gap-3 shadow-xl transition-all opacity-50 cursor-not-allowed">
+                    <div id="skillIconContainer" class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-cyan-400 font-bold text-lg">
+                        <i class="fa-solid fa-bolt" id="skillIcon"></i>
+                    </div>
+                    <div class="text-left pr-2">
+                        <div class="text-[10px] text-gray-400 font-orbitron uppercase">ACTIVE SKILL [E]</div>
+                        <div id="skillNameText" class="text-xs font-orbitron font-bold text-white">EMP NOVA</div>
+                        <!-- Skill Charge Bar -->
+                        <div class="w-24 bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1 border border-slate-700">
+                            <div id="skillChargeBar" class="bg-cyan-400 h-full w-0 transition-all duration-150"></div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Touch Controls Indicator -->
+                <div id="touchGuide" class="md:hidden flex flex-col items-end text-[10px] font-orbitron text-white/50 space-y-0.5">
+                    <span><i class="fa-solid fa-arrow-left"></i> SWIPE L/R <i class="fa-solid fa-arrow-right"></i></span>
+                    <span>SWIPE UP: JUMP</span>
+                    <span>SWIPE DOWN: SLIDE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Menu Overlay -->
+        <div id="pauseMenu" class="absolute inset-0 bg-black/80 backdrop-blur-md z-30 flex flex-col items-center justify-center gap-6 hidden">
+            <h2 class="text-4xl md:text-5xl font-black font-orbitron text-cyan-400 tracking-wider drop-shadow-[0_0_20px_rgba(0,243,255,0.8)]">SYSTEM PAUSED</h2>
+            <div class="flex flex-col gap-4 w-64">
+                <button id="resumeBtn" class="py-3.5 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-xl font-orbitron font-extrabold text-black shadow-[0_0_15px_rgba(0,243,255,0.4)] hover:scale-105 transition-all">
+                    RESUME RUN
+                </button>
+                <button id="restartBtn" class="py-3.5 bg-slate-800 border border-slate-600 hover:border-pink-500 rounded-xl font-orbitron font-bold text-white transition-all">
+                    RESTART
+                </button>
+                <button id="quitBtn" class="py-3.5 bg-slate-900 border border-red-500/50 hover:border-red-500 rounded-xl font-orbitron font-bold text-red-400 transition-all">
+                    QUIT TO MENU
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div id="gameOverMenu" class="absolute inset-0 bg-black/90 backdrop-blur-lg z-30 flex flex-col items-center justify-center p-6 hidden">
+            <div class="text-center mb-6">
+                <div class="text-red-500 text-xs font-orbitron font-bold tracking-widest uppercase mb-1">CRITICAL ERROR // SYSTEM COLLISION</div>
+                <h2 class="text-5xl md:text-7xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 animate-pulse drop-shadow-[0_0_25px_rgba(239,68,68,0.8)]">
+                    NaN EXCEPTION
+                </h2>
+            </div>
+
+            <!-- Score Card -->
+            <div class="w-full max-w-sm bg-slate-950/90 border border-red-500/40 rounded-2xl p-6 flex flex-col gap-3 mb-6 shadow-[0_0_30px_rgba(239,68,68,0.25)] neon-border-pink">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                    <span class="text-gray-400 text-xs font-orbitron">FINAL SCORE</span>
+                    <span id="finalScore" class="text-3xl font-orbitron font-black text-white">000000</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400 text-xs font-orbitron">DATA BITS GAINED</span>
+                    <span id="finalBits" class="text-xl font-orbitron font-bold text-yellow-400">+0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400 text-xs font-orbitron">NEAR MISSES</span>
+                    <span id="finalNearMisses" class="text-xl font-orbitron font-bold text-cyan-400">0</span>
+                </div>
+                <div id="newHighscoreBadge" class="hidden w-full py-2 bg-yellow-500/20 border border-yellow-500 rounded-lg text-center text-xs font-orbitron font-bold text-yellow-400 tracking-wider shadow-[0_0_10px_rgba(234,179,8,0.4)]">
+                    <i class="fa-solid fa-trophy mr-1"></i> NEW HIGH SCORE RECORD!
+                </div>
+            </div>
+
+            <div class="flex gap-4 w-full max-w-sm">
+                <button id="retryBtn" class="flex-1 py-4 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-xl font-orbitron font-extrabold text-black shadow-[0_0_20px_rgba(0,243,255,0.5)] hover:scale-105 active:scale-95 transition-all">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> RETRY
+                </button>
+                <button id="gameOverMenuBtn" class="py-4 px-6 bg-slate-900 border border-slate-700 hover:border-cyan-400 rounded-xl font-orbitron font-bold text-white transition-all">
+                    MENU
+                </button>
+            </div>
+        </div>
+
+        <!-- Shop & Cyber Warehouse Modal -->
+        <div id="shopModal" class="absolute inset-0 bg-black/95 backdrop-blur-md z-30 flex flex-col p-4 md:p-6 hidden">
+            <div class="flex justify-between items-center mb-4 max-w-4xl mx-auto w-full">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black font-orbitron text-cyan-400">CYBER WAREHOUSE</h2>
+                    <p class="text-xs text-gray-400 font-mono">EQUIP AVATARS, SKILLS, LIGHT TRAILS & SYSTEM UPGRADES</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 bg-slate-900 border border-yellow-500/50 px-4 py-2 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+                        <i class="fa-solid fa-cube text-yellow-400"></i>
+                        <span id="shopBits" class="font-orbitron font-extrabold text-yellow-400">0</span>
+                    </div>
+                    <button id="closeShopBtn" class="w-10 h-10 bg-slate-900 hover:bg-slate-800 rounded-full flex items-center justify-center text-gray-400 hover:text-white border border-slate-700">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex gap-2 max-w-4xl mx-auto w-full mb-4 overflow-x-auto pb-1">
+                <button id="tabAvatarsBtn" class="px-4 py-2 bg-cyan-500 text-black font-orbitron font-bold text-xs rounded-xl shadow-[0_0_10px_rgba(0,243,255,0.4)] whitespace-nowrap">AVATARS</button>
+                <button id="tabSkillsBtn" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 font-orbitron font-bold text-xs text-gray-300 rounded-xl whitespace-nowrap">ACTIVE SKILLS</button>
+                <button id="tabTrailsBtn" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 font-orbitron font-bold text-xs text-gray-300 rounded-xl whitespace-nowrap">LIGHT TRAILS</button>
+                <button id="tabUpgradesBtn" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 font-orbitron font-bold text-xs text-gray-300 rounded-xl whitespace-nowrap">UPGRADES</button>
+            </div>
+
+            <!-- Tab Contents Container -->
+            <div class="max-w-4xl mx-auto w-full flex-1 overflow-y-auto pr-1">
+                <div id="avatarsSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+                <div id="skillsSection" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden"></div>
+                <div id="trailsSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 hidden"></div>
+                <div id="upgradesSection" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- How To Play Modal -->
+        <div id="howToModal" class="absolute inset-0 bg-black/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 hidden">
+            <div class="max-w-md w-full bg-slate-950 border border-purple-500/50 rounded-2xl p-6 relative shadow-[0_0_25px_rgba(168,85,247,0.3)]">
+                <button id="closeHowToBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <h3 class="text-2xl font-black font-orbitron text-purple-400 mb-4 text-center">CONTROLS & PROTOCOLS</h3>
+                
+                <div class="space-y-3 text-sm text-gray-300">
+                    <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                        <div class="font-bold font-orbitron text-cyan-400 text-xs mb-1">KEYBOARD PROTOCOL</div>
+                        <ul class="space-y-1 text-xs font-mono">
+                            <li><span class="text-pink-400 font-bold">A / D</span> or <span class="text-pink-400 font-bold">← / →</span> : Change Lanes</li>
+                            <li><span class="text-pink-400 font-bold">W / SPACE</span> or <span class="text-pink-400 font-bold">↑</span> : Jump</li>
+                            <li><span class="text-pink-400 font-bold">S</span> or <span class="text-pink-400 font-bold">↓</span> : Duck / Slide</li>
+                            <li><span class="text-pink-400 font-bold">E</span> : Trigger Active Skill</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                        <div class="font-bold font-orbitron text-cyan-400 text-xs mb-1">NEW OVERDRIVE MECHANICS</div>
+                        <ul class="space-y-1 text-xs">
+                            <li><i class="fa-solid fa-shield-halved text-red-400 mr-1"></i> <span class="font-bold text-white">Boss Fights:</span> Evade laser target beams & hit EMP Orbs!</li>
+                            <li><i class="fa-solid fa-bolt text-yellow-400 mr-1"></i> <span class="font-bold text-white">Boost Pads:</span> Step on arrow pads for super speed!</li>
+                            <li><i class="fa-solid fa-gauge-high text-cyan-400 mr-1"></i> <span class="font-bold text-white">Near Miss:</span> Dodge close to hazards for extra points!</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <button id="startFromHowToBtn" class="mt-5 w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-orbitron font-extrabold text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                    INITIALIZE RUN NOW
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Cyberpunk Synthwave Synthesizer Engine */
+        class CyberAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.isMuted = localStorage.getItem('nan_muted') === 'true';
+                this.beatTimer = null;
+                this.step = 0;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                localStorage.setItem('nan_muted', this.isMuted);
+                return this.isMuted;
+            }
+
+            playSFX(type, combo = 1) {
+                if (this.isMuted || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    
+                    if (type === 'jump') {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(140, now);
+                        osc.frequency.exponentialRampToValueAtTime(620, now + 0.18);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.18);
+                    } else if (type === 'slide') {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(280, now);
+                        osc.frequency.linearRampToValueAtTime(60, now + 0.2);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.linearRampToValueAtTime(0.001, now + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.2);
+                    } else if (type === 'coin') {
+                        const baseFreq = 880;
+                        const pitchShift = Math.min(combo, 8) * 120;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(baseFreq + pitchShift, now);
+                        osc.frequency.setValueAtTime(baseFreq + pitchShift + 300, now + 0.06);
+                        gain.gain.setValueAtTime(0.25, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.2);
+                    } else if (type === 'skill') {
+                        // EMP / Skill Blast Sound Effect
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(150, now);
+                        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.4);
+                        gain.gain.setValueAtTime(0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.45);
+                    } else if (type === 'near_miss') {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1200, now);
+                        osc.frequency.linearRampToValueAtTime(1600, now + 0.1);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                    } else if (type === 'laser') {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(900, now);
+                        osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+                        gain.gain.setValueAtTime(0.4, now);
+                        gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                    } else if (type === 'hit') {
+                        const bufferSize = this.ctx.sampleRate * 0.35;
+                        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                        const noise = this.ctx.createBufferSource();
+                        noise.buffer = buffer;
+                        const filter = this.ctx.createBiquadFilter();
+                        filter.type = 'lowpass';
+                        filter.frequency.setValueAtTime(1000, now);
+                        filter.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+                        const gain = this.ctx.createGain();
+                        gain.gain.setValueAtTime(0.6, now);
+                        gain.gain.linearRampToValueAtTime(0.001, now + 0.35);
+                        noise.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        noise.start(now);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            startBeat() {
+                if (this.beatTimer) clearInterval(this.beatTimer);
+                this.step = 0;
+                this.beatTimer = setInterval(() => {
+                    if (this.isMuted || !this.ctx || gameState !== 'PLAYING') return;
+                    const now = this.ctx.currentTime;
+                    
+                    if (this.step % 4 === 0) {
+                        const kickOsc = this.ctx.createOscillator();
+                        const kickGain = this.ctx.createGain();
+                        kickOsc.frequency.setValueAtTime(120, now);
+                        kickOsc.frequency.exponentialRampToValueAtTime(30, now + 0.12);
+                        kickGain.gain.setValueAtTime(0.4, now);
+                        kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                        kickOsc.connect(kickGain);
+                        kickGain.connect(this.ctx.destination);
+                        kickOsc.start(now);
+                        kickOsc.stop(now + 0.12);
+                    }
+
+                    if (this.step % 8 === 4) {
+                        const snareBuf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.1, this.ctx.sampleRate);
+                        const d = snareBuf.getChannelData(0);
+                        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+                        const snareNoise = this.ctx.createBufferSource();
+                        snareNoise.buffer = snareBuf;
+                        const snareFilter = this.ctx.createBiquadFilter();
+                        snareFilter.type = 'highpass';
+                        snareFilter.frequency.setValueAtTime(800, now);
+                        const snareGain = this.ctx.createGain();
+                        snareGain.gain.setValueAtTime(0.2, now);
+                        snareGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        snareNoise.connect(snareFilter);
+                        snareFilter.connect(snareGain);
+                        snareGain.connect(this.ctx.destination);
+                        snareNoise.start(now);
+                    }
+
+                    const bassNotes = [65.41, 65.41, 73.42, 87.31];
+                    const bassFreq = bassNotes[Math.floor(this.step / 4) % bassNotes.length];
+                    const bassOsc = this.ctx.createOscillator();
+                    const bassGain = this.ctx.createGain();
+                    bassOsc.type = 'sawtooth';
+                    bassOsc.frequency.setValueAtTime(bassFreq, now);
+                    bassGain.gain.setValueAtTime(0.1, now);
+                    bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                    bassOsc.connect(bassGain);
+                    bassGain.connect(this.ctx.destination);
+                    bassOsc.start(now);
+                    bassOsc.stop(now + 0.12);
+
+                    this.step = (this.step + 1) % 16;
+                }, 125);
+            }
+
+            stopBeat() {
+                if (this.beatTimer) clearInterval(this.beatTimer);
+            }
+        }
+
+        const audio = new CyberAudioEngine();
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameState = 'MENU';
+        let score = 0;
+        let bitsCollected = 0;
+        let nearMissesCount = 0;
+        let gameSpeed = 8;
+        let baseSpeed = 8;
+        let distanceTravelled = 0;
+        let multiplier = 1;
+        let frameCount = 0;
+        let screenShakeTime = 0;
+        let comboCount = 0;
+        let skillCharge = 0; // 0 to 100%
+
+        // Biome System Setup
+        const biomes = [
+            { id: 'neon', name: 'NEON HIGHWAY', primaryColor: '#00f3ff', secondaryColor: '#ff007f', gridColor: 'rgba(255, 0, 127, 0.25)', sunStart: '#f59e0b', sunEnd: '#a855f7' },
+            { id: 'rain', name: 'CYBER RAIN', primaryColor: '#00f3ff', secondaryColor: '#3b82f6', gridColor: 'rgba(59, 130, 246, 0.3)', sunStart: '#1e3a8a', sunEnd: '#3b82f6' },
+            { id: 'matrix', name: 'MATRIX REALM', primaryColor: '#22c55e', secondaryColor: '#10b981', gridColor: 'rgba(34, 197, 94, 0.35)', sunStart: '#064e3b', sunEnd: '#10b981' },
+            { id: 'orbital', name: 'ORBITAL OVERDRIVE', primaryColor: '#f59e0b', secondaryColor: '#ec4899', gridColor: 'rgba(245, 158, 11, 0.3)', sunStart: '#a855f7', sunEnd: '#f59e0b' }
+        ];
+        let currentBiomeIndex = 0;
+
+        // Player Data & Storage
+        let playerData = {
+            highScore: parseInt(localStorage.getItem('nan_highscore')) || 0,
+            bits: parseInt(localStorage.getItem('nan_bits')) || 0,
+            equippedSkin: localStorage.getItem('nan_skin') || 'glitch_cube',
+            unlockedSkins: JSON.parse(localStorage.getItem('nan_unlocked_skins')) || ['glitch_cube'],
+            equippedSkill: localStorage.getItem('nan_skill') || 'emp_nova',
+            unlockedSkills: JSON.parse(localStorage.getItem('nan_unlocked_skills')) || ['emp_nova'],
+            equippedTrail: localStorage.getItem('nan_trail') || 'cyan_glow',
+            unlockedTrails: JSON.parse(localStorage.getItem('nan_unlocked_trails')) || ['cyan_glow'],
+            upgrades: JSON.parse(localStorage.getItem('nan_upgrades')) || { magnet: 1, shield: 1, multiplier: 1 }
+        };
+
+        // Skins Catalog
+        const skins = [
+            { id: 'glitch_cube', name: 'CYBER CUBE', cost: 0, color: '#00f3ff', type: 'Geo Dash Style', desc: 'Core glowing geometric runner.' },
+            { id: 'neon_ninja', name: 'NEON NINJA', cost: 60, color: '#ff007f', type: 'Cyber Shinobi', desc: 'Sleek animated ninja with energetic light ribbon.' },
+            { id: 'mech_runner', name: 'MECH RUNNER', cost: 150, color: '#3b82f6', type: 'Heavy Armor', desc: 'Powered cyber suit with dual rocket thrusters.' },
+            { id: 'cyber_dino', name: 'CYBER DINO', cost: 250, color: '#eab308', type: 'Retro Dino', desc: 'Chrome dino with a high-tech cyan laser visor.' },
+            { id: 'hover_bike', name: 'HOVER BIKE', cost: 400, color: '#a855f7', type: 'Light Cycle', desc: 'Futuristic anti-gravity speeder vehicle.' }
+        ];
+
+        // Active Skills Catalog
+        const activeSkills = [
+            { id: 'emp_nova', name: 'EMP NOVA', cost: 0, icon: 'fa-bolt', color: 'text-cyan-400', desc: 'Instantly destroys all screen obstacles & turns them into Data Bits.' },
+            { id: 'chrono_shift', name: 'CHRONO SHIFT', cost: 120, icon: 'fa-hourglass-half', color: 'text-purple-400', desc: 'Slows down time for 5s to easily dodge hazards.' },
+            { id: 'bit_magnet_pulse', name: 'MAGNET PULSE', cost: 200, icon: 'fa-magnet', color: 'text-yellow-400', desc: 'Pulls all bits across all lanes instantly to your position.' }
+        ];
+
+        // Light Trails Catalog
+        const lightTrails = [
+            { id: 'cyan_glow', name: 'CYAN GLOW', cost: 0, color: '#00f3ff', desc: 'Classic cyan plasma light trail.' },
+            { id: 'plasma_flame', name: 'PLASMA FLAME', cost: 80, color: '#ff007f', desc: 'High-heat magenta flame ribbon.' },
+            { id: 'matrix_code', name: 'MATRIX CODE', cost: 150, color: '#22c55e', desc: 'Digital green matrix particle cascade.' },
+            { id: 'rainbow_sparkle', name: 'RAINBOW MATRIX', cost: 300, color: '#f59e0b', desc: 'Shimmering multicolored overdrive particle trail.' }
+        ];
+
+        // Upgrades Catalog
+        const upgradeItems = [
+            { id: 'magnet', name: 'MAGNET RADIUS', costBase: 50, icon: 'fa-magnet', color: 'text-yellow-400', desc: 'Increases data bit attraction distance.' },
+            { id: 'shield', name: 'SHIELD DURATION', costBase: 75, icon: 'fa-shield-halved', color: 'text-cyan-400', desc: 'Extends protection shield time upon hit.' },
+            { id: 'multiplier', name: 'SCORE MULTI', costBase: 100, icon: 'fa-angles-up', color: 'text-purple-400', desc: 'Boosts baseline score accumulation rate.' }
+        ];
+
+        const LANES = [-1, 0, 1];
+        let laneWidth = 110;
+
+        const player = {
+            lane: 1,
+            x: 0,
+            targetX: 0,
+            y: 0,
+            baseY: 0,
+            width: 44,
+            height: 52,
+            isJumping: false,
+            isSliding: false,
+            vy: 0,
+            gravity: 0.85,
+            jumpStrength: -15.5,
+            slideTimer: 0,
+            rotation: 0,
+            animFrame: 0,
+            shield: false,
+            magnet: false,
+            dash: false,
+            doubleScore: false,
+            chronoSlow: false,
+            powerupTimers: { shield: 0, magnet: 0, dash: 0, doubleScore: 0, chronoSlow: 0 }
+        };
+
+        // Cyber Enforcer Boss Encounter Mechanics
+        const boss = {
+            active: false,
+            hp: 100,
+            maxHp: 100,
+            x: 0,
+            y: 0,
+            targetY: 0,
+            attackTimer: 0,
+            laserWarningTimer: 0,
+            laserLane: -1,
+            laserActive: false
+        };
+
+        let obstacles = [];
+        let collectibles = [];
+        let boostPads = [];
+        let particles = [];
+        let floatingTexts = [];
+        let rainDrops = [];
+        let matrixStreams = [];
+        let playerTrailHistory = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            laneWidth = Math.min(canvas.width / 3.4, 130);
+            player.baseY = canvas.height * 0.74;
+            player.y = player.baseY;
+            player.targetX = getLaneX(player.lane);
+            player.x = player.targetX;
+
+            // Initialize Weather Particles
+            rainDrops = [];
+            for (let i = 0; i < 70; i++) {
+                rainDrops.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, length: Math.random() * 20 + 10, speed: Math.random() * 12 + 10 });
+            }
+            matrixStreams = [];
+            for (let i = 0; i < 35; i++) {
+                matrixStreams.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, speed: Math.random() * 8 + 4, chars: '0123456789ABCDEF' });
+            }
+        }
+
+        function getLaneX(laneIndex) {
+            const centerX = canvas.width / 2;
+            return centerX + LANES[laneIndex] * laneWidth;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function setupInput() {
+            window.addEventListener('keydown', (e) => {
+                if (gameState !== 'PLAYING') return;
+
+                if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') moveLane(-1);
+                else if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') moveLane(1);
+                else if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp' || e.key === ' ') jump();
+                else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') slide();
+                else if (e.key === 'e' || e.key === 'E') triggerActiveSkill();
+                else if (e.key === 'p' || e.key === 'P') togglePause();
+            });
+
+            let touchStartX = 0, touchStartY = 0;
+            canvas.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (gameState !== 'PLAYING') return;
+                const dx = e.changedTouches[0].screenX - touchStartX;
+                const dy = e.changedTouches[0].screenY - touchStartY;
+
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    if (Math.abs(dx) > 25) moveLane(dx > 0 ? 1 : -1);
+                } else {
+                    if (Math.abs(dy) > 25) {
+                        if (dy < 0) jump();
+                        else slide();
+                    }
+                }
+            }, { passive: true });
+        }
+
+        function moveLane(dir) {
+            const newLane = player.lane + dir;
+            if (newLane >= 0 && newLane < LANES.length) {
+                player.lane = newLane;
+                player.targetX = getLaneX(player.lane);
+                audio.playSFX('slide');
+                createDashParticles(player.x, player.y);
+            }
+        }
+
+        function jump() {
+            if (!player.isJumping) {
+                player.isJumping = true;
+                player.isSliding = false;
+                player.vy = player.jumpStrength;
+                audio.playSFX('jump');
+            }
+        }
+
+        function slide() {
+            if (!player.isSliding) {
+                player.isSliding = true;
+                player.slideTimer = 32;
+                if (player.isJumping) player.vy = 16;
+                audio.playSFX('slide');
+            }
+        }
+
+        function triggerActiveSkill() {
+            if (skillCharge < 100 || gameState !== 'PLAYING') return;
+
+            skillCharge = 0;
+            audio.playSFX('skill');
+            createExplosion(player.x, player.y, '#00f3ff');
+
+            const skillId = playerData.equippedSkill;
+            if (skillId === 'emp_nova') {
+                // Destroy all obstacles & turn them into bits
+                obstacles.forEach(obs => {
+                    collectibles.push({ lane: obs.lane, x: obs.x, y: obs.y, size: 18, type: 'BIT', value: 2 });
+                    createExplosion(obs.x, obs.y, '#00f3ff');
+                });
+                obstacles = [];
+                addFloatingText("EMP NOVA BLAST!", canvas.width / 2, canvas.height * 0.4, '#00f3ff');
+            } else if (skillId === 'chrono_shift') {
+                player.chronoSlow = true;
+                player.powerupTimers.chronoSlow = 320;
+                addFloatingText("CHRONO SLOW!", canvas.width / 2, canvas.height * 0.4, '#a855f7');
+            } else if (skillId === 'bit_magnet_pulse') {
+                collectibles.forEach(item => {
+                    item.x = player.x;
+                    item.y = player.y;
+                });
+                addFloatingText("MAGNET PULSE!", canvas.width / 2, canvas.height * 0.4, '#eab308');
+            }
+            updateSkillButton();
+        }
+
+        function spawnEntities() {
+            if (boss.active) return; // Reduce normal spawns during boss battle
+
+            const interval = Math.max(20, Math.floor(52 - gameSpeed * 1.8));
+            if (frameCount % interval === 0) {
+                const lane = Math.floor(Math.random() * 3);
+                const typeRand = Math.random();
+
+                if (typeRand < 0.58) {
+                    // Spawns Obstacle
+                    const obsTypes = ['BARRIER_LOW', 'BARRIER_HIGH', 'BLOCK', 'SPIKE'];
+                    const obsType = obsTypes[Math.floor(Math.random() * obsTypes.length)];
+                    obstacles.push({
+                        lane: lane,
+                        x: getLaneX(lane),
+                        y: -100,
+                        width: obsType === 'BARRIER_HIGH' ? 65 : 52,
+                        height: obsType === 'BARRIER_HIGH' ? 85 : (obsType === 'BARRIER_LOW' ? 32 : 52),
+                        type: obsType,
+                        color: obsType === 'SPIKE' ? '#ff0055' : (obsType === 'BARRIER_HIGH' ? '#a855f7' : '#00f3ff'),
+                        nearMissChecked: false
+                    });
+                } else if (typeRand < 0.82) {
+                    // Spawns Bit Column
+                    for (let i = 0; i < 4; i++) {
+                        collectibles.push({ lane: lane, x: getLaneX(lane), y: -100 - (i * 48), size: 18, type: 'BIT', value: 1 });
+                    }
+                } else if (typeRand < 0.92) {
+                    // Spawns Speed Boost Pad
+                    boostPads.push({ lane: lane, x: getLaneX(lane), y: -100, width: 60, height: 40 });
+                } else {
+                    // Spawns Powerup
+                    const pTypes = ['SHIELD', 'MAGNET', 'DASH', 'DOUBLE'];
+                    const pType = pTypes[Math.floor(Math.random() * pTypes.length)];
+                    collectibles.push({ lane: lane, x: getLaneX(lane), y: -100, size: 26, type: 'POWERUP', powerType: pType });
+                }
+            }
+        }
+
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            frameCount++;
+            const effectiveSpeed = player.chronoSlow ? gameSpeed * 0.5 : (player.dash ? gameSpeed * 1.85 : gameSpeed);
+            distanceTravelled += effectiveSpeed * 0.12;
+
+            // Biome Shifts Every 600m
+            const newBiomeIndex = Math.floor(distanceTravelled / 600) % biomes.length;
+            if (newBiomeIndex !== currentBiomeIndex) {
+                currentBiomeIndex = newBiomeIndex;
+                triggerBiomeBanner(biomes[currentBiomeIndex].name);
+            }
+
+            // Boss Encounter Trigger Every 1200m
+            if (!boss.active && Math.floor(distanceTravelled) % 1200 > 1150 && Math.floor(distanceTravelled) > 300) {
+                startBossBattle();
+            }
+
+            const baseMulti = playerData.upgrades.multiplier;
+            score += Math.floor(1 * multiplier * baseMulti);
+            gameSpeed = baseSpeed + (distanceTravelled / 450);
+
+            // Lerp Player Movement
+            player.x += (player.targetX - player.x) * 0.28;
+            player.animFrame += effectiveSpeed * 0.05;
+
+            // Store Light Trail Keyframes
+            if (frameCount % 2 === 0) {
+                playerTrailHistory.unshift({ x: player.x, y: player.y + 10 });
+                if (playerTrailHistory.length > 12) playerTrailHistory.pop();
+            }
+
+            // Jump / Gravity Physics
+            if (player.isJumping) {
+                player.y += player.vy;
+                player.vy += player.gravity;
+                player.rotation += 0.16;
+
+                if (player.y >= player.baseY) {
+                    player.y = player.baseY;
+                    player.isJumping = false;
+                    player.vy = 0;
+                    player.rotation = 0;
+                    createLandingParticles(player.x, player.y);
+                }
+            }
+
+            // Slide Physics
+            if (player.isSliding) {
+                player.slideTimer--;
+                if (player.slideTimer <= 0) player.isSliding = false;
+            }
+
+            // Decrement Timers
+            Object.keys(player.powerupTimers).forEach(p => {
+                if (player.powerupTimers[p] > 0) {
+                    player.powerupTimers[p]--;
+                    if (player.powerupTimers[p] <= 0) {
+                        if (p === 'shield') player.shield = false;
+                        if (p === 'magnet') player.magnet = false;
+                        if (p === 'dash') player.dash = false;
+                        if (p === 'doubleScore') { player.doubleScore = false; multiplier = 1; }
+                        if (p === 'chronoSlow') player.chronoSlow = false;
+                    }
+                }
+            });
+
+            if (screenShakeTime > 0) screenShakeTime--;
+
+            // Update Boss Mechanics
+            if (boss.active) {
+                boss.attackTimer++;
+                if (boss.attackTimer % 180 === 0) {
+                    // Charge Lane Laser Attack
+                    boss.laserLane = Math.floor(Math.random() * 3);
+                    boss.laserWarningTimer = 60; // 1 second warning
+                    audio.playSFX('laser');
+                }
+
+                if (boss.laserWarningTimer > 0) {
+                    boss.laserWarningTimer--;
+                    if (boss.laserWarningTimer === 0) {
+                        boss.laserActive = true;
+                        // Check if player is in targeted laser lane when fired
+                        if (player.lane === boss.laserLane && !player.dash) {
+                            if (player.shield) {
+                                player.shield = false;
+                                player.powerupTimers.shield = 0;
+                                createExplosion(player.x, player.y, '#00f3ff');
+                            } else {
+                                triggerGameOver();
+                                return;
+                            }
+                        }
+                    }
+                } else if (boss.laserActive) {
+                    boss.laserActive = false;
+                }
+
+                // Spawn EMP Orbs during Boss Fight
+                if (frameCount % 70 === 0) {
+                    const l = Math.floor(Math.random() * 3);
+                    collectibles.push({ lane: l, x: getLaneX(l), y: -100, size: 24, type: 'EMP_ORB' });
+                }
+            }
+
+            // Update Obstacles & Near-Miss Detection
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.y += effectiveSpeed;
+
+                // Collision Detection Box
+                if (Math.abs(obs.x - player.x) < 32 && Math.abs(obs.y - player.y) < 42) {
+                    let safe = false;
+                    if (obs.type === 'BARRIER_LOW' && player.isJumping && (player.baseY - player.y > 38)) safe = true;
+                    else if (obs.type === 'BARRIER_HIGH' && player.isSliding) safe = true;
+
+                    if (!safe) {
+                        if (player.dash) {
+                            createExplosion(obs.x, obs.y, '#ff007f');
+                            obstacles.splice(i, 1);
+                            continue;
+                        } else if (player.shield) {
+                            player.shield = false;
+                            player.powerupTimers.shield = 0;
+                            audio.playSFX('hit');
+                            screenShakeTime = 12;
+                            createExplosion(obs.x, obs.y, '#00f3ff');
+                            obstacles.splice(i, 1);
+                            continue;
+                        } else {
+                            triggerGameOver();
+                            return;
+                        }
+                    }
+                }
+
+                // Near Miss Check
+                if (!obs.nearMissChecked && obs.y > player.y - 10 && obs.y < player.y + 50) {
+                    if (Math.abs(obs.x - player.x) < 70 && Math.abs(obs.x - player.x) > 30) {
+                        obs.nearMissChecked = true;
+                        nearMissesCount++;
+                        score += 150;
+                        skillCharge = Math.min(100, skillCharge + 10);
+                        audio.playSFX('near_miss');
+                        addFloatingText("NEAR MISS! +150", player.x, player.y - 30, '#00f3ff');
+                        updateSkillButton();
+                    }
+                }
+
+                if (obs.y > canvas.height + 120) obstacles.splice(i, 1);
+            }
+
+            // Update Collectibles
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                const item = collectibles[i];
+                item.y += effectiveSpeed;
+
+                const magnetRadius = 140 + (playerData.upgrades.magnet * 35);
+                if (player.magnet || (Math.abs(player.x - item.x) < magnetRadius && Math.abs(player.y - item.y) < magnetRadius && item.type === 'BIT')) {
+                    item.x += (player.x - item.x) * 0.18;
+                    item.y += (player.y - item.y) * 0.18;
+                }
+
+                if (Math.abs(item.x - player.x) < 38 && Math.abs(item.y - player.y) < 42) {
+                    if (item.type === 'BIT') {
+                        comboCount++;
+                        bitsCollected += item.value;
+                        skillCharge = Math.min(100, skillCharge + 4);
+                        audio.playSFX('coin', comboCount);
+                        createSparkles(item.x, item.y, '#eab308');
+                        addFloatingText("+1 BIT", item.x, item.y, '#eab308');
+                        updateSkillButton();
+                    } else if (item.type === 'POWERUP') {
+                        activatePowerup(item.powerType);
+                        audio.playSFX('powerup');
+                        createSparkles(item.x, item.y, '#a855f7');
+                        addFloatingText(item.powerType + " ACTIVE!", item.x, item.y, '#a855f7');
+                    } else if (item.type === 'EMP_ORB') {
+                        // Damage Boss
+                        boss.hp -= 20;
+                        audio.playSFX('hit');
+                        createExplosion(boss.x, boss.y + 40, '#ff0055');
+                        addFloatingText("EMP HIT -20 HP!", boss.x, boss.y + 60, '#ff0055');
+                        updateBossHpBar();
+                        if (boss.hp <= 0) defeatBoss();
+                    }
+                    collectibles.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > canvas.height + 120) collectibles.splice(i, 1);
+            }
+
+            // Update Boost Pads
+            for (let i = boostPads.length - 1; i >= 0; i--) {
+                const pad = boostPads[i];
+                pad.y += effectiveSpeed;
+
+                if (Math.abs(pad.x - player.x) < 35 && Math.abs(pad.y - player.y) < 35) {
+                    player.dash = true;
+                    player.powerupTimers.dash = 120;
+                    audio.playSFX('skill');
+                    addFloatingText("HYPER BOOST!", player.x, player.y - 20, '#00f3ff');
+                    createExplosion(player.x, player.y, '#00f3ff');
+                    boostPads.splice(i, 1);
+                    continue;
+                }
+
+                if (pad.y > canvas.height + 120) boostPads.splice(i, 1);
+            }
+
+            spawnEntities();
+            updateParticles();
+            updateFloatingTexts();
+            updateHUD();
+        }
+
+        function triggerBiomeBanner(name) {
+            const banner = document.getElementById('biomeBanner');
+            const bannerText = document.getElementById('biomeBannerText');
+            bannerText.innerText = `BIOME SHIFT: ${name}`;
+            banner.classList.remove('hidden');
+            banner.classList.add('animate-banner');
+            setTimeout(() => {
+                banner.classList.add('hidden');
+                banner.classList.remove('animate-banner');
+            }, 3000);
+        }
+
+        function startBossBattle() {
+            boss.active = true;
+            boss.hp = 100;
+            boss.maxHp = 100;
+            boss.x = canvas.width / 2;
+            boss.y = canvas.height * 0.22;
+            boss.attackTimer = 0;
+            boss.laserWarningTimer = 0;
+            boss.laserLane = -1;
+            document.getElementById('bossHud').classList.remove('hidden');
+            updateBossHpBar();
+            addFloatingText("WARNING: CYBER ENFORCER", canvas.width / 2, canvas.height * 0.35, '#ff0055');
+        }
+
+        function updateBossHpBar() {
+            const percent = Math.max(0, Math.floor((boss.hp / boss.maxHp) * 100));
+            document.getElementById('bossHpPercent').innerText = percent + '%';
+            document.getElementById('bossHpBar').style.width = percent + '%';
+        }
+
+        function defeatBoss() {
+            boss.active = false;
+            document.getElementById('bossHud').classList.add('hidden');
+            score += 2500;
+            bitsCollected += 50;
+            audio.playSFX('powerup');
+            createExplosion(boss.x, boss.y, '#00f3ff');
+            addFloatingText("BOSS DEFEATED! +2500 PTS", canvas.width / 2, canvas.height * 0.35, '#eab308');
+        }
+
+        function activatePowerup(type) {
+            const baseDuration = 320;
+            if (type === 'SHIELD') {
+                player.shield = true;
+                player.powerupTimers.shield = baseDuration + (playerData.upgrades.shield * 60);
+            } else if (type === 'MAGNET') {
+                player.magnet = true;
+                player.powerupTimers.magnet = baseDuration;
+            } else if (type === 'DASH') {
+                player.dash = true;
+                player.powerupTimers.dash = 180;
+            } else if (type === 'DOUBLE') {
+                player.doubleScore = true;
+                multiplier = 2;
+                player.powerupTimers.doubleScore = baseDuration;
+            }
+        }
+
+        function addFloatingText(text, x, y, color) {
+            floatingTexts.push({ text: text, x: x, y: y, color: color, alpha: 1, life: 32 });
+        }
+
+        function updateFloatingTexts() {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y -= 2;
+                ft.life--;
+                ft.alpha = ft.life / 32;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+        }
+
+        function createDashParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({ x: x, y: y + (Math.random() * 20 - 10), vx: (Math.random() - 0.5) * 5, vy: Math.random() * 3, size: Math.random() * 4 + 2, color: biomes[currentBiomeIndex].primaryColor, alpha: 1, life: 20 });
+            }
+        }
+
+        function createLandingParticles(x, y) {
+            for (let i = 0; i < 14; i++) {
+                particles.push({ x: x, y: y + 26, vx: (Math.random() - 0.5) * 9, vy: -Math.random() * 4, size: Math.random() * 5 + 2, color: '#ff007f', alpha: 1, life: 25 });
+            }
+        }
+
+        function createSparkles(x, y, color) {
+            for (let i = 0; i < 12; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 7, vy: (Math.random() - 0.5) * 7, size: Math.random() * 4 + 1, color: color, alpha: 1, life: 22 });
+            }
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 30; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 14, vy: (Math.random() - 0.5) * 14, size: Math.random() * 6 + 2, color: color, alpha: 1, life: 38 });
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                p.alpha = p.life / 30;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function render() {
+            ctx.save();
+
+            if (screenShakeTime > 0) {
+                const dx = (Math.random() - 0.5) * 12;
+                const dy = (Math.random() - 0.5) * 12;
+                ctx.translate(dx, dy);
+            }
+
+            const currentBiome = biomes[currentBiomeIndex];
+            ctx.fillStyle = '#030308';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawSynthwaveBackground(currentBiome);
+            drawWeatherEffects(currentBiome);
+            drawCyberHighway(currentBiome);
+
+            if (boss.active) drawBoss();
+
+            drawBoostPads();
+            drawCollectibles();
+            drawObstacles();
+            drawLightTrail();
+            drawPlayer();
+            drawParticles();
+            drawFloatingTexts();
+
+            ctx.restore();
+        }
+
+        function drawSynthwaveBackground(biome) {
+            const centerX = canvas.width / 2;
+            const horizonY = canvas.height * 0.28;
+
+            const sunGradient = ctx.createLinearGradient(centerX, horizonY - 80, centerX, horizonY);
+            sunGradient.addColorStop(0, biome.sunStart);
+            sunGradient.addColorStop(1, biome.sunEnd);
+            
+            ctx.fillStyle = sunGradient;
+            ctx.beginPath();
+            ctx.arc(centerX, horizonY, 80, Math.PI, 0, false);
+            ctx.fill();
+
+            ctx.fillStyle = '#0a0d1f';
+            for (let i = -10; i <= 10; i++) {
+                const bx = centerX + i * 50;
+                const bh = 40 + Math.abs(i * 13) % 50;
+                ctx.fillRect(bx - 20, horizonY - bh, 40, bh);
+            }
+        }
+
+        function drawWeatherEffects(biome) {
+            if (biome.id === 'rain') {
+                ctx.strokeStyle = 'rgba(0, 243, 255, 0.4)';
+                ctx.lineWidth = 1.5;
+                rainDrops.forEach(r => {
+                    r.y += r.speed;
+                    if (r.y > canvas.height) r.y = -20;
+                    ctx.beginPath();
+                    ctx.moveTo(r.x, r.y);
+                    ctx.lineTo(r.x - 2, r.y + r.length);
+                    ctx.stroke();
+                });
+            } else if (biome.id === 'matrix') {
+                ctx.fillStyle = '#22c55e';
+                ctx.font = '11px monospace';
+                matrixStreams.forEach(m => {
+                    m.y += m.speed;
+                    if (m.y > canvas.height) m.y = -20;
+                    const char = m.chars[Math.floor(Math.random() * m.chars.length)];
+                    ctx.fillText(char, m.x, m.y);
+                });
+            }
+        }
+
+        function drawCyberHighway(biome) {
+            const centerX = canvas.width / 2;
+            const horizonY = canvas.height * 0.28;
+
+            ctx.strokeStyle = biome.primaryColor;
+            ctx.lineWidth = 3;
+
+            for (let i = -1.5; i <= 1.5; i += 1) {
+                const lineX = centerX + i * laneWidth;
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * 20, horizonY);
+                ctx.lineTo(lineX, canvas.height);
+                ctx.stroke();
+            }
+
+            const gridOffset = (frameCount * gameSpeed) % 50;
+            ctx.strokeStyle = biome.gridColor;
+            ctx.lineWidth = 1.5;
+
+            for (let y = horizonY + gridOffset; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Laser Warning Overlay for Boss Attack
+            if (boss.active && boss.laserWarningTimer > 0 && boss.laserLane >= 0) {
+                const lx = getLaneX(boss.laserLane);
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+                ctx.fillRect(lx - laneWidth / 2, horizonY, laneWidth, canvas.height - horizonY);
+            }
+        }
+
+        function drawBoss() {
+            ctx.save();
+            ctx.translate(boss.x, boss.y);
+            ctx.shadowColor = '#ff0055';
+            ctx.shadowBlur = 25;
+
+            // Boss Body Mesh
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(-60, -30, 120, 60);
+
+            // Glowing Eye
+            ctx.fillStyle = '#ff0055';
+            ctx.beginPath();
+            ctx.arc(0, 0, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Laser Pulse Output
+            if (boss.laserActive && boss.laserLane >= 0) {
+                ctx.strokeStyle = '#ff0055';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(0, 30);
+                ctx.lineTo(getLaneX(boss.laserLane) - boss.x, canvas.height - boss.y);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawLightTrail() {
+            if (playerTrailHistory.length < 2) return;
+
+            const trailItem = lightTrails.find(t => t.id === playerData.equippedTrail) || lightTrails[0];
+            ctx.save();
+            ctx.strokeStyle = trailItem.color;
+            ctx.shadowColor = trailItem.color;
+            ctx.shadowBlur = 12;
+
+            ctx.beginPath();
+            ctx.moveTo(playerTrailHistory[0].x, playerTrailHistory[0].y);
+            for (let i = 1; i < playerTrailHistory.length; i++) {
+                ctx.lineWidth = Math.max(1, 14 - i * 1.1);
+                ctx.lineTo(playerTrailHistory[i].x, playerTrailHistory[i].y);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+
+            if (player.rotation !== 0) ctx.rotate(player.rotation);
+
+            const activeSkin = skins.find(s => s.id === playerData.equippedSkin) || skins[0];
+
+            if (player.shield) {
+                ctx.strokeStyle = '#00f3ff';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#00f3ff';
+                ctx.shadowBlur = 18;
+                ctx.beginPath();
+                ctx.arc(0, 0, 36, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            if (player.dash) {
+                ctx.shadowColor = '#ff007f';
+                ctx.shadowBlur = 25;
+            }
+
+            renderCharacterModel(activeSkin.id, player.isSliding, player.isJumping, player.animFrame);
+            ctx.restore();
+        }
+
+        function renderCharacterModel(skinId, isSliding, isJumping, frame) {
+            ctx.shadowBlur = 12;
+
+            if (skinId === 'glitch_cube') {
+                ctx.fillStyle = '#00f3ff';
+                ctx.shadowColor = '#00f3ff';
+                if (isSliding) ctx.fillRect(-22, 10, 44, 20);
+                else {
+                    ctx.fillRect(-20, -24, 40, 48);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-12, -16, 24, 32);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(-8, -12, 16, 8);
+                }
+            } else if (skinId === 'neon_ninja') {
+                ctx.fillStyle = '#ff007f';
+                ctx.shadowColor = '#ff007f';
+
+                if (isSliding) ctx.fillRect(-24, 12, 48, 16);
+                else {
+                    ctx.beginPath();
+                    ctx.arc(0, -22, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#00f3ff';
+                    ctx.fillRect(-6, -24, 12, 4);
+
+                    ctx.fillStyle = '#ff007f';
+                    ctx.fillRect(-10, -10, 20, 24);
+
+                    const legAngle = Math.sin(frame) * 0.6;
+                    ctx.strokeStyle = '#ff007f';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(-5, 14); ctx.lineTo(-5 + Math.sin(legAngle) * 12, 28); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(5, 14); ctx.lineTo(5 - Math.sin(legAngle) * 12, 28); ctx.stroke();
+                }
+            } else if (skinId === 'mech_runner') {
+                ctx.fillStyle = '#3b82f6';
+                ctx.shadowColor = '#3b82f6';
+                if (isSliding) ctx.fillRect(-25, 8, 50, 20);
+                else {
+                    ctx.fillRect(-16, -22, 32, 36);
+                    ctx.fillStyle = '#00f3ff';
+                    ctx.beginPath(); ctx.arc(0, -8, 6, 0, Math.PI * 2); ctx.fill();
+                }
+            } else if (skinId === 'cyber_dino') {
+                ctx.fillStyle = '#eab308';
+                ctx.shadowColor = '#eab308';
+                if (isSliding) ctx.fillRect(-22, 10, 44, 18);
+                else {
+                    ctx.fillRect(-8, -26, 24, 16);
+                    ctx.fillStyle = '#00f3ff'; ctx.fillRect(4, -24, 10, 4);
+                    ctx.fillStyle = '#eab308'; ctx.fillRect(-14, -10, 24, 24);
+                }
+            } else if (skinId === 'hover_bike') {
+                ctx.fillStyle = '#a855f7';
+                ctx.shadowColor = '#a855f7';
+                ctx.beginPath(); ctx.ellipse(0, 0, 26, 14, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#00f3ff'; ctx.fillRect(4, -6, 12, 6);
+            }
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obs => {
+                ctx.save();
+                ctx.translate(obs.x, obs.y);
+                ctx.shadowColor = obs.color;
+                ctx.shadowBlur = 15;
+
+                if (obs.type === 'SPIKE') {
+                    ctx.fillStyle = obs.color;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -obs.height / 2);
+                    ctx.lineTo(-obs.width / 2, obs.height / 2);
+                    ctx.lineTo(obs.width / 2, obs.height / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (obs.type === 'BARRIER_HIGH') {
+                    ctx.fillStyle = 'rgba(168, 85, 247, 0.85)';
+                    ctx.fillRect(-obs.width / 2, -obs.height / 2, obs.width, obs.height - 28);
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-obs.width / 2, -obs.height / 2, obs.width, obs.height - 28);
+                } else {
+                    ctx.fillStyle = obs.color;
+                    ctx.fillRect(-obs.width / 2, -obs.height / 2, obs.width, obs.height);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-obs.width / 2, -obs.height / 2, obs.width, obs.height);
+                }
+                ctx.restore();
+            });
+        }
+
+        function drawCollectibles() {
+            collectibles.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x, item.y);
+
+                if (item.type === 'BIT') {
+                    ctx.rotate(frameCount * 0.06);
+                    ctx.fillStyle = '#eab308';
+                    ctx.shadowColor = '#eab308';
+                    ctx.shadowBlur = 12;
+                    ctx.fillRect(-item.size / 2, -item.size / 2, item.size, item.size);
+                } else if (item.type === 'POWERUP') {
+                    ctx.shadowColor = '#a855f7';
+                    ctx.shadowBlur = 18;
+                    ctx.fillStyle = '#a855f7';
+                    ctx.beginPath(); ctx.arc(0, 0, item.size / 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px Orbitron'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(item.powerType[0], 0, 0);
+                } else if (item.type === 'EMP_ORB') {
+                    ctx.shadowColor = '#ff0055';
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = '#ff0055';
+                    ctx.beginPath(); ctx.arc(0, 0, item.size / 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px Orbitron'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('EMP', 0, 0);
+                }
+                ctx.restore();
+            });
+        }
+
+        function drawBoostPads() {
+            boostPads.forEach(pad => {
+                ctx.save();
+                ctx.translate(pad.x, pad.y);
+                ctx.fillStyle = 'rgba(0, 243, 255, 0.8)';
+                ctx.shadowColor = '#00f3ff';
+                ctx.shadowBlur = 15;
+
+                ctx.beginPath();
+                ctx.moveTo(-pad.width / 2, pad.height / 2);
+                ctx.lineTo(0, -pad.height / 2);
+                ctx.lineTo(pad.width / 2, pad.height / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function drawFloatingTexts() {
+            floatingTexts.forEach(ft => {
+                ctx.save();
+                ctx.globalAlpha = ft.alpha;
+                ctx.fillStyle = ft.color;
+                ctx.shadowColor = ft.color;
+                ctx.shadowBlur = 10;
+                ctx.font = 'bold 13px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            });
+        }
+
+        function updateHUD() {
+            document.getElementById('hudScore').innerText = score.toString().padStart(6, '0');
+            document.getElementById('hudBits').innerText = bitsCollected;
+            document.getElementById('hudSpeed').innerText = Math.floor(gameSpeed * 42) + ' KM/H';
+
+            const multiBadge = document.getElementById('hudMultiplier');
+            multiBadge.innerText = (multiplier * playerData.upgrades.multiplier) + 'x MULTI';
+
+            const comboText = document.getElementById('hudCombo');
+            if (comboCount > 3) {
+                comboText.innerText = `COMBO x${comboCount}!`;
+                comboText.classList.remove('hidden');
+            } else {
+                comboText.classList.add('hidden');
+            }
+
+            const container = document.getElementById('powerupContainer');
+            container.innerHTML = '';
+
+            const pList = [
+                { id: 'shield', icon: 'fa-shield-halved', color: 'text-cyan-400' },
+                { id: 'magnet', icon: 'fa-magnet', color: 'text-yellow-400' },
+                { id: 'dash', icon: 'fa-bolt', color: 'text-pink-400' },
+                { id: 'doubleScore', icon: 'fa-angles-up', color: 'text-purple-400' },
+                { id: 'chronoSlow', icon: 'fa-hourglass-half', color: 'text-purple-400' }
+            ];
+
+            pList.forEach(p => {
+                if (player.powerupTimers[p.id] > 0) {
+                    const badge = document.createElement('div');
+                    badge.className = 'flex items-center gap-1 bg-slate-900/90 border border-slate-700 px-2 py-1 rounded text-xs shadow-lg';
+                    badge.innerHTML = `<i class="fa-solid ${p.icon} ${p.color}"></i> <span class="font-mono text-white">${Math.ceil(player.powerupTimers[p.id] / 60)}s</span>`;
+                    container.appendChild(badge);
+                }
+            });
+        }
+
+        function updateSkillButton() {
+            const btn = document.getElementById('skillBtn');
+            const bar = document.getElementById('skillChargeBar');
+            bar.style.width = skillCharge + '%';
+
+            const activeSkillObj = activeSkills.find(s => s.id === playerData.equippedSkill) || activeSkills[0];
+            document.getElementById('skillNameText').innerText = activeSkillObj.name;
+            document.getElementById('skillIcon').className = `fa-solid ${activeSkillObj.icon}`;
+
+            if (skillCharge >= 100) {
+                btn.className = "relative group p-3 bg-gradient-to-r from-cyan-600 to-blue-600 border-2 border-cyan-400 rounded-2xl flex items-center gap-3 shadow-[0_0_20px_rgba(0,243,255,0.7)] cursor-pointer hover:scale-105 active:scale-95 transition-all animate-pulse";
+            } else {
+                btn.className = "relative group p-3 bg-slate-950/90 border-2 border-slate-700 rounded-2xl flex items-center gap-3 shadow-xl transition-all opacity-60 cursor-not-allowed";
+            }
+        }
+
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startRun() {
+            audio.init();
+            audio.startBeat();
+
+            gameState = 'PLAYING';
+            score = 0;
+            bitsCollected = 0;
+            nearMissesCount = 0;
+            gameSpeed = baseSpeed;
+            distanceTravelled = 0;
+            multiplier = 1;
+            comboCount = 0;
+            skillCharge = 0;
+            currentBiomeIndex = 0;
+
+            boss.active = false;
+            document.getElementById('bossHud').classList.add('hidden');
+
+            obstacles = [];
+            collectibles = [];
+            boostPads = [];
+            particles = [];
+            floatingTexts = [];
+            playerTrailHistory = [];
+
+            player.lane = 1;
+            player.targetX = getLaneX(1);
+            player.x = player.targetX;
+            player.y = player.baseY;
+            player.shield = false;
+            player.magnet = false;
+            player.dash = false;
+            player.doubleScore = false;
+
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('pauseMenu').classList.add('hidden');
+            document.getElementById('gameOverMenu').classList.add('hidden');
+            document.getElementById('gameHUD').classList.remove('hidden');
+
+            updateSkillButton();
+        }
+
+        function triggerGameOver() {
+            gameState = 'GAMEOVER';
+            audio.stopBeat();
+            audio.playSFX('hit');
+
+            let isNewHigh = false;
+            if (score > playerData.highScore) {
+                playerData.highScore = score;
+                localStorage.setItem('nan_highscore', playerData.highScore);
+                isNewHigh = true;
+            }
+
+            playerData.bits += bitsCollected;
+            localStorage.setItem('nan_bits', playerData.bits);
+
+            document.getElementById('finalScore').innerText = score.toString().padStart(6, '0');
+            document.getElementById('finalBits').innerText = '+' + bitsCollected;
+            document.getElementById('finalNearMisses').innerText = nearMissesCount;
+
+            const badge = document.getElementById('newHighscoreBadge');
+            if (isNewHigh) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+
+            document.getElementById('gameHUD').classList.add('hidden');
+            document.getElementById('gameOverMenu').classList.remove('hidden');
+            updateMenuStats();
+        }
+
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                audio.stopBeat();
+                document.getElementById('pauseMenu').classList.remove('hidden');
+            } else if (gameState === 'PAUSED') {
+                gameState = 'PLAYING';
+                audio.startBeat();
+                document.getElementById('pauseMenu').classList.add('hidden');
+            }
+        }
+
+        function updateMenuStats() {
+            document.getElementById('menuHighScore').innerText = playerData.highScore.toString().padStart(6, '0');
+            document.getElementById('menuBits').innerText = playerData.bits;
+            document.getElementById('shopBits').innerText = playerData.bits;
+        }
+
+        function renderShop() {
+            // Avatars Tab
+            const avatarsGrid = document.getElementById('avatarsSection');
+            avatarsGrid.innerHTML = '';
+            skins.forEach(s => {
+                const isUnlocked = playerData.unlockedSkins.includes(s.id);
+                const isEquipped = playerData.equippedSkin === s.id;
+                const card = document.createElement('div');
+                card.className = `bg-slate-900/90 border ${isEquipped ? 'border-cyan-400 neon-border-cyan' : 'border-slate-800'} rounded-2xl p-4 flex flex-col justify-between items-center gap-3`;
+                card.innerHTML = `
+                    <div class="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg" style="background-color: ${s.color}">
+                        <i class="fa-solid fa-user-astronaut text-2xl text-black"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-orbitron font-extrabold text-sm">${s.name}</div>
+                        <div class="text-[10px] text-gray-400 font-mono mt-0.5">${s.type}</div>
+                        <p class="text-[11px] text-gray-300 mt-1">${s.desc}</p>
+                    </div>
+                    ${isEquipped ? `
+                        <button class="w-full py-2 bg-cyan-500/20 border border-cyan-400 rounded-xl font-orbitron text-xs font-bold text-cyan-400">EQUIPPED</button>
+                    ` : isUnlocked ? `
+                        <button onclick="equipSkin('${s.id}')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-orbitron text-xs font-bold text-white transition-all">EQUIP</button>
+                    ` : `
+                        <button onclick="buySkin('${s.id}', ${s.cost})" class="w-full py-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 rounded-xl font-orbitron text-xs font-extrabold text-black shadow-md flex items-center justify-center gap-1 transition-all">
+                            <i class="fa-solid fa-cube"></i> UNLOCK ${s.cost}
+                        </button>
+                    `}
+                `;
+                avatarsGrid.appendChild(card);
+            });
+
+            // Active Skills Tab
+            const skillsGrid = document.getElementById('skillsSection');
+            skillsGrid.innerHTML = '';
+            activeSkills.forEach(sk => {
+                const isUnlocked = playerData.unlockedSkills.includes(sk.id);
+                const isEquipped = playerData.equippedSkill === sk.id;
+                const card = document.createElement('div');
+                card.className = `bg-slate-900/90 border ${isEquipped ? 'border-purple-400 neon-border-purple' : 'border-slate-800'} rounded-2xl p-4 flex flex-col justify-between items-center gap-3`;
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                        <i class="fa-solid ${sk.icon} ${sk.color} text-xl"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-orbitron font-extrabold text-sm">${sk.name}</div>
+                        <p class="text-[11px] text-gray-300 mt-1">${sk.desc}</p>
+                    </div>
+                    ${isEquipped ? `
+                        <button class="w-full py-2 bg-purple-500/20 border border-purple-400 rounded-xl font-orbitron text-xs font-bold text-purple-400">EQUIPPED</button>
+                    ` : isUnlocked ? `
+                        <button onclick="equipSkill('${sk.id}')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-orbitron text-xs font-bold text-white transition-all">EQUIP</button>
+                    ` : `
+                        <button onclick="buySkill('${sk.id}', ${sk.cost})" class="w-full py-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 rounded-xl font-orbitron text-xs font-extrabold text-black shadow-md flex items-center justify-center gap-1 transition-all">
+                            <i class="fa-solid fa-cube"></i> UNLOCK ${sk.cost}
+                        </button>
+                    `}
+                `;
+                skillsGrid.appendChild(card);
+            });
+
+            // Light Trails Tab
+            const trailsGrid = document.getElementById('trailsSection');
+            trailsGrid.innerHTML = '';
+            lightTrails.forEach(tr => {
+                const isUnlocked = playerData.unlockedTrails.includes(tr.id);
+                const isEquipped = playerData.equippedTrail === tr.id;
+                const card = document.createElement('div');
+                card.className = `bg-slate-900/90 border ${isEquipped ? 'border-pink-400 neon-border-pink' : 'border-slate-800'} rounded-2xl p-4 flex flex-col justify-between items-center gap-3`;
+                card.innerHTML = `
+                    <div class="w-full h-8 rounded-xl shadow-lg border border-slate-700" style="background: linear-gradient(90deg, transparent, ${tr.color})"></div>
+                    <div class="text-center">
+                        <div class="font-orbitron font-extrabold text-sm">${tr.name}</div>
+                        <p class="text-[11px] text-gray-300 mt-1">${tr.desc}</p>
+                    </div>
+                    ${isEquipped ? `
+                        <button class="w-full py-2 bg-pink-500/20 border border-pink-400 rounded-xl font-orbitron text-xs font-bold text-pink-400">EQUIPPED</button>
+                    ` : isUnlocked ? `
+                        <button onclick="equipTrail('${tr.id}')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-orbitron text-xs font-bold text-white transition-all">EQUIP</button>
+                    ` : `
+                        <button onclick="buyTrail('${tr.id}', ${tr.cost})" class="w-full py-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 rounded-xl font-orbitron text-xs font-extrabold text-black shadow-md flex items-center justify-center gap-1 transition-all">
+                            <i class="fa-solid fa-cube"></i> UNLOCK ${tr.cost}
+                        </button>
+                    `}
+                `;
+                trailsGrid.appendChild(card);
+            });
+
+            // Upgrades Tab
+            const upgradesGrid = document.getElementById('upgradesSection');
+            upgradesGrid.innerHTML = '';
+            upgradeItems.forEach(u => {
+                const currentLvl = playerData.upgrades[u.id] || 1;
+                const cost = u.costBase * currentLvl;
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between items-center gap-3';
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                        <i class="fa-solid ${u.icon} ${u.color} text-xl"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-orbitron font-extrabold text-sm">${u.name}</div>
+                        <div class="text-xs text-cyan-400 font-mono mt-0.5">LEVEL ${currentLvl}</div>
+                        <p class="text-[11px] text-gray-300 mt-1">${u.desc}</p>
+                    </div>
+                    <button onclick="buyUpgrade('${u.id}', ${cost})" class="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl font-orbitron text-xs font-extrabold text-white shadow-md flex items-center justify-center gap-1 transition-all">
+                        <i class="fa-solid fa-arrow-up"></i> UPGRADE (${cost} BITS)
+                    </button>
+                `;
+                upgradesGrid.appendChild(card);
+            });
+        }
+
+        window.equipSkin = function(id) { playerData.equippedSkin = id; localStorage.setItem('nan_skin', id); renderShop(); };
+        window.buySkin = function(id, cost) {
+            if (playerData.bits >= cost) {
+                playerData.bits -= cost;
+                playerData.unlockedSkins.push(id);
+                playerData.equippedSkin = id;
+                localStorage.setItem('nan_bits', playerData.bits);
+                localStorage.setItem('nan_unlocked_skins', JSON.stringify(playerData.unlockedSkins));
+                localStorage.setItem('nan_skin', id);
+                updateMenuStats(); renderShop(); audio.playSFX('powerup');
+            }
+        };
+
+        window.equipSkill = function(id) { playerData.equippedSkill = id; localStorage.setItem('nan_skill', id); renderShop(); updateSkillButton(); };
+        window.buySkill = function(id, cost) {
+            if (playerData.bits >= cost) {
+                playerData.bits -= cost;
+                playerData.unlockedSkills.push(id);
+                playerData.equippedSkill = id;
+                localStorage.setItem('nan_bits', playerData.bits);
+                localStorage.setItem('nan_unlocked_skills', JSON.stringify(playerData.unlockedSkills));
+                localStorage.setItem('nan_skill', id);
+                updateMenuStats(); renderShop(); audio.playSFX('powerup'); updateSkillButton();
+            }
+        };
+
+        window.equipTrail = function(id) { playerData.equippedTrail = id; localStorage.setItem('nan_trail', id); renderShop(); };
+        window.buyTrail = function(id, cost) {
+            if (playerData.bits >= cost) {
+                playerData.bits -= cost;
+                playerData.unlockedTrails.push(id);
+                playerData.equippedTrail = id;
+                localStorage.setItem('nan_bits', playerData.bits);
+                localStorage.setItem('nan_unlocked_trails', JSON.stringify(playerData.unlockedTrails));
+                localStorage.setItem('nan_trail', id);
+                updateMenuStats(); renderShop(); audio.playSFX('powerup');
+            }
+        };
+
+        window.buyUpgrade = function(type, cost) {
+            if (playerData.bits >= cost) {
+                playerData.bits -= cost;
+                playerData.upgrades[type] = (playerData.upgrades[type] || 1) + 1;
+                localStorage.setItem('nan_bits', playerData.bits);
+                localStorage.setItem('nan_upgrades', JSON.stringify(playerData.upgrades));
+                updateMenuStats(); renderShop(); audio.playSFX('powerup');
+            }
+        };
+
+        function initEvents() {
+            setupInput();
+
+            document.getElementById('startBtn').addEventListener('click', startRun);
+            document.getElementById('retryBtn').addEventListener('click', startRun);
+            document.getElementById('resumeBtn').addEventListener('click', togglePause);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('skillBtn').addEventListener('click', triggerActiveSkill);
+
+            const handleAudioToggle = () => {
+                const muted = audio.toggleMute();
+                const iconClass = muted ? 'fa-volume-xmark text-red-400' : 'fa-volume-high text-cyan-400';
+                document.getElementById('menuAudioIcon').className = `fa-solid ${iconClass}`;
+                document.getElementById('hudAudioIcon').className = `fa-solid ${iconClass}`;
+                document.getElementById('menuAudioText').innerText = muted ? 'AUDIO: OFF' : 'AUDIO: ON';
+            };
+
+            document.getElementById('menuAudioBtn').addEventListener('click', handleAudioToggle);
+            document.getElementById('hudAudioBtn').addEventListener('click', handleAudioToggle);
+
+            document.getElementById('restartBtn').addEventListener('click', () => { document.getElementById('pauseMenu').classList.add('hidden'); startRun(); });
+            document.getElementById('quitBtn').addEventListener('click', () => {
+                gameState = 'MENU'; audio.stopBeat();
+                document.getElementById('pauseMenu').classList.add('hidden');
+                document.getElementById('gameHUD').classList.add('hidden');
+                document.getElementById('mainMenu').classList.remove('hidden');
+                updateMenuStats();
+            });
+
+            document.getElementById('gameOverMenuBtn').addEventListener('click', () => {
+                gameState = 'MENU';
+                document.getElementById('gameOverMenu').classList.add('hidden');
+                document.getElementById('mainMenu').classList.remove('hidden');
+                updateMenuStats();
+            });
+
+            document.getElementById('shopBtn').addEventListener('click', () => { renderShop(); document.getElementById('shopModal').classList.remove('hidden'); });
+            document.getElementById('closeShopBtn').addEventListener('click', () => { document.getElementById('shopModal').classList.add('hidden'); });
+
+            // Shop Navigation Tabs
+            const tabs = [
+                { btn: 'tabAvatarsBtn', section: 'avatarsSection', color: 'bg-cyan-500' },
+                { btn: 'tabSkillsBtn', section: 'skillsSection', color: 'bg-purple-500' },
+                { btn: 'tabTrailsBtn', section: 'trailsSection', color: 'bg-pink-500' },
+                { btn: 'tabUpgradesBtn', section: 'upgradesSection', color: 'bg-indigo-500' }
+            ];
+
+            tabs.forEach(t => {
+                document.getElementById(t.btn).addEventListener('click', () => {
+                    tabs.forEach(o => {
+                        document.getElementById(o.section).classList.add('hidden');
+                        document.getElementById(o.btn).className = "px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 font-orbitron font-bold text-xs text-gray-300 rounded-xl whitespace-nowrap";
+                    });
+                    document.getElementById(t.section).classList.remove('hidden');
+                    document.getElementById(t.btn).className = `px-4 py-2 ${t.color} text-black font-orbitron font-bold text-xs rounded-xl shadow-md whitespace-nowrap`;
+                });
+            });
+
+            document.getElementById('howToBtn').addEventListener('click', () => { document.getElementById('howToModal').classList.remove('hidden'); });
+            document.getElementById('closeHowToBtn').addEventListener('click', () => { document.getElementById('howToModal').classList.add('hidden'); });
+            document.getElementById('startFromHowToBtn').addEventListener('click', () => {
+                document.getElementById('howToModal').classList.add('hidden');
+                startRun();
+            });
+
+            updateMenuStats();
+        }
+
+        window.onload = function() {
+            initEvents();
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>
