@@ -45,9 +45,6 @@
     <!-- Puter.js v2 SDK -->
     <script src="https://js.puter.com/v2/"></script>
 
-    <!-- Supabase JS v2 Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <!-- Marked JS for Markdown Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -235,32 +232,11 @@
                         <i data-lucide="panel-left" class="w-5 h-5"></i>
                     </button>
 
-                    <!-- Model Selector Dropdown -->
-                    <div class="relative inline-block text-left">
-                        <button id="modelSelectBtn" onclick="toggleModelDropdown()" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-nix-carddark border border-nix-borderdark hover:border-nix-500/50 text-xs font-semibold text-zinc-200 transition-all">
-                            <i data-lucide="cpu" class="w-3.5 h-3.5 text-nix-400"></i>
-                            <span id="selectedModelName">Claude 3.5 Sonnet</span>
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-zinc-400"></i>
-                        </button>
-
-                        <div id="modelDropdown" class="hidden absolute left-0 mt-2 w-56 rounded-xl bg-nix-carddark border border-nix-borderdark shadow-2xl z-50 p-1 space-y-0.5">
-                            <button onclick="selectModel('claude-3-5-sonnet', 'Claude 3.5 Sonnet')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
-                                <span class="font-medium">Claude 3.5 Sonnet</span>
-                                <span class="text-[10px] text-nix-400 bg-nix-900/60 px-1.5 py-0.5 rounded">Fast</span>
-                            </button>
-                            <button onclick="selectModel('gpt-4o', 'GPT-4o')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
-                                <span class="font-medium">GPT-4o</span>
-                                <span class="text-[10px] text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded">Smart</span>
-                            </button>
-                            <button onclick="selectModel('gpt-4o-mini', 'GPT-4o Mini')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
-                                <span class="font-medium">GPT-4o Mini</span>
-                                <span class="text-[10px] text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded">Light</span>
-                            </button>
-                            <button onclick="selectModel('deepseek-chat', 'DeepSeek V3')" class="w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-zinc-200 hover:bg-nix-600/20 hover:text-nix-300 transition-colors">
-                                <span class="font-medium">DeepSeek V3</span>
-                                <span class="text-[10px] text-purple-400 bg-purple-950 px-1.5 py-0.5 rounded">Logic</span>
-                            </button>
-                        </div>
+                    <!-- Active Model Indicator -->
+                    <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-nix-carddark border border-nix-borderdark text-xs font-semibold text-zinc-200">
+                        <i data-lucide="cpu" class="w-3.5 h-3.5 text-nix-400"></i>
+                        <span>GPT-4o Mini</span>
+                        <span class="text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">Active</span>
                     </div>
                 </div>
 
@@ -462,10 +438,6 @@
                         <i data-lucide="shield-check" class="w-4 h-4"></i>
                         <span>Auth & Account</span>
                     </button>
-                    <button onclick="switchSettingsTab('supabase')" id="tabBtn-supabase" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:bg-nix-borderdark/50">
-                        <i data-lucide="database" class="w-4 h-4"></i>
-                        <span>Supabase DB</span>
-                    </button>
                     <button onclick="switchSettingsTab('data')" id="tabBtn-data" class="tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-400 hover:bg-nix-borderdark/50">
                         <i data-lucide="hard-drive" class="w-4 h-4"></i>
                         <span>Data Storage</span>
@@ -485,19 +457,6 @@
                                 <p class="text-zinc-500 text-[11px]">Toggle between Dark Purple and Light mode.</p>
                             </div>
                             <button onclick="toggleTheme()" class="px-3 py-1.5 bg-nix-bgdark border border-nix-borderdark rounded-lg font-medium text-nix-300">Switch Theme</button>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-2">
-                            <div>
-                                <p class="font-semibold text-zinc-200">Default AI Model</p>
-                                <p class="text-zinc-500 text-[11px]">Primary model used for new conversations.</p>
-                            </div>
-                            <select id="settingDefaultModel" onchange="updateDefaultModelSetting(this.value)" class="bg-nix-bgdark border border-nix-borderdark rounded-lg px-2 py-1 text-zinc-200">
-                                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                                <option value="gpt-4o">GPT-4o</option>
-                                <option value="gpt-4o-mini">GPT-4o Mini</option>
-                                <option value="deepseek-chat">DeepSeek V3</option>
-                            </select>
                         </div>
                     </div>
 
@@ -590,22 +549,18 @@ CREATE TABLE nix_messages (
 
     <script>
         // APP STATE & CONSTANTS
-        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
-        let supabaseClient = null;
-
         const STORAGE_KEY = 'nix_45_app_state';
 
         let appState = {
             theme: 'dark',
-            selectedModel: 'claude-3-5-sonnet',
+            selectedModel: 'gpt-4o-mini',
             activeConversationId: null,
             conversations: [],
             memories: [
                 { id: 'm1', category: 'Coding', content: 'Prefer modern TypeScript, Python, and clean modular code with clear comments.', createdAt: Date.now() }
             ],
             settings: {
-                defaultModel: 'claude-3-5-sonnet',
+                defaultModel: 'gpt-4o-mini',
                 streamResponse: true,
                 autoSpeech: false
             }
@@ -620,16 +575,6 @@ CREATE TABLE nix_messages (
         window.addEventListener('DOMContentLoaded', async () => {
             // Initialize Lucide Icons
             lucide.createIcons();
-
-            // Initialize Supabase Client
-            if (window.supabase) {
-                try {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    checkSupabaseAuth();
-                } catch (e) {
-                    console.warn('Supabase initialization fallback:', e);
-                }
-            }
 
             // Load saved state from LocalStorage
             loadState();
@@ -932,12 +877,12 @@ CREATE TABLE nix_messages (
                     content: m.content
                 }));
 
-                // Call Puter.js AI Engine
+                // Call Puter.js AI Engine with GPT-4o Mini
                 if (window.puter && puter.ai) {
                     const promptText = `${systemPrompt}\n\n${historyPayload.map(h => `${h.role.toUpperCase()}: ${h.content}`).join('\n\n')}`;
                     
-                    // Call Puter.js multi-model API
-                    const response = await puter.ai.chat(promptText, { model: appState.selectedModel });
+                    // Call Puter.js API with GPT-4o Mini
+                    const response = await puter.ai.chat(promptText, { model: 'gpt-4o-mini' });
                     
                     let finalResponseText = '';
                     if (typeof response === 'string') {
@@ -955,13 +900,13 @@ CREATE TABLE nix_messages (
                     textContainer.innerHTML = marked.parse(finalResponseText);
                     textContainer.classList.remove('typing-cursor');
                 } else {
-                    // Fallback simulation if Puter object is offline or restricted
-                    aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or disconnected. Please verify internet access or Puter authentication state in settings.";
+                    // Fallback simulation if Puter object is offline
+                    aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or disconnected. Please verify internet access.";
                     textContainer.innerHTML = marked.parse(aiMsg.content);
                 }
             } catch (err) {
                 console.error('Puter AI generation error:', err);
-                aiMsg.content = `**Error Generating Response:** ${err.message || 'Unable to connect to Puter.js AI service. Please try again.'}`;
+                aiMsg.content = `**Error Generating Response:** ${err.message || 'Unable to connect to Puter.js AI service.'}`;
                 textContainer.innerHTML = marked.parse(aiMsg.content);
             } finally {
                 isGenerating = false;
