@@ -541,6 +541,18 @@
             }
         }
 
+        // Utility to generate valid RFC4122 UUID v4 strings for PostgreSQL compatibility
+        function generateUUID() {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
         // APP STATE
         let appState = {
             theme: 'dark',
@@ -694,6 +706,19 @@
                 const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
                 if (raw) {
                     appState = { ...appState, ...JSON.parse(raw) };
+                    
+                    // Migrate any legacy 'conv_...' non-UUID IDs to valid PostgreSQL UUID format
+                    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                    if (Array.isArray(appState.conversations)) {
+                        appState.conversations.forEach(conv => {
+                            if (!uuidRegex.test(conv.id)) {
+                                conv.id = generateUUID();
+                            }
+                        });
+                    }
+                    if (appState.activeConversationId && !uuidRegex.test(appState.activeConversationId)) {
+                        appState.activeConversationId = appState.conversations[0]?.id || null;
+                    }
                 }
             } catch (e) {
                 console.error('Failed to parse localStorage:', e);
@@ -735,7 +760,7 @@
 
         async function createNewConversation(autoSwitch = true) {
             const newConv = {
-                id: 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                id: generateUUID(),
                 title: 'New Conversation',
                 model: 'gpt-4o-mini',
                 createdAt: Date.now(),
