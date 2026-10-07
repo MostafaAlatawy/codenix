@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDFNix - AI PDF Workspace & Test Generator</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Puter JS SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.8);
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-test-area, #printable-test-area * {
+                visibility: visible;
+            }
+            #printable-test-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                color: #000 !important;
+                background: #fff !important;
+                padding: 20px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-100">
+
+    <header class="no-print border-b border-slate-800 bg-slate-900/80 backdrop-blur px-4 py-3 flex items-center justify-between z-10 flex-wrap gap-2">
+        <div class="flex items-center space-x-3">
+            <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid font-bold text-xl fa-file-pdf"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">PDFNix</h1>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-robot text-[10px]"></i> Puter AI
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 hidden sm:block">Analyze, Quiz, Summarize & Translate PDFs with Puter AI</p>
+            </div>
+        </div>
+
+        <!-- Document Status & Auth Actions -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <div id="doc-status-badge" class="hidden items-center space-x-2 bg-slate-800/80 border border-slate-700/60 rounded-lg px-3 py-1.5 text-xs text-slate-300">
+                <i class="fa-solid fa-file-lines text-indigo-400"></i>
+                <span id="doc-name-display" class="max-w-[120px] sm:max-w-[200px] truncate font-medium">document.pdf</span>
+                <span id="doc-pages-display" class="text-slate-500">(0 pages)</span>
+            </div>
+
+            <!-- Puter User Auth Profile Widget -->
+            <div id="auth-section" class="flex items-center space-x-2">
+                <button id="login-btn" onclick="handlePuterLogin()" class="text-xs px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold transition flex items-center space-x-1.5 shadow-md shadow-indigo-600/20">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Log In</span>
+                </button>
+
+                <div id="user-profile" class="hidden items-center space-x-2 bg-slate-800/90 border border-slate-700/80 rounded-xl p-1 pr-3">
+                    <div class="w-7 h-7 rounded-lg bg-purple-600/40 text-purple-300 flex items-center justify-center font-bold text-xs border border-purple-500/30">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span id="user-display-name" class="text-xs font-semibold text-slate-200 max-w-[100px] truncate">User</span>
+                    <button onclick="handlePuterLogout()" title="Log Out" class="text-slate-400 hover:text-red-400 transition ml-1 text-xs">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="loadSamplePDF()" class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
+                <span class="hidden md:inline">Sample PDF</span>
+            </button>
+
+            <button onclick="resetWorkspace()" class="text-xs px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition flex items-center space-x-1">
+                <i class="fa-solid fa-arrow-rotate-left"></i>
+                <span class="hidden sm:inline">Reset</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        
+        <!-- Sidebar - PDF Upload & Document Info -->
+        <aside class="no-print w-full md:w-80 lg:w-96 border-r border-slate-800 bg-slate-900/50 flex flex-col p-4 overflow-y-auto space-y-4">
+            
+            <!-- Upload Drop Zone -->
+            <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/80 rounded-2xl p-6 text-center bg-slate-800/30 hover:bg-indigo-950/20 transition cursor-pointer group flex flex-col items-center justify-center min-h-[160px] relative">
+                <input type="file" id="pdf-input" accept="application/pdf" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                <div class="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                </div>
+                <p class="text-sm font-semibold text-slate-200">Upload PDF Document</p>
+                <p class="text-xs text-slate-400 mt-1">Drag & drop or click to browse</p>
+                <span class="mt-3 text-[10px] text-slate-500 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">Powered by Puter AI & PDF.js</span>
+            </div>
+
+            <!-- Extraction Progress Loader -->
+            <div id="extraction-loader" class="hidden bg-slate-800/80 border border-slate-700 rounded-xl p-4 space-y-2">
+                <div class="flex items-center justify-between text-xs font-medium">
+                    <span class="text-indigo-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Parsing PDF Text...</span>
+                    </span>
+                    <span id="extraction-percent" class="text-slate-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                    <div id="extraction-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0 transition-all duration-200"></div>
+                </div>
+            </div>
+
+            <!-- PDF Statistics Card -->
+            <div id="doc-stats-card" class="hidden bg-slate-800/60 border border-slate-700/70 rounded-xl p-4 space-y-3">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>Document Summary</span>
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                </h3>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px]">TOTAL PAGES</span>
+                        <span id="stat-pages" class="font-bold text-slate-200 text-sm">0</span>
+                    </div>
+                    <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                        <span class="text-slate-400 block text-[10px]">WORD COUNT</span>
+                        <span id="stat-words" class="font-bold text-slate-200 text-sm">0</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-[10px] font-medium text-slate-400 uppercase block mb-1">Extracted Preview</span>
+                    <div id="stat-preview" class="text-xs text-slate-300 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 max-h-32 overflow-y-auto leading-relaxed italic">
+                        No text loaded yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Tools -->
+            <div class="space-y-2 pt-2">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block px-1">Quick AI Actions</span>
+                <button onclick="switchTab('summary')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500/50 text-slate-300 transition flex items-center space-x-3 text-xs">
+                    <i class="fa-solid fa-bolt text-amber-400 w-4 text-center"></i>
+                    <span class="font-medium">Generate AI Key Notes</span>
+                </button>
+                <button onclick="switchTab('quiz')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500/50 text-slate-300 transition flex items-center space-x-3 text-xs">
+                    <i class="fa-solid fa-gamepad text-emerald-400 w-4 text-center"></i>
+                    <span class="font-medium">Create Interactive Quiz</span>
+                </button>
+                <button onclick="switchTab('print-test')" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500/50 text-slate-300 transition flex items-center space-x-3 text-xs">
+                    <i class="fa-solid fa-print text-indigo-400 w-4 text-center"></i>
+                    <span class="font-medium">Build Printable Exam Paper</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-950 overflow-hidden">
+            
+            <!-- Navigation Tabs Bar -->
+            <div class="no-print border-b border-slate-800 bg-slate-900/40 px-4 flex space-x-1 overflow-x-auto">
+                <button id="tab-btn-chat" onclick="switchTab('chat')" class="tab-btn px-4 py-3 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 whitespace-nowrap transition">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>Puter AI Chat</span>
+                </button>
+                <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="tab-btn px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>Interactive Test</span>
+                </button>
+                <button id="tab-btn-print-test" onclick="switchTab('print-test')" class="tab-btn px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+                    <i class="fa-solid fa-file-signature"></i>
+                    <span>Printable Exam</span>
+                </button>
+                <button id="tab-btn-summary" onclick="switchTab('summary')" class="tab-btn px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Summary & Insights</span>
+                </button>
+                <button id="tab-btn-translate" onclick="switchTab('translate')" class="tab-btn px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap transition">
+                    <i class="fa-solid fa-language"></i>
+                    <span>Text & Translate</span>
+                </button>
+            </div>
+
+            <!-- Tab Panels Container -->
+            <div class="flex-1 overflow-hidden relative">
+                
+                <!-- TAB 1: PUTER AI CHAT & ASK -->
+                <section id="tab-content-chat" class="tab-content h-full flex flex-col p-4 space-y-4">
+                    <div id="chat-box" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                        <div class="flex items-start space-x-3 max-w-3xl">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-md shadow-indigo-600/30">
+                                <i class="fa-solid fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 text-sm text-slate-200 space-y-2 leading-relaxed">
+                                <p class="font-semibold text-indigo-300">Welcome to PDFNix powered by Puter AI!</p>
+                                <p>Upload a PDF or click "Sample PDF" to ask questions, summarize sections, or discuss key information in real-time.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Bar -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2 flex items-center space-x-2">
+                        <textarea id="chat-input" rows="1" placeholder="Ask Puter AI about this document..." class="flex-1 bg-transparent border-0 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none resize-none px-3 py-2"></textarea>
+                        <button id="send-chat-btn" onclick="sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-4 py-2.5 text-xs font-semibold transition flex items-center space-x-1.5 shrink-0">
+                            <span>Send</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- TAB 2: INTERACTIVE TEST GENERATOR -->
+                <section id="tab-content-quiz" class="tab-content hidden h-full overflow-y-auto p-4 md:p-6 space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-2">
+                                <i class="fa-solid fa-gamepad text-emerald-400"></i>
+                                <span>Puter AI Interactive Quiz Maker</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Generate dynamic multiple-choice practice tests directly from your PDF text.</p>
+                        </div>
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <select id="quiz-count-select" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none">
+                                <option value="5">5 Questions</option>
+                                <option value="10" selected>10 Questions</option>
+                                <option value="15">15 Questions</option>
+                            </select>
+                            <button id="generate-quiz-btn" onclick="generateQuiz()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span>Generate Test</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Score Tracker -->
+                    <div id="quiz-score-banner" class="hidden bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 uppercase font-semibold block">Your Test Score</span>
+                                <span id="quiz-score-text" class="text-base font-extrabold text-slate-100">Score: 0 / 0</span>
+                            </div>
+                        </div>
+                        <button onclick="resetQuizProgress()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                            Retake Quiz
+                        </button>
+                    </div>
+
+                    <div id="quiz-questions-container" class="space-y-4">
+                        <div class="text-center py-12 text-slate-500 bg-slate-900/30 border border-slate-800/80 rounded-2xl">
+                            <i class="fa-solid fa-list-check text-3xl mb-3 block text-slate-600"></i>
+                            <p class="text-sm">Click "Generate Test" above to build an interactive quiz using Puter AI.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: PRINTABLE EXAM SHEET BUILDER -->
+                <section id="tab-content-print-test" class="tab-content hidden h-full overflow-y-auto p-4 md:p-6 space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-2">
+                                <i class="fa-solid fa-file-signature text-indigo-400"></i>
+                                <span>Printable Exam Builder</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Generate a clean, print-ready exam sheet complete with answer keys.</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="generatePrintableTest()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center space-x-2">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>Create Exam Sheet</span>
+                            </button>
+                            <button id="print-now-btn" onclick="window.print()" disabled class="bg-slate-800 disabled:opacity-50 hover:bg-slate-700 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center space-x-2">
+                                <i class="fa-solid fa-print"></i>
+                                <span>Print / Save PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="printable-test-area" class="bg-white text-slate-900 rounded-2xl p-8 shadow-2xl min-h-[500px] font-serif leading-relaxed">
+                        <div class="text-center py-12 text-slate-400 font-sans">
+                            <i class="fa-solid fa-print text-4xl mb-3 text-slate-300 block"></i>
+                            <p class="text-sm font-medium">Your printable test paper preview will appear here.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: SUMMARIES & KEY TAKEAWAYS -->
+                <section id="tab-content-summary" class="tab-content hidden h-full overflow-y-auto p-4 md:p-6 space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-2">
+                                <i class="fa-solid fa-chart-pie text-amber-400"></i>
+                                <span>AI Insights & Summarization</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Extract key bullet points, executive summaries, and term glossaries.</p>
+                        </div>
+                        <button onclick="generateSummary()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center space-x-2">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Summarize Now</span>
+                        </button>
+                    </div>
+
+                    <div id="summary-display" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 text-sm text-slate-300 leading-relaxed min-h-[300px]">
+                        <p class="text-slate-500 italic text-center py-10">Click "Summarize Now" to generate an executive overview of the uploaded PDF.</p>
+                    </div>
+                </section>
+
+                <!-- TAB 5: TEXT EXTRACTION & TRANSLATION -->
+                <section id="tab-content-translate" class="tab-content hidden h-full overflow-y-auto p-4 md:p-6 space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-2">
+                                <i class="fa-solid fa-language text-purple-400"></i>
+                                <span>Text Extraction & AI Translation</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Translate document contents into foreign languages instantly with Puter AI.</p>
+                        </div>
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <select id="target-lang-select" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none">
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
+                                <option value="German">German</option>
+                                <option value="Arabic">Arabic</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Japanese">Japanese</option>
+                                <option value="Italian">Italian</option>
+                                <option value="Portuguese">Portuguese</option>
+                                <option value="Russian">Russian</option>
+                            </select>
+                            <button onclick="translateText()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center space-x-2">
+                                <i class="fa-solid fa-globe"></i>
+                                <span>Translate</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col h-[450px]">
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Original Extracted Text</span>
+                                <button onclick="copyToClipboard('extracted-text-area')" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center space-x-1">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                            <textarea id="extracted-text-area" readonly class="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none resize-none font-mono leading-relaxed overflow-y-auto" placeholder="Extracted text will appear here..."></textarea>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col h-[450px]">
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                                <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Translated Output</span>
+                                <button onclick="copyToClipboard('translated-text-area')" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center space-x-1">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                            <textarea id="translated-text-area" readonly class="flex-1 bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none resize-none leading-relaxed overflow-y-auto" placeholder="Translation result will appear here..."></textarea>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // PDF.js worker setup
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Application State
+        let currentPdfText = "";
+        let currentDocName = "";
+        let currentDocPages = 0;
+        let generatedQuestions = [];
+        let userAnswers = {};
+        let currentUser = null;
+
+        window.onload = function() {
+            initPuterAuth();
+        };
+
+        // Puter Auth Initialization & LocalStorage handling
+        async function initPuterAuth() {
+            try {
+                // Check if user account saved in LocalStorage
+                const savedUser = localStorage.getItem('pdfnix_puter_user');
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                    updateAuthUI(currentUser);
+                }
+
+                // Check active Puter Session
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    if (puter.auth.isSignedIn()) {
+                        const user = await puter.auth.getUser();
+                        if (user) {
+                            currentUser = user;
+                            localStorage.setItem('pdfnix_puter_user', JSON.stringify(user));
+                            updateAuthUI(user);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.log("Puter auth initialization notice:", err);
+            }
+        }
+
+        async function handlePuterLogin() {
+            try {
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    const user = await puter.auth.signIn();
+                    if (user) {
+                        currentUser = user;
+                        localStorage.setItem('pdfnix_puter_user', JSON.stringify(user));
+                        updateAuthUI(user);
+                        alertModal(`Logged in as ${user.username || 'Puter User'}`);
+                    }
+                } else {
+                    alertModal("Puter SDK is loading, please try again in a moment.");
+                }
+            } catch (err) {
+                alertModal("Login cancelled or failed: " + err.message);
+            }
+        }
+
+        function handlePuterLogout() {
+            if (typeof puter !== 'undefined' && puter.auth && puter.auth.isSignedIn()) {
+                puter.auth.signOut();
+            }
+            currentUser = null;
+            localStorage.removeItem('pdfnix_puter_user');
+            updateAuthUI(null);
+            alertModal("You have been logged out.");
+        }
+
+        function updateAuthUI(user) {
+            const loginBtn = document.getElementById('login-btn');
+            const userProfile = document.getElementById('user-profile');
+            const userNameDisplay = document.getElementById('user-display-name');
+
+            if (user) {
+                loginBtn.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                userProfile.classList.add('flex');
+                userNameDisplay.innerText = user.username || 'Puter User';
+            } else {
+                loginBtn.classList.remove('hidden');
+                userProfile.classList.add('hidden');
+                userProfile.classList.remove('flex');
+            }
+        }
+
+        async function callPuterAI(prompt, systemInstruction = "", responseSchema = null) {
+            if (typeof puter === 'undefined' || !puter.ai) {
+                throw new Error("Puter AI library is not initialized.");
+            }
+
+            let fullPrompt = prompt;
+            if (systemInstruction) {
+                fullPrompt = `System Context: ${systemInstruction}\n\nTask Instructions:\n${prompt}`;
+            }
+
+            if (responseSchema) {
+                fullPrompt += `\n\nCRITICAL MANDATE: Output MUST be strictly valid raw JSON without markdown syntax formatting, without backticks, and matching this JSON schema: ${JSON.stringify(responseSchema)}`;
+            }
+
+            const response = await puter.ai.chat(fullPrompt);
+            
+            let textResult = "";
+            if (typeof response === 'string') {
+                textResult = response;
+            } else if (response && response.message && response.message.content) {
+                textResult = response.message.content;
+            } else if (response && response.text) {
+                textResult = response.text;
+            } else if (response && typeof response.toString === 'function') {
+                textResult = response.toString();
+            } else {
+                textResult = JSON.stringify(response);
+            }
+
+            // Clean markdown code blocks if returning JSON
+            if (responseSchema) {
+                textResult = textResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+            }
+
+            return textResult;
+        }
+
+        document.getElementById('pdf-input').addEventListener('change', handleFileSelect);
+
+        const dropZone = document.getElementById('drop-zone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-indigo-500', 'bg-indigo-950/30');
+            });
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-indigo-500', 'bg-indigo-950/30');
+            });
+        });
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                processPDFFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processPDFFile(file);
+            }
+        }
+
+        async function processPDFFile(file) {
+            currentDocName = file.name;
+            showExtractionLoader(true);
+            updateExtractionProgress(5);
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                
+                currentDocPages = pdf.numPages;
+                let fullText = "";
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += `--- Page ${i} ---\n` + pageText + "\n\n";
+
+                    const progressPercent = Math.round((i / pdf.numPages) * 90) + 5;
+                    updateExtractionProgress(progressPercent);
+                }
+
+                currentPdfText = fullText.trim();
+                showExtractionLoader(false);
+                updateDocumentUI();
+
+            } catch (err) {
+                showExtractionLoader(false);
+                alertModal("Error parsing PDF file: " + err.message);
+            }
+        }
+
+        function loadSamplePDF() {
+            currentDocName = "Quantum_Computing_Overview.pdf";
+            currentDocPages = 4;
+            currentPdfText = `--- Page 1 ---
+Quantum computing is a rapidly emerging technology that harnesses the laws of quantum mechanics to solve problems too complex for classical computers. Classical computers encode information into binary bits that can either be 0 or 1. In contrast, quantum computers utilize quantum bits, or qubits.
+
+--- Page 2 ---
+Key Principles of Quantum Computing:
+1. Superposition: Qubits can exist in a state representing both 0 and 1 simultaneously. This enables quantum computers to evaluate vast numbers of possibilities at the same time.
+2. Entanglement: Qubits can become intertwined such that the state of one qubit instantly dictates the state of another, regardless of physical distance.
+3. Quantum Interference: Quantum algorithms amplify constructive interference to highlight correct paths to solutions while canceling out wrong answers through destructive interference.
+
+--- Page 3 ---
+Applications and Industry Impact:
+- Cryptography: Shor's algorithm demonstrates that quantum computers could break widely used encryption standards like RSA.
+- Molecular Modeling and Drug Discovery: Simulating molecular structures at quantum levels allows accelerated discovery of new medicines and catalysts.
+- Financial Optimization: Portfolio management, risk evaluation, and fraud detection can be calculated with higher precision.
+
+--- Page 4 ---
+Challenges in Quantum Hardware:
+Quantum decoherence remains a fundamental hurdle. Qubits are exceptionally sensitive to thermal fluctuations, electromagnetic waves, and atomic collisions. Fault-tolerant quantum computing through quantum error correction (QEC) is required before large-scale commercial advantage can be achieved.`;
+
+            updateDocumentUI();
+        }
+
+        function updateDocumentUI() {
+            document.getElementById('doc-status-badge').classList.remove('hidden');
+            document.getElementById('doc-status-badge').classList.add('flex');
+            document.getElementById('doc-name-display').innerText = currentDocName;
+            document.getElementById('doc-pages-display').innerText = `(${currentDocPages} pages)`;
+
+            document.getElementById('doc-stats-card').classList.remove('hidden');
+            document.getElementById('stat-pages').innerText = currentDocPages;
+            
+            const words = currentPdfText.split(/\s+/).filter(w => w.length > 0).length;
+            document.getElementById('stat-words').innerText = words.toLocaleString();
+
+            document.getElementById('stat-preview').innerText = currentPdfText.slice(0, 300) + "...";
+            document.getElementById('extracted-text-area').value = currentPdfText;
+        }
+
+        function showExtractionLoader(show) {
+            const loader = document.getElementById('extraction-loader');
+            if (show) loader.classList.remove('hidden');
+            else loader.classList.add('hidden');
+        }
+
+        function updateExtractionProgress(percent) {
+            document.getElementById('extraction-bar').style.width = `${percent}%`;
+            document.getElementById('extraction-percent').innerText = `${percent}%`;
+        }
+
+        function switchTab(tabKey) {
+            const tabs = ['chat', 'quiz', 'print-test', 'summary', 'translate'];
+            
+            tabs.forEach(t => {
+                const contentEl = document.getElementById(`tab-content-${t}`);
+                const btnEl = document.getElementById(`tab-btn-${t}`);
+                
+                if (t === tabKey) {
+                    contentEl.classList.remove('hidden');
+                    btnEl.classList.add('border-indigo-500', 'text-indigo-400');
+                    btnEl.classList.remove('border-transparent', 'text-slate-400');
+                } else {
+                    contentEl.classList.add('hidden');
+                    btnEl.classList.remove('border-indigo-500', 'text-indigo-400');
+                    btnEl.classList.add('border-transparent', 'text-slate-400');
+                }
+            });
+        }
+
+        async function sendChatMessage() {
+            const inputEl = document.getElementById('chat-input');
+            const query = inputEl.value.trim();
+            if (!query) return;
+
+            if (!currentPdfText) {
+                alertModal("Please upload a PDF or load the sample PDF first.");
+                return;
+            }
+
+            appendChatMessage("user", query);
+            inputEl.value = "";
+
+            const loadingId = appendChatMessage("ai", '<i class="fa-solid fa-circle-notch fa-spin"></i> Puter AI is analyzing document...');
+
+            try {
+                const systemPrompt = "You are PDFNix AI powered by Puter AI. Answer questions accurately based strictly on the provided document text using clear markdown formatting.";
+                const fullPrompt = `Document Context:\n${currentPdfText.slice(0, 15000)}\n\nUser Question:\n${query}`;
+
+                const aiAnswer = await callPuterAI(fullPrompt, systemPrompt);
+                
+                const loadingBox = document.getElementById(loadingId);
+                if (loadingBox) {
+                    loadingBox.innerHTML = marked.parse(aiAnswer);
+                }
+            } catch (err) {
+                const loadingBox = document.getElementById(loadingId);
+                if (loadingBox) {
+                    loadingBox.innerHTML = `<span class="text-red-400">Puter AI request failed: ${err.message}</span>`;
+                }
+            }
+        }
+
+        function appendChatMessage(role, content) {
+            const chatBox = document.getElementById('chat-box');
+            const msgId = 'msg-' + Date.now();
+
+            const isUser = role === "user";
+            const messageHTML = `
+                <div class="flex items-start space-x-3 max-w-3xl ${isUser ? 'ml-auto flex-row-reverse space-x-reverse' : ''}">
+                    <div class="w-8 h-8 rounded-lg ${isUser ? 'bg-purple-600' : 'bg-indigo-600'} flex items-center justify-center text-white shrink-0 mt-0.5">
+                        <i class="fa-solid ${isUser ? 'fa-user' : 'fa-robot'} text-sm"></i>
+                    </div>
+                    <div id="${msgId}" class="${isUser ? 'bg-indigo-600/30 border border-indigo-500/40 text-slate-100' : 'bg-slate-800/80 border border-slate-700/80 text-slate-200'} rounded-2xl p-4 text-xs sm:text-sm leading-relaxed">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            chatBox.insertAdjacentHTML('beforeend', messageHTML);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return msgId;
+        }
+
+        document.getElementById('chat-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+
+        async function generateQuiz() {
+            if (!currentPdfText) {
+                alertModal("Please upload a PDF document first.");
+                return;
+            }
+
+            const count = parseInt(document.getElementById('quiz-count-select').value);
+            const container = document.getElementById('quiz-questions-container');
+            container.innerHTML = `
+                <div class="text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-emerald-400 block"></i>
+                    <p class="text-sm font-semibold">Puter AI is generating ${count} custom quiz questions...</p>
+                </div>
+            `;
+
+            const schema = [
+                {
+                    question: "Question text",
+                    options: ["Option A", "Option B", "Option C", "Option D"],
+                    correctIndex: 0,
+                    explanation: "Explanation text"
+                }
+            ];
+
+            const systemPrompt = `Generate exactly ${count} multiple choice questions based on the provided document text.`;
+            const prompt = `Document Content:\n${currentPdfText.slice(0, 15000)}`;
+
+            try {
+                const jsonText = await callPuterAI(prompt, systemPrompt, schema);
+                generatedQuestions = JSON.parse(jsonText);
+                userAnswers = {};
+                renderQuizQuestions();
+            } catch (err) {
+                container.innerHTML = `<div class="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs">Failed to generate quiz with Puter AI: ${err.message}</div>`;
+            }
+        }
+
+        function renderQuizQuestions() {
+            const container = document.getElementById('quiz-questions-container');
+            container.innerHTML = "";
+
+            generatedQuestions.forEach((q, qIndex) => {
+                const qCard = document.createElement('div');
+                qCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4";
+                
+                let optionsHTML = "";
+                q.options.forEach((opt, optIndex) => {
+                    optionsHTML += `
+                        <button onclick="selectOption(${qIndex}, ${optIndex})" id="opt-${qIndex}-${optIndex}" class="quiz-opt-btn w-full text-left p-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-xs text-slate-200 transition flex items-start space-x-3">
+                            <span class="w-5 h-5 rounded-full border border-slate-600 flex items-center justify-center text-[10px] font-bold text-slate-400 shrink-0 mt-0.5">${String.fromCharCode(65 + optIndex)}</span>
+                            <span class="flex-1">${opt}</span>
+                        </button>
+                    `;
+                });
+
+                qCard.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <h3 class="text-xs sm:text-sm font-semibold text-slate-100"><span class="text-emerald-400 font-mono">Q${qIndex + 1}.</span> ${q.question}</h3>
+                    </div>
+                    <div class="space-y-2">${optionsHTML}</div>
+                    <div id="explanation-${qIndex}" class="hidden p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-200 leading-relaxed">
+                        <strong>Explanation:</strong> ${q.explanation}
+                    </div>
+                `;
+                container.appendChild(qCard);
+            });
+
+            document.getElementById('quiz-score-banner').classList.remove('hidden');
+            updateQuizScoreUI();
+        }
+
+        function selectOption(qIndex, optIndex) {
+            userAnswers[qIndex] = optIndex;
+            const q = generatedQuestions[qIndex];
+
+            q.options.forEach((_, idx) => {
+                const optBtn = document.getElementById(`opt-${qIndex}-${idx}`);
+                optBtn.disabled = true;
+
+                if (idx === q.correctIndex) {
+                    optBtn.className = "w-full text-left p-3 rounded-xl bg-emerald-500/20 border border-emerald-500 text-xs text-emerald-200 font-medium flex items-start space-x-3";
+                } else if (idx === optIndex && optIndex !== q.correctIndex) {
+                    optBtn.className = "w-full text-left p-3 rounded-xl bg-red-500/20 border border-red-500 text-xs text-red-200 flex items-start space-x-3";
+                } else {
+                    optBtn.className = "w-full text-left p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-500 opacity-60 flex items-start space-x-3";
+                }
+            });
+
+            document.getElementById(`explanation-${qIndex}`).classList.remove('hidden');
+            updateQuizScoreUI();
+        }
+
+        function updateQuizScoreUI() {
+            let correct = 0;
+            const total = generatedQuestions.length;
+            Object.keys(userAnswers).forEach(qIdx => {
+                if (userAnswers[qIdx] === generatedQuestions[qIdx].correctIndex) {
+                    correct++;
+                }
+            });
+            document.getElementById('quiz-score-text').innerText = `Score: ${correct} / ${total}`;
+        }
+
+        function resetQuizProgress() {
+            userAnswers = {};
+            if (generatedQuestions.length > 0) {
+                renderQuizQuestions();
+            }
+        }
+
+        async function generatePrintableTest() {
+            if (!currentPdfText) {
+                alertModal("Please upload a PDF document first.");
+                return;
+            }
+
+            const area = document.getElementById('printable-test-area');
+            area.innerHTML = `
+                <div class="text-center py-12 text-slate-500 font-sans">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-indigo-500 block"></i>
+                    <p class="text-sm">Puter AI is formatting a printable exam paper and answer key...</p>
+                </div>
+            `;
+
+            const systemPrompt = `Create a clean examination paper formatted in clean HTML/Markdown for printing on white paper.
+            Include:
+            1. Document Title Header with Student Name, Date, Score fields.
+            2. Section A: 5 Multiple Choice Questions.
+            3. Section B: 3 Short Answer Questions with answer writing lines.
+            4. Section C: Answer Key at the end.`;
+
+            const prompt = `Document Content:\n${currentPdfText.slice(0, 15000)}`;
+
+            try {
+                const examHTML = await callPuterAI(prompt, systemPrompt);
+                area.innerHTML = marked.parse(examHTML);
+                document.getElementById('print-now-btn').disabled = false;
+            } catch (err) {
+                area.innerHTML = `<p class="text-red-500 text-sm">Error generating exam paper: ${err.message}</p>`;
+            }
+        }
+
+        async function generateSummary() {
+            if (!currentPdfText) {
+                alertModal("Please upload a PDF document first.");
+                return;
+            }
+
+            const display = document.getElementById('summary-display');
+            display.innerHTML = `
+                <div class="text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-amber-400 block"></i>
+                    <p class="text-sm">Puter AI is summarizing document insights...</p>
+                </div>
+            `;
+
+            const systemPrompt = `Analyze the text and provide:
+            1. Executive Summary (2-3 paragraphs)
+            2. Top 5 Key Takeaways (bullet points)
+            3. Essential Terminology Glossary (Key terms & definitions)
+            Format with clear Markdown styling.`;
+
+            const prompt = `Document Content:\n${currentPdfText.slice(0, 15000)}`;
+
+            try {
+                const summaryMarkdown = await callPuterAI(prompt, systemPrompt);
+                display.innerHTML = marked.parse(summaryMarkdown);
+            } catch (err) {
+                display.innerHTML = `<p class="text-red-400 text-xs">Error generating summary: ${err.message}</p>`;
+            }
+        }
+
+        async function translateText() {
+            if (!currentPdfText) {
+                alertModal("Please upload a PDF document first.");
+                return;
+            }
+
+            const targetLang = document.getElementById('target-lang-select').value;
+            const outputArea = document.getElementById('translated-text-area');
+            outputArea.value = `Puter AI is translating text into ${targetLang}... Please wait.`;
+
+            const systemPrompt = `Translate the provided document text into ${targetLang} accurately while maintaining sentence context and layout.`;
+            const prompt = `Text to translate:\n${currentPdfText.slice(0, 8000)}`;
+
+            try {
+                const translated = await callPuterAI(prompt, systemPrompt);
+                outputArea.value = translated;
+            } catch (err) {
+                outputArea.value = `Translation failed: ${err.message}`;
+            }
+        }
+
+        // Utility Helper Functions
+        function copyToClipboard(elementId) {
+            const copyText = document.getElementById(elementId);
+            copyText.select();
+            document.execCommand('copy');
+            alertModal("Copied to clipboard!");
+        }
+
+        function resetWorkspace() {
+            currentPdfText = "";
+            currentDocName = "";
+            currentDocPages = 0;
+            generatedQuestions = [];
+            userAnswers = {};
+
+            document.getElementById('pdf-input').value = "";
+            document.getElementById('doc-status-badge').classList.add('hidden');
+            document.getElementById('doc-stats-card').classList.add('hidden');
+            document.getElementById('extracted-text-area').value = "";
+            document.getElementById('translated-text-area').value = "";
+            document.getElementById('summary-display').innerHTML = '<p class="text-slate-500 italic text-center py-10">Click "Summarize Now" to generate an executive overview of the uploaded PDF.</p>';
+            document.getElementById('printable-test-area').innerHTML = '<div class="text-center py-12 text-slate-400 font-sans"><i class="fa-solid fa-print text-4xl mb-3 text-slate-300 block"></i><p class="text-sm font-medium">Your printable test paper preview will appear here.</p></div>';
+            document.getElementById('quiz-questions-container').innerHTML = '<div class="text-center py-12 text-slate-500 bg-slate-900/30 border border-slate-800/80 rounded-2xl"><i class="fa-solid fa-list-check text-3xl mb-3 block text-slate-600"></i><p class="text-sm">Click "Generate Test" above to create an interactive quiz using Puter AI.</p></div>';
+            document.getElementById('quiz-score-banner').classList.add('hidden');
+            document.getElementById('chat-box').innerHTML = `
+                <div class="flex items-start space-x-3 max-w-3xl">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shrink-0 mt-0.5">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 text-sm text-slate-200 space-y-2 leading-relaxed">
+                        <p class="font-semibold text-indigo-300">Welcome to PDFNix powered by Puter AI!</p>
+                        <p>Upload a PDF or click "Sample PDF" to ask questions, summarize sections, or discuss key information in real-time.</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('print-now-btn').disabled = true;
+        }
+
+        // Custom Modal UI helper (no alert or confirm)
+        function alertModal(message) {
+            const modal = document.createElement('div');
+            modal.className = "fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50";
+            modal.innerHTML = `
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+                    <div class="flex items-center space-x-3 text-indigo-400">
+                        <i class="fa-solid fa-circle-info text-xl"></i>
+                        <h4 class="font-bold text-slate-100 text-sm">PDFNix Notification</h4>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${message}</p>
+                    <button onclick="this.closest('.fixed').remove()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 text-xs rounded-xl transition">
+                        OK
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+    </script>
+</body>
+</html>
