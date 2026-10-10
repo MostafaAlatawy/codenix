@@ -9,19 +9,13 @@
     <link rel="apple-touch-icon" href="logo.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Shrikhand -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
+                        openaiDark: '#0B0B0F',
                         brand: {
                             50: '#F5F3FF',
                             100: '#EDE9FE',
@@ -30,45 +24,51 @@
                             400: '#A78BFA',
                             500: '#8B5CF6',
                             600: '#7C3AED',
-                        keyframes: {
-                            float: {
-                                '0%, 100%': { transform: 'translateY(0px)' },
-                                '50%': { transform: 'translateY(-8px)' },
-                            },
-                            pulseGlow: {
-                                '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
-                                '50%': { opacity: '0.8', transform: 'scale(1.02)' },
-                            },
-                            shimmer: {
-                                '100%': { transform: 'translateX(100%)' }
-                            }
+                        }
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.02)' },
+                        },
+                        shimmer: {
+                            '100%': { transform: 'translateX(100%)' }
                         }
                     }
                 }
             }
-        </script>
-        <style>
-            body, h1, h2, h3, h4, h5, h6, p, a, span, button, input, textarea, label {
-                font-family: 'Shrikhand', cursive, sans-serif !important;
-            }
-            i.fa, i.fas, i.far, i.fab, .fa, .fas, .far, .fab {
-                font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Solid", sans-serif !important;
-            }
-            ::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
-            }
-            ::-webkit-scrollbar-track {
-                background: rgba(8, 8, 10, 0.9);
-            }
-                    }
-                }
-            }
-        }
+        };
     </script>
+    <!-- Google Fonts: Shrikhand -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shrikhand&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * {
             font-family: 'Shrikhand', cursive, sans-serif !important;
+        }
+        /* Comprehensive Font Awesome Override to restore icon rendering */
+        .fa, .fas, .far, .fab, [class^="fa-"], [class*="fa-"],
+        .fa::before, .fas::before, .far::before, .fab::before, [class^="fa-"]::before, [class*="fa-"]::before {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Solid", sans-serif !important;
+            font-weight: 900 !important;
+        }
+        .far, .far::before {
+            font-weight: 400 !important;
+        }
+        .fab, .fab::before {
+            font-family: "Font Awesome 6 Brands" !important;
+            font-weight: 400 !important;
+        }
+        i.fa, i.fas, i.far, i.fab, .fa, .fas, .far, .fab {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Solid", sans-serif !important;
         }
         ::-webkit-scrollbar {
             width: 8px;
@@ -103,13 +103,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .light .gradient-text {
+        .light .gradient-text, body:not(.dark) .gradient-text {
             background: linear-gradient(135deg, #0F172A 0%, #6D28D9 50%, #4C1D95 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         .filter-pill {
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .filter-pill.active {
             background-color: #7C3AED;
