@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenix | Developers - Host Your Tool on Codenix AI Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        accent: {
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        .glow-effect {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
+        }
+        .glow-effect-accent {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Navbar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-gray-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-500 flex items-center justify-center text-white font-black text-xl shadow-lg">
+                    C
+                </div>
+                <div>
+                    <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">Codenix</span>
+                    <span class="text-xs font-semibold text-brand-500 ml-1.5 px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20">DEVS</span>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-300">
+                <a href="#features" class="hover:text-white transition-colors">Why Codenix?</a>
+                <a href="#host-form" class="hover:text-white transition-colors">Submit Tool</a>
+            </nav>
+
+            <!-- Removed Get Started button -->
+            <div></div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
+        <div class="absolute inset-0 -z-10 flex items-center justify-center">
+            <div class="w-[500px] h-[500px] bg-brand-600/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="w-[300px] h-[300px] bg-accent-500/10 rounded-full blur-3xl pointer-events-none -mt-40"></div>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-500 text-xs font-semibold uppercase tracking-wider mb-6">
+                <i class="fa-solid fa-rocket text-accent-500"></i> Codenix AI Studio Creator Program
+            </div>
+            
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
+                Host your tool on <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-500 via-accent-500 to-indigo-400">Codenix AI Studio</span> now
+            </h1>
+            
+            <p class="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                Build a massive developer following, showcase your apps to thousands of daily users, and gain fame in the tech ecosystem — completely <span class="text-white font-semibold underline decoration-brand-500 underline-offset-4">free</span>.
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-400">
+                <div class="flex items-center gap-2 glass-panel px-4 py-2 rounded-lg border border-gray-800">
+                    <i class="fa-solid fa-bolt text-yellow-400"></i>
+                    <span>Instant Exposure</span>
+                </div>
+                <div class="flex items-center gap-2 glass-panel px-4 py-2 rounded-lg border border-gray-800">
+                    <i class="fa-solid fa-users text-brand-500"></i>
+                    <span>Grow Community</span>
+                </div>
+                <div class="flex items-center gap-2 glass-panel px-4 py-2 rounded-lg border border-gray-800">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                    <span>Zero Hosting Fee</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content & Form Section -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full" id="host-form">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Info Panel -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-gray-800 glow-effect">
+                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-sparkles text-accent-500"></i> Why Host With Us?
+                    </h2>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-brand-500/10 text-brand-500 shrink-0 mt-0.5">
+                                <i class="fa-solid fa-eye text-base"></i>
+                            </div>
+                            <div>
+                                <strong class="text-white block font-semibold">Maximum Visibility</strong>
+                                Get your tool highlighted on Codenix AI Studio's global creator directory.
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-accent-500/10 text-accent-500 shrink-0 mt-0.5">
+                                <i class="fa-solid fa-user-plus text-base"></i>
+                            </div>
+                            <div>
+                                <strong class="text-white block font-semibold">Build Developer Fame</strong>
+                                Link your social handles, show off your skills, and accumulate dedicated followers.
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 shrink-0 mt-0.5">
+                                <i class="fa-solid fa-cloud-arrow-up text-base"></i>
+                            </div>
+                            <div>
+                                <strong class="text-white block font-semibold">Zero Maintenance Cost</strong>
+                                We host and distribute your tool requirements smoothly without charging you a penny.
+                            </div>
+                        </li>
+                    </ul>
+
+                    <!-- Removed SQL Modal Button -->
+                </div>
+
+                <!-- Live Preview Card -->
+                <div class="glass-panel rounded-2xl p-6 border border-gray-800">
+                    <h3 class="text-xs uppercase tracking-wider font-bold text-gray-400 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-laptop-code text-brand-500"></i> Real-time Tool Card Preview
+                    </h3>
+                    <div class="bg-gray-900/90 rounded-xl p-4 border border-gray-800 relative overflow-hidden">
+                        <div class="flex items-start gap-4">
+                            <img id="preview-logo" src="https://placehold.co/100x100/1e293b/6366f1?text=Logo" alt="Tool Logo" class="w-14 h-14 rounded-xl object-cover border border-gray-700 bg-gray-800 shrink-0">
+                            <div class="overflow-hidden min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 id="preview-tool-name" class="font-bold text-white text-base truncate">Your Tool Name</h4>
+                                    <span class="text-[10px] bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full shrink-0">AI Studio</span>
+                                </div>
+                                <p id="preview-idea" class="text-xs text-gray-400 mt-1 line-clamp-2">Your app description will appear here as you type into the form...</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-400">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <i class="fa-solid fa-user-circle text-gray-500"></i>
+                                <span id="preview-author" class="truncate font-medium text-gray-300">By Developer</span>
+                                <span id="preview-role" class="text-[10px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded shrink-0">Role</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-emerald-400 font-mono text-[11px] shrink-0">
+                                <i class="fa-solid fa-server text-[10px]"></i>
+                                <span id="preview-req">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Form Panel -->
+            <div class="lg:col-span-7">
+                <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-gray-800 shadow-2xl">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-white">Tool Submission Form</h2>
+                        <p class="text-sm text-gray-400 mt-1">Fill out the tool specifications to publish on Codenix AI Studio.</p>
+                    </div>
+
+                    <!-- Notification Alert -->
+                    <div id="status-alert" class="hidden mb-6 p-4 rounded-xl border text-sm font-medium transition-all duration-300"></div>
+
+                    <form id="creator-form" class="space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <!-- Developer Name -->
+                            <div>
+                                <label for="developer_name" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                    Developer Name <span class="text-red-400">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="developer_name" required placeholder="e.g. Alex Morgan"
+                                        class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                                </div>
+                            </div>
+
+                            <!-- Developer Role -->
+                            <div>
+                                <label for="developer_role" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                    Developer Role <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" idquery="developer_role" id="developer_role" required placeholder="e.g. Fullstack AI Engineer"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <!-- Contact Email -->
+                            <div>
+                                <label for="email" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                    Contact Email <span class="text-red-400">*</span>
+                                </label>
+                                <input type="email" id="email" required placeholder="alex@example.com"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                            </div>
+
+                            <!-- Tool Display Name -->
+                            <div>
+                                <label for="tool_display_name" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                    Tool Display Name <span class="text-red-400">*</span>
+                                </label>
+                                <input type="text" id="tool_display_name" required placeholder="e.g. CodePulse AI"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                            </div>
+                        </div>
+
+                        <!-- App Idea -->
+                        <div>
+                            <label for="app_idea" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                App Idea & Description <span class="text-red-400">*</span>
+                            </label>
+                            <textarea id="app_idea" rows="3" required placeholder="Briefly describe what your tool does, its unique selling points, and target audience..."
+                                class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <!-- App File URL -->
+                            <div>
+                                <label for="app_file_url" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                    App File / Repo URL <span class="text-red-400">*</span>
+                                </label>
+                                <input type="url" id="app_file_url" required placeholder="https://github.com/user/app.zip"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                            </div>
+
+                            <!-- App Logo URL -->
+                            <div>
+                                <label for="app_logo_url" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                    App Logo URL
+                                </label>
+                                <input type="url" id="app_logo_url" placeholder="https://domain.com/logo.png"
+                                    class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                            </div>
+                        </div>
+
+                        <!-- Hosting Requirements -->
+                        <div>
+                            <label for="app_host_requirements" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                                Hosting Requirements <span class="text-red-400">*</span>
+                            </label>
+                            <input type="text" id="app_host_requirements" required placeholder="e.g. Node.js 18, Python 3.10, GPU Acceleration, Docker, Postgres"
+                                class="w-full px-4 py-2.5 rounded-xl bg-gray-900/80 border border-gray-700/80 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-4">
+                            <button type="submit" id="submit-btn"
+                                class="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-accent-500 hover:brightness-110 active:scale-[0.99] transition-all duration-200 shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-paper-plane text-sm"></i> Submit & Host Tool Free
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Removed SQL Modal HTML completely -->
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-gray-800/80 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-gray-300">Codenix | Developers</span>
+                <span>© 2026 Codenix AI Studio. All rights reserved.</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="#" class="hover:text-gray-300 transition">Privacy Policy</a>
+                <a href="#" class="hover:text-gray-300 transition">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Supabase Integration Script -->
+    <script>
+        // Initialize Supabase Client
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        
+        let supabaseClient = null;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error("Failed to initialize Supabase:", e);
+        }
+
+        // Realtime Preview Bindings
+        const inputName = document.getElementById('developer_name');
+        const inputRole = document.getElementById('developer_role');
+        const inputToolName = document.getElementById('tool_display_name');
+        const inputIdea = document.getElementById('app_idea');
+        const inputLogo = document.getElementById('app_logo_url');
+        const inputReq = document.getElementById('app_host_requirements');
+
+        const prevAuthor = document.getElementById('preview-author');
+        const prevRole = document.getElementById('preview-role');
+        const prevToolName = document.getElementById('preview-tool-name');
+        const prevIdea = document.getElementById('preview-idea');
+        const prevLogo = document.getElementById('preview-logo');
+        const prevReq = document.getElementById('preview-req');
+
+        // Event listeners for live update
+        inputName?.addEventListener('input', (e) => prevAuthor.textContent = e.target.value.trim() || 'By Developer');
+        inputRole?.addEventListener('input', (e) => prevRole.textContent = e.target.value.trim() || 'Role');
+        inputToolName?.addEventListener('input', (e) => prevToolName.textContent = e.target.value.trim() || 'Your Tool Name');
+        inputIdea?.addEventListener('input', (e) => prevIdea.textContent = e.target.value.trim() || 'Your app description will appear here as you type into the form...');
+        inputReq?.addEventListener('input', (e) => prevReq.textContent = e.target.value.trim() || 'Ready');
+        
+        inputLogo?.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (val) {
+                prevLogo.src = val;
+                prevLogo.onerror = () => {
+                    prevLogo.src = 'https://placehold.co/100x100/1e293b/6366f1?text=Logo';
+                };
+            } else {
+                prevLogo.src = 'https://placehold.co/100x100/1e293b/6366f1?text=Logo';
+            }
+        });
+
+        // Form Submission Logic
+        const form = document.getElementById('creator-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusAlert = document.getElementById('status-alert');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Collect form data
+            const payload = {
+                developer_name: document.getElementById('developer_name').value.trim(),
+                developer_role: document.getElementById('developer_role').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                tool_display_name: document.getElementById('tool_display_name').value.trim(),
+                app_idea: document.getElementById('app_idea').value.trim(),
+                app_file_url: document.getElementById('app_file_url').value.trim(),
+                app_logo_url: document.getElementById('app_logo_url').value.trim() || null,
+                app_host_requirements: document.getElementById('app_host_requirements').value.trim()
+            };
+
+            // UI Feedback Loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-sm"></i> Saving to Supabase...`;
+            hideAlert();
+
+            try {
+                if (!supabaseClient) {
+                    throw new Error("Supabase client is not initialized.");
+                }
+
+                const { data, error } = await supabaseClient
+                    .from('tools')
+                    .insert([payload]);
+
+                if (error) throw error;
+
+                showAlert("success", "🚀 Fantastic! Your tool submission was saved successfully. Welcome to Codenix AI Studio!");
+                form.reset();
+                resetPreview();
+
+            } catch (err) {
+                console.error("Supabase Save Error:", err);
+                showAlert("error", `Failed to save submission: ${err.message || 'Please check your database setup.'}`);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane text-sm"></i> Submit & Host Tool Free`;
+            }
+        });
+
+        function showAlert(type, message) {
+            statusAlert.classList.remove('hidden', 'bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400', 'bg-red-500/10', 'border-red-500/30', 'text-red-400');
+            if (type === 'success') {
+                statusAlert.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
+            } else {
+                statusAlert.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
+            }
+            statusAlert.textContent = message;
+            statusAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideAlert() {
+            statusAlert.classList.add('hidden');
+        }
+
+        function resetPreview() {
+            prevAuthor.textContent = 'By Developer';
+            prevRole.textContent = 'Role';
+            prevToolName.textContent = 'Your Tool Name';
+            prevIdea.textContent = 'Your app description will appear here as you type into the form...';
+            prevReq.textContent = 'Ready';
+            prevLogo.src = 'https://placehold.co/100x100/1e293b/6366f1?text=Logo';
+        }
+    </script>
+</body>
+</html>
