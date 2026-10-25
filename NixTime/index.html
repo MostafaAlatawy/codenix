@@ -129,17 +129,21 @@ function fmt(ts){
 let base='',expanded=new Set();
 async function cdx(extra){
   const q=new URLSearchParams({output:'json',fl:'timestamp,original',filter:'statuscode:200',...extra});
+  // 1) same-origin proxy (/api/cdx, see _worker.js) avoids browser CORS limits; 2) direct archive request as a last resort
+  const eps=[];
+  if(/^https?:$/.test(location.protocol))eps.push('/api/cdx?');
+  eps.push('https://web.archive.org/cdx/search/cdx?');
   let err;
-  for(let a=0;a<2;a++){
+  for(const ep of eps){
     let to;
     try{
       const t=new Promise((_,j)=>{to=setTimeout(()=>j(new Error('timeout')),45000)});
-      const r=await Promise.race([fetch('https://web.archive.org/cdx/search/cdx?'+q),t]);
+      const r=await Promise.race([fetch(ep+q),t]);
       if(!r.ok)throw new Error('status '+r.status);
       const tx=(await r.text()).trim();
       const rows=tx?JSON.parse(tx):[];
       return rows.slice(1).filter(x=>x[0]&&x[0].length===14).map(x=>({ts:x[0],o:x[1]}));
-    }catch(e){err=e;await new Promise(r=>setTimeout(r,1500))}
+    }catch(e){err=e}
     finally{clearTimeout(to)}
   }
   throw err;
