@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NixTime — by Codenix</title>
+<meta name="description" content="Choose a date. Revisit the web.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%237c3aed' d='M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11z'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#fff;--fg:#14101f;--mut:#6b6580;--card:#f4f2f9;--bd:#e2deee;--ac:#7c3aed;--ac2:#a78bfa;--dis:#b9b4c8;--glow:rgba(124,58,237,.12)}
+:root[data-theme=dark]{--bg:#09070f;--fg:#f1eefa;--mut:#9a93b3;--card:#15111f;--bd:#2a2340;--dis:#4a4260;--glow:rgba(139,92,246,.22)}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;min-height:100dvh;background-image:radial-gradient(60rem 28rem at 50% -8rem,var(--glow),transparent)}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.02em}
+.logo small{font-weight:500;color:var(--mut);font-size:12px}
+button,select,input{font:inherit;color:inherit}
+.icon{background:var(--card);border:1px solid var(--bd);border-radius:10px;width:38px;height:38px;cursor:pointer}
+main{flex:1;display:flex;flex-direction:column;padding:0 16px 16px;min-height:0}
+.hero{text-align:center;margin:12vh auto 0;max-width:720px;width:100%;transition:margin .3s}
+.hero h1{font-size:clamp(28px,5vw,48px);line-height:1.1;margin:0 0 10px;letter-spacing:-.03em}
+.hero p{color:var(--mut);margin:0 0 24px;font-size:17px}
+.has .hero{margin-top:0}.has .hero h1,.has .hero p{display:none}
+.form{display:flex;gap:8px;max-width:720px;margin:0 auto}
+#url{flex:1;min-width:0;padding:14px 16px;border-radius:14px;border:1px solid var(--bd);background:var(--card);outline:none}
+#url:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--glow)}
+.go{background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;border:0;border-radius:14px;padding:0 20px;font-weight:600;cursor:pointer;white-space:nowrap}
+.go:disabled{opacity:.6;cursor:wait}
+#msg{text-align:center;color:var(--mut);margin:14px auto 0;max-width:720px;min-height:22px}
+#msg.err{color:#ef4444}
+#app{display:none;flex:1;flex-direction:column;gap:10px;margin-top:12px;min-height:0}
+.has #app{display:flex}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px}
+.ctl label{display:flex;flex-direction:column;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;gap:3px}
+select{padding:7px 10px;border-radius:9px;border:1px solid var(--bd);background:var(--bg);min-width:90px}
+#days{display:flex;flex-wrap:wrap;gap:3px;max-width:340px}
+#days button{width:30px;height:28px;border-radius:7px;border:1px solid transparent;background:transparent;font-size:12px;cursor:pointer}
+#days button.on{border-color:var(--ac2);background:var(--bg);font-weight:600}
+#days button.sel{background:var(--ac);color:#fff}
+#days button:disabled{color:var(--dis);text-decoration:line-through;cursor:not-allowed;opacity:.55}
+.nav{display:flex;gap:6px;margin-left:auto;align-self:flex-end}
+.nav button,.open{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);cursor:pointer;text-decoration:none;font-size:13px;color:var(--fg);white-space:nowrap}
+.nav button:disabled{opacity:.4;cursor:not-allowed}
+.open{background:var(--ac);color:#fff;border-color:var(--ac)}
+.info{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.info b{word-break:break-all}.info span{color:var(--mut)}
+#wrap{position:relative;flex:1;min-height:60vh;border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:#fff}
+#wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg);text-align:center;padding:20px}
+.over[hidden]{display:none}
+#fb{inset:auto 12px 12px 12px;background:var(--card);border:1px solid var(--bd);border-radius:12px;flex-direction:row;flex-wrap:wrap;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--bd);border-top-color:var(--ac);animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.hint{font-size:12px;color:var(--mut)}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:8px}
+@media(max-width:600px){.nav{margin-left:0;width:100%}.nav button{flex:1}#days{max-width:100%}.form{flex-direction:column}.go{padding:13px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path fill="#7c3aed" d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11z"/><path d="M12 6v6l4 2.5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    NixTime <small>by Codenix</small>
+  </div>
+  <button class="icon" id="theme" aria-label="Toggle theme">◐</button>
+</header>
+<main id="main">
+  <section class="hero">
+    <h1>What did the web look like back then?</h1>
+    <p>Choose a date. Revisit the web.</p>
+    <div class="form" id="f">
+      <input id="url" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://apple.com" aria-label="Website URL">
+      <button class="go" id="go">Explore History</button>
+    </div>
+    <div id="msg" role="status"></div>
+  </section>
+  <section id="app">
+    <div class="ctl">
+      <label>Year<select id="ys"></select></label>
+      <label>Month<select id="ms"></select></label>
+      <label>Day<div id="days"></div></label>
+      <label>Time (UTC)<select id="ts"></select></label>
+      <div class="nav"><button id="prev">← Previous</button><button id="next">Next →</button></div>
+    </div>
+    <div class="info">
+      <div><b id="ou"></b><br><span id="od"></span> <span id="cnt"></span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="hint">Preview blank? Some sites block embedding.</span><a class="open" id="open" target="_blank" rel="noopener">Open Archived Website ↗</a></div>
+    </div>
+    <div id="wrap">
+      <div class="over" id="ld"><div class="spin"></div><div>Loading archived page…</div></div>
+      <div class="over" id="fb" hidden><span>Still loading, or the archive blocked embedding.</span><a class="open" id="open2" target="_blank" rel="noopener">Open Archived Website ↗</a></div>
+    </div>
+  </section>
+</main>
+<footer>Snapshots courtesy of the Internet Archive's Wayback Machine · NixTime by Codenix</footer>
+<script>
+const $=s=>document.querySelector(s);
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+let snaps=[],cur=-1,Y,M,D,tm;
+
+// Theme
+const root=document.documentElement;
+let th=null;try{th=localStorage.getItem('nixtime-theme')}catch(e){}
+root.dataset.theme=th||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+$('#theme').onclick=()=>{const n=root.dataset.theme==='dark'?'light':'dark';root.dataset.theme=n;try{localStorage.setItem('nixtime-theme',n)}catch(e){}};
+
+function msg(t,c){const m=$('#msg');m.textContent=t||'';m.className=c||''}
+function norm(v){
+  v=v.trim();if(!v)throw 0;
+  if(!/^https?:\/\//i.test(v))v='https://'+v;
+  const u=new URL(v);
+  if(!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(u.hostname))throw 0;
+  return u.href;
+}
+function fmt(ts){
+  const g=(a,b)=>+ts.slice(a,b);
+  return new Date(Date.UTC(g(0,4),g(4,6)-1,g(6,8),g(8,10),g(10,12),g(12,14)))
+    .toLocaleString(undefined,{dateStyle:'long',timeStyle:'medium',timeZone:'UTC'})+' UTC';
+}
+
+let base='',expanded=new Set();
+async function cdx(extra){
+  const q=new URLSearchParams({output:'json',fl:'timestamp,original',filter:'statuscode:200',...extra});
+  let err;
+  for(let a=0;a<2;a++){
+    let to;
+    try{
+      const t=new Promise((_,j)=>{to=setTimeout(()=>j(new Error('timeout')),45000)});
+      const r=await Promise.race([fetch('https://web.archive.org/cdx/search/cdx?'+q),t]);
+      if(!r.ok)throw new Error('status '+r.status);
+      const tx=(await r.text()).trim();
+      const rows=tx?JSON.parse(tx):[];
+      return rows.slice(1).filter(x=>x[0]&&x[0].length===14).map(x=>({ts:x[0],o:x[1]}));
+    }catch(e){err=e;await new Promise(r=>setTimeout(r,1500))}
+    finally{clearTimeout(to)}
+  }
+  throw err;
+}
+async function explore(){
+  let u;
+  try{u=norm($('#url').value)}catch(_){return msg('Please enter a valid website address, for example https://apple.com','err')}
+  $('#go').disabled=true;msg('Searching the Internet Archive…');
+  try{
+    base=u.replace(/^https?:\/\//,'');
+    const rows=await cdx({url:base,collapse:'timestamp:8'});
+    if(!rows.length){document.body.classList.remove('has');return msg('No archived snapshots were found for that address. Try the bare domain, e.g. example.com.','err')}
+    snaps=rows;expanded=new Set();
+    msg('');document.body.classList.add('has');
+    pick(snaps.length-1);
+  }catch(err){
+    msg('Could not reach the Internet Archive ('+(err.message||'network error')+'). The archive may be busy, or your browser, an ad blocker or the preview you are using may be blocking web.archive.org. Open the file in a normal browser tab and try again.','err');
+  }finally{$('#go').disabled=false}
+}
+async function expand(day){
+  if(expanded.has(day))return;expanded.add(day);
+  try{
+    const rows=await cdx({url:base,from:day,to:day});
+    if(!rows.length)return;
+    const keep=snaps[cur]&&snaps[cur].ts;
+    snaps=snaps.filter(s=>!s.ts.startsWith(day)).concat(rows).sort((a,b)=>a.ts<b.ts?-1:1);
+    cur=Math.max(0,snaps.findIndex(s=>s.ts===keep));
+    render();
+  }catch(e){expanded.delete(day)}
+}
+$('#go').onclick=explore;
+$('#url').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();explore()}});
+window.addEventListener('error',e=>msg('Unexpected error: '+e.message,'err'));
+
+const first=pre=>snaps.findIndex(s=>s.ts.startsWith(pre));
+function pick(i){
+  cur=i;const t=snaps[i].ts;Y=t.slice(0,4);M=t.slice(4,6);D=t.slice(6,8);
+  render();load();expand(Y+M+D);
+}
+function render(){
+  const ys=[...new Set(snaps.map(s=>s.ts.slice(0,4)))];
+  $('#ys').innerHTML=ys.map(y=>`<option${y===Y?' selected':''}>${y}</option>`).join('');
+  const ms=new Set(snaps.filter(s=>s.ts.startsWith(Y)).map(s=>s.ts.slice(4,6)));
+  $('#ms').innerHTML=MN.map((n,i)=>{const m=String(i+1).padStart(2,'0'),a=ms.has(m);
+    return `<option value="${m}"${m===M?' selected':''}${a?'':' disabled'}>${n}${a?'':' — none'}</option>`}).join('');
+  const ds=new Set(snaps.filter(s=>s.ts.startsWith(Y+M)).map(s=>s.ts.slice(6,8)));
+  const n=new Date(+Y,+M,0).getDate();let h='';
+  for(let d=1;d<=n;d++){const k=String(d).padStart(2,'0'),a=ds.has(k);
+    h+=`<button type="button" data-d="${k}" class="${a?'on':''}${k===D?' sel':''}"${a?'':' disabled'}>${d}</button>`}
+  $('#days').innerHTML=h;
+  const tl=snaps.map((s,i)=>[s,i]).filter(([s])=>s.ts.startsWith(Y+M+D));
+  $('#ts').innerHTML=tl.map(([s,i])=>`<option value="${i}"${i===cur?' selected':''}>${s.ts.slice(8,10)}:${s.ts.slice(10,12)}:${s.ts.slice(12,14)}</option>`).join('');
+  $('#prev').disabled=cur<=0;$('#next').disabled=cur>=snaps.length-1;
+  $('#cnt').textContent=`· snapshot ${cur+1} of ${snaps.length}`;
+}
+$('#ys').onchange=e=>pick(first(e.target.value));
+$('#ms').onchange=e=>pick(first(Y+e.target.value));
+$('#days').onclick=e=>{const b=e.target.closest('button[data-d]');if(b&&!b.disabled)pick(first(Y+M+b.dataset.d))};
+$('#ts').onchange=e=>pick(+e.target.value);
+$('#prev').onclick=()=>cur>0&&pick(cur-1);
+$('#next').onclick=()=>cur<snaps.length-1&&pick(cur+1);
+
+function load(){
+  const s=snaps[cur],url=`https://web.archive.org/web/${s.ts}/${s.o}`;
+  $('#ou').textContent=s.o;$('#od').textContent=fmt(s.ts);
+  $('#open').href=url;$('#open2').href=url;
+  $('#ld').hidden=false;$('#fb').hidden=true;
+  const w=$('#wrap');w.querySelector('iframe')?.remove();
+  const f=document.createElement('iframe');
+  f.title='Archived website preview';
+  f.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-popups');
+  f.referrerPolicy='no-referrer';
+  f.onload=()=>{clearTimeout(tm);$('#ld').hidden=true};
+  f.src=url;w.prepend(f);
+  clearTimeout(tm);tm=setTimeout(()=>{$('#fb').hidden=false},15000);
+}
+</script>
+</body>
+</html>
