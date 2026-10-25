@@ -90,6 +90,11 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:8px}
       <label>Time (UTC)<select id="ts"></select></label>
       <div class="nav"><button id="prev">← Previous</button><button id="next">Next →</button></div>
     </div>
+    <div class="ctl" id="tools" style="align-items:flex-end">
+      <label>Your date<input type="date" id="own" style="padding:6px 10px;border-radius:9px;border:1px solid var(--bd);background:var(--bg)"></label>
+      <button class="open" id="owngo" style="border:0">Get this date</button>
+      <div class="nav"><button id="lat">Latest archived</button><button id="liv">Current website</button></div>
+    </div>
     <div class="info">
       <div><b id="ou"></b><br><span id="od"></span> <span id="cnt"></span></div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="hint">Preview blank? Some sites block embedding.</span><a class="open" id="open" target="_blank" rel="noopener">Open Archived Website ↗</a></div>
@@ -194,10 +199,11 @@ function enterDirect(u){
   direct=true;base=u.replace(/^https?:\/\//,'');
   const now=new Date().getUTCFullYear();let h='';
   for(let y=now;y>=1996;y--)h+=`<option>${y}</option>`;
-  $('#dy').innerHTML=h;$('#dy').value=String(Math.max(1996,now-5));
+  $('#dy').innerHTML=h;
   $('#dm').innerHTML=MN.map((n,i)=>`<option value="${String(i+1).padStart(2,'0')}">${n}</option>`).join('');
   $('#dd').innerHTML=Array.from({length:31},(_,i)=>`<option>${String(i+1).padStart(2,'0')}</option>`).join('');
   document.body.classList.add('has','direct');
+  setSel(new Date());
   go();
 }
 function label(s){
@@ -208,8 +214,8 @@ function label(s){
   $('#dm').value=s.ts.slice(4,6);$('#dd').value=s.ts.slice(6,8);
 }
 function show(s){snaps=[s];cur=0;load();label(s)}
-async function go(){
-  const ts=$('#dy').value+$('#dm').value+$('#dd').value+'120000';
+async function go(ts0){
+  const ts=ts0||$('#dy').value+$('#dm').value+$('#dd').value+'120000';
   // Show the preview immediately: the archive itself redirects to the closest capture.
   snaps=[{ts,o:'https://'+base}];cur=0;load();
   $('#od').textContent='Closest capture to '+fmt(ts)+' (resolving exact date…)';
@@ -234,7 +240,7 @@ async function step(dir){
   }catch(e){msg('Could not check the archive for neighbouring captures.','err')}
   finally{$('#dp').disabled=$('#dn').disabled=false}
 }
-$('#go2').onclick=go;
+$('#go2').onclick=()=>go();
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&direct&&e.target.tagName==='SELECT'&&e.target.closest('#dc')){e.preventDefault();go()}});
 $('#dp').onclick=()=>step(-1);$('#dn').onclick=()=>step(1);
 $('#go').onclick=explore;
@@ -269,19 +275,56 @@ $('#ts').onchange=e=>pick(+e.target.value);
 $('#prev').onclick=()=>cur>0&&pick(cur-1);
 $('#next').onclick=()=>cur<snaps.length-1&&pick(cur+1);
 
+function frame(src){
+  $('#ld').hidden=false;$('#fb').hidden=true;
+  const w=$('#wrap');w.querySelector('iframe')?.remove();
+  const f=document.createElement('iframe');
+  f.title='Website preview';
+  f.setAttribute('allowfullscreen','');
+  f.onload=()=>{clearTimeout(tm);$('#ld').hidden=true};
+  f.src=src;w.prepend(f);
+  clearTimeout(tm);tm=setTimeout(()=>{$('#fb').hidden=false},15000);
+}
 function load(){
   const s=snaps[cur],url=`https://web.archive.org/web/${s.ts}/${s.o}`;
   $('#ou').textContent=s.o;$('#od').textContent=fmt(s.ts);
   $('#open').href=url;$('#open2').href=url;
-  $('#ld').hidden=false;$('#fb').hidden=true;
-  const w=$('#wrap');w.querySelector('iframe')?.remove();
-  const f=document.createElement('iframe');
-  f.title='Archived website preview';
-  f.setAttribute('allowfullscreen','');
-  f.onload=()=>{clearTimeout(tm);$('#ld').hidden=true};
-  f.src=`https://web.archive.org/web/${s.ts}if_/${s.o}`;w.prepend(f);
-  clearTimeout(tm);tm=setTimeout(()=>{$('#fb').hidden=false},15000);
+  $('#open').textContent=$('#open2').textContent='Open Archived Website ↗';
+  frame(`https://web.archive.org/web/${s.ts}if_/${s.o}`);
 }
+function live(){
+  const url='https://'+base;
+  $('#ou').textContent=url;$('#od').textContent='Current live website (many sites refuse to be embedded; use the button if blank)';
+  $('#cnt').textContent='';$('#open').href=url;$('#open2').href=url;
+  $('#open').textContent=$('#open2').textContent='Open Current Website ↗';
+  frame(url);
+}
+function setSel(d){
+  $('#dy').value=String(d.getUTCFullYear());
+  $('#dm').value=String(d.getUTCMonth()+1).padStart(2,'0');
+  $('#dd').value=String(d.getUTCDate()).padStart(2,'0');
+}
+const tsMs=t=>Date.UTC(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8),+t.slice(8,10),+t.slice(10,12),+t.slice(12,14));
+async function goDate(){
+  const v=$('#own').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return msg('Please enter a valid date.','err');
+  msg('');
+  if(direct){setSel(new Date(v+'T12:00:00Z'));return go()}
+  await expand(v.slice(0,4)+v.slice(5,7));
+  const t=Date.parse(v+'T12:00:00Z');let best=0,bd=Infinity;
+  snaps.forEach((s,i)=>{const d=Math.abs(tsMs(s.ts)-t);if(d<bd){bd=d;best=i}});
+  pick(best);
+}
+async function latest(){
+  msg('');
+  if(direct){setSel(new Date());return go()}
+  let t=snaps[snaps.length-1].ts;await expand(t.slice(0,6));
+  t=snaps[snaps.length-1].ts;await expand(t.slice(0,8));
+  pick(snaps.length-1);
+}
+$('#own').max=new Date().toISOString().slice(0,10);
+$('#owngo').onclick=goDate;$('#lat').onclick=latest;$('#liv').onclick=live;
+$('#own').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();goDate()}});
 </script>
 </body>
 </html>
