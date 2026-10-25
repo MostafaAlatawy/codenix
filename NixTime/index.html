@@ -39,6 +39,7 @@ select{padding:7px 10px;border-radius:9px;border:1px solid var(--bd);background:
 #days button.on{border-color:var(--ac2);background:var(--bg);font-weight:600}
 #days button.sel{background:var(--ac);color:#fff}
 #days button:disabled{color:var(--dis);text-decoration:line-through;cursor:not-allowed;opacity:.55}
+#dc{display:none}.direct #dc{display:flex}.direct #ctl{display:none}
 .nav{display:flex;gap:6px;margin-left:auto;align-self:flex-end}
 .nav button,.open{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);cursor:pointer;text-decoration:none;font-size:13px;color:var(--fg);white-space:nowrap}
 .nav button:disabled{opacity:.4;cursor:not-allowed}
@@ -76,7 +77,13 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:8px}
     <div id="msg" role="status"></div>
   </section>
   <section id="app">
-    <div class="ctl">
+    <div class="ctl" id="dc">
+      <label>Year<select id="dy"></select></label>
+      <label>Month<select id="dm"></select></label>
+      <label>Day<select id="dd"></select></label>
+      <div class="nav"><button id="dp">← Earlier</button><button class="open" id="go2" style="border:0">Show closest capture</button><button id="dn">Later →</button></div>
+    </div>
+    <div class="ctl" id="ctl">
       <label>Year<select id="ys"></select></label>
       <label>Month<select id="ms"></select></label>
       <label>Day<div id="days"></div></label>
@@ -149,7 +156,8 @@ async function explore(){
     msg('');document.body.classList.add('has');
     pick(snaps.length-1);
   }catch(err){
-    msg('Could not reach the Internet Archive ('+(err.message||'network error')+'). The archive may be busy, or your browser, an ad blocker or the preview you are using may be blocking web.archive.org. Open the file in a normal browser tab and try again.','err');
+    enterDirect(u);
+    msg('The full snapshot calendar could not be loaded ('+(err.message||'network error')+'), so NixTime switched to direct mode: pick any date and the archive opens the closest real capture.');
   }finally{$('#go').disabled=false}
 }
 async function expand(day){
@@ -163,6 +171,65 @@ async function expand(day){
     render();
   }catch(e){expanded.delete(day)}
 }
+
+let direct=false;
+function jsonp(url){return new Promise((res,rej)=>{
+  const n='_nx'+Math.random().toString(36).slice(2),sc=document.createElement('script');
+  const cl=()=>{clearTimeout(t);delete window[n];sc.remove()};
+  const t=setTimeout(()=>{cl();rej(new Error('timeout'))},20000);
+  window[n]=d=>{cl();res(d)};
+  sc.onerror=()=>{cl();rej(new Error('blocked'))};
+  sc.src=url+'&callback='+n;document.head.appendChild(sc);
+})}
+async function near(ts){
+  const d=await jsonp('https://archive.org/wayback/available?url='+encodeURIComponent(base)+'&timestamp='+ts);
+  const c=d&&d.archived_snapshots&&d.archived_snapshots.closest;
+  if(!c||!c.available)return null;
+  return {ts:c.timestamp,o:c.url.replace(/^https?:\/\/web\.archive\.org\/web\/\d+[a-z_]*\//,'')};
+}
+function enterDirect(u){
+  direct=true;base=u.replace(/^https?:\/\//,'');
+  const now=new Date().getUTCFullYear();let h='';
+  for(let y=now;y>=1996;y--)h+=`<option>${y}</option>`;
+  $('#dy').innerHTML=h;$('#dy').value=String(Math.max(1996,now-5));
+  $('#dm').innerHTML=MN.map((n,i)=>`<option value="${String(i+1).padStart(2,'0')}">${n}</option>`).join('');
+  $('#dd').innerHTML=Array.from({length:31},(_,i)=>`<option>${String(i+1).padStart(2,'0')}</option>`).join('');
+  document.body.classList.add('has','direct');
+  go();
+}
+function show(s){
+  snaps=[s];cur=0;load();
+  $('#cnt').textContent='· closest capture to your date';
+  const y=s.ts.slice(0,4);if([...$('#dy').options].some(o=>o.value===y))$('#dy').value=y;
+  $('#dm').value=s.ts.slice(4,6);$('#dd').value=s.ts.slice(6,8);
+}
+async function go(){
+  const ts=$('#dy').value+$('#dm').value+$('#dd').value+'120000';
+  $('#go2').disabled=true;
+  try{
+    const s=await near(ts);
+    if(!s)msg('The archive has no capture of this site near that date.','err');
+    else show(s);
+  }catch(e){
+    // Could not verify via the availability API: the archive itself redirects to the closest capture.
+    snaps=[{ts,o:'https://'+base}];cur=0;load();
+    $('#od').textContent='Closest capture to '+fmt(ts)+' (the archive picks the exact one)';
+  }finally{$('#go2').disabled=false}
+}
+async function step(dir){
+  const t=snaps[0].ts,b=Date.UTC(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8),+t.slice(8,10),+t.slice(10,12),+t.slice(12,14));
+  $('#dp').disabled=$('#dn').disabled=true;
+  try{
+    for(const d of [1,3,10,30,90,365,1000]){
+      const ts=new Date(b+dir*d*864e5).toISOString().replace(/\D/g,'').slice(0,14);
+      const s=await near(ts);
+      if(s&&(dir>0?s.ts>t:s.ts<t)){show(s);msg('');return}
+    }
+    msg('No further capture found in that direction.','err');
+  }catch(e){msg('Could not check the archive for neighbouring captures.','err')}
+  finally{$('#dp').disabled=$('#dn').disabled=false}
+}
+$('#go2').onclick=go;$('#dp').onclick=()=>step(-1);$('#dn').onclick=()=>step(1);
 $('#go').onclick=explore;
 $('#url').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();explore()}});
 window.addEventListener('error',e=>msg('Unexpected error: '+e.message,'err'));
@@ -203,10 +270,9 @@ function load(){
   const w=$('#wrap');w.querySelector('iframe')?.remove();
   const f=document.createElement('iframe');
   f.title='Archived website preview';
-  f.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-popups');
-  f.referrerPolicy='no-referrer';
+  f.setAttribute('allowfullscreen','');
   f.onload=()=>{clearTimeout(tm);$('#ld').hidden=true};
-  f.src=url;w.prepend(f);
+  f.src=`https://web.archive.org/web/${s.ts}if_/${s.o}`;w.prepend(f);
   clearTimeout(tm);tm=setTimeout(()=>{$('#fb').hidden=false},15000);
 }
 </script>
