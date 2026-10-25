@@ -126,18 +126,16 @@ function fmt(ts){
     .toLocaleString(undefined,{dateStyle:'long',timeStyle:'medium',timeZone:'UTC'})+' UTC';
 }
 
-let base='',expanded=new Set();
+let base='',done=new Set();const busy=new Set();
 async function cdx(extra){
   const q=new URLSearchParams({output:'json',fl:'timestamp,original',filter:'statuscode:200',...extra});
   // 1) same-origin proxy (/api/cdx, see _worker.js) avoids browser CORS limits; 2) direct archive request as a last resort
-  const eps=[];
-  if(/^https?:$/.test(location.protocol))eps.push('/api/cdx?');
-  eps.push('https://web.archive.org/cdx/search/cdx?');
+  const eps=['/api/cdx?'];
   let err;
   for(const ep of eps){
     let to;
     try{
-      const t=new Promise((_,j)=>{to=setTimeout(()=>j(new Error('timeout')),45000)});
+      const t=new Promise((_,j)=>{to=setTimeout(()=>j(new Error('timeout')),30000)});
       const r=await Promise.race([fetch(ep+q),t]);
       if(!r.ok)throw new Error('status '+r.status);
       const tx=(await r.text()).trim();
@@ -154,9 +152,9 @@ async function explore(){
   $('#go').disabled=true;msg('Searching the Internet Archive…');
   try{
     base=u.replace(/^https?:\/\//,'');
-    const rows=await cdx({url:base,collapse:'timestamp:8'});
+    const rows=await cdx({url:base,collapse:'timestamp:6'});
     if(!rows.length){document.body.classList.remove('has');return msg('No archived snapshots were found for that address. Try the bare domain, e.g. example.com.','err')}
-    snaps=rows;expanded=new Set();
+    snaps=rows;done=new Set();busy.clear();
     msg('');document.body.classList.add('has');
     pick(snaps.length-1);
   }catch(err){
@@ -164,16 +162,17 @@ async function explore(){
     msg('The full snapshot calendar could not be loaded ('+(err.message||'network error')+'), so NixTime switched to direct mode: pick any date and the archive opens the closest real capture.');
   }finally{$('#go').disabled=false}
 }
-async function expand(day){
-  if(expanded.has(day))return;expanded.add(day);
+async function expand(pre){
+  if(done.has(pre)||busy.has(pre))return;busy.add(pre);
   try{
-    const rows=await cdx({url:base,from:day,to:day});
-    if(!rows.length)return;
-    const keep=snaps[cur]&&snaps[cur].ts;
-    snaps=snaps.filter(s=>!s.ts.startsWith(day)).concat(rows).sort((a,b)=>a.ts<b.ts?-1:1);
-    cur=Math.max(0,snaps.findIndex(s=>s.ts===keep));
-    render();
-  }catch(e){expanded.delete(day)}
+    const rows=await cdx(pre.length===6?{url:base,from:pre,to:pre,collapse:'timestamp:8'}:{url:base,from:pre,to:pre});
+    if(rows.length){
+      const keep=snaps[cur]&&snaps[cur].ts;
+      snaps=snaps.filter(s=>!s.ts.startsWith(pre)).concat(rows).sort((a,b)=>a.ts<b.ts?-1:1);
+      const k=snaps.findIndex(s=>s.ts===keep);cur=k<0?Math.max(0,first(pre)):k;
+    }
+  }catch(e){}
+  finally{busy.delete(pre);done.add(pre);if(!direct)render()}
 }
 
 let direct=false;
@@ -201,24 +200,26 @@ function enterDirect(u){
   document.body.classList.add('has','direct');
   go();
 }
-function show(s){
-  snaps=[s];cur=0;load();
+function label(s){
+  const u=`https://web.archive.org/web/${s.ts}/${s.o}`;
+  $('#ou').textContent=s.o;$('#od').textContent=fmt(s.ts);$('#open').href=u;$('#open2').href=u;
   $('#cnt').textContent='· closest capture to your date';
   const y=s.ts.slice(0,4);if([...$('#dy').options].some(o=>o.value===y))$('#dy').value=y;
   $('#dm').value=s.ts.slice(4,6);$('#dd').value=s.ts.slice(6,8);
 }
+function show(s){snaps=[s];cur=0;load();label(s)}
 async function go(){
   const ts=$('#dy').value+$('#dm').value+$('#dd').value+'120000';
+  // Show the preview immediately: the archive itself redirects to the closest capture.
+  snaps=[{ts,o:'https://'+base}];cur=0;load();
+  $('#od').textContent='Closest capture to '+fmt(ts)+' (resolving exact date…)';
   $('#go2').disabled=true;
   try{
     const s=await near(ts);
-    if(!s)msg('The archive has no capture of this site near that date.','err');
-    else show(s);
-  }catch(e){
-    // Could not verify via the availability API: the archive itself redirects to the closest capture.
-    snaps=[{ts,o:'https://'+base}];cur=0;load();
-    $('#od').textContent='Closest capture to '+fmt(ts)+' (the archive picks the exact one)';
-  }finally{$('#go2').disabled=false}
+    if(s){snaps=[s];cur=0;label(s)}
+    else msg('The archive has no capture of this site near that date.','err');
+  }catch(e){$('#od').textContent='Closest capture to '+fmt(ts)+' (the archive picks the exact one)'}
+  finally{$('#go2').disabled=false}
 }
 async function step(dir){
   const t=snaps[0].ts,b=Date.UTC(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8),+t.slice(8,10),+t.slice(10,12),+t.slice(12,14));
@@ -233,7 +234,9 @@ async function step(dir){
   }catch(e){msg('Could not check the archive for neighbouring captures.','err')}
   finally{$('#dp').disabled=$('#dn').disabled=false}
 }
-$('#go2').onclick=go;$('#dp').onclick=()=>step(-1);$('#dn').onclick=()=>step(1);
+$('#go2').onclick=go;
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&direct&&e.target.tagName==='SELECT'&&e.target.closest('#dc')){e.preventDefault();go()}});
+$('#dp').onclick=()=>step(-1);$('#dn').onclick=()=>step(1);
 $('#go').onclick=explore;
 $('#url').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();explore()}});
 window.addEventListener('error',e=>msg('Unexpected error: '+e.message,'err'));
@@ -241,7 +244,7 @@ window.addEventListener('error',e=>msg('Unexpected error: '+e.message,'err'));
 const first=pre=>snaps.findIndex(s=>s.ts.startsWith(pre));
 function pick(i){
   cur=i;const t=snaps[i].ts;Y=t.slice(0,4);M=t.slice(4,6);D=t.slice(6,8);
-  render();load();expand(Y+M+D);
+  render();load();expand(Y+M).then(()=>expand(Y+M+D));
 }
 function render(){
   const ys=[...new Set(snaps.map(s=>s.ts.slice(0,4)))];
@@ -253,7 +256,7 @@ function render(){
   const n=new Date(+Y,+M,0).getDate();let h='';
   for(let d=1;d<=n;d++){const k=String(d).padStart(2,'0'),a=ds.has(k);
     h+=`<button type="button" data-d="${k}" class="${a?'on':''}${k===D?' sel':''}"${a?'':' disabled'}>${d}</button>`}
-  $('#days').innerHTML=h;
+  $('#days').innerHTML=done.has(Y+M)?h:'<span class="hint">Loading days…</span>';
   const tl=snaps.map((s,i)=>[s,i]).filter(([s])=>s.ts.startsWith(Y+M+D));
   $('#ts').innerHTML=tl.map(([s,i])=>`<option value="${i}"${i===cur?' selected':''}>${s.ts.slice(8,10)}:${s.ts.slice(10,12)}:${s.ts.slice(12,14)}</option>`).join('');
   $('#prev').disabled=cur<=0;$('#next').disabled=cur>=snaps.length-1;
