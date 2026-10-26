@@ -349,7 +349,15 @@
 
             emptyState.classList.add('hidden');
             toolsGrid.innerHTML = filtered.map(tool => {
-                const formattedLink = tool.link.startsWith('http') || tool.link.startsWith('/') ? tool.link : `https://${tool.link}`;
+                // Format links to ensure they open within the current website domain
+                let formattedLink = tool.link;
+                if (!formattedLink.startsWith('http://') && !formattedLink.startsWith('https://')) {
+                    // Ensure leading slash for site domain relative routing
+                    if (!formattedLink.startsWith('/')) {
+                        formattedLink = '/' + formattedLink;
+                    }
+                    formattedLink = window.location.origin + formattedLink;
+                }
                 
                 return `
                 <div class="group relative bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder hover:border-brand-500/50 dark:hover:border-brand-500/50 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-500/10">
@@ -379,8 +387,8 @@
                             <i class="fa-regular fa-user text-brand-500"></i>
                             <span>${escapeHtml(tool.owner)}</span>
                         </div>
-                        <a href="${escapeHtml(formattedLink)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:text-white border border-brand-200 dark:border-brand-800 transition-all duration-200">
-                            Launch <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        <a href="${escapeHtml(formattedLink)}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:text-white border border-brand-200 dark:border-brand-800 transition-all duration-200">
+                            Launch <i class="fa-solid fa-arrow-right text-[10px]"></i>
                         </a>
                     </div>
                 </div>
