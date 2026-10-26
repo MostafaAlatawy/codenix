@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenix AI Studio | Lite Tools</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7e22ce',
+                            900: '#581c87',
+                            950: '#3b0764',
+                        },
+                        darkbg: '#0a0a0c',
+                        darkcard: '#121217',
+                        darkborder: '#262630'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px -5px rgba(147, 51, 234, 0.3);
+        }
+        .glow-purple-lg {
+            box-shadow: 0 0 50px -10px rgba(147, 51, 234, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-darkbg dark:text-slate-100 min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-darkbg/80 border-b border-slate-200 dark:border-darkborder transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3">
+                    <a href="#" class="flex items-center space-x-3 group">
+                        <img src="/logo.png" alt="Codenix Studio Logo" class="h-9 w-9 sm:h-10 sm:w-10 object-contain rounded-lg transition-transform group-hover:scale-105" onerror="this.onerror=null; this.src='https://placehold.co/80x80/9333ea/ffffff?text=CX';">
+                        <div class="flex flex-col">
+                            <span class="font-extrabold text-lg sm:text-xl tracking-tight flex items-center gap-1.5">
+                                Codenix <span class="bg-gradient-to-r from-brand-500 to-purple-400 bg-clip-text text-transparent">Studio</span>
+                            </span>
+                            <span class="text-xs text-brand-600 dark:text-brand-400 font-medium tracking-wide">Lite Tools</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Right Actions: Search (Desktop) & Theme Toggle -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Dark Mode Switch Button -->
+                    <button id="themeToggle" class="p-2.5 rounded-xl border border-slate-200 dark:border-darkborder text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-darkcard transition" aria-label="Toggle Theme">
+                        <i id="themeIconSun" class="fa-solid fa-sun hidden text-amber-400"></i>
+                        <i id="themeIconMoon" class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Hero Banner -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div class="relative rounded-3xl p-6 sm:p-10 mb-10 overflow-hidden border border-slate-200 dark:border-darkborder bg-gradient-to-br from-white via-slate-50 to-purple-50/50 dark:from-darkcard dark:via-darkcard dark:to-brand-950/30 glow-purple">
+            <div class="absolute -right-16 -top-16 w-64 h-64 bg-brand-500/10 dark:bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="relative z-10 max-w-3xl">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 mb-4">
+                    <i class="fa-solid fa-bolt text-brand-500"></i> High-Speed Productivity
+                </span>
+                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-3">
+                    Codenix <span class="bg-gradient-to-r from-brand-600 to-purple-400 bg-clip-text text-transparent">Lite Tools</span> Hub
+                </h1>
+                <p class="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
+                    Discover lightweight, fast, and essential utility applications designed by the Codenix team to simplify your workflow.
+                </p>
+
+                <!-- Search Bar & Filters -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-grow">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Search tool by name, owner, or description..." class="w-full pl-10 pr-4 py-3 bg-white dark:bg-darkbg border border-slate-200 dark:border-darkborder rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium transition placeholder-slate-400 dark:placeholder-slate-500">
+                    </div>
+                    <button id="refreshBtn" class="inline-flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-sm bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white shadow-lg shadow-brand-500/20 transition">
+                        <i class="fa-solid fa-rotate-right mr-2" id="refreshIcon"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex items-center justify-between mb-6 pb-2 overflow-x-auto">
+            <div id="categoryFilters" class="flex gap-2 min-w-max">
+                <button data-category="All" class="filter-btn active-filter px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-brand-500 bg-brand-600 text-white shadow-md">
+                    All Tools
+                </button>
+                <!-- Dynamic Category Buttons will be appended here -->
+            </div>
+            <span id="toolCountBadge" class="hidden sm:inline-block text-xs font-semibold px-3 py-1 rounded-lg bg-slate-200 dark:bg-darkcard text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-darkborder">
+                0 Tools found
+            </span>
+        </div>
+
+        <!-- Dynamic Content Section -->
+        <div id="loadingState" class="py-20 text-center">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-brand-500 border-t-transparent mb-4"></div>
+            <p class="text-slate-500 dark:text-slate-400 font-medium">Fetching Lite Tools from Google Sheets...</p>
+        </div>
+
+        <div id="errorState" class="hidden py-16 text-center max-w-md mx-auto">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-950/50 text-red-500 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl border border-red-200 dark:border-red-900">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">Failed to Load Tools</h3>
+            <p id="errorMessage" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">Could not sync with Google Sheets document.</p>
+            <button onclick="loadSheetData()" class="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-semibold hover:opacity-90 transition">
+                Try Again
+            </button>
+        </div>
+
+        <div id="emptyState" class="hidden py-16 text-center">
+            <div class="w-16 h-16 bg-slate-100 dark:bg-darkcard text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl border border-slate-200 dark:border-darkborder">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">No Tools Found</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Try clearing your search query or selecting a different category.</p>
+        </div>
+
+        <!-- Tools Grid -->
+        <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Tool Cards Inserted Here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-darkborder bg-white dark:bg-darkbg py-6 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="/logo.png" alt="Codenix Logo" class="h-6 w-6 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/40x40/9333ea/ffffff?text=CX';">
+                <span class="text-xs text-slate-500 dark:text-slate-400">© 2026 Codenix AI Studio. All rights reserved.</span>
+            </div>
+            <div class="flex items-center space-x-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Google Sheets Sync Active
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // Data Sheet URL configured to retrieve CSV format directly
+        const SHEET_ID = '1Fquo05rgTyNGp1I51St7-zPgo_phmRT0Ia9Q-6VbJJ0';
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+
+        let toolsData = [];
+        let activeCategory = 'All';
+
+        // Initialize Theme
+        function initTheme() {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const sunIcon = document.getElementById('themeIconSun');
+            const moonIcon = document.getElementById('themeIconMoon');
+
+            if (localStorage.theme === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                document.documentElement.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                }
+            });
+        }
+
+        // CSV Parser (Handles quotes & commas correctly)
+        function parseCSV(csvText) {
+            const lines = [];
+            let row = [];
+            let inQuotes = false;
+            let currentVal = '';
+
+            for (let i = 0; i < csvText.length; i++) {
+                const char = csvText[i];
+                const nextChar = csvText[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        currentVal += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    row.push(currentVal.trim());
+                    currentVal = '';
+                } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                    if (char === '\r' && nextChar === '\n') i++;
+                    row.push(currentVal.trim());
+                    if (row.some(cell => cell.length > 0)) {
+                        lines.push(row);
+                    }
+                    row = [];
+                    currentVal = '';
+                } else {
+                    currentVal += char;
+                }
+            }
+
+            if (currentVal || row.length > 0) {
+                row.push(currentVal.trim());
+                if (row.some(cell => cell.length > 0)) {
+                    lines.push(row);
+                }
+            }
+
+            if (lines.length < 2) return [];
+
+            // Map columns: Category (A), Tool Name (B), Link (C), Description (D), Owner (E)
+            const dataRows = lines.slice(1);
+            return dataRows.map(cols => ({
+                category: cols[0] || 'General',
+                name: cols[1] || 'Untitled Tool',
+                link: cols[2] || '#',
+                description: cols[3] || 'No description provided.',
+                owner: cols[4] || 'Codenix Team'
+            }));
+        }
+
+        // Fetch Data from Google Sheets
+        async function loadSheetData() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const emptyState = document.getElementById('emptyState');
+            const toolsGrid = document.getElementById('toolsGrid');
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            refreshIcon.classList.add('fa-spin');
+            loadingState.classList.remove('hidden');
+            errorState.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            toolsGrid.innerHTML = '';
+
+            try {
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
+                
+                const csvText = await response.text();
+                toolsData = parseCSV(csvText);
+
+                loadingState.classList.add('hidden');
+                buildCategoryFilters();
+                renderTools();
+
+            } catch (error) {
+                console.error('Data Fetch Error:', error);
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = error.message || 'Unable to retrieve sheet records.';
+            } finally {
+                refreshIcon.classList.remove('fa-spin');
+            }
+        }
+
+        // Build Dynamic Category Filter Buttons
+        function buildCategoryFilters() {
+            const container = document.getElementById('categoryFilters');
+            const categories = ['All', ...new Set(toolsData.map(t => t.category).filter(Boolean))];
+
+            container.innerHTML = categories.map(cat => {
+                const isActive = cat === activeCategory;
+                const baseClasses = "filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border ";
+                const activeStyle = isActive 
+                    ? "border-brand-500 bg-brand-600 text-white shadow-md shadow-brand-500/20" 
+                    : "border-slate-200 dark:border-darkborder bg-white dark:bg-darkcard text-slate-700 dark:text-slate-300 hover:border-brand-500 hover:text-brand-500 dark:hover:text-brand-400";
+                
+                return `<button onclick="selectCategory('${cat}')" class="${baseClasses} ${activeStyle}">${cat}</button>`;
+            }).join('');
+        }
+
+        function selectCategory(category) {
+            activeCategory = category;
+            buildCategoryFilters();
+            renderTools();
+        }
+
+        // Render Tool Cards
+        function renderTools() {
+            const toolsGrid = document.getElementById('toolsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = toolsData.filter(tool => {
+                const matchesCat = activeCategory === 'All' || tool.category.toLowerCase() === activeCategory.toLowerCase();
+                const matchesSearch = tool.name.toLowerCase().includes(searchQuery) || 
+                                      tool.description.toLowerCase().includes(searchQuery) ||
+                                      tool.owner.toLowerCase().includes(searchQuery) ||
+                                      tool.category.toLowerCase().includes(searchQuery);
+                return matchesCat && matchesSearch;
+            });
+
+            document.getElementById('toolCountBadge').textContent = `${filtered.length} Tool${filtered.length === 1 ? '' : 's'} found`;
+
+            if (filtered.length === 0) {
+                toolsGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            toolsGrid.innerHTML = filtered.map(tool => {
+                const formattedLink = tool.link.startsWith('http') || tool.link.startsWith('/') ? tool.link : `https://${tool.link}`;
+                
+                return `
+                <div class="group relative bg-white dark:bg-darkcard border border-slate-200 dark:border-darkborder hover:border-brand-500/50 dark:hover:border-brand-500/50 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-500/10">
+                    <div>
+                        <!-- Card Header -->
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-950/80 border border-brand-100 dark:border-brand-900/60 flex items-center justify-center text-brand-600 dark:text-brand-400 text-xl font-bold group-hover:bg-brand-600 group-hover:text-white transition-colors duration-300">
+                                <i class="fa-solid fa-code"></i>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-darkbg text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-darkborder">
+                                ${escapeHtml(tool.category)}
+                            </span>
+                        </div>
+
+                        <!-- Title & Description -->
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors mb-2">
+                            ${escapeHtml(tool.name)}
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-6 line-clamp-3">
+                            ${escapeHtml(tool.description)}
+                        </p>
+                    </div>
+
+                    <!-- Card Footer & Action -->
+                    <div class="pt-4 border-t border-slate-100 dark:border-darkborder/60 flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            <i class="fa-regular fa-user text-brand-500"></i>
+                            <span>${escapeHtml(tool.owner)}</span>
+                        </div>
+                        <a href="${escapeHtml(formattedLink)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-brand-600 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-600 dark:hover:text-white border border-brand-200 dark:border-brand-800 transition-all duration-200">
+                            Launch <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Utility: Escape HTML to avoid XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize App Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadSheetData();
+
+            document.getElementById('searchInput').addEventListener('input', renderTools);
+            document.getElementById('refreshBtn').addEventListener('click', loadSheetData);
+        });
+    </script>
+</body>
+</html>
