@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nix Paint</title>
+    <!-- Tailwind CSS for UI layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for tool icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        /* Custom scrollbars for clean retro-modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Canvas checkerboard for transparency */
+        .canvas-bg {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+                              linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+                              linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .tool-btn.active {
+            background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+            color: #1d4ed8 !important;
+        }
+        /* Style active color selection box */
+        .color-box.active {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- TOP TITLE / MENU BAR -->
+    <header class="bg-slate-800 text-white flex items-center justify-between px-3 py-1 text-sm select-none border-b border-slate-700">
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 font-bold tracking-wide text-blue-400">
+                <i class="fa-solid font-black fa-paint-brush text-lg"></i>
+                <span class="text-base text-white">Nix <span class="text-blue-400">Paint</span></span>
+            </div>
+            <span class="text-slate-500">|</span>
+            <div class="flex space-x-1 text-xs">
+                <button id="btn-new" class="hover:bg-slate-700 px-2 py-1 rounded transition flex items-center space-x-1" title="New Canvas">
+                    <i class="fa-solid fa-file"></i> <span>New</span>
+                </button>
+                <button id="btn-open" class="hover:bg-slate-700 px-2 py-1 rounded transition flex items-center space-x-1" title="Open Image">
+                    <i class="fa-solid fa-folder-open"></i> <span>Open</span>
+                </button>
+                <input type="file" id="file-input" accept="image/*" class="hidden">
+                <button id="btn-save" class="hover:bg-slate-700 px-2 py-1 rounded transition flex items-center space-x-1 text-emerald-400 font-medium" title="Save / Export">
+                    <i class="fa-solid fa-download"></i> <span>Save</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Undo / Redo & Quick Controls -->
+        <div class="flex items-center space-x-2">
+            <button id="btn-undo" class="hover:bg-slate-700 p-1.5 rounded text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent" title="Undo (Ctrl+Z)">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button id="btn-redo" class="hover:bg-slate-700 p-1.5 rounded text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent" title="Redo (Ctrl+Y)">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            <span class="text-slate-600">|</span>
+            <button id="btn-clear" class="hover:bg-red-900/50 text-red-300 px-2 py-1 rounded text-xs transition" title="Clear Canvas">
+                <i class="fa-solid fa-trash-can mr-1"></i> Clear
+            </button>
+        </div>
+    </header>
+
+    <!-- RIBBON TOOLBAR -->
+    <section class="bg-white border-b border-slate-200 p-2 shadow-sm flex flex-wrap items-center gap-4 text-xs select-none">
+        
+        <!-- Tools Section -->
+        <div class="flex flex-col border-r border-slate-200 pr-4">
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Tools</span>
+            <div class="grid grid-cols-4 gap-1">
+                <button data-tool="pencil" class="tool-btn active p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Pencil">
+                    <i class="fa-solid fa-pencil text-base"></i>
+                </button>
+                <button data-tool="brush" class="tool-btn p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Brush">
+                    <i class="fa-solid fa-paint-brush text-base"></i>
+                </button>
+                <button data-tool="eraser" class="tool-btn p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Eraser">
+                    <i class="fa-solid fa-eraser text-base"></i>
+                </button>
+                <button data-tool="fill" class="tool-btn p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Bucket Fill">
+                    <i class="fa-solid fa-fill-drip text-base"></i>
+                </button>
+                <button data-tool="picker" class="tool-btn p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Color Picker (Eyedropper)">
+                    <i class="fa-solid fa-eye-dropper text-base"></i>
+                </button>
+                <button data-tool="text" class="tool-btn p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Text">
+                    <i class="fa-solid fa-font text-base"></i>
+                </button>
+                <button data-tool="zoom" class="tool-btn p-2 rounded hover:bg-slate-100 border border-transparent flex flex-col items-center justify-center transition" title="Zoom Canvas">
+                    <i class="fa-solid fa-magnifying-glass text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Shapes Section -->
+        <div class="flex flex-col border-r border-slate-200 pr-4">
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Shapes</span>
+            <div class="grid grid-cols-3 gap-1">
+                <button data-tool="line" class="tool-btn p-1.5 rounded hover:bg-slate-100 border border-transparent flex items-center justify-center" title="Line">
+                    <i class="fa-solid fa-slash text-base"></i>
+                </button>
+                <button data-tool="rectangle" class="tool-btn p-1.5 rounded hover:bg-slate-100 border border-transparent flex items-center justify-center" title="Rectangle">
+                    <i class="fa-regular fa-square text-base"></i>
+                </button>
+                <button data-tool="circle" class="tool-btn p-1.5 rounded hover:bg-slate-100 border border-transparent flex items-center justify-center" title="Circle / Ellipse">
+                    <i class="fa-regular fa-circle text-base"></i>
+                </button>
+                <button data-tool="triangle" class="tool-btn p-1.5 rounded hover:bg-slate-100 border border-transparent flex items-center justify-center" title="Triangle">
+                    <i class="fa-solid fa-play -rotate-90 text-sm"></i>
+                </button>
+                <button data-tool="arrow" class="tool-btn p-1.5 rounded hover:bg-slate-100 border border-transparent flex items-center justify-center" title="Arrow">
+                    <i class="fa-solid fa-arrow-right text-base"></i>
+                </button>
+                <button data-tool="star" class="tool-btn p-1.5 rounded hover:bg-slate-100 border border-transparent flex items-center justify-center" title="Star">
+                    <i class="fa-regular fa-star text-base"></i>
+                </button>
+            </div>
+            <!-- Shape Fill Checkbox -->
+            <label class="flex items-center space-x-1.5 mt-1 cursor-pointer select-none">
+                <input type="checkbox" id="fill-shape-toggle" class="rounded text-blue-600 focus:ring-0">
+                <span class="text-[11px] text-slate-600">Fill Shape</span>
+            </label>
+        </div>
+
+        <!-- Size & Line Options -->
+        <div class="flex flex-col border-r border-slate-200 pr-4 justify-between h-full">
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Stroke & Size</span>
+            <div class="flex flex-col space-y-2">
+                <div class="flex items-center space-x-2">
+                    <span class="text-[11px] w-8">Size:</span>
+                    <input type="range" id="size-slider" min="1" max="50" value="5" class="w-24 accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                    <span id="size-display" class="text-[11px] font-mono w-6 text-right">5px</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-[11px] w-8">Opacity:</span>
+                    <input type="range" id="opacity-slider" min="1" max="100" value="100" class="w-24 accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                    <span id="opacity-display" class="text-[11px] font-mono w-6 text-right">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="flex flex-col">
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Colors</span>
+            <div class="flex items-center space-x-3">
+                
+                <!-- Primary / Secondary Active Preview -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex flex-col items-center">
+                        <div id="color1-box" class="color-box active w-7 h-7 rounded border border-slate-300 cursor-pointer shadow-inner bg-black" title="Color 1 (Primary - Left Click)"></div>
+                        <span class="text-[9px] text-slate-500 mt-0.5">Color 1</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="color2-box" class="color-box w-7 h-7 rounded border border-slate-300 cursor-pointer shadow-inner bg-white" title="Color 2 (Secondary - Right Click)"></div>
+                        <span class="text-[9px] text-slate-500 mt-0.5">Color 2</span>
+                    </div>
+                </div>
+
+                <!-- Custom Color Picker Input -->
+                <div class="flex flex-col items-center">
+                    <input type="color" id="custom-color-picker" value="#000000" class="w-7 h-7 rounded border border-slate-300 cursor-pointer bg-transparent">
+                    <span class="text-[9px] text-slate-500 mt-0.5">Custom</span>
+                </div>
+
+                <!-- Preset Palette Swatches -->
+                <div id="palette-grid" class="grid grid-cols-10 gap-1 border-l border-slate-200 pl-3">
+                    <!-- Javascript populates standard MS Paint colors -->
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="flex-1 overflow-auto bg-slate-200 relative flex items-center justify-center p-8 canvas-bg" id="canvas-container">
+        <!-- Canvas Wrapper for Positioning overlays like text input -->
+        <div id="canvas-wrapper" class="relative shadow-xl bg-white rounded border border-slate-300">
+            <canvas id="paint-canvas" width="900" height="550" class="block cursor-crosshair rounded"></canvas>
+            
+            <!-- Dynamic Textbox Overlay -->
+            <textarea id="text-overlay" class="hidden absolute border border-dashed border-blue-500 bg-transparent resize outline-none font-sans p-1 text-black leading-tight overflow-hidden" style="min-width: 100px; min-height: 40px;"></textarea>
+        </div>
+    </main>
+
+    <!-- STATUS BAR -->
+    <footer class="bg-slate-800 text-slate-300 text-xs px-4 py-1.5 flex justify-between items-center select-none border-t border-slate-700">
+        <div class="flex items-center space-x-6 font-mono text-[11px]">
+            <span id="status-coords" class="flex items-center"><i class="fa-solid fa-crosshairs mr-1.5 text-slate-400"></i> 0, 0px</span>
+            <span id="status-dims" class="flex items-center"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i> 900 x 550px</span>
+            <span id="status-tool" class="capitalize flex items-center"><i class="fa-solid fa-wrench mr-1.5 text-slate-400"></i> Tool: Pencil</span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button id="btn-zoom-out" class="hover:text-white p-1" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+            <span id="zoom-level" class="font-mono text-[11px] w-12 text-center">100%</span>
+            <button id="btn-zoom-in" class="hover:text-white p-1" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+            <button id="btn-zoom-reset" class="hover:text-white text-[11px] ml-2 px-1.5 py-0.5 bg-slate-700 rounded" title="Reset Zoom">Reset</button>
+        </div>
+    </footer>
+
+    <!-- MODAL: SAVE FILE OPTIONS -->
+    <div id="save-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-5 w-96 shadow-2xl border border-slate-200">
+            <h3 class="text-base font-bold mb-3 text-slate-800">Save Artwork</h3>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1">File Name</label>
+                    <input type="text" id="save-filename" value="nix-artwork" class="w-full border border-slate-300 rounded p-2 outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">Format</label>
+                    <select id="save-format" class="w-full border border-slate-300 rounded p-2 outline-none focus:border-blue-500 bg-white">
+                        <option value="png">PNG (.png)</option>
+                        <option value="jpeg">JPEG (.jpg)</option>
+                        <option value="webp">WEBP (.webp)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 mt-5 text-xs">
+                <button id="modal-cancel-btn" class="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100">Cancel</button>
+                <button id="modal-confirm-save-btn" class="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // === DOM ELEMENTS ===
+            const canvas = document.getElementById('paint-canvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const canvasContainer = document.getElementById('canvas-container');
+            const canvasWrapper = document.getElementById('canvas-wrapper');
+            const textOverlay = document.getElementById('text-overlay');
+
+            // Controls
+            const toolButtons = document.querySelectorAll('.tool-btn');
+            const sizeSlider = document.getElementById('size-slider');
+            const sizeDisplay = document.getElementById('size-display');
+            const opacitySlider = document.getElementById('opacity-slider');
+            const opacityDisplay = document.getElementById('opacity-display');
+            const fillShapeToggle = document.getElementById('fill-shape-toggle');
+
+            // Colors
+            const color1Box = document.getElementById('color1-box');
+            const color2Box = document.getElementById('color2-box');
+            const customColorPicker = document.getElementById('custom-color-picker');
+            const paletteGrid = document.getElementById('palette-grid');
+
+            // Status Bar
+            const statusCoords = document.getElementById('status-coords');
+            const statusDims = document.getElementById('status-dims');
+            const statusTool = document.getElementById('status-tool');
+            const zoomLevelEl = document.getElementById('zoom-level');
+            const btnZoomIn = document.getElementById('btn-zoom-in');
+            const btnZoomOut = document.getElementById('btn-zoom-out');
+            const btnZoomReset = document.getElementById('btn-zoom-reset');
+
+            // History / File actions
+            const btnUndo = document.getElementById('btn-undo');
+            const btnRedo = document.getElementById('btn-redo');
+            const btnClear = document.getElementById('btn-clear');
+            const btnNew = document.getElementById('btn-new');
+            const btnOpen = document.getElementById('btn-open');
+            const fileInput = document.getElementById('file-input');
+            const btnSave = document.getElementById('btn-save');
+
+            // Save Modal
+            const saveModal = document.getElementById('save-modal');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+            const modalConfirmSaveBtn = document.getElementById('modal-confirm-save-btn');
+            const saveFilename = document.getElementById('save-filename');
+            const saveFormat = document.getElementById('save-format');
+
+            // === APPLICATION STATE ===
+            let currentTool = 'pencil';
+            let primaryColor = '#000000';
+            let secondaryColor = '#ffffff';
+            let activeColorSlot = 1; // 1 = Primary, 2 = Secondary
+            let brushSize = 5;
+            let brushOpacity = 1.0;
+            let fillShape = false;
+            let zoomLevel = 1.0;
+
+            let isDrawing = false;
+            let startX = 0;
+            let startY = 0;
+
+            // Canvas snapshot for shape preview drawing
+            let canvasSnapshot = null;
+
+            // Undo / Redo stacks
+            const historyStack = [];
+            const redoStack = [];
+            const MAX_HISTORY = 30;
+
+            // MS Paint Classic Palette
+            const presetColors = [
+                '#000000', '#787878', '#790000', '#787b00', '#007900', '#007b79', '#00007b', '#790079', '#7b7b3b', '#003b3b',
+                '#ffffff', '#c0c0c0', '#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ffff7b', '#00ff7b',
+                '#007bff', '#7b00ff', '#ff7b00', '#ff007b', '#00bfff', '#8a2be2', '#a52a2a', '#5f9ea0', '#d2691e', '#ff7f50'
+            ];
+
+            // === INITIALIZATION ===
+            function init() {
+                // Set default white background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                saveState(); // First state for undo stack
+
+                buildPalette();
+                setupEventListeners();
+                updateStatusDims();
+            }
+
+            // Populate palette swatches
+            function buildPalette() {
+                paletteGrid.innerHTML = '';
+                presetColors.forEach(color => {
+                    const swatch = document.createElement('div');
+                    swatch.className = 'w-4 h-4 rounded-sm border border-slate-300 cursor-pointer hover:scale-110 transition-transform';
+                    swatch.style.backgroundColor = color;
+                    
+                    swatch.addEventListener('click', () => setColor(color, 1));
+                    swatch.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        setColor(color, 2);
+                    });
+
+                    paletteGrid.appendChild(swatch);
+                });
+            }
+
+            function setColor(hex, slot = activeColorSlot) {
+                if (slot === 1) {
+                    primaryColor = hex;
+                    color1Box.style.backgroundColor = hex;
+                } else {
+                    secondaryColor = hex;
+                    color2Box.style.backgroundColor = hex;
+                }
+                customColorPicker.value = hex;
+            }
+
+            // === CANVAS HISTORY (UNDO/REDO) ===
+            function saveState() {
+                if (historyStack.length >= MAX_HISTORY) {
+                    historyStack.shift();
+                }
+                historyStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                redoStack.length = 0; // Clear redo
+                updateHistoryButtons();
+            }
+
+            function undo() {
+                if (historyStack.length > 1) {
+                    redoStack.push(historyStack.pop());
+                    const state = historyStack[historyStack.length - 1];
+                    ctx.putImageData(state, 0, 0);
+                    updateHistoryButtons();
+                }
+            }
+
+            function redo() {
+                if (redoStack.length > 0) {
+                    const state = redoStack.pop();
+                    historyStack.push(state);
+                    ctx.putImageData(state, 0, 0);
+                    updateHistoryButtons();
+                }
+            }
+
+            function updateHistoryButtons() {
+                btnUndo.disabled = historyStack.length <= 1;
+                btnRedo.disabled = redoStack.length === 0;
+            }
+
+            // === COORDINATE CONVERSION ===
+            function getCanvasCoordinates(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                return {
+                    x: Math.floor((clientX - rect.left) / zoomLevel),
+                    y: Math.floor((clientY - rect.top) / zoomLevel)
+                };
+            }
+
+            // === DRAWING EVENT HANDLERS ===
+            function startDrawing(e) {
+                if (e.button && e.button !== 0 && e.button !== 2) return; // Only left/right click
+                if (currentTool === 'text' && textOverlay.style.display === 'block') {
+                    commitText();
+                }
+
+                isDrawing = true;
+                const coords = getCanvasCoordinates(e);
+                startX = coords.x;
+                startY = coords.y;
+
+                // Determine active drawing color (Right click uses Secondary color)
+                const useColor = (e.button === 2) ? secondaryColor : primaryColor;
+
+                // Configure context parameters
+                ctx.fillStyle = useColor;
+                ctx.strokeStyle = useColor;
+                ctx.lineWidth = brushSize;
+                ctx.globalAlpha = brushOpacity;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                // Store snapshot before drawing shapes
+                canvasSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                if (currentTool === 'pencil' || currentTool === 'brush') {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(startX, startY);
+                    ctx.stroke();
+                } else if (currentTool === 'eraser') {
+                    ctx.strokeStyle = secondaryColor;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(startX, startY);
+                    ctx.stroke();
+                } else if (currentTool === 'fill') {
+                    floodFill(startX, startY, hexToRgba(useColor));
+                    saveState();
+                    isDrawing = false;
+                } else if (currentTool === 'picker') {
+                    pickColor(startX, startY, e.button === 2 ? 2 : 1);
+                    isDrawing = false;
+                } else if (currentTool === 'text') {
+                    showTextInput(startX, startY);
+                    isDrawing = false;
+                }
+            }
+
+            function draw(e) {
+                const coords = getCanvasCoordinates(e);
+                statusCoords.innerHTML = `<i class="fa-solid fa-crosshairs mr-1.5 text-slate-400"></i> ${coords.x}, ${coords.y}px`;
+
+                if (!isDrawing) return;
+
+                const useColor = (e.buttons === 2) ? secondaryColor : primaryColor;
+                ctx.fillStyle = useColor;
+                ctx.strokeStyle = (currentTool === 'eraser') ? secondaryColor : useColor;
+
+                if (currentTool === 'pencil' || currentTool === 'brush' || currentTool === 'eraser') {
+                    ctx.lineTo(coords.x, coords.y);
+                    ctx.stroke();
+                } else if (['line', 'rectangle', 'circle', 'triangle', 'arrow', 'star'].includes(currentTool)) {
+                    // Restore original state before drawing shape preview
+                    ctx.putImageData(canvasSnapshot, 0, 0);
+                    drawShape(currentTool, startX, startY, coords.x, coords.y, fillShape);
+                }
+            }
+
+            function stopDrawing() {
+                if (isDrawing) {
+                    isDrawing = false;
+                    ctx.beginPath();
+                    ctx.globalAlpha = 1.0; // Reset alpha
+                    saveState();
+                }
+            }
+
+            // === SHAPE DRAWING ALGORITHMS ===
+            function drawShape(tool, x1, y1, x2, y2, isFilled) {
+                ctx.beginPath();
+
+                if (tool === 'line') {
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    return;
+                }
+
+                const width = x2 - x1;
+                const height = y2 - y1;
+
+                if (tool === 'rectangle') {
+                    if (isFilled) ctx.fillRect(x1, y1, width, height);
+                    ctx.strokeRect(x1, y1, width, height);
+                } else if (tool === 'circle') {
+                    const rx = Math.abs(width) / 2;
+                    const ry = Math.abs(height) / 2;
+                    const cx = x1 + width / 2;
+                    const cy = y1 + height / 2;
+
+                    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+                    if (isFilled) ctx.fill();
+                    ctx.stroke();
+                } else if (tool === 'triangle') {
+                    ctx.moveTo(x1 + width / 2, y1);
+                    ctx.lineTo(x1, y2);
+                    ctx.lineTo(x2, y2);
+                    ctx.closePath();
+                    if (isFilled) ctx.fill();
+                    ctx.stroke();
+                } else if (tool === 'arrow') {
+                    const headLength = Math.min(Math.abs(width), Math.abs(height)) * 0.3 + 5;
+                    const angle = Math.atan2(y2 - y1, x2 - x1);
+
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(x2, y2);
+                    ctx.lineTo(x2 - headLength * Math.cos(angle - Math.PI / 6), y2 - headLength * Math.sin(angle - Math.PI / 6));
+                    ctx.lineTo(x2 - headLength * Math.cos(angle + Math.PI / 6), y2 - headLength * Math.sin(angle + Math.PI / 6));
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                } else if (tool === 'star') {
+                    const points = 5;
+                    const outerRadius = Math.min(Math.abs(width), Math.abs(height)) / 2;
+                    const innerRadius = outerRadius / 2.5;
+                    const cx = x1 + width / 2;
+                    const cy = y1 + height / 2;
+
+                    let rot = (Math.PI / 2) * 3;
+                    let step = Math.PI / points;
+
+                    ctx.moveTo(cx, cy - outerRadius);
+                    for (let i = 0; i < points; i++) {
+                        let x = cx + Math.cos(rot) * outerRadius;
+                        let y = cy + Math.sin(rot) * outerRadius;
+                        ctx.lineTo(x, y);
+                        rot += step;
+
+                        x = cx + Math.cos(rot) * innerRadius;
+                        let yInner = cy + Math.sin(rot) * innerRadius;
+                        ctx.lineTo(x, yInner);
+                        rot += step;
+                    }
+                    ctx.closePath();
+                    if (isFilled) ctx.fill();
+                    ctx.stroke();
+                }
+            }
+
+            // === FLOOD FILL (BUCKET FILL) ===
+            function floodFill(startX, startY, fillColor) {
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imgData.data;
+
+                const targetPos = (startY * canvas.width + startX) * 4;
+                const startR = data[targetPos];
+                const startG = data[targetPos + 1];
+                const startB = data[targetPos + 2];
+                const startA = data[targetPos + 3];
+
+                // If target color is same as fill color, return
+                if (startR === fillColor.r && startG === fillColor.g &&
+                    startB === fillColor.b && startA === fillColor.a) {
+                    return;
+                }
+
+                const pixelStack = [[startX, startY]];
+
+                while (pixelStack.length > 0) {
+                    const [x, y] = pixelStack.pop();
+                    let currentPos = (y * canvas.width + x) * 4;
+
+                    let reachLeft = false;
+                    let reachRight = false;
+
+                    let curY = y;
+                    // Move up as far as matching target color
+                    while (curY >= 0 && matchColor(data, (curY * canvas.width + x) * 4, startR, startG, startB, startA)) {
+                        curY--;
+                    }
+                    curY++;
+
+                    while (curY < canvas.height && matchColor(data, (curY * canvas.width + x) * 4, startR, startG, startB, startA)) {
+                        currentPos = (curY * canvas.width + x) * 4;
+                        
+                        // Fill current pixel
+                        data[currentPos] = fillColor.r;
+                        data[currentPos + 1] = fillColor.g;
+                        data[currentPos + 2] = fillColor.b;
+                        data[currentPos + 3] = fillColor.a;
+
+                        // Check left neighbor
+                        if (x > 0) {
+                            if (matchColor(data, (curY * canvas.width + (x - 1)) * 4, startR, startG, startB, startA)) {
+                                if (!reachLeft) {
+                                    pixelStack.push([x - 1, curY]);
+                                    reachLeft = true;
+                                }
+                            } else if (reachLeft) {
+                                reachLeft = false;
+                            }
+                        }
+
+                        // Check right neighbor
+                        if (x < canvas.width - 1) {
+                            if (matchColor(data, (curY * canvas.width + (x + 1)) * 4, startR, startG, startB, startA)) {
+                                if (!reachRight) {
+                                    pixelStack.push([x + 1, curY]);
+                                    reachRight = true;
+                                }
+                            } else if (reachRight) {
+                                reachRight = false;
+                            }
+                        }
+
+                        curY++;
+                    }
+                }
+
+                ctx.putImageData(imgData, 0, 0);
+            }
+
+            function matchColor(data, pos, r, g, b, a) {
+                return data[pos] === r && data[pos + 1] === g && data[pos + 2] === b && data[pos + 3] === a;
+            }
+
+            function hexToRgba(hex) {
+                let c = hex.replace('#', '');
+                if (c.length === 3) c = c.split('').map(x => x + x).join('');
+                const num = parseInt(c, 16);
+                return {
+                    r: (num >> 16) & 255,
+                    g: (num >> 8) & 255,
+                    b: num & 255,
+                    a: Math.round(brushOpacity * 255)
+                };
+            }
+
+            // === COLOR PICKER (EYEDROPPER) ===
+            function pickColor(x, y, slot) {
+                const pixel = ctx.getImageData(x, y, 1, 1).data;
+                const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
+                setColor(hex, slot);
+            }
+
+            // === TEXT OVERLAY TOOL ===
+            function showTextInput(x, y) {
+                textOverlay.style.left = `${x * zoomLevel}px`;
+                textOverlay.style.top = `${y * zoomLevel}px`;
+                textOverlay.style.fontSize = `${Math.max(12, brushSize * 3)}px`;
+                textOverlay.style.color = primaryColor;
+                textOverlay.style.display = 'block';
+                textOverlay.value = '';
+                textOverlay.focus();
+            }
+
+            function commitText() {
+                if (textOverlay.style.display === 'block') {
+                    const text = textOverlay.value.trim();
+                    if (text) {
+                        const x = parseInt(textOverlay.style.left) / zoomLevel;
+                        const y = parseInt(textOverlay.style.top) / zoomLevel;
+                        const fontSize = parseInt(textOverlay.style.fontSize);
+
+                        ctx.font = `${fontSize}px Inter, sans-serif`;
+                        ctx.fillStyle = primaryColor;
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(text, x, y);
+                        saveState();
+                    }
+                    textOverlay.style.display = 'none';
+                    textOverlay.value = '';
+                }
+            }
+
+            // === ZOOM CONTROLS ===
+            function setZoom(level) {
+                zoomLevel = Math.max(0.25, Math.min(3.0, level));
+                canvasWrapper.style.transform = `scale(${zoomLevel})`;
+                canvasWrapper.style.transformOrigin = 'center center';
+                zoomLevelEl.textContent = `${Math.round(zoomLevel * 100)}%`;
+            }
+
+            function updateStatusDims() {
+                statusDims.innerHTML = `<i class="fa-regular fa-square mr-1.5 text-slate-400"></i> ${canvas.width} x ${canvas.height}px`;
+            }
+
+            // === EVENT LISTENERS SETUP ===
+            function setupEventListeners() {
+                // Tool selection
+                toolButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        toolButtons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        currentTool = btn.dataset.tool;
+                        statusTool.innerHTML = `<i class="fa-solid fa-wrench mr-1.5 text-slate-400"></i> Tool: ${currentTool}`;
+                    });
+                });
+
+                // Canvas mouse events
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseleave', () => {
+                    if (isDrawing) stopDrawing();
+                });
+
+                // Context menu prevention on canvas for right-click drawing
+                canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+                // Touch support
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    startDrawing(e);
+                });
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    draw(e);
+                });
+                canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    stopDrawing();
+                });
+
+                // Size & Opacity sliders
+                sizeSlider.addEventListener('input', (e) => {
+                    brushSize = e.target.value;
+                    sizeDisplay.textContent = `${brushSize}px`;
+                });
+
+                opacitySlider.addEventListener('input', (e) => {
+                    brushOpacity = e.target.value / 100;
+                    opacityDisplay.textContent = `${e.target.value}%`;
+                });
+
+                fillShapeToggle.addEventListener('change', (e) => {
+                    fillShape = e.target.checked;
+                });
+
+                // Active Color Slots selection
+                color1Box.addEventListener('click', () => {
+                    activeColorSlot = 1;
+                    color1Box.classList.add('active');
+                    color2Box.classList.remove('active');
+                });
+                color2Box.addEventListener('click', () => {
+                    activeColorSlot = 2;
+                    color2Box.classList.add('active');
+                    color1Box.classList.remove('active');
+                });
+
+                customColorPicker.addEventListener('input', (e) => {
+                    setColor(e.target.value, activeColorSlot);
+                });
+
+                // Undo / Redo
+                btnUndo.addEventListener('click', undo);
+                btnRedo.addEventListener('click', redo);
+
+                // Keyboard Shortcuts
+                window.addEventListener('keydown', (e) => {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                    if (e.ctrlKey && e.key === 'z') {
+                        e.preventDefault();
+                        undo();
+                    } else if (e.ctrlKey && e.key === 'y') {
+                        e.preventDefault();
+                        redo();
+                    }
+                });
+
+                // Clear canvas
+                btnClear.addEventListener('click', () => {
+                    ctx.fillStyle = secondaryColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    saveState();
+                });
+
+                // New canvas
+                btnNew.addEventListener('click', () => {
+                    if (confirm('Create a new blank canvas? Unsaved changes will be lost.')) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        historyStack.length = 0;
+                        redoStack.length = 0;
+                        saveState();
+                    }
+                });
+
+                // File Open
+                btnOpen.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const img = new Image();
+                        img.onload = () => {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+                            updateStatusDims();
+                            saveState();
+                            URL.revokeObjectURL(img.src);
+                        };
+                        img.src = URL.createObjectURL(file);
+                    }
+                });
+
+                // Zooming
+                btnZoomIn.addEventListener('click', () => setZoom(zoomLevel + 0.15));
+                btnZoomOut.addEventListener('click', () => setZoom(zoomLevel - 0.15));
+                btnZoomReset.addEventListener('click', () => setZoom(1.0));
+
+                // Save Modal
+                btnSave.addEventListener('click', () => saveModal.classList.remove('hidden'));
+                modalCancelBtn.addEventListener('click', () => saveModal.classList.add('hidden'));
+
+                modalConfirmSaveBtn.addEventListener('click', () => {
+                    const filename = saveFilename.value.trim() || 'nix-artwork';
+                    const format = saveFormat.value;
+                    const mimeType = `image/${format}`;
+
+                    const link = document.createElement('a');
+                    link.download = `${filename}.${format}`;
+                    link.href = canvas.toDataURL(mimeType, 0.95);
+                    link.click();
+
+                    saveModal.classList.add('hidden');
+                });
+            }
+
+            // Start application
+            init();
+        });
+    </script>
+</body>
+</html>
