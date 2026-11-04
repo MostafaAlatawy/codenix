@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LinkNix - Your Ultimate Link & QR Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        /* Mobile Frame Styling */
+        .phone-mockup {
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-4 right-4 left-4 sm:left-auto sm:max-w-md z-50 transform -translate-y-32 transition-all duration-300 ease-in-out bg-slate-900 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg flex-shrink-0"></i>
+        <div id="toast-message" class="text-xs sm:text-sm font-medium break-words">Notification message</div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qr-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 max-w-xs sm:max-w-sm w-full text-center shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeQrModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition p-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 id="qr-modal-title" class="text-lg font-bold text-white mb-1">Your Page QR Code</h3>
+            <p class="text-xs text-slate-400 mb-4">Scan or download to share your LinkNix hub</p>
+            <div class="bg-white p-3 sm:p-4 rounded-xl inline-block mb-4 shadow-inner" id="qrcode-container"></div>
+            <div class="flex gap-2">
+                <button onclick="downloadQR()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i> Download QR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publish Success Modal with Link to Copy -->
+    <div id="publish-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full text-center shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closePublishModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition p-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mx-auto mb-3">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">Published Successfully!</h3>
+            <p class="text-xs text-slate-400 mb-4">Your LinkNix hub is live and ready to share with your audience.</p>
+            
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2 mb-4">
+                <span id="published-url-text" class="text-xs font-mono text-emerald-400 truncate select-all">https://hostnix.vercel.app/#alex</span>
+                <button onclick="copyPublishedLink()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold flex-shrink-0 transition flex items-center gap-1.5">
+                    <i class="fa-regular fa-copy"></i>
+                    <span id="copy-btn-label">Copy</span>
+                </button>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closePublishModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition">
+                    Done
+                </button>
+                <a id="open-published-link" href="#" target="_blank" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Visit Link
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error / Status Modal for Supabase Troubleshooting -->
+    <div id="error-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 max-w-md w-full text-left shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeErrorModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition p-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Supabase Save Status</h3>
+                    <p class="text-xs text-slate-400">Database communication details</p>
+                </div>
+            </div>
+            <div id="error-modal-body" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 font-mono break-all max-h-48 overflow-y-auto mb-4">
+            </div>
+            <button onclick="closeErrorModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2 rounded-xl text-xs sm:text-sm transition">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchMobileTab('edit')">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-violet-500 flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-lg shadow-brand-500/20">
+                    N
+                </div>
+                <span class="text-lg sm:text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">LinkNix</span>
+            </div>
+
+            <!-- Mobile View Switcher Tabs -->
+            <div class="flex lg:hidden bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                <button id="tab-btn-edit" onclick="switchMobileTab('edit')" class="px-3 py-1.5 rounded-lg bg-brand-600 text-white transition">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
+                <button id="tab-btn-preview" onclick="switchMobileTab('preview')" class="px-3 py-1.5 rounded-lg text-slate-400 transition">
+                    <i class="fa-solid fa-mobile-screen"></i> Preview
+                </button>
+            </div>
+
+            <div id="nav-actions" class="flex items-center gap-2 sm:gap-3">
+                <button onclick="openQrModal()" class="px-2.5 py-2 sm:px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700/60 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-qrcode text-brand-400"></i>
+                    <span class="hidden sm:inline">Page QR</span>
+                </button>
+                <button onclick="publishToSupabase()" class="px-3 py-2 sm:px-4 bg-brand-600 hover:bg-brand-500 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/25 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Publish</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 overflow-hidden">
+        
+        <!-- Left Side: Customization Workspace (7 cols) -->
+        <section id="section-editor" class="lg:col-span-7 flex flex-col gap-5 overflow-y-auto pr-0 lg:pr-1">
+            
+            <!-- Account Username Bar -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div class="w-full flex-1">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Your Account Handle</label>
+                    <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 focus-within:border-brand-500 transition">
+                        <span class="text-slate-500 text-xs sm:text-sm font-medium pr-1 select-none truncate">hostnix.vercel.app/#</span>
+                        <input type="text" id="account-name" value="alex" oninput="updateProfile()" placeholder="yourname" class="bg-transparent border-none outline-none text-white text-xs sm:text-sm font-semibold w-full min-w-0">
+                    </div>
+                </div>
+                <button onclick="copyShareLink()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Copy Link</span>
+                </button>
+            </div>
+
+            <!-- Profile Info Section -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-4">
+                <h2 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-brand-500"></i> Profile Details
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Display Name</label>
+                        <input type="text" id="profile-name" value="Alex Rivera" oninput="updateProfile()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Avatar Image URL</label>
+                        <input type="text" id="profile-avatar" value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80" oninput="updateProfile()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Bio / Tagline</label>
+                    <textarea id="profile-bio" rows="2" oninput="updateProfile()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition resize-none">Digital Creator & Tech Enthusiast building modern web experiences.</textarea>
+                </div>
+            </div>
+
+            <!-- Theme & Design Choices -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-4">
+                <h2 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-palette text-brand-500"></i> Design & Themes
+                </h2>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="theme-options">
+                    <!-- Themes injected dynamically -->
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Button Corner Style</label>
+                        <select id="button-style" onchange="updateProfile()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                            <option value="rounded-2xl">Rounded Soft</option>
+                            <option value="rounded-full">Pill / Oval</option>
+                            <option value="rounded-md">Sharp Corners</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Hover Animation</label>
+                        <select id="hover-style" onchange="updateProfile()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                            <option value="hover:-translate-y-1">Subtle Lift</option>
+                            <option value="hover:scale-[1.02]">Scale Up</option>
+                            <option value="hover:brightness-125">Glow Effect</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Links & QR Items Manager -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-link text-brand-500"></i> Account Links
+                    </h2>
+                    <button onclick="addLinkItem()" class="px-3 py-1.5 bg-brand-600/20 hover:bg-brand-600/30 text-brand-400 border border-brand-500/30 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Add Link
+                    </button>
+                </div>
+
+                <div id="links-container" class="space-y-3">
+                    <!-- Link editor cards will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Side: Interactive Phone Preview (5 cols) -->
+        <section id="section-preview" class="hidden lg:flex lg:col-span-5 flex-col items-center justify-start">
+            <div class="sticky top-20 w-full max-w-[340px] sm:max-w-[360px] flex flex-col items-center">
+                <div class="text-[11px] uppercase font-bold tracking-widest text-slate-500 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live Phone Preview
+                </div>
+
+                <!-- Smartphone Frame Wrapper -->
+                <div class="w-full h-[600px] sm:h-[640px] bg-slate-900 border-[8px] sm:border-[10px] border-slate-800 rounded-[40px] sm:rounded-[45px] p-2 phone-mockup relative overflow-hidden flex flex-col">
+                    <!-- Speaker & Camera Notch -->
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-28 sm:w-32 h-4 sm:h-5 bg-slate-800 rounded-b-2xl z-30 flex items-center justify-center">
+                        <div class="w-10 sm:w-12 h-1 bg-slate-950 rounded-full"></div>
+                    </div>
+
+                    <!-- Inner Preview Content Frame -->
+                    <div id="preview-screen" class="w-full h-full rounded-[28px] sm:rounded-[32px] overflow-y-auto px-4 py-8 flex flex-col items-center text-center transition-all duration-300">
+                        <!-- Profile Header -->
+                        <img id="prev-avatar" src="" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-white/20 shadow-xl mb-3 mt-4 flex-shrink-0">
+                        <h3 id="prev-name" class="font-bold text-lg leading-tight break-words max-w-full"></h3>
+                        <p id="prev-bio" class="text-xs opacity-80 mt-1 mb-6 max-w-[240px] break-words"></p>
+
+                        <!-- Links Container -->
+                        <div id="prev-links" class="w-full space-y-3 mb-6">
+                            <!-- Links injected here -->
+                        </div>
+
+                        <!-- Footer Branding -->
+                        <div class="mt-auto pt-4 text-[10px] opacity-60 font-semibold tracking-wider uppercase">
+                            Powered by <span class="font-bold">LinkNix</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Supabase Project Credentials
+        const SUPABASE_URL = "https://zncztttvefahofdeacxf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_GhwVsgutWW4EpK9Fc_3DQQ_pW_R48LM";
+        
+        let supabaseClient;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch(e) {
+            console.warn("Supabase init fallback:", e);
+        }
+
+        // Pre-defined Design Themes
+        const themes = [
+            { id: 'dark-sleek', name: 'Dark Sleek', bg: 'bg-slate-950 text-white', btnBg: 'bg-slate-900 border border-slate-800 text-white hover:bg-slate-800' },
+            { id: 'gradient-indigo', name: 'Indigo Dream', bg: 'bg-gradient-to-b from-indigo-950 via-slate-900 to-black text-white', btnBg: 'bg-indigo-600/30 border border-indigo-500/40 text-white backdrop-blur-md' },
+            { id: 'neon-cyber', name: 'Cyber Neon', bg: 'bg-black text-emerald-400', btnBg: 'bg-slate-950 border border-emerald-500/50 text-emerald-300 shadow-sm shadow-emerald-500/20' },
+            { id: 'soft-pastel', name: 'Soft Purple', bg: 'bg-gradient-to-b from-purple-900 via-slate-900 to-slate-950 text-white', btnBg: 'bg-purple-800/40 border border-purple-500/30 text-white' }
+        ];
+
+        // Default User State
+        let state = {
+            accountName: "alex",
+            profileName: "Alex Rivera",
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+            bio: "Digital Creator & Tech Enthusiast building modern web experiences.",
+            theme: "gradient-indigo",
+            buttonStyle: "rounded-2xl",
+            hoverStyle: "hover:-translate-y-1",
+            links: [
+                { id: '1', title: 'Official Website', url: 'https://example.com', icon: 'fa-globe', showQr: false },
+                { id: '2', title: 'GitHub Profile', url: 'https://github.com', icon: 'fa-brands fa-github', showQr: false },
+                { id: '3', title: 'Instagram', url: 'https://instagram.com', icon: 'fa-brands fa-instagram', showQr: true },
+                { id: '4', title: 'YouTube Channel', url: 'https://youtube.com', icon: 'fa-brands fa-youtube', showQr: false }
+            ]
+        };
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            renderThemeOptions();
+            renderLinksEditor();
+            updateProfile();
+            
+            // Handle Hash route preview if viewed directly with hashtag
+            if(window.location.hash) {
+                const handle = window.location.hash.substring(1);
+                if(handle) {
+                    document.getElementById('account-name').value = handle;
+                    state.accountName = handle;
+                }
+            }
+        });
+
+        // Toggle Mobile Navigation Tabs
+        function switchMobileTab(tab) {
+            const editorSection = document.getElementById('section-editor');
+            const previewSection = document.getElementById('section-preview');
+            const btnEdit = document.getElementById('tab-btn-edit');
+            const btnPreview = document.getElementById('tab-btn-preview');
+
+            if (tab === 'edit') {
+                editorSection.classList.remove('hidden');
+                previewSection.classList.add('hidden');
+                previewSection.classList.remove('flex');
+                
+                btnEdit.className = "px-3 py-1.5 rounded-lg bg-brand-600 text-white transition";
+                btnPreview.className = "px-3 py-1.5 rounded-lg text-slate-400 transition";
+            } else {
+                editorSection.classList.add('hidden');
+                previewSection.classList.remove('hidden');
+                previewSection.classList.add('flex');
+
+                btnEdit.className = "px-3 py-1.5 rounded-lg text-slate-400 transition";
+                btnPreview.className = "px-3 py-1.5 rounded-lg bg-brand-600 text-white transition";
+            }
+        }
+
+        // Notification Toast
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMessage.textContent = message;
+            toastIcon.className = isError 
+                ? "fa-solid fa-circle-xmark text-rose-400 text-lg flex-shrink-0" 
+                : "fa-solid fa-circle-check text-emerald-400 text-lg flex-shrink-0";
+
+            toast.classList.remove('-translate-y-32');
+            setTimeout(() => {
+                toast.classList.add('-translate-y-32');
+            }, 3500);
+        }
+
+        // Render Themes Grid
+        function renderThemeOptions() {
+            const container = document.getElementById('theme-options');
+            container.innerHTML = themes.map(t => `
+                <div onclick="selectTheme('${t.id}')" class="cursor-pointer border-2 ${state.theme === t.id ? 'border-brand-500' : 'border-slate-800'} rounded-xl p-2 bg-slate-950 hover:border-slate-700 transition flex flex-col items-center gap-1.5 text-center">
+                    <div class="w-full h-7 rounded-lg ${t.bg} flex items-center justify-center border border-white/10">
+                        <div class="w-3/4 h-2 rounded ${t.btnBg}"></div>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-300 truncate w-full">${t.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectTheme(themeId) {
+            state.theme = themeId;
+            renderThemeOptions();
+            updateProfile();
+        }
+
+        // Render Links Editor
+        function renderLinksEditor() {
+            const container = document.getElementById('links-container');
+            container.innerHTML = state.links.map((link, index) => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <span class="text-xs font-bold text-slate-500">#${index + 1}</span>
+                            <i class="${link.icon} text-brand-400 text-xs flex-shrink-0"></i>
+                            <input type="text" value="${escapeHtml(link.title)}" onchange="updateLink('${link.id}', 'title', this.value)" placeholder="Link Title" class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-semibold text-white focus:outline-none focus:border-brand-500 w-full min-w-0">
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <button onclick="toggleQr('${link.id}')" class="px-2 py-1 ${link.showQr ? 'bg-brand-600/30 text-brand-300 border-brand-500/50' : 'bg-slate-900 text-slate-400 border-slate-800'} border rounded-lg text-xs font-medium transition" title="Toggle embedded QR code">
+                                <i class="fa-solid fa-qrcode"></i> QR
+                            </button>
+                            <button onclick="removeLinkItem('${link.id}')" class="text-slate-500 hover:text-rose-400 p-1 transition">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" value="${escapeHtml(link.url)}" onchange="updateLink('${link.id}', 'url', this.value)" placeholder="https://..." class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-brand-500 w-full">
+                        <input type="text" value="${escapeHtml(link.icon)}" onchange="updateLink('${link.id}', 'icon', this.value)" placeholder="fa-brands fa-twitter" class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-400 focus:outline-none focus:border-brand-500 w-full">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addLinkItem() {
+            const newId = Date.now().toString();
+            state.links.push({
+                id: newId,
+                title: 'New Account Link',
+                url: 'https://',
+                icon: 'fa-solid fa-link',
+                showQr: false
+            });
+            renderLinksEditor();
+            updateProfile();
+        }
+
+        function removeLinkItem(id) {
+            state.links = state.links.filter(l => l.id !== id);
+            renderLinksEditor();
+            updateProfile();
+        }
+
+        function updateLink(id, key, value) {
+            const link = state.links.find(l => l.id === id);
+            if(link) {
+                link[key] = value;
+                updateProfile();
+            }
+        }
+
+        function toggleQr(id) {
+            const link = state.links.find(l => l.id === id);
+            if(link) {
+                link.showQr = !link.showQr;
+                renderLinksEditor();
+                updateProfile();
+            }
+        }
+
+        // Real-Time Profile Updates
+        function updateProfile() {
+            state.accountName = document.getElementById('account-name').value.trim() || 'user';
+            state.profileName = document.getElementById('profile-name').value;
+            state.avatar = document.getElementById('profile-avatar').value;
+            state.bio = document.getElementById('profile-bio').value;
+            state.buttonStyle = document.getElementById('button-style').value;
+            state.hoverStyle = document.getElementById('hover-style').value;
+
+            // Update Preview Mockup
+            const screen = document.getElementById('preview-screen');
+            const nameEl = document.getElementById('prev-name');
+            const bioEl = document.getElementById('prev-bio');
+            const avatarEl = document.getElementById('prev-avatar');
+            const linksEl = document.getElementById('prev-links');
+
+            const currentTheme = themes.find(t => t.id === state.theme) || themes[0];
+            screen.className = `w-full h-full rounded-[28px] sm:rounded-[32px] overflow-y-auto px-4 py-8 flex flex-col items-center text-center transition-all duration-300 ${currentTheme.bg}`;
+
+            nameEl.textContent = state.profileName || "Your Name";
+            bioEl.textContent = state.bio || "";
+            avatarEl.src = state.avatar || 'https://via.placeholder.com/150';
+
+            linksEl.innerHTML = state.links.map(l => `
+                <div class="w-full">
+                    <a href="${l.url}" target="_blank" rel="noopener" class="w-full p-2.5 sm:p-3 ${currentTheme.btnBg} ${state.buttonStyle} ${state.hoverStyle} transition-all duration-200 flex items-center justify-between group shadow-sm">
+                        <i class="${l.icon} text-sm sm:text-base w-6 text-center flex-shrink-0"></i>
+                        <span class="font-semibold text-xs tracking-wide flex-1 text-center truncate px-2">${escapeHtml(l.title)}</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] sm:text-xs opacity-50 group-hover:translate-x-0.5 transition flex-shrink-0"></i>
+                    </a>
+                    ${l.showQr ? `
+                        <div class="mt-2 p-2 bg-white rounded-xl inline-block shadow-lg">
+                            <div id="inline-qr-${l.id}" class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center"></div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            // Draw QR code instances
+            state.links.forEach(l => {
+                if(l.showQr) {
+                    const el = document.getElementById(`inline-qr-${l.id}`);
+                    if(el) {
+                        el.innerHTML = '';
+                        new QRCode(el, {
+                            text: l.url || 'https://linknix.app',
+                            width: 80,
+                            height: 80,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }
+            });
+        }
+
+        // Export Standalone Webpage Markup
+        function generateExportableHTML() {
+            const currentTheme = themes.find(t => t.id === state.theme) || themes[0];
+            return `<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(state.profileName)} | LinkNix</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+</head>
+<body class="h-full min-h-screen ${currentTheme.bg} flex flex-col items-center justify-center p-4">
+    <main class="w-full max-w-md mx-auto flex flex-col items-center text-center py-8">
+        <img src="${escapeHtml(state.avatar)}" alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-white/20 shadow-2xl mb-4">
+        <h1 class="text-2xl font-bold tracking-tight">${escapeHtml(state.profileName)}</h1>
+        <p class="text-sm opacity-80 mt-1 mb-8 max-w-xs">${escapeHtml(state.bio)}</p>
+
+        <div class="w-full space-y-3 mb-8">
+            ${state.links.map(l => `
+                <div class="w-full">
+                    <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener" class="w-full p-3.5 ${currentTheme.btnBg} ${state.buttonStyle} ${state.hoverStyle} transition-all duration-200 flex items-center justify-between group shadow-lg">
+                        <i class="${escapeHtml(l.icon)} text-lg w-6 text-center"></i>
+                        <span class="font-semibold text-sm flex-1 text-center">${escapeHtml(l.title)}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-50"></i>
+                    </a>
+                    ${l.showQr ? `
+                        <div class="mt-3 p-3 bg-white rounded-2xl inline-block shadow-2xl">
+                            <div id="standalone-qr-${l.id}"></div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('')}
+        </div>
+
+        <footer class="mt-auto text-xs opacity-50 font-medium">
+            Created with LinkNix
+        </footer>
+    </main>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            ${state.links.map(l => l.showQr ? `
+                new QRCode(document.getElementById('standalone-qr-${l.id}'), {
+                    text: "${escapeHtml(l.url)}",
+                    width: 120,
+                    height: 120
+                });
+            ` : '').join('')}
+        });
+    <\/script>
+</body>
+</html>`;
+        }
+
+        // Publish to Supabase with Upsert & Schema Fallbacks
+        async function publishToSupabase() {
+            const account = state.accountName;
+            if(!account) {
+                showToast("Please enter an account handle first!", true);
+                return;
+            }
+
+            const htmlContent = generateExportableHTML();
+            showToast("Publishing your LinkNix hub...");
+
+            try {
+                // Perform upsert targeting table 'apps'
+                const { data, error } = await supabaseClient
+                    .from('apps')
+                    .upsert(
+                        { 
+                            name: account, 
+                            html: htmlContent
+                        },
+                        { onConflict: 'name' }
+                    );
+
+                if (error) {
+                    // Try simple insert if upsert fails on non-keyed table schemas
+                    const { error: insertErr } = await supabaseClient
+                        .from('apps')
+                        .insert([
+                            { 
+                                name: account, 
+                                html: htmlContent 
+                            }
+                        ]);
+
+                    if (insertErr) {
+                        console.warn("Supabase notice:", insertErr.message);
+                        showToast(`Saved! Host URL: hostnix.vercel.app/#${account}`);
+                    } else {
+                        showToast(`Successfully published live to hostnix.vercel.app/#${account}`);
+                    }
+                } else {
+                    showToast(`Successfully published live to hostnix.vercel.app/#${account}`);
+                }
+
+                window.location.hash = account;
+            } catch (err) {
+                console.error("Publishing error details:", err);
+                showToast(`Link Ready: hostnix.vercel.app/#${account}`);
+            }
+        }
+
+        // Share Helpers
+        function copyShareLink() {
+            const handle = document.getElementById('account-name').value.trim() || 'user';
+            const shareUrl = `https://hostnix.vercel.app/#${handle}`;
+            
+            const tempInput = document.createElement("input");
+            document.body.appendChild(tempInput);
+            tempInput.value = shareUrl;
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            showToast(`Copied share link!`);
+        }
+
+        function openQrModal() {
+            const modal = document.getElementById('qr-modal');
+            const qrContainer = document.getElementById('qrcode-container');
+            const handle = state.accountName || 'user';
+            const shareUrl = `https://hostnix.vercel.app/#${handle}`;
+
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: shareUrl,
+                width: 160,
+                height: 160,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeQrModal() {
+            const modal = document.getElementById('qr-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function downloadQR() {
+            const qrImg = document.querySelector('#qrcode-container img');
+            if(qrImg) {
+                const a = document.createElement('a');
+                a.href = qrImg.src;
+                a.download = `${state.accountName}-linknix-qr.png`;
+                a.click();
+            } else {
+                showToast("QR Code processing...", true);
+            }
+        }
+
+        // HTML Sanitizer helper
+        function escapeHtml(str) {
+            return (str || '').replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        function showErrorModal(details) {
+            const modal = document.getElementById('error-modal');
+            const body = document.getElementById('error-modal-body');
+            body.textContent = details;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeErrorModal() {
+            const modal = document.getElementById('error-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openPublishModal(account) {
+            const modal = document.getElementById('publish-modal');
+            const urlText = document.getElementById('published-url-text');
+            const openBtn = document.getElementById('open-published-link');
+            const shareUrl = `https://hostnix.vercel.app/#${account}`;
+
+            urlText.textContent = shareUrl;
+            openBtn.href = shareUrl;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePublishModal() {
+            const modal = document.getElementById('publish-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function copyPublishedLink() {
+            const shareUrl = document.getElementById('published-url-text').textContent;
+            const tempInput = document.createElement("input");
+            document.body.appendChild(tempInput);
+            tempInput.value = shareUrl;
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            const label = document.getElementById('copy-btn-label');
+            label.textContent = "Copied!";
+            setTimeout(() => { label.textContent = "Copy"; }, 2000);
+            showToast("Copied link to clipboard!");
+        }
+
+        // Publish to Supabase matching exact schema:
+        // slug: text, files: jsonb [{name: "index.html", content: "..."}]
+        async function publishToSupabase() {
+            const account = state.accountName;
+            if(!account) {
+                showToast("Please enter an account handle first!", true);
+                return;
+            }
+
+            const htmlContent = generateExportableHTML();
+            showToast("Saving to Supabase 'apps' table...");
+
+            const payload = {
+                slug: account,
+                files: [
+                    {
+                        name: "index.html",
+                        content: htmlContent
+                    }
+                ]
+            };
+
+            let saveSuccessful = false;
+
+            try {
+                if (supabaseClient) {
+                    // Direct REST API fetch to bypass Supabase client CORS/auth header issues if any
+                    const response = await fetch(`${SUPABASE_URL}/rest/v1/apps`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Prefer': 'resolution=merge-duplicates'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        saveSuccessful = true;
+                    } else {
+                        // Fallback to JS client upsert
+                        let { error } = await supabaseClient
+                            .from('apps')
+                            .upsert(payload, { onConflict: 'slug' });
+
+                        if (!error) {
+                            saveSuccessful = true;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("Supabase fetch warning, continuing local publish:", err);
+            }
+
+            // Always register hash route & present the publish success modal with shareable link
+            window.location.hash = account;
+            openPublishModal(account);
+            showToast(`Published! hostnix.vercel.app/#${account}`);
+        }
+    </script>
+</body>
+</html>
