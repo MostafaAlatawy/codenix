@@ -207,15 +207,20 @@
 
         /* ---------- App cards ---------- */
         .app-card {
-            position: relative; display: flex; align-items: center; gap: 12px;
-            padding: 12px; border-radius: 12px; color: inherit; text-decoration: none;
+            position: relative; display: flex; align-items: center;
+            border-radius: 12px;
             background: var(--panel); border: 1px solid var(--line);
             transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
         }
-        .app-card:hover, .app-card:focus-visible {
+        .app-card:hover, .app-card:focus-within {
             border-color: rgba(139, 92, 246, .55); background: var(--panel-2);
             box-shadow: 0 8px 24px -12px rgba(139, 92, 246, .35);
         }
+        .app-main {
+            display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
+            padding: 12px; border-radius: 12px; color: inherit; text-decoration: none;
+        }
+        .app-main:focus-visible { outline-offset: -2px; }
         .app-tile {
             width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px; overflow: hidden;
             display: grid; place-items: center;
@@ -225,12 +230,41 @@
         .app-name { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .app-path { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
         .app-go { margin-left: auto; color: var(--faint); opacity: 0; transform: translateX(-4px); transition: all .15s ease; flex-shrink: 0; }
-        .app-card:hover .app-go, .app-card:focus-visible .app-go { opacity: 1; transform: none; color: var(--tile-fg); }
+        .app-card:hover .app-go, .app-main:focus-visible .app-go { opacity: 1; transform: none; color: var(--tile-fg); }
         @media (hover: none) { .app-go { opacity: 1; transform: none; } }
 
-        .app-card.compact { padding: 9px 12px; }
+        .app-card.compact .app-main { padding: 9px 12px; }
         .app-card.compact .app-text { display: flex; align-items: baseline; gap: 14px; min-width: 0; flex: 1; }
         .app-card.compact .app-path { margin-top: 0; }
+
+        .app-uses {
+            flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+            color: var(--tile-fg); background: var(--tile); border: 1px solid var(--tile-line);
+            padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+        }
+
+        /* Pin (star) button */
+        .fav-btn {
+            flex-shrink: 0; width: 32px; height: 32px; margin-right: 8px;
+            display: grid; place-items: center; border-radius: 8px;
+            color: var(--faint); transition: color .15s ease, background-color .15s ease;
+        }
+        .fav-btn svg { fill: none; transition: fill .15s ease; }
+        .fav-btn:hover { color: var(--tile-fg); background: var(--tile); }
+        .fav-btn[aria-pressed="true"] { color: var(--accent); }
+        .fav-btn[aria-pressed="true"] svg { fill: currentColor; }
+
+        /* Pinned / most used section chrome */
+        .sec-ico {
+            width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px;
+            background: var(--tile); color: var(--tile-fg);
+        }
+        .link-btn { font-size: 12px; font-weight: 500; color: var(--faint); transition: color .15s ease; }
+        .link-btn:hover { color: var(--tile-fg); }
+        .hint-box {
+            display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+            border: 1px dashed var(--line-strong); color: var(--muted); font-size: 13px; line-height: 1.5;
+        }
 
         .notice-card {
             display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px;
@@ -998,11 +1032,161 @@
             renderEcosystem();
         }
 
+        // ---------- Your choices (pinned) and Most used (click counts), saved in this browser ----------
+        const FAV_KEY = 'codenix_favorites';
+        const CLICK_KEY = 'codenix_tool_clicks';
+        const MOST_USED_LIMIT = 6;
+
+        const readStore = (key, fallback) => {
+            try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch (e) { return fallback; }
+        };
+        const writeStore = (key, value) => {
+            try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage unavailable */ }
+        };
+
+        let favorites = readStore(FAV_KEY, []);
+        if (!Array.isArray(favorites)) favorites = [];
+        let toolClicks = readStore(CLICK_KEY, {});
+        if (!toolClicks || typeof toolClicks !== 'object' || Array.isArray(toolClicks)) toolClicks = {};
+
+        // A tool is identified by its link
+        const toolKey = (tool) => (tool.link || '').trim().toLowerCase();
+
+        function getAllToolsMap() {
+            const map = new Map();
+            Object.values(rawEcosystemData).forEach(list => list.forEach(t => {
+                const k = toolKey(t);
+                if (k && !map.has(k)) map.set(k, t);
+            }));
+            return map;
+        }
+
+        function toggleFavorite(key, refocus) {
+            if (!key) return;
+            favorites = favorites.includes(key) ? favorites.filter(k => k !== key) : [...favorites, key];
+            writeStore(FAV_KEY, favorites);
+            renderEcosystem();
+            if (refocus) {
+                const btn = document.querySelector(`[data-fav="${CSS.escape(key)}"]`);
+                if (btn) btn.focus();
+            }
+        }
+
+        function trackClick(key) {
+            if (!key) return;
+            toolClicks[key] = (toolClicks[key] || 0) + 1;
+            writeStore(CLICK_KEY, toolClicks);
+        }
+
+        function clearUsage() {
+            toolClicks = {};
+            writeStore(CLICK_KEY, toolClicks);
+            renderEcosystem();
+        }
+
+        // One listener for pin buttons and for counting opens (works for dynamically rendered cards)
+        document.addEventListener('click', (e) => {
+            const favBtn = e.target.closest('[data-fav]');
+            if (favBtn) {
+                e.preventDefault();
+                toggleFavorite(favBtn.dataset.fav, e.detail === 0);
+                return;
+            }
+            const link = e.target.closest('a[data-track]');
+            if (link) trackClick(link.dataset.track);
+        });
+        document.addEventListener('auxclick', (e) => {
+            if (e.button !== 1) return;
+            const link = e.target.closest('a[data-track]');
+            if (link) trackClick(link.dataset.track);
+        });
+
+        const STAR_SVG = `<svg class="h-4 w-4" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg>`;
+        const TREND_SVG = `<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>`;
+
+        function toolCardHTML(tool, isGrid, showUses) {
+            const key = toolKey(tool);
+            const isFav = favorites.includes(key);
+            const uses = toolClicks[key] || 0;
+            const favLabel = `${isFav ? 'Remove from' : 'Add to'} Your choices: ${tool.name}`;
+
+            return `
+                <div class="app-card ${isGrid ? '' : 'compact'}">
+                    <a href="${esc(tool.link)}" ${key ? `data-track="${esc(key)}"` : ''} class="app-main">
+                        <div class="app-tile">${getToolIconHTML(tool)}</div>
+                        <div class="${isGrid ? 'min-w-0 flex-1' : 'app-text'}">
+                            <h4 class="app-name">${esc(tool.name)}</h4>
+                            <p class="app-path">${esc(tool.link)}</p>
+                        </div>
+                        ${showUses ? `<span class="app-uses">${uses} ${uses === 1 ? 'open' : 'opens'}</span>` : ''}
+                        <svg class="app-go h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M9 7h8v8" />
+                        </svg>
+                    </a>
+                    ${key ? `<button type="button" class="fav-btn" data-fav="${esc(key)}" aria-pressed="${isFav}" aria-label="${esc(favLabel)}" title="${esc(favLabel)}">${STAR_SVG}</button>` : ''}
+                </div>`;
+        }
+
+        // "Your choices" and "Most used" appear first, on the All apps view without a search
+        function personalSectionsHTML(isGrid, gridClass) {
+            if (activeCategoryFilter !== 'all' || searchQuery.trim() !== '') return '';
+
+            const map = getAllToolsMap();
+            let html = '';
+
+            // Your choices
+            const pinned = favorites.map(k => map.get(k)).filter(Boolean);
+            html += `
+                <section class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="sec-ico" style="color:var(--accent)">${STAR_SVG}</span>
+                        <h3 class="text-[13px] font-semibold">Your choices</h3>
+                        <span class="text-[11px] font-mono" style="color:var(--faint)">${pinned.length}</span>
+                        <div class="h-px flex-1 hairline"></div>
+                    </div>
+                    ${pinned.length > 0
+                        ? `<div class="${gridClass}">${pinned.map(t => toolCardHTML(t, isGrid, false)).join('')}</div>`
+                        : `<div class="hint-box">
+                               <span class="sec-ico" style="color:var(--accent)">${STAR_SVG}</span>
+                               <span>Select the star on any app to pin it here for quick access.</span>
+                           </div>`}
+                </section>`;
+
+            // Most used
+            const ranked = [...map.entries()]
+                .map(([k, t]) => ({ tool: t, count: toolClicks[k] || 0 }))
+                .filter(x => x.count > 0)
+                .sort((a, b) => b.count - a.count || a.tool.name.localeCompare(b.tool.name))
+                .slice(0, MOST_USED_LIMIT);
+
+            html += `
+                <section class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="sec-ico">${TREND_SVG}</span>
+                        <h3 class="text-[13px] font-semibold">Most used</h3>
+                        <span class="text-[11px] font-mono" style="color:var(--faint)">${ranked.length}</span>
+                        <div class="h-px flex-1 hairline"></div>
+                        ${ranked.length > 0 ? `<button type="button" onclick="clearUsage()" class="link-btn">Clear history</button>` : ''}
+                    </div>
+                    ${ranked.length > 0
+                        ? `<div class="${gridClass}">${ranked.map(x => toolCardHTML(x.tool, isGrid, true)).join('')}</div>`
+                        : `<div class="hint-box">
+                               <span class="sec-ico">${TREND_SVG}</span>
+                               <span>The apps you open most often will show up here.</span>
+                           </div>`}
+                </section>`;
+
+            return html;
+        }
+
         // Render Cards
         function renderEcosystem() {
-            let sectionsHtml = '';
+            let categoriesHtml = '';
             let totalRenderedTools = 0;
             const isGrid = currentViewMode === 'grid';
+            const gridClass = isGrid
+                ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
+                : "flex flex-col gap-2";
 
             Object.keys(rawEcosystemData).forEach(sectionTitle => {
                 if (activeCategoryFilter !== 'all' && activeCategoryFilter.toLowerCase() !== sectionTitle.toLowerCase()) {
@@ -1020,36 +1204,21 @@
 
                 totalRenderedTools += toolsList.length;
 
-                const gridClass = isGrid
-                    ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"
-                    : "flex flex-col gap-2";
-
-                sectionsHtml += `
+                categoriesHtml += `
                     <section class="space-y-3">
                         <div class="flex items-center gap-3">
                             <h3 class="text-[13px] font-semibold">${esc(sectionTitle)}</h3>
                             <span class="text-[11px] font-mono" style="color:var(--faint)">${toolsList.length}</span>
                             <div class="h-px flex-1 hairline"></div>
                         </div>
-
                         <div class="${gridClass}">
-                            ${toolsList.map(tool => `
-                                <a href="${esc(tool.link)}" class="app-card ${isGrid ? '' : 'compact'} group">
-                                    <div class="app-tile">${getToolIconHTML(tool)}</div>
-                                    <div class="${isGrid ? 'min-w-0' : 'app-text'}">
-                                        <h4 class="app-name">${esc(tool.name)}</h4>
-                                        <p class="app-path">${esc(tool.link)}</p>
-                                    </div>
-                                    <svg class="app-go h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M9 7h8v8" />
-                                    </svg>
-                                </a>
-                            `).join('')}
+                            ${toolsList.map(tool => toolCardHTML(tool, isGrid, false)).join('')}
                         </div>
                     </section>
                 `;
             });
 
+            let sectionsHtml;
             if (totalRenderedTools === 0) {
                 sectionsHtml = `
                     <div class="panel py-16 text-center">
@@ -1060,6 +1229,8 @@
                         <p class="text-xs mt-1" style="color:var(--muted)">Try a different name or choose another category.</p>
                     </div>
                 `;
+            } else {
+                sectionsHtml = personalSectionsHTML(isGrid, gridClass) + categoriesHtml;
             }
 
             resultCount.textContent = totalRenderedTools > 0 ? `${totalRenderedTools} ${totalRenderedTools === 1 ? 'app' : 'apps'}` : '';
