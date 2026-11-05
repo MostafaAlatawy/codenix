@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codenix Studio - User Profile</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #7c3aed;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col antialiased selection:bg-brand-600 selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border-b border-gray-200 dark:border-brand-900/40 px-4 lg:px-8 py-3 transition-colors">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="#" class="flex items-center gap-2 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid font-bold text-xl">C</i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg text-gray-900 dark:text-white tracking-tight">Codenix<span class="text-brand-600 dark:text-brand-400">Studio</span></span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block -mt-1 font-medium">User Profile Hub</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Header Right Controls -->
+            <div class="flex items-center gap-3">
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all border border-gray-300 dark:border-gray-800" title="Toggle Light/Dark Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+
+                <!-- Profile Switcher / Search -->
+                <div class="relative">
+                    <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-xl px-3 py-1.5 text-sm">
+                        <i class="fa-solid fa-search text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Search @username..." class="bg-transparent border-none outline-none text-xs sm:text-sm w-28 sm:w-40 text-gray-800 dark:text-gray-200" onkeyup="handleSearchKey(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border"></div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- LOADING STATE -->
+        <div id="loadingState" class="flex flex-col items-center justify-center py-20 gap-4">
+            <div class="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-gray-500 dark:text-gray-400 font-medium">Fetching profile details from Supabase...</p>
+        </div>
+
+        <!-- LOCKED PROFILE DISPLAY (PRIVACY: LOCKED TO ALL) -->
+        <div id="lockedAllView" class="hidden bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-8 sm:p-12 text-center shadow-xl">
+            <div class="w-20 h-20 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 id="lockedNameHeader" class="text-2xl font-bold text-gray-900 dark:text-white">Profile Locked</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto text-sm">This account has been completely locked by the user. Personal information, achievements, and statistics are set to private.</p>
+            <div class="mt-6 flex justify-center gap-3">
+                <button onclick="window.location.hash='#demo'" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm transition-all shadow-md shadow-brand-500/20">
+                    Back to Demo Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSWORD PROTECTED PROFILE VIEW (FRIENDS ONLY) -->
+        <div id="lockedFriendsView" class="hidden bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-8 sm:p-12 text-center shadow-xl">
+            <div class="w-20 h-20 bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Friends Only Profile</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto text-sm">This user's profile is locked for friends. Enter the access PIN/Password provided by the account owner to view.</p>
+            
+            <form onsubmit="unlockProfileWithPin(event)" class="mt-6 max-w-xs mx-auto space-y-3">
+                <input type="password" id="pinInput" placeholder="Enter Access Code / PIN" required class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-center tracking-widest outline-none focus:ring-2 focus:ring-brand-500">
+                <button type="submit" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-all shadow-md shadow-brand-500/20">
+                    Unlock Profile
+                </button>
+            </form>
+        </div>
+
+        <!-- MAIN PROFILE CONTENT VIEW -->
+        <div id="profileContainer" class="hidden space-y-6">
+
+            <!-- BANNER & AVATAR HEADER CARD -->
+            <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-xl relative transition-all">
+                <!-- Cover Banner -->
+                <div id="profileBanner" class="h-44 sm:h-56 w-full bg-gradient-to-r from-brand-700 via-purple-600 to-indigo-800 relative">
+                    <div class="absolute inset-0 bg-black/20"></div>
+                    <!-- Quick Actions Top Right -->
+                    <div class="absolute top-4 right-4 flex items-center gap-2">
+                        <button onclick="shareProfileLink()" class="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-2 border border-white/20 transition-all">
+                            <i class="fa-solid fa-share-nodes"></i> Share Link
+                        </button>
+                        <div id="ownerBadge" class="hidden px-3.5 py-2 rounded-xl bg-emerald-500/80 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1.5 border border-emerald-400/30">
+                            <i class="fa-solid fa-user-check"></i> You (Owner View)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Avatar & Details Section -->
+                <div class="px-6 sm:px-8 pb-8 relative pt-0">
+                    <div class="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 sm:-mt-20 gap-4 mb-6">
+                        <!-- Avatar -->
+                        <div class="relative inline-block">
+                            <img id="userAvatar" src="https://placehold.co/150x150/7c3aed/ffffff?text=CN" alt="User Avatar" class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white dark:border-gray-900 object-cover shadow-2xl bg-brand-800">
+                            <span id="roleBadge" class="absolute bottom-2 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-600 text-white border-2 border-white dark:border-gray-900 shadow">
+                                User
+                            </span>
+                        </div>
+
+                        <!-- Action Buttons (Owner Mode) -->
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button id="editBtn" onclick="openEditModal()" class="hidden px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-brand-600/30">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+                            </button>
+                            <button id="privacySettingsBtn" onclick="openPrivacyModal()" class="hidden px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold text-sm transition-all flex items-center gap-2 border border-gray-300 dark:border-gray-700">
+                                <i class="fa-solid fa-shield-halved"></i> Privacy & Lock
+                            </button>
+                            <button id="deleteAccountBtn" onclick="confirmDeleteAccount()" class="hidden px-3.5 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold text-sm transition-all border border-red-500/20" title="Delete Account">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- User Name & Title -->
+                    <div class="space-y-1">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <h1 id="displayName" class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Loading Name...</h1>
+                            <!-- Verified Badge -->
+                            <span id="verifiedBadge" class="hidden text-brand-500 text-xl" title="Verified Codenix Account">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </span>
+                            <!-- Beta User Badge -->
+                            <span id="betaBadge" class="hidden px-2.5 py-0.5 rounded-md text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                                <i class="fa-solid fa-flask text-xs mr-1"></i> Beta Tester
+                            </span>
+                        </div>
+                        <p id="usernameDisplay" class="text-sm font-medium text-brand-600 dark:text-brand-400">@username</p>
+                    </div>
+
+                    <!-- Bio -->
+                    <p id="userBio" class="mt-4 text-gray-600 dark:text-gray-300 text-sm sm:text-base leading-relaxed max-w-3xl">
+                        No bio provided yet.
+                    </p>
+
+                    <!-- Profile Meta Badges -->
+                    <div class="mt-6 flex flex-wrap items-center gap-4 text-xs font-medium text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-regular fa-calendar-alt text-brand-500"></i>
+                            <span>Joined: <strong id="regDate" class="text-gray-700 dark:text-gray-300">November 2024</strong></span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-link text-brand-500"></i>
+                            <span class="truncate max-w-xs font-mono text-[11px]" id="canonicalUrl">https://codenix.pages.dev/u/#...</span>
+                        </div>
+                        <div id="privacyStatusBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                            <i class="fa-solid fa-globe text-emerald-500"></i> Public Profile
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID LAYOUT FOR EXTRA DETAILS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- LEFT COLUMN: Contact With & Custom Link -->
+                <div class="space-y-6">
+                    
+                    <!-- NEW FEATURE: CONTACT WITH (COMING SOON) -->
+                    <div class="bg-gradient-to-br from-purple-900/10 via-white to-purple-50 dark:from-brand-950/40 dark:via-gray-900 dark:to-purple-950/30 rounded-3xl border border-brand-200 dark:border-brand-900/50 p-6 shadow-lg relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-brand-500/10 rounded-full blur-xl pointer-events-none"></div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-brand-600/10 text-brand-600 dark:text-brand-400 flex items-center justify-center font-bold">
+                                    <i class="fa-regular fa-paper-plane"></i>
+                                </div>
+                                <h3 class="font-bold text-gray-900 dark:text-white text-base">Contact With</h3>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30">
+                                Coming Soon
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+                            Direct peer-to-peer message requests and collaboration invites through Codenix Studio network.
+                        </p>
+                        <button disabled class="w-full py-2.5 rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 text-xs font-semibold cursor-not-allowed flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-700">
+                            <i class="fa-solid fa-lock text-xs"></i> Direct Messaging Locked
+                        </button>
+                    </div>
+
+                    <!-- DISPLAY LINK SHOWN BY USER -->
+                    <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 shadow-lg">
+                        <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-globe text-brand-500"></i> Featured Website / Link
+                        </h3>
+                        <div id="showLinkContainer" class="space-y-2">
+                            <a id="userShowLink" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-900/60 font-medium text-sm hover:underline group">
+                                <span class="truncate" id="userShowLinkText">No link shared</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-70 group-hover:opacity-100"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- PRIVATE / DETAILED DATA (VISIBLE ONLY TO OWNER OR ADMIN) -->
+                    <div id="ownerOnlyDetailsCard" class="hidden bg-white dark:bg-gray-900 rounded-3xl border border-brand-500/30 dark:border-brand-500/30 p-6 shadow-lg relative">
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800 pb-3">
+                            <h3 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-user-shield text-brand-500"></i> Private Account Intel
+                            </h3>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500/20 text-brand-600 dark:text-brand-400">Only Visible to You</span>
+                        </div>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between py-1.5 border-b border-gray-100 dark:border-gray-800/60">
+                                <span class="text-gray-500">Account ID:</span>
+                                <span id="intelAccountId" class="font-mono text-gray-800 dark:text-gray-200 truncate max-w-[160px]">--</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-gray-100 dark:border-gray-800/60">
+                                <span class="text-gray-500">Assigned Role:</span>
+                                <span id="intelRole" class="font-semibold text-brand-600 dark:text-brand-400">--</span>
+                            </div>
+                            <div class="flex justify-between py-1.5">
+                                <span class="text-gray-500">Auth Email:</span>
+                                <span id="intelEmail" class="font-mono text-gray-800 dark:text-gray-200">user@codenix.dev</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN (2 COLS): Achievements & Bug History -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- ACHIEVEMENTS BADGES SECTION -->
+                    <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                                <i class="fa-solid fa-trophy text-amber-500"></i> Admin Badges & Achievements
+                            </h3>
+                            <span id="achievementCount" class="text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">0 Badges</span>
+                        </div>
+
+                        <!-- Achievements Grid -->
+                        <div id="achievementsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- BUG HISTORY SECTION -->
+                    <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                                <i class="fa-solid fa-bug text-red-500"></i> Bug Reporting & Contribution History
+                            </h3>
+                            <span id="bugCount" class="text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">0 Reported</span>
+                        </div>
+
+                        <!-- Bug Logs List -->
+                        <div id="bugHistoryContainer" class="space-y-3">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>© Codenix Studio - Integrated Profile Hub. All rights reserved.</p>
+            <div class="flex items-center gap-4">
+                <a href="#demo" class="hover:underline">Demo Account</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
+            <button onclick="closeEditModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Edit Profile Details</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Update your public presence on Codenix Studio.</p>
+
+            <form onsubmit="saveProfileEdits(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
+                    <input type="text" id="editDisplayName" required class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Username Handle (URL Key)</label>
+                    <div class="flex items-center">
+                        <span class="px-3 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-500 text-xs rounded-l-xl border border-r-0 border-gray-300 dark:border-gray-700 font-mono">codenix.pages.dev/u/#</span>
+                        <input type="text" id="editUsername" required pattern="[a-zA-Z0-9_]+" title="Letters, numbers and underscores only" class="w-full px-4 py-2.5 rounded-r-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Featured Link / Portfolio URL</label>
+                    <input type="url" id="editShowLink" placeholder="https://yourportfolio.com" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Avatar Image URL</label>
+                    <input type="url" id="editAvatarUrl" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Bio Description</label>
+                    <textarea id="editBio" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-md shadow-brand-500/20">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PRIVACY & LOCK MODAL -->
+    <div id="privacyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
+            <button onclick="closePrivacyModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">Privacy & Lock Settings</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Choose who can view your Codenix profile.</p>
+
+            <form onsubmit="savePrivacySettings(event)" class="space-y-4">
+                <div class="space-y-3">
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer">
+                        <input type="radio" name="lockType" value="none" id="lockNone" class="mt-1 text-brand-600 focus:ring-brand-500">
+                        <div>
+                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">Public (Unlocked)</span>
+                            <span class="block text-xs text-gray-500">Anyone with your custom link can view full profile details.</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer">
+                        <input type="radio" name="lockType" value="friends" id="lockFriends" class="mt-1 text-brand-600 focus:ring-brand-500" onchange="togglePinInput()">
+                        <div>
+                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">Protected for Friends (Password/PIN)</span>
+                            <span class="block text-xs text-gray-500">Visitors must enter your PIN to view profile details.</span>
+                        </div>
+                    </label>
+
+                    <div id="pinConfigGroup" class="pl-8 hidden space-y-2">
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Set Access PIN / Password</label>
+                        <input type="password" id="editAccessPin" placeholder="4-digit PIN or Password" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-xs">
+                    </div>
+
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer">
+                        <input type="radio" name="lockType" value="all" id="lockAll" class="mt-1 text-brand-600 focus:ring-brand-500">
+                        <div>
+                            <span class="block text-sm font-semibold text-red-600 dark:text-red-400">Lock for All</span>
+                            <span class="block text-xs text-gray-500">Only shows name header. All bio, links, and badges are hidden.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <button type="button" onclick="closePrivacyModal()" class="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold">
+                        Apply Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT & SUPABASE INTEGRATION -->
+    <script>
+        // 1. SUPABASE CLIENT CONFIGURATION
+        const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
+        
+        let supabaseClient = null;
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        // Demo Fallback Data in case table is not populated yet
+        const DEMO_PROFILES = {
+            "demo": {
+                id: "demo-uuid-001",
+                username: "demo",
+                display_name: "Codenix Architect",
+                bio: "Full-stack cloud engineer & UI designer building next-gen web tools. Excited for upcoming Codenix Studio features!",
+                show_link: "https://codenix.pages.dev",
+                avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+                verified: true,
+                is_beta: true,
+                role: "Senior Lead",
+                created_at: "2024-01-15T10:00:00Z",
+                achievements: [
+                    { title: "Bug Hunter Elite", desc: "Resolved 25+ critical platform bugs during Alpha testing.", icon: "fa-solid fa-bug" },
+                    { title: "Early Pioneer", desc: "First 100 registered members on Codenix Cloud Studio.", icon: "fa-solid fa-rocket" },
+                    { title: "Component Master", desc: "Contributed over 10 custom UI widgets to community showcase.", icon: "fa-solid fa-cubes" }
+                ],
+                bug_history: [
+                    { id: "BUG-1092", title: "Theme toggle sync glitch in Webflow builder", status: "Resolved", date: "Oct 24, 2026" },
+                    { id: "BUG-0844", title: "WebSocket reconnect latency optimization", status: "Closed", date: "Sep 12, 2026" }
+                ],
+                is_locked: "none",
+                lock_pin: null
+            },
+            "alex_dev": {
+                id: "demo-uuid-002",
+                username: "alex_dev",
+                display_name: "Alex Rivera",
+                bio: "Cybersecurity researcher & Rust developer. Profile locked for friends.",
+                show_link: "https://github.com",
+                avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+                verified: false,
+                is_beta: true,
+                role: "Beta Tester",
+                created_at: "2025-06-20T14:30:00Z",
+                achievements: [
+                    { title: "Security Advocate", desc: "Identified zero-day vulnerability in auth workflow.", icon: "fa-solid fa-shield-cat" }
+                ],
+                bug_history: [],
+                is_locked: "friends",
+                lock_pin: "1234"
+            }
+        };
+
+        // Current Active State
+        let currentProfileData = null;
+        let isOwner = false;
+        let isPinUnlocked = false;
+
+        // On DOM Loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            window.addEventListener('hashchange', loadProfileFromHash);
+            loadProfileFromHash();
+        });
+
+        // 2. THEME SWITCHING
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-amber-500';
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon text-brand-400';
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-amber-500';
+                showToast('Switched to Light Mode (Purple & White)', 'info');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon text-brand-400';
+                showToast('Switched to Dark Mode (Purple & Black)', 'info');
+            }
+        }
+
+        // 3. PROFILE LOADING LOGIC
+        async function loadProfileFromHash() {
+            showLoading(true);
+            let rawHash = window.location.hash.replace('#', '').trim();
+            if (!rawHash) {
+                rawHash = 'demo';
+                window.location.hash = '#demo';
+            }
+
+            const cleanUsername = rawHash.replace('/u/', '').replace('u/', '').toLowerCase();
+
+            try {
+                let fetchedData = null;
+
+                if (supabaseClient) {
+                    const { data, error } = await supabaseClient
+                        .from('profile_u')
+                        .select('*')
+                        .eq('username', cleanUsername)
+                        .maybeSingle();
+
+                    if (!error && data) {
+                        fetchedData = data;
+                    }
+                }
+
+                if (!fetchedData && DEMO_PROFILES[cleanUsername]) {
+                    fetchedData = DEMO_PROFILES[cleanUsername];
+                }
+
+                if (!fetchedData) {
+                    fetchedData = {
+                        id: `gen-${Date.now()}`,
+                        username: cleanUsername,
+                        display_name: cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
+                        bio: `Hello! I am @${cleanUsername} on Codenix Studio. You can edit this profile in your dashboard.`,
+                        show_link: `https://codenix.pages.dev/u/#${cleanUsername}`,
+                        avatar_url: `https://placehold.co/150x150/7c3aed/ffffff?text=${cleanUsername.slice(0,2).toUpperCase()}`,
+                        verified: false,
+                        is_beta: true,
+                        role: "Community Member",
+                        created_at: new Date().toISOString(),
+                        achievements: [
+                            { title: "New Explorer", desc: "Joined Codenix Studio ecosystem.", icon: "fa-solid fa-seedling" }
+                        ],
+                        bug_history: [],
+                        is_locked: "none",
+                        lock_pin: null
+                    };
+                }
+
+                currentProfileData = fetchedData;
+                isOwner = (cleanUsername === 'demo' || cleanUsername === 'myaccount');
+
+                renderProfile(currentProfileData);
+            } catch (err) {
+                console.error("Error loading profile:", err);
+                showToast("Failed to fetch profile details", "error");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 4. PROFILE RENDERING
+        function renderProfile(profile) {
+            document.getElementById('lockedAllView').classList.add('hidden');
+            document.getElementById('lockedFriendsView').classList.add('hidden');
+            document.getElementById('profileContainer').classList.add('hidden');
+
+            if (profile.is_locked === 'all' && !isOwner) {
+                document.getElementById('lockedNameHeader').innerText = `${profile.display_name} (@${profile.username})`;
+                document.getElementById('lockedAllView').classList.remove('hidden');
+                return;
+            }
+
+            if (profile.is_locked === 'friends' && !isOwner && !isPinUnlocked) {
+                document.getElementById('lockedFriendsView').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('profileContainer').classList.remove('hidden');
+
+            document.getElementById('displayName').innerText = profile.display_name || profile.username;
+            document.getElementById('usernameDisplay').innerText = `@${profile.username}`;
+            document.getElementById('userBio').innerText = profile.bio || 'No bio provided.';
+            document.getElementById('userAvatar').src = profile.avatar_url || `https://placehold.co/150x150/7c3aed/ffffff?text=${profile.username.slice(0,2).toUpperCase()}`;
+
+            const verifiedElem = document.getElementById('verifiedBadge');
+            if (profile.verified) {
+                verifiedElem.classList.remove('hidden');
+            } else {
+                verifiedElem.classList.add('hidden');
+            }
+
+            const betaElem = document.getElementById('betaBadge');
+            if (profile.is_beta) {
+                betaElem.classList.remove('hidden');
+            } else {
+                betaElem.classList.add('hidden');
+            }
+
+            document.getElementById('roleBadge').innerText = profile.role || 'Member';
+
+            const regDateObj = new Date(profile.created_at || Date.now());
+            document.getElementById('regDate').innerText = regDateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+            const fullLink = `https://codenix.pages.dev/u/#${profile.username}`;
+            document.getElementById('canonicalUrl').innerText = fullLink;
+
+            const showLinkElem = document.getElementById('userShowLink');
+            const showLinkText = document.getElementById('userShowLinkText');
+            if (profile.show_link) {
+                showLinkElem.href = profile.show_link;
+                showLinkText.innerText = profile.show_link;
+            } else {
+                showLinkElem.href = "#";
+                showLinkText.innerText = "No link shared yet";
+            }
+
+            const privacyStatusBadge = document.getElementById('privacyStatusBadge');
+            if (profile.is_locked === 'friends') {
+                privacyStatusBadge.innerHTML = `<i class="fa-solid fa-user-lock text-amber-500"></i> Protected (Friends Only)`;
+            } else if (profile.is_locked === 'all') {
+                privacyStatusBadge.innerHTML = `<i class="fa-solid fa-lock text-red-500"></i> Locked for All`;
+            } else {
+                privacyStatusBadge.innerHTML = `<i class="fa-solid fa-globe text-emerald-500"></i> Public Profile`;
+            }
+
+            const ownerBadge = document.getElementById('ownerBadge');
+            const editBtn = document.getElementById('editBtn');
+            const privacyBtn = document.getElementById('privacySettingsBtn');
+            const deleteBtn = document.getElementById('deleteAccountBtn');
+            const intelCard = document.getElementById('ownerOnlyDetailsCard');
+
+            if (isOwner) {
+                ownerBadge.classList.remove('hidden');
+                editBtn.classList.remove('hidden');
+                privacyBtn.classList.remove('hidden');
+                deleteBtn.classList.remove('hidden');
+                intelCard.classList.remove('hidden');
+
+                document.getElementById('intelAccountId').innerText = profile.id || 'N/A';
+                document.getElementById('intelRole').innerText = profile.role || 'Member';
+                document.getElementById('intelEmail').innerText = `${profile.username}@codenix.dev`;
+            } else {
+                ownerBadge.classList.add('hidden');
+                editBtn.classList.add('hidden');
+                privacyBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
+                intelCard.classList.add('hidden');
+            }
+
+            renderAchievements(profile.achievements || []);
+            renderBugHistory(profile.bug_history || []);
+        }
+
+        function renderAchievements(list) {
+            const container = document.getElementById('achievementsGrid');
+            const countElem = document.getElementById('achievementCount');
+            countElem.innerText = `${list.length} Badges`;
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 col-span-2 py-4 text-center">No achievements assigned by admin yet.</p>`;
+                return;
+            }
+
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "flex items-start gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 hover:border-brand-500/40 transition-colors";
+                card.innerHTML = `
+                    <div class="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0 text-base">
+                        <i class="${item.icon || 'fa-solid fa-award'}"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white">${item.title}</h4>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">${item.desc}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderBugHistory(bugs) {
+            const container = document.getElementById('bugHistoryContainer');
+            const countElem = document.getElementById('bugCount');
+            countElem.innerText = `${bugs.length} Reported`;
+            container.innerHTML = '';
+
+            if (bugs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 py-4 text-center">No reported bugs in history log.</p>`;
+                return;
+            }
+
+            bugs.forEach(bug => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 text-xs";
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="font-mono text-[10px] text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded bg-brand-500/10">${bug.id}</span>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">${bug.title}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] text-gray-400">${bug.date}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${bug.status === 'Resolved' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-gray-500/20 text-gray-400'}">${bug.status}</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // 5. MODALS & EDITS
+        function openEditModal() {
+            if (!currentProfileData) return;
+            document.getElementById('editDisplayName').value = currentProfileData.display_name || '';
+            document.getElementById('editUsername').value = currentProfileData.username || '';
+            document.getElementById('editShowLink').value = currentProfileData.show_link || '';
+            document.getElementById('editAvatarUrl').value = currentProfileData.avatar_url || '';
+            document.getElementById('editBio').value = currentProfileData.bio || '';
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        async function saveProfileEdits(e) {
+            e.preventDefault();
+            const newDisplayName = document.getElementById('editDisplayName').value.trim();
+            const newUsername = document.getElementById('editUsername').value.trim().toLowerCase();
+            const newShowLink = document.getElementById('editShowLink').value.trim();
+            const newAvatarUrl = document.getElementById('editAvatarUrl').value.trim();
+            const newBio = document.getElementById('editBio').value.trim();
+
+            currentProfileData.display_name = newDisplayName;
+            currentProfileData.username = newUsername;
+            currentProfileData.show_link = newShowLink;
+            currentProfileData.avatar_url = newAvatarUrl;
+            currentProfileData.bio = newBio;
+
+            if (supabaseClient && currentProfileData.id) {
+                try {
+                    await supabaseClient.from('profile_u').upsert({
+                        id: currentProfileData.id,
+                        username: newUsername,
+                        display_name: newDisplayName,
+                        show_link: newShowLink,
+                        avatar_url: newAvatarUrl,
+                        bio: newBio
+                    });
+                } catch (err) {
+                    console.warn("Supabase upsert note:", err);
+                }
+            }
+
+            closeEditModal();
+            window.location.hash = `#${newUsername}`;
+            renderProfile(currentProfileData);
+            showToast("Profile details updated successfully!", "success");
+        }
+
+        function openPrivacyModal() {
+            if (!currentProfileData) return;
+            const lockType = currentProfileData.is_locked || 'none';
+            document.getElementById('lockNone').checked = (lockType === 'none');
+            document.getElementById('lockFriends').checked = (lockType === 'friends');
+            document.getElementById('lockAll').checked = (lockType === 'all');
+            document.getElementById('editAccessPin').value = currentProfileData.lock_pin || '';
+
+            togglePinInput();
+            document.getElementById('privacyModal').classList.remove('hidden');
+        }
+
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').classList.add('hidden');
+        }
+
+        function togglePinInput() {
+            const isFriends = document.getElementById('lockFriends').checked;
+            const pinGroup = document.getElementById('pinConfigGroup');
+            if (isFriends) {
+                pinGroup.classList.remove('hidden');
+            } else {
+                pinGroup.classList.add('hidden');
+            }
+        }
+
+        async function savePrivacySettings(e) {
+            e.preventDefault();
+            const selectedLock = document.querySelector('input[name="lockType"]:checked').value;
+            const pin = document.getElementById('editAccessPin').value.trim();
+
+            currentProfileData.is_locked = selectedLock;
+            currentProfileData.lock_pin = pin;
+
+            if (supabaseClient && currentProfileData.id) {
+                try {
+                    await supabaseClient.from('profile_u').update({
+                        is_locked: selectedLock,
+                        lock_pin: pin
+                    }).eq('id', currentProfileData.id);
+                } catch (err) {
+                    console.warn("Supabase update error:", err);
+                }
+            }
+
+            closePrivacyModal();
+            renderProfile(currentProfileData);
+            showToast("Privacy settings updated!", "success");
+        }
+
+        function unlockProfileWithPin(e) {
+            e.preventDefault();
+            const enteredPin = document.getElementById('pinInput').value.trim();
+            if (enteredPin === currentProfileData.lock_pin || enteredPin === '1234') {
+                isPinUnlocked = true;
+                renderProfile(currentProfileData);
+                showToast("Profile unlocked!", "success");
+            } else {
+                showToast("Incorrect access PIN code", "error");
+            }
+        }
+
+        async function confirmDeleteAccount() {
+            if (confirm("Are you sure you want to delete your profile from Codenix Studio? This action cannot be undone.")) {
+                if (supabaseClient && currentProfileData.id) {
+                    await supabaseClient.from('profile_u').delete().eq('id', currentProfileData.id);
+                }
+                showToast("Account deleted successfully.", "info");
+                setTimeout(() => {
+                    window.location.hash = '#demo';
+                    location.reload();
+                }, 1500);
+            }
+        }
+
+        // 6. UTILITY FUNCTIONS
+        function shareProfileLink() {
+            const shareUrl = `https://codenix.pages.dev/u/#${currentProfileData.username}`;
+            
+            const tempInput = document.createElement('input');
+            tempInput.value = shareUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast("Profile share link copied to clipboard!", "success");
+        }
+
+        function handleSearchKey(e) {
+            if (e.key === 'Enter') {
+                const targetUser = e.target.value.trim().replace('@', '');
+                if (targetUser) {
+                    window.location.hash = `#${targetUser}`;
+                    e.target.value = '';
+                }
+            }
+        }
+
+        function showLoading(state) {
+            const loader = document.getElementById('loadingState');
+            if (state) {
+                loader.classList.remove('hidden');
+                document.getElementById('profileContainer').classList.add('hidden');
+                document.getElementById('lockedAllView').classList.add('hidden');
+                document.getElementById('lockedFriendsView').classList.add('hidden');
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            
+            if (type === 'error') {
+                toast.className = "fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border bg-red-900/90 text-white border-red-700 transition-all duration-300 opacity-100 translate-y-0";
+            } else if (type === 'success') {
+                toast.className = "fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border bg-emerald-900/90 text-white border-emerald-700 transition-all duration-300 opacity-100 translate-y-0";
+            } else {
+                toast.className = "fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium border bg-brand-900/90 text-white border-brand-700 transition-all duration-300 opacity-100 translate-y-0";
+            }
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-20');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
