@@ -58,9 +58,7 @@
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <a href="#" class="flex items-center gap-2 group">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform">
-                        <i class="fa-solid font-bold text-xl">C</i>
-                    </div>
+                    <img src="/logo.png/" alt="Codenix Logo" class="w-10 h-10 rounded-xl object-contain shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform" onerror="this.onerror=null; this.src='https://placehold.co/100x100/7c3aed/ffffff?text=C';">
                     <div>
                         <span class="font-bold text-lg text-gray-900 dark:text-white tracking-tight">Codenix<span class="text-brand-600 dark:text-brand-400">Studio</span></span>
                         <span class="text-xs text-gray-500 dark:text-gray-400 block -mt-1 font-medium">User Profile Hub</span>
@@ -489,15 +487,36 @@
 
         // Current Active State
         let currentProfileData = null;
+        let authUser = null;
         let isOwner = false;
         let isPinUnlocked = false;
 
         // On DOM Loaded
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
+            await checkAuthSession();
             window.addEventListener('hashchange', loadProfileFromHash);
             loadProfileFromHash();
         });
+
+        // AUTHENTICATION INTEGRATION
+        async function checkAuthSession() {
+            if (!supabaseClient) return;
+            
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session && session.user) {
+                    authUser = session.user;
+                }
+
+                supabaseClient.auth.onAuthStateChanged((_event, session) => {
+                    authUser = session ? session.user : null;
+                    loadProfileFromHash();
+                });
+            } catch (err) {
+                console.warn("Auth check error:", err);
+            }
+        }
 
         // 2. THEME SWITCHING
         function initTheme() {
@@ -529,7 +548,13 @@
         async function loadProfileFromHash() {
             showLoading(true);
             let rawHash = window.location.hash.replace('#', '').trim();
-            if (!rawHash) {
+            
+            // If user is authenticated and no hash is provided, default to their profile username
+            if (!rawHash && authUser) {
+                const authUsername = authUser.user_metadata?.username || authUser.email.split('@')[0];
+                window.location.hash = `#${authUsername}`;
+                rawHash = authUsername;
+            } else if (!rawHash) {
                 rawHash = 'demo';
                 window.location.hash = '#demo';
             }
@@ -539,6 +564,7 @@
             try {
                 let fetchedData = null;
 
+                // 1. Try querying profile_u in Supabase
                 if (supabaseClient) {
                     const { data, error } = await supabaseClient
                         .from('profile_u')
@@ -551,6 +577,44 @@
                     }
                 }
 
+                // 2. Check if the currently authenticated user matches this requested profile username or ID
+                const isAuthUserSelf = authUser && (
+                    authUser.id === fetchedData?.id || 
+                    (authUser.user_metadata?.username && authUser.user_metadata.username.toLowerCase() === cleanUsername) ||
+                    (authUser.email && authUser.email.split('@')[0].toLowerCase() === cleanUsername)
+                );
+
+                // 3. If authenticated user enters and no profile_u record exists yet, auto-generate from auth.users details
+                if (!fetchedData && isAuthUserSelf) {
+                    const defaultName = authUser.user_metadata?.full_name || authUser.user_metadata?.display_name || authUser.email.split('@')[0];
+                    const defaultAvatar = authUser.user_metadata?.avatar_url || `https://placehold.co/150x150/7c3aed/ffffff?text=${defaultName.slice(0,2).toUpperCase()}`;
+                    
+                    fetchedData = {
+                        id: authUser.id,
+                        username: cleanUsername,
+                        display_name: defaultName,
+                        bio: "Welcome to my Codenix Studio profile! Click Edit Profile to update details.",
+                        show_link: `https://codenix.pages.dev/u/#${cleanUsername}`,
+                        avatar_url: defaultAvatar,
+                        verified: false,
+                        is_beta: true,
+                        role: "Developer",
+                        created_at: authUser.created_at || new Date().toISOString(),
+                        achievements: [
+                            { title: "Verified Account", desc: "Authenticated via Codenix Auth.", icon: "fa-solid fa-user-check" }
+                        ],
+                        bug_history: [],
+                        is_locked: "none",
+                        lock_pin: null
+                    };
+
+                    // Save initial profile to Supabase
+                    if (supabaseClient) {
+                        await supabaseClient.from('profile_u').upsert(fetchedData);
+                    }
+                }
+
+                // Fallbacks for demo accounts or non-existent profiles
                 if (!fetchedData && DEMO_PROFILES[cleanUsername]) {
                     fetchedData = DEMO_PROFILES[cleanUsername];
                 }
@@ -560,16 +624,14 @@
                         id: `gen-${Date.now()}`,
                         username: cleanUsername,
                         display_name: cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
-                        bio: `Hello! I am @${cleanUsername} on Codenix Studio. You can edit this profile in your dashboard.`,
+                        bio: `Hello! I am @${cleanUsername} on Codenix Studio.`,
                         show_link: `https://codenix.pages.dev/u/#${cleanUsername}`,
                         avatar_url: `https://placehold.co/150x150/7c3aed/ffffff?text=${cleanUsername.slice(0,2).toUpperCase()}`,
                         verified: false,
-                        is_beta: true,
+                        is_beta: false,
                         role: "Community Member",
                         created_at: new Date().toISOString(),
-                        achievements: [
-                            { title: "New Explorer", desc: "Joined Codenix Studio ecosystem.", icon: "fa-solid fa-seedling" }
-                        ],
+                        achievements: [],
                         bug_history: [],
                         is_locked: "none",
                         lock_pin: null
@@ -577,7 +639,7 @@
                 }
 
                 currentProfileData = fetchedData;
-                isOwner = (cleanUsername === 'demo' || cleanUsername === 'myaccount');
+                isOwner = isAuthUserSelf || (cleanUsername === 'demo' && !authUser);
 
                 renderProfile(currentProfileData);
             } catch (err) {
@@ -668,7 +730,7 @@
 
                 document.getElementById('intelAccountId').innerText = profile.id || 'N/A';
                 document.getElementById('intelRole').innerText = profile.role || 'Member';
-                document.getElementById('intelEmail').innerText = `${profile.username}@codenix.dev`;
+                document.getElementById('intelEmail').innerText = authUser ? authUser.email : `${profile.username}@codenix.dev`;
             } else {
                 ownerBadge.classList.add('hidden');
                 editBtn.classList.add('hidden');
