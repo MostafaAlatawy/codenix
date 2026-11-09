@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Voicy</title><style>
+:root{--bg:#fff6fb;--card:#ffffffd9;--tx:#2a1b3d;--mut:#7a6a8f;--ln:#2a1b3d1f;--a:#ff4d8d;--b:#7c5cff;--c:#22d3ee;--g:linear-gradient(135deg,var(--a),var(--b) 60%,var(--c));box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#130c20;--card:#241838d9;--tx:#f5eeff;--mut:#a597c0;--ln:#ffffff24}}
+:root[data-theme="dark"]{--bg:#130c20;--card:#241838d9;--tx:#f5eeff;--mut:#a597c0;--ln:#ffffff24}
+*{box-sizing:border-box;margin:0}[hidden]{display:none!important}html,body{height:100%}
+body{font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;overflow:hidden;transition:background .4s}
+body::before,body::after{content:"";position:fixed;width:50vmax;height:50vmax;border-radius:50%;filter:blur(90px);opacity:.3;z-index:0;pointer-events:none;animation:fl 18s ease-in-out infinite alternate}
+body::before{background:var(--b);top:-20vmax;right:-15vmax}body::after{background:var(--a);bottom:-25vmax;left:-15vmax;animation-delay:-9s}
+@keyframes fl{to{transform:translate(-8vmax,6vmax) scale(1.15)}}
+header,main,.player{position:relative;z-index:1}
+header{display:flex;align-items:center;gap:12px;padding:12px 18px}.sp{flex:1}
+.logo{font-weight:800;font-size:26px;letter-spacing:-.5px;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+main{flex:1;overflow:auto;padding:4px 18px 16px}.wrap{max-width:860px;margin:auto;display:flex;flex-direction:column;gap:16px}
+.btn{border:1px solid var(--ln);border-radius:999px;padding:9px 16px;background:var(--card);color:var(--tx);cursor:pointer;font:inherit;transition:.2s}
+.btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--b)}.btn:active:not(:disabled){transform:scale(.94)}.btn:disabled{opacity:.35;cursor:default}
+.pri{background:var(--g);color:#fff;border:0}.act{color:var(--a);border-color:var(--a)}
+.ic{width:40px;height:40px;padding:0;display:grid;place-items:center;font-size:16px;flex:none}
+.in{background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:12px;padding:9px 12px;font:inherit;min-width:0}
+.card{background:var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--ln);border-radius:24px;padding:18px;box-shadow:0 10px 30px #7c5cff14}
+.rec{text-align:center}.warn{background:#ff4d8d22;border:1px solid var(--a);border-radius:14px;padding:10px 14px;margin-bottom:12px;text-align:left}
+#wv{width:100%;height:110px;display:block}#tm{font:800 44px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;margin:6px 0;letter-spacing:1px}
+.recbox.on #tm{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.microw{display:flex;justify-content:center;align-items:center;gap:26px;margin:10px 0}
+.mic{position:relative;width:96px;height:96px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:38px;cursor:pointer;display:grid;place-items:center;box-shadow:0 12px 30px #7c5cff66;transition:.3s;animation:br 3s ease-in-out infinite}
+.mic:hover{transform:scale(1.06)}.mic.rec{background:linear-gradient(135deg,#ff2d55,#ff4d8d);box-shadow:0 12px 34px #ff2d5577;animation:none}
+.mic b{font-weight:400;position:relative;z-index:1}.ring{position:absolute;inset:0;border-radius:50%;border:3px solid var(--a);opacity:0}
+.mic.rec:not(.paused) .ring{animation:rg 1.8s ease-out infinite}.mic.rec .r2{animation-delay:.9s!important}
+@keyframes rg{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.9)}}@keyframes br{50%{transform:scale(1.04)}}
+.opts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-top:14px}.opts .in:first-child{flex:1;min-width:160px}
+.cols{display:flex;gap:6px}.sw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:.2s}.sw.on{border-color:var(--tx);transform:scale(1.2)}
+.tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tb .in{flex:1}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.mut,small{color:var(--mut)}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:18px;background:var(--card);border:1px solid var(--ln);transition:.2s;animation:in .35s}
+.row:hover{transform:translateX(3px)}.row.on{border-color:var(--a);box-shadow:0 4px 18px #ff4d8d33}@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.th{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:none;background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#000));background-size:cover;background-position:center}
+.ri{flex:1;min-width:0;display:flex;flex-direction:column}.ri b,.ri small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;color:var(--mut);padding:36px 10px}
+.player{margin:0 12px 12px;max-width:860px;width:calc(100% - 24px);align-self:center;animation:in .35s}
+.ph{display:flex;align-items:center;gap:10px}#pc2{width:100%;height:70px;display:block;margin:8px 0;cursor:pointer;touch-action:none}
+.pc{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pc .pri{width:46px;height:46px}.pc input{width:80px}
+input[type=range]{accent-color:var(--a)}
+.ov{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:9;animation:in .2s;padding:16px}
+.md{background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:22px;padding:20px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;max-height:85vh;overflow:auto}
+.opt{text-align:left;border-radius:14px}
+#toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--g);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;transition:.3s;z-index:10;pointer-events:none;max-width:90vw;text-align:center}#toast.on{opacity:1;transform:translate(-50%,0)}
+</style></head><body>
+<header><div class="logo">🎙️ Voicy</div><div class="sp"></div><button class="btn ic" id="th" title="Light / dark">🌓</button></header>
+<main><div class="wrap">
+<section class="card rec recbox"><div id="warn" class="warn" hidden></div><canvas id="wv"></canvas><div id="tm">00:00</div>
+<div class="microw"><button class="btn ic" id="dis" title="Discard recording">🗑</button><button class="mic" id="mic" title="Record / stop"><span class="ring"></span><span class="ring r2"></span><b id="mi">🎙️</b></button><button class="btn ic" id="pa" title="Pause / resume">⏸</button></div>
+<p id="hint" class="mut">Tap the mic to start recording</p>
+<div class="opts"><input class="in" id="nm" placeholder="Recording name (optional)" maxlength="80"><select class="in" id="fs"></select><div class="cols" id="cols"></div><button class="btn" id="cvb">🖼 Cover</button><input type="file" id="cvi" accept="image/*" hidden></div></section>
+<section><div class="tb"><input class="in" id="q" placeholder="Search recordings…"></div><div class="chips" id="chips"></div><div class="list" id="list"></div></section>
+</div></main>
+<div class="card player" id="pl" hidden><div class="ph"><div class="ri"><b id="pt"></b><small id="ps"></small></div><button class="btn ic" id="px" title="Close">✕</button></div><canvas id="pc2"></canvas>
+<div class="pc"><button class="btn ic" id="pb" title="Back 5s">⏪</button><button class="btn ic pri" id="pp">▶</button><button class="btn ic" id="pf" title="Forward 5s">⏩</button><span id="pt2" class="mut">0:00 / 0:00</span><div class="sp"></div><select class="in" id="spd" title="Speed"></select><button class="btn ic" id="mu">🔊</button><input type="range" id="vo" min="0" max="1" step="0.01"></div></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem('voicy.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('voicy.'+k,JSON.stringify(v))}catch(e){}}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fmt=s=>{if(!isFinite(s)||s<0)s=0;s|=0;const h=s/3600|0,m=(s%3600)/60|0,x=s%60,p=n=>String(n).padStart(2,'0');return h?h+':'+p(m)+':'+p(x):p(m)+':'+p(x)};
+const ft=s=>fmt(s)+'.'+(Math.floor(s%1*10));
+const COLORS=['#ff4d8d','#ff8a3d','#f5b800','#2fc98e','#22b8e0','#7c5cff','#c04dff','#64748b'];
+const S=Object.assign({vol:.9,speed:1,color:COLORS[0],folder:null,theme:null},LS.get('s',{}));let folders=LS.get('folders',['Personal','Work','Ideas']);
+const sv=()=>LS.set('s',S),sf=()=>LS.set('folders',folders);
+const R=document.documentElement;if(S.theme)R.dataset.theme=S.theme;
+$('#th').onclick=()=>{const d=(R.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))=='dark';S.theme=d?'light':'dark';R.dataset.theme=S.theme;sv()};
+function toast(m,ms=2400){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms)}
+/* storage */
+let db,recs=[];
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('voicy',1);r.onupgradeneeded=()=>r.result.createObjectStore('recs',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const tx=(m,f)=>new Promise((res,rej)=>{const t=db.transaction('recs',m);const r=f(t.objectStore('recs'));t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)});
+const put=r=>tx('readwrite',s=>s.put(r));
+/* modals */
+function modal(title,build){return new Promise(res=>{const o=E('div','ov'),b=E('div','md');b.append(E('h3','',esc(title)));const close=v=>{o.remove();res(v)};build(b,close);o.onclick=e=>{if(e.target==o)close(null)};o.append(b);document.body.append(o);const i=b.querySelector('input[type=text]');i&&i.focus()})}
+const askText=(t,v='')=>modal(t,(b,c)=>{const i=E('input','in');i.type='text';i.value=v;const ok=E('button','btn pri','Save');ok.onclick=()=>c(i.value.trim()||null);i.onkeydown=e=>{if(e.key=='Enter')ok.click()};b.append(i,ok)});
+const choose=(t,o)=>modal(t,(b,c)=>o.forEach((l,i)=>{const x=E('button','btn opt');x.textContent=l;x.onclick=()=>c(i);b.append(x)}));
+const coverFrom=f=>new Promise((res,rej)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{const c=E('canvas');c.width=c.height=160;const x=c.getContext('2d'),m=Math.min(i.width,i.height);x.drawImage(i,(i.width-m)/2,(i.height-m)/2,m,m,0,0,160,160);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.8))};i.onerror=rej;i.src=u});
+const pickCover=()=>new Promise(res=>{const i=E('input');i.type='file';i.accept='image/*';i.onchange=async()=>{try{res(i.files[0]?await coverFrom(i.files[0]):null)}catch(e){toast('Could not read that image');res(null)}};i.click()});
+/* recorder */
+const supported=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder);
+const MT=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+const mime=()=>window.MediaRecorder?(MT.find(t=>MediaRecorder.isTypeSupported(t))||''):'';
+const AC=window.AudioContext||window.webkitAudioContext;
+let mr,stream,actx,an,chunks=[],t0=0,acc=0,state='idle',hist=[],cover=null,color=S.color,discard=false,fin=0,fc=0;const td=new Uint8Array(1024);
+const warn=m=>{const w=$('#warn');w.hidden=!m;w.textContent=m||''};
+if(!supported)warn('Your browser does not support microphone recording (MediaRecorder). You can still use the library and player, but you need a recent Chrome, Edge, Firefox or Safari to record.');
+else if(!isSecureContext)warn('Microphone access needs a secure (https) page.');
+function errMsg(e){const n=e&&e.name;if(n=='NotAllowedError'||n=='SecurityError')return 'Microphone access was blocked. Allow it in your browser’s site settings (lock icon in the address bar), or open this page in its own tab if it is embedded, then try again.';if(n=='NotFoundError'||n=='OverconstrainedError')return 'No microphone was found. Connect one and try again.';if(n=='NotReadableError')return 'The microphone is in use by another app. Close it and try again.';return 'Could not start recording: '+((e&&e.message)||'unknown error')}
+function setState(s){state=s;const m=$('#mic');m.classList.toggle('rec',s!='idle');m.classList.toggle('paused',s=='paused');$('#mi').textContent=s=='idle'?'🎙️':'⏹';$('#pa').textContent=s=='paused'?'▶':'⏸';$('#pa').disabled=$('#dis').disabled=s=='idle';document.querySelector('.recbox').classList.toggle('on',s!='idle');$('#hint').textContent={idle:'Tap the mic to start recording',rec:'Recording… tap ⏹ to stop and save',paused:'Paused. Resume, or stop to save'}[s]}
+async function start(){if(!supported){toast('Recording is not supported in this browser');return}
+try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(e){warn(errMsg(e));return}
+warn(null);const mt=mime();try{mr=new MediaRecorder(stream,mt?{mimeType:mt}:undefined)}catch(e){warn('Recording failed to start: '+e.message);stream.getTracks().forEach(t=>t.stop());return}
+chunks=[];mr.ondataavailable=e=>e.data&&e.data.size&&chunks.push(e.data);mr.onstop=finish;mr.onerror=()=>{toast('Recording error');};
+actx=new AC();an=actx.createAnalyser();an.fftSize=1024;actx.createMediaStreamSource(stream).connect(an);hist=[];acc=0;t0=performance.now();mr.start(250);setState('rec')}
+function stop(discardIt){if(state=='idle')return;discard=!!discardIt;if(state=='rec')acc+=performance.now()-t0;fin=acc/1000;try{mr.stop()}catch(e){finish()}}
+async function finish(){stream&&stream.getTracks().forEach(t=>t.stop());try{actx&&actx.close()}catch(e){}an=null;const d=discard;discard=false;acc=0;hist=[];setState('idle');
+if(d||!chunks.length){toast('Recording discarded');return}
+const type=(mr&&mr.mimeType)||mime()||'audio/webm',blob=new Blob(chunks,{type}),nm=$('#nm').value.trim();
+const r={id:uid(),name:nm||'Recording '+new Date().toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}),blob,mime:type,dur:fin,created:Date.now(),color,cover,folder:$('#fs').value||null};
+try{await put(r);recs.push(r);$('#nm').value='';cover=null;$('#cvb').textContent='🖼 Cover';render();toast('Saved “'+r.name+'”')}catch(e){toast('Could not save the recording (storage full or blocked)')}}
+$('#mic').onclick=()=>state=='idle'?start():stop();$('#dis').onclick=()=>stop(true);
+$('#pa').onclick=()=>{if(state=='rec'){acc+=performance.now()-t0;mr.pause();setState('paused')}else if(state=='paused'){t0=performance.now();mr.resume();setState('rec')}};
+const cols=$('#cols');COLORS.forEach(c=>{const b=E('button','sw'+(c==color?' on':''));b.style.background=c;b.title=c;b.onclick=()=>{color=S.color=c;sv();[...cols.children].forEach(x=>x.classList.toggle('on',x==b))};cols.append(b)});
+$('#cvb').onclick=async()=>{if(cover){cover=null;$('#cvb').textContent='🖼 Cover';toast('Cover removed');return}const c=await pickCover();if(c){cover=c;$('#cvb').textContent='🖼 Cover ✓ (tap to remove)'}};
+/* canvas */
+function fit(cv){const d=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(cv.width!=Math.round(w*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d)}const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);return[w,h,x]}
+const bar=(x,cx,i,mid,h)=>{cx.beginPath();cx.moveTo(i,mid-h/2);cx.lineTo(i,mid+h/2);cx.stroke()};
+function drawRec(){const[w,h,x]=fit($('#wv'));x.lineWidth=3;x.lineCap='round';const n=Math.floor(w/6),g=x.createLinearGradient(0,0,w,0);g.addColorStop(0,color);g.addColorStop(1,'#22d3ee');x.strokeStyle=g;
+if(an&&state=='rec'&&++fc%4==0){an.getByteTimeDomainData(td);let s=0;for(const v of td){const q=(v-128)/128;s+=q*q}hist.push(Math.sqrt(s/td.length))}
+const t=performance.now()/500;for(let i=0;i<n;i++){const k=hist.length-n+i,v=state=='idle'?.03+.02*Math.sin(t+i*.35):(k>=0?Math.min(1,hist[k]*3.2):0);bar(0,x,i*6+3,h/2,Math.max(4,v*h))}
+$('#tm').textContent=fmt(state=='rec'?(acc+performance.now()-t0)/1000:acc/1000)}
+/* library */
+const PK={};let cur=null,curId=null,url=null;
+const dfmt=t=>new Date(t).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'})+' · '+new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+function syncFS(){const f=$('#fs');f.innerHTML='<option value="">No folder</option>'+folders.map(x=>`<option value="${esc(x)}">📁 ${esc(x)}</option>`).join('');f.value=S.folder||''}
+function renderChips(){if(S.folder&&!folders.includes(S.folder)){S.folder=null;sv()}const c=$('#chips');c.innerHTML='';const add=(l,v)=>{const b=E('button','btn'+(S.folder==v?' act':''));b.textContent=l;b.onclick=()=>{S.folder=v;sv();render()};c.append(b)};add('All ('+recs.length+')',null);folders.forEach(f=>add('📁 '+f+' ('+recs.filter(r=>r.folder==f).length+')',f));
+const n=E('button','btn','＋ Folder');n.onclick=async()=>{const v=await askText('New folder');if(!v)return;if(folders.includes(v))return toast('That folder already exists');folders.push(v);sf();S.folder=v;sv();render()};c.append(n);
+if(S.folder){const a=E('button','btn ic','✏️');a.title='Rename folder';a.onclick=async()=>{const o=S.folder,v=await askText('Rename folder',o);if(!v||v==o)return;if(folders.includes(v))return toast('That folder already exists');folders=folders.map(x=>x==o?v:x);sf();for(const r of recs)if(r.folder==o){r.folder=v;await put(r)}S.folder=v;sv();render()};
+const x=E('button','btn ic','🗑');x.title='Delete folder';x.onclick=async()=>{const o=S.folder;if(await choose('Delete folder “'+o+'”? Recordings are kept.',['Delete folder','Cancel'])!==0)return;folders=folders.filter(f=>f!=o);sf();for(const r of recs)if(r.folder==o){r.folder=null;await put(r)}S.folder=null;sv();render()};c.append(a,x)}}
+function render(){renderChips();syncFS();const q=$('#q').value.toLowerCase(),L=recs.filter(r=>(!S.folder||r.folder==S.folder)&&(r.name.toLowerCase().includes(q)||(r.folder||'').toLowerCase().includes(q))).sort((a,b)=>b.created-a.created),box=$('#list');box.innerHTML='';
+if(!L.length){box.innerHTML='<div class="empty">'+(recs.length?'No recordings match.':'No recordings yet. Tap the mic to make your first one.')+'</div>';return}
+L.forEach(r=>{const d=E('div','row'+(r.id==curId?' on':'')),th=E('div','th',r.cover?'':'🎙️');th.style.setProperty('--c',r.color);if(r.cover)th.style.backgroundImage=`url("${r.cover}")`;
+const ri=E('div','ri',`<b>${esc(r.name)}</b><small>${dfmt(r.created)} · ${fmt(r.dur)}${r.folder?' · 📁 '+esc(r.folder):''}</small>`);
+const p=E('button','btn ic pri',r.id==curId&&!au.paused?'⏸':'▶');p.onclick=()=>play(r);const m=E('button','btn ic','⋯');m.onclick=()=>menu(r);d.append(th,ri,p,m);box.append(d)})}
+$('#q').oninput=render;
+async function menu(r){const i=await choose(r.name,['✏️ Rename','✂️ Trim','⬇️ Download','🎨 Color & cover','📁 Move to folder','🗑 Delete']);
+if(i==0){const n=await askText('Rename recording',r.name);if(n){r.name=n;await put(r);render();if(cur==r)$('#pt').textContent=n}}
+if(i==1)trim(r);if(i==2)dl(r);
+if(i==3)await modal('Color & cover',(b,c)=>{const w=E('div','cols');w.style.flexWrap='wrap';COLORS.forEach(k=>{const s=E('button','sw'+(k==r.color?' on':''));s.style.background=k;s.onclick=async()=>{r.color=k;await put(r);render();c(1)};w.append(s)});
+const u=E('button','btn','🖼 Upload cover image');u.onclick=async()=>{const v=await pickCover();if(v){r.cover=v;await put(r);render();c(1)}};const x=E('button','btn','Remove cover');x.onclick=async()=>{r.cover=null;await put(r);render();c(1)};b.append(w,u,x)});
+if(i==4){const j=await choose('Move to folder',['No folder',...folders.map(f=>'📁 '+f)]);if(j!=null){r.folder=j?folders[j-1]:null;await put(r);render()}}
+if(i==5&&await choose('Delete “'+r.name+'”?',['Yes, delete','Cancel'])===0){await tx('readwrite',s=>s.delete(r.id));recs=recs.filter(x=>x!=r);delete PK[r.id];if(cur==r)closePl();render();toast('Deleted')}}
+/* player */
+const au=new Audio();au.preload='auto';au.volume=S.vol;
+$('#spd').innerHTML=[.5,.75,1,1.25,1.5,2,2.5,3].map(s=>`<option value="${s}">${s}×</option>`).join('');$('#spd').value=S.speed;$('#vo').value=S.vol;
+const ready=()=>new Promise(res=>{const f=()=>{if(isFinite(au.duration))return res();au.currentTime=1e101;au.addEventListener('timeupdate',function g(){au.removeEventListener('timeupdate',g);au.currentTime=0;res()})};au.readyState>=1?f():au.addEventListener('loadedmetadata',f,{once:true})});
+async function decode(blob){const c=new AC();try{return await c.decodeAudioData(await blob.arrayBuffer())}finally{c.close&&c.close()}}
+function peaks(buf,n){const d=buf.getChannelData(0),k=Math.floor(d.length/n)||1,p=new Float32Array(n);let mx=.001;for(let i=0;i<n;i++){let m=0;for(let j=i*k;j<(i+1)*k&&j<d.length;j+=Math.max(1,k>>6)){const v=Math.abs(d[j]);if(v>m)m=v}p[i]=m;if(m>mx)mx=m}return p.map(v=>v/mx)}
+async function play(r){if(curId==r.id){au.paused?au.play():au.pause();return}
+cur=r;curId=r.id;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(r.blob);au.src=url;au.playbackRate=S.speed;$('#pl').hidden=false;$('#pt').textContent=r.name;$('#ps').textContent=dfmt(r.created);render();
+if(!PK[r.id]){PK[r.id]=new Float32Array(100).fill(.25);decode(r.blob).then(b=>PK[r.id]=peaks(b,200)).catch(()=>{})}
+await ready();if(curId!=r.id)return;try{await au.play()}catch(e){}}
+function closePl(){au.pause();au.removeAttribute('src');au.load();cur=curId=null;$('#pl').hidden=true;render()}
+$('#px').onclick=closePl;$('#pp').onclick=()=>cur&&(au.paused?au.play():au.pause());
+const sk=s=>cur&&(au.currentTime=Math.max(0,Math.min(cur.dur,au.currentTime+s)));$('#pb').onclick=()=>sk(-5);$('#pf').onclick=()=>sk(5);
+au.onplay=au.onpause=()=>{$('#pp').textContent=au.paused?'▶':'⏸';render()};au.onended=()=>{au.currentTime=0;$('#pp').textContent='▶';render()};
+au.ontimeupdate=()=>{if(cur)$('#pt2').textContent=fmt(au.currentTime)+' / '+fmt(cur.dur)};
+$('#spd').onchange=e=>{S.speed=+e.target.value;au.playbackRate=S.speed;sv()};$('#vo').oninput=e=>{S.vol=+e.target.value;au.muted=false;au.volume=S.vol;sv();$('#mu').textContent=S.vol?'🔊':'🔇'};$('#mu').onclick=()=>{au.muted=!au.muted;$('#mu').textContent=au.muted?'🔇':'🔊'};
+const pc=$('#pc2');let seeking=false;const seekTo=e=>{if(!cur)return;const b=pc.getBoundingClientRect();au.currentTime=Math.max(0,Math.min(1,(e.clientX-b.left)/b.width))*cur.dur};
+pc.onpointerdown=e=>{seeking=true;pc.setPointerCapture(e.pointerId);seekTo(e)};pc.onpointermove=e=>seeking&&seekTo(e);pc.onpointerup=()=>seeking=false;
+function drawPl(){if($('#pl').hidden||!cur)return;const[w,h,x]=fit(pc),p=PK[cur.id];if(!p)return;x.lineWidth=3;x.lineCap='round';const n=Math.floor(w/5),pi=(cur.dur?au.currentTime/cur.dur:0)*n,t=performance.now()/140,mut=getComputedStyle(R).getPropertyValue('--mut').trim();
+for(let i=0;i<n;i++){let bh=Math.max(4,p[Math.floor(i/n*p.length)]*h*.9);if(!au.paused){const d=Math.abs(i-pi);if(d<5)bh*=1+.3*(1-d/5)*Math.sin(t+i)}const on=i<pi;x.globalAlpha=on?1:.4;x.strokeStyle=on?cur.color:mut;bar(0,x,i*5+2.5,h/2,Math.min(h,bh))}x.globalAlpha=1}
+(function frame(){requestAnimationFrame(frame);drawRec();drawPl()})();
+/* trim */
+async function trim(r){if(!supported)return toast('Trimming needs MediaRecorder support');toast('Loading audio…');let buf;try{buf=await decode(r.blob)}catch(e){return toast('This audio cannot be decoded for editing')}
+const dur=buf.duration,pk=peaks(buf,160),pa=new Audio(URL.createObjectURL(r.blob));let s=0,e=dur;
+const ch=await modal('Trim “'+r.name+'”',(b,c)=>{const cv=E('canvas');cv.style.cssText='width:100%;height:90px;border-radius:12px;touch-action:none;background:var(--card);cursor:ew-resize';const info=E('div','mut');
+const mk=v=>{const i=E('input');i.type='range';i.min=0;i.max=1000;i.value=v;return i},si=mk(0),ei=mk(1000);
+const up=()=>{const[w,h,x]=fit(cv);x.lineWidth=2;x.lineCap='round';const n=Math.floor(w/4);for(let i=0;i<n;i++){const t=i/n*dur;x.strokeStyle=t>=s&&t<=e?r.color:'#8886';bar(0,x,i*4+2,h/2,Math.max(3,pk[Math.floor(i/n*pk.length)]*h*.85))}x.fillStyle='#fff';x.strokeStyle='#fff';x.lineWidth=3;[s,e].forEach(t=>{const px=t/dur*w;x.beginPath();x.moveTo(px,0);x.lineTo(px,h);x.stroke()});info.textContent='Start '+ft(s)+' · End '+ft(e)+' · Length '+ft(e-s)};
+const sync=w=>{s=si.value/1000*dur;e=ei.value/1000*dur;if(e-s<.3){if(w=='s'){s=Math.max(0,e-.3);si.value=s/dur*1000}else{e=Math.min(dur,s+.3);ei.value=e/dur*1000}}up()};
+si.oninput=()=>sync('s');ei.oninput=()=>sync('e');let hd=null;const mv=ev=>{const bb=cv.getBoundingClientRect(),f=Math.max(0,Math.min(1,(ev.clientX-bb.left)/bb.width));if(hd=='s')si.value=Math.min(f*1000,ei.value);else ei.value=Math.max(f*1000,si.value);sync(hd)};
+cv.onpointerdown=ev=>{const bb=cv.getBoundingClientRect(),t=(ev.clientX-bb.left)/bb.width*dur;hd=Math.abs(t-s)<Math.abs(t-e)?'s':'e';cv.setPointerCapture(ev.pointerId);mv(ev)};cv.onpointermove=ev=>hd&&mv(ev);cv.onpointerup=()=>hd=null;
+const pv=E('button','btn','▶ Preview');pv.onclick=()=>{pa.currentTime=s;pa.play();pa.ontimeupdate=()=>{if(pa.currentTime>=e)pa.pause()}};
+const row=E('div','chips');const mkb=(l,cls,v)=>{const x=E('button','btn '+cls,l);x.onclick=()=>c(v);return x};row.append(pv,mkb('Save as copy','pri','copy'),mkb('Replace original','','rep'),mkb('Cancel','',null));
+b.append(cv,info,E('small','','Start'),si,E('small','','End'),ei,row);setTimeout(up,30)});
+pa.pause();URL.revokeObjectURL(pa.src);if(!ch)return;
+const len=e-s;toast('Saving trimmed audio… about '+Math.ceil(len)+'s',len*1000+4000);let nb;try{nb=await cut(buf,s,e,mime())}catch(er){return toast('Trim failed: '+er.message)}
+if(ch=='rep'){r.blob=nb;r.mime=nb.type;r.dur=len;delete PK[r.id];if(cur==r)closePl();await put(r)}else{const c2=Object.assign({},r,{id:uid(),name:r.name+' (trimmed)',blob:nb,mime:nb.type,dur:len,created:Date.now()});await put(c2);recs.push(c2)}
+render();toast('Trim saved')}
+async function cut(buf,s,e,mt){const c=new AC(),d=c.createMediaStreamDestination(),src=c.createBufferSource();src.buffer=buf;src.connect(d);const parts=[],m=new MediaRecorder(d.stream,mt?{mimeType:mt}:undefined);m.ondataavailable=x=>x.data.size&&parts.push(x.data);const done=new Promise(r=>m.onstop=r);m.start();await c.resume();src.onended=()=>setTimeout(()=>m.stop(),200);src.start(0,s,e-s);await done;c.close();return new Blob(parts,{type:m.mimeType||mt||'audio/webm'})}
+/* download */
+const ext=m=>/mp4|aac/.test(m)?'mp4':/ogg/.test(m)?'ogg':'webm';
+function wav(buf){const ch=buf.numberOfChannels,n=buf.length,o=new DataView(new ArrayBuffer(44+n*ch*2)),w=(p,s)=>[...s].forEach((c,i)=>o.setUint8(p+i,c.charCodeAt(0)));w(0,'RIFF');o.setUint32(4,36+n*ch*2,true);w(8,'WAVEfmt ');o.setUint32(16,16,true);o.setUint16(20,1,true);o.setUint16(22,ch,true);o.setUint32(24,buf.sampleRate,true);o.setUint32(28,buf.sampleRate*ch*2,true);o.setUint16(32,ch*2,true);o.setUint16(34,16,true);w(36,'data');o.setUint32(40,n*ch*2,true);const D=[];for(let c=0;c<ch;c++)D.push(buf.getChannelData(c));let p=44;for(let i=0;i<n;i++)for(let c=0;c<ch;c++){const v=Math.max(-1,Math.min(1,D[c][i]));o.setInt16(p,v<0?v*32768:v*32767,true);p+=2}return new Blob([o],{type:'audio/wav'})}
+async function dl(r){const base=(r.name.replace(/[\\/:*?"<>|]+/g,'_').trim()||'recording');let D=null;try{D=window.claude?await claude.use('downloads'):null}catch(e){}
+if(D){const fn=base+'.'+ext(r.mime);try{await D.save({filename:fn,data:r.blob});toast('Saved '+fn)}catch(e){toast(e&&e.code=='declined'?'Download cancelled':e&&e.code=='rejected_extension'?'This viewer cannot save .'+ext(r.mime)+' files':'Download is not available here')}return}
+const i=await choose('Download format',['Original ('+ext(r.mime)+')','WAV (uncompressed)']);if(i==null)return;let b=r.blob,x=ext(r.mime);if(i==1){try{b=wav(await decode(r.blob));x='wav'}catch(e){return toast('Could not convert to WAV')}}
+const a=E('a');a.href=URL.createObjectURL(b);a.download=base+'.'+x;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+/* init */
+(async()=>{setState('idle');syncFS();try{db=await idb();recs=await tx('readonly',s=>s.getAll())||[]}catch(e){toast('Storage is unavailable: recordings cannot be saved here',5000)}render()})();
+</script></body></html>
