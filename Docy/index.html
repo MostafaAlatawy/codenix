@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Docy – Document Scanner</title>
+<style>
+:root{--bg:#f3f5ff;--cd:#fff;--tx:#1a1d3a;--mu:#6a7094;--ln:#e2e5f6;--a:#6c5ce7;--g:linear-gradient(135deg,#6c5ce7,#00b4d8 60%,#ff7eb3);--sh:0 6px 24px rgba(90,80,210,.15);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1020;--cd:#181b34;--tx:#eef0ff;--mu:#9ba0c8;--ln:#2a2e52;--sh:0 6px 24px rgba(0,0,0,.5);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1020;--cd:#181b34;--tx:#eef0ff;--mu:#9ba0c8;--ln:#2a2e52;--sh:0 6px 24px rgba(0,0,0,.5);color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+button,input,select,textarea{font:inherit;color:inherit}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;display:flex;gap:10px;align-items:center;padding:10px 14px;background:var(--bg)}
+.logo{font-weight:800;font-size:23px;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+#q{flex:1;min-width:0;padding:10px 14px;border-radius:14px;border:1px solid var(--ln);background:var(--cd)}
+body.dv #q{visibility:hidden}
+.ib{border:1px solid var(--ln);background:var(--cd);border-radius:12px;min-width:40px;height:40px;cursor:pointer;font-weight:600;padding:0 10px}
+.btn{border:0;background:var(--g);color:#fff;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer;box-shadow:var(--sh);transition:transform .15s}.btn:active{transform:scale(.95)}
+.b2{background:var(--cd);border:1px solid var(--ln);border-radius:14px;padding:10px 16px;cursor:pointer}
+main{padding:4px 14px 120px;max-width:1000px;margin:auto;animation:in .3s}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:6px 0 12px}
+.chip{flex:none;border:1px solid var(--ln);background:var(--cd);border-radius:20px;padding:7px 14px;cursor:pointer;white-space:nowrap}.chip.on{background:var(--g);color:#fff;border-color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.dc,.pc{position:relative;background:var(--cd);border-radius:18px;box-shadow:var(--sh);overflow:hidden;animation:in .3s}
+.dc .th{aspect-ratio:3/4;background:var(--ln) center/cover;cursor:pointer}.pc img{display:block;width:100%;aspect-ratio:3/4;object-fit:contain;background:var(--ln);cursor:pointer}
+.dc .in{padding:10px 12px}.dc b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dc small{color:var(--mu)}
+.mn{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:10px;border:0;background:rgba(0,0,0,.45);color:#fff;cursor:pointer}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;z-index:9}.fab .btn{padding:14px 20px;font-size:16px}
+.bar{display:flex;align-items:center;gap:10px;padding:6px 0 12px}.bar h2,.bar h3{flex:1;margin:0;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .t{display:flex;align-items:center;justify-content:space-between;padding:6px}.pc .t button{border:0;background:var(--bg);border-radius:10px;width:36px;height:32px;cursor:pointer}
+.add{display:grid;place-items:center;min-height:200px;border:2px dashed var(--a);box-shadow:none;background:transparent;color:var(--a);font-weight:700;cursor:pointer}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(10,12,30,.55);display:grid;place-items:center;padding:16px;opacity:0;transition:opacity .2s}.ov.on{opacity:1}
+.box{background:var(--cd);border-radius:22px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:var(--sh);transform:scale(.94);transition:transform .2s}.on .box{transform:none}
+.box h3{margin:0 0 12px}.box input:not([type=checkbox]):not([type=color]),.box select,.box textarea{width:100%;padding:11px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);margin-bottom:12px}
+.row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.sb{display:block;width:100%;text-align:left;padding:13px 14px;margin-bottom:6px;border-radius:12px;border:0;background:var(--bg);cursor:pointer}.sb.dg{color:#e11d48}.sb.mu{text-align:center;color:var(--mu)}
+.ed,.scan{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);padding-top:env(safe-area-inset-top,0px);animation:in .25s}
+.ed .bar{padding:10px 14px;margin:0}
+.stage{flex:1;min-height:0;display:grid;place-items:center;padding:10px;background:var(--ln);overflow:hidden}
+.stage canvas{max-width:100%;max-height:calc(100vh - 290px);background:#fff;box-shadow:var(--sh);touch-action:none}
+.cw{position:relative;display:inline-block;line-height:0}.cw img{max-width:100%;max-height:calc(100vh - 290px);user-select:none;-webkit-user-drag:none}
+.cw svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.cw polygon{fill:rgba(108,92,231,.2);stroke:#6c5ce7;stroke-width:2;vector-effect:non-scaling-stroke}
+.hd{position:absolute;width:30px;height:30px;margin:-15px;border-radius:50%;background:#fff;border:4px solid var(--a);touch-action:none;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.pan{padding:10px 14px calc(12px + env(safe-area-inset-bottom,0px));background:var(--cd);min-height:150px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1;padding:9px;border:0;border-radius:12px;background:var(--bg);cursor:pointer;font-weight:600}.tabs .on{background:var(--g);color:#fff}
+.rw{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.sl{display:grid;grid-template-columns:90px 1fr 36px;gap:8px;align-items:center;margin:6px 0}.sl input{width:100%}
+.scan{background:#000;color:#fff;padding:0}.scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.frame{position:absolute;inset:10% 8% 26%;border:3px solid rgba(255,255,255,.85);border-radius:18px;overflow:hidden;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+.frame i{position:absolute;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent,#00e5ff,#ff7eb3,transparent);box-shadow:0 0 18px #00e5ff;animation:sw 2.2s ease-in-out infinite alternate}
+@keyframes sw{from{top:0}to{top:calc(100% - 5px)}}
+.ctl{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-around;padding:16px 10px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.shut{width:72px;height:72px;border-radius:50%;border:5px solid #fff;background:var(--g);cursor:pointer}.shut:active{transform:scale(.9)}
+.scan.fl::after{content:"";position:absolute;inset:0;background:#fff;animation:fl .35s forwards;pointer-events:none}@keyframes fl{to{opacity:0}}
+.scan .ib{background:rgba(255,255,255,.18);border-color:transparent;color:#fff}
+.sm{position:absolute;inset:0;display:none;place-content:center;gap:16px;padding:30px;text-align:center;background:#111;z-index:2;justify-items:center}
+.pgi{width:64px;height:84px;margin:0 auto 12px;border-radius:8px;background:#fff;border:2px solid var(--ln);position:relative;overflow:hidden}.pgi::after{content:"";position:absolute;left:0;right:0;height:5px;background:var(--g);animation:sw 1s ease-in-out infinite alternate}
+.bz .box{text-align:center;width:250px}
+#toast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);background:#222;color:#fff;padding:10px 16px;border-radius:14px;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:90%;text-align:center}#toast.on{opacity:1;transform:translate(-50%,0)}
+.emp{text-align:center;padding:50px 10px;color:var(--mu)}.emp .pgi{width:90px;height:120px}
+</style></head><body>
+<header><span class="logo">📄 Docy</span><input id="q" type="search" placeholder="Search documents"><button class="ib" id="th" title="Toggle dark / light mode">🌓</button></header>
+<main id="main"></main><div id="toast"></div><input type="file" id="file" accept="image/*" multiple hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const $=(s,r=document)=>r.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7),main=$('#main');
+let prefs={theme:'auto',size:'a4',nums:true,filter:'magic'};
+try{Object.assign(prefs,JSON.parse(localStorage.getItem('docy.prefs')||'{}'))}catch(e){}
+const savePrefs=()=>{try{localStorage.setItem('docy.prefs',JSON.stringify(prefs))}catch(e){}};
+const applyTheme=()=>prefs.theme=='auto'?document.documentElement.removeAttribute('data-theme'):document.documentElement.dataset.theme=prefs.theme;
+$('#th').onclick=()=>{const dk=document.documentElement.dataset.theme=='dark'||(prefs.theme=='auto'&&matchMedia('(prefers-color-scheme:dark)').matches);prefs.theme=dk?'light':'dark';savePrefs();applyTheme()};
+function toast(m,t=2400){const e=$('#toast');e.textContent=m;e.className='on';clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',t)}
+/* ---------- storage (IndexedDB, memory fallback) ---------- */
+const mem={docs:new Map(),folders:new Map()};let useMem=false;
+const DB=new Promise(res=>{try{const r=indexedDB.open('docy',1);r.onupgradeneeded=()=>{r.result.createObjectStore('docs',{keyPath:'id'});r.result.createObjectStore('folders',{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>{useMem=true;res(null)}}catch(e){useMem=true;res(null)}});
+const idb=(d,s,m,f)=>new Promise((res,rej)=>{const t=d.transaction(s,m),r=f(t.objectStore(s));t.oncomplete=()=>res(r.result);t.onerror=()=>rej(t.error)});
+const dbAll=async s=>{const d=await DB;return d?await idb(d,s,'readonly',o=>o.getAll()):[...mem[s].values()]};
+const dbPut=async(s,v)=>{const d=await DB;return d?idb(d,s,'readwrite',o=>o.put(v)):mem[s].set(v.id,v)};
+const dbDel=async(s,k)=>{const d=await DB;return d?idb(d,s,'readwrite',o=>o.delete(k)):mem[s].delete(k)};
+/* ---------- helpers ---------- */
+const loadImg=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src});
+const cv=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
+const readFile=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function shrink(src,max=2200){const i=await loadImg(src),k=Math.min(1,max/Math.max(i.naturalWidth,i.naturalHeight)),c=cv(Math.round(i.naturalWidth*k),Math.round(i.naturalHeight*k));c.getContext('2d').drawImage(i,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)}
+const thumbOf=c=>{const k=Math.min(1,360/Math.max(c.width,c.height)),t=cv(Math.round(c.width*k),Math.round(c.height*k));t.getContext('2d').drawImage(c,0,0,t.width,t.height);return t.toDataURL('image/jpeg',.75)};
+const toBlob=u=>{const [h,b]=u.split(','),a=atob(b),n=new Uint8Array(a.length);for(let i=0;i<a.length;i++)n[i]=a.charCodeAt(i);return new Blob([n],{type:h.slice(5,h.indexOf(';'))})};
+const DLP=window.claude&&claude.use?claude.use('downloads').catch(()=>null):Promise.resolve(null);
+async function saveFile(name,blob){const dl=await DLP;if(dl){try{await dl.save({filename:name,data:blob});return true}catch(e){if(e&&e.code=='declined')return false}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true}
+const fname=d=>(d.name.replace(/[\\/:*?"<>|]+/g,'_').trim()||'document');
+function modal(html){const m=document.createElement('div');m.className='ov';m.innerHTML=`<div class="box">${html}</div>`;document.body.appendChild(m);requestAnimationFrame(()=>m.classList.add('on'));m.close=()=>{m.classList.remove('on');setTimeout(()=>m.remove(),200)};m.onclick=e=>{if(e.target==m)m.close()};return m}
+const ask=(t,v='',ph='')=>new Promise(r=>{const m=modal(`<h3>${t}</h3><input value="${esc(v)}" placeholder="${ph}"><div class="row"><button class="b2">Cancel</button><button class="btn">OK</button></div>`),i=$('input',m),b=m.querySelectorAll('button'),ok=()=>{m.close();r(i.value.trim())};b[1].onclick=ok;b[0].onclick=()=>{m.close();r(null)};i.onkeydown=e=>e.key=='Enter'&&ok();setTimeout(()=>{i.focus();i.select()},60)});
+const sure=(t,msg='')=>new Promise(r=>{const m=modal(`<h3>${t}</h3><p style="color:var(--mu)">${msg}</p><div class="row"><button class="b2">Cancel</button><button class="btn" style="background:#e11d48">Delete</button></div>`),b=m.querySelectorAll('button');b[0].onclick=()=>{m.close();r(false)};b[1].onclick=()=>{m.close();r(true)}});
+function sheet(t,items){const m=modal(`<h3>${esc(t)}</h3>`+items.map((x,k)=>`<button class="sb${x[2]?' dg':''}" data-k="${k}">${x[0]}</button>`).join('')+`<button class="sb mu" data-k="x">Cancel</button>`);m.onclick=e=>{const b=e.target.closest('[data-k]');if(e.target==m||(b&&b.dataset.k=='x'))return m.close();if(b){m.close();items[b.dataset.k][1]()}}}
+function busyOv(msg){const m=document.createElement('div');m.className='ov on bz';m.innerHTML=`<div class="box"><div class="pgi"></div><p>${esc(msg)}</p></div>`;document.body.appendChild(m);return()=>m.remove()}
+/* ---------- image processing ---------- */
+function srcData(img){if(!img._d){const c=cv(img.naturalWidth,img.naturalHeight),x=c.getContext('2d');x.drawImage(img,0,0);img._d=x.getImageData(0,0,c.width,c.height)}return img._d}
+function homog(dst,src){const A=[];for(let i=0;i<4;i++){const[u,v]=dst[i],[x,y]=src[i];A.push([u,v,1,0,0,0,-u*x,-v*x,x],[0,0,0,u,v,1,-u*y,-v*y,y])}
+ for(let i=0;i<8;i++){let m=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;[A[i],A[m]]=[A[m],A[i]];for(let r=0;r<8;r++)if(r!=i){const f=A[r][i]/A[i][i];for(let c=i;c<9;c++)A[r][c]-=f*A[i][c]}}
+ return A.map((r,i)=>r[8]/r[i])}
+function warp(img,q,maxD){const D=srcData(img),W=D.width,H=D.height,s=D.data,P=q.map(p=>[p[0]*W,p[1]*H]),d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+ let w=Math.max(d(P[0],P[1]),d(P[3],P[2])),h=Math.max(d(P[0],P[3]),d(P[1],P[2]));const k=Math.min(1,maxD/Math.max(w,h,1));w=Math.max(8,Math.round(w*k));h=Math.max(8,Math.round(h*k));
+ const M=homog([[0,0],[w,0],[w,h],[0,h]],P),out=new ImageData(w,h),o=out.data;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const z=M[6]*x+M[7]*y+1,sx=(M[0]*x+M[1]*y+M[2])/z,sy=(M[3]*x+M[4]*y+M[5])/z,x0=Math.max(0,Math.min(W-2,Math.floor(sx))),y0=Math.max(0,Math.min(H-2,Math.floor(sy))),fx=Math.min(1,Math.max(0,sx-x0)),fy=Math.min(1,Math.max(0,sy-y0)),i=(y0*W+x0)*4,j=i+W*4,oi=(y*w+x)*4;
+  for(let c=0;c<3;c++)o[oi+c]=(s[i+c]*(1-fx)+s[i+4+c]*fx)*(1-fy)+(s[j+c]*(1-fx)+s[j+4+c]*fx)*fy;o[oi+3]=255}
+ return out}
+function localMean(g,w,h,r){const I=new Float64Array((w+1)*(h+1));for(let y=0;y<h;y++){let rs=0;for(let x=0;x<w;x++){rs+=g[y*w+x];I[(y+1)*(w+1)+x+1]=I[y*(w+1)+x+1]+rs}}
+ const m=new Float32Array(w*h);for(let y=0;y<h;y++){const y0=Math.max(0,y-r),y1=Math.min(h,y+r+1);for(let x=0;x<w;x++){const x0=Math.max(0,x-r),x1=Math.min(w,x+r+1);m[y*w+x]=(I[y1*(w+1)+x1]-I[y0*(w+1)+x1]-I[y1*(w+1)+x0]+I[y0*(w+1)+x0])/((x1-x0)*(y1-y0))}}return m}
+function enhance(im,o){const d=im.data,w=im.width,h=im.height,n=w*h,f=o.f;let g=null,m=null;
+ if(f!='orig'){g=new Float32Array(n);for(let i=0;i<n;i++)g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2]}
+ if(f=='bw'||f=='magic')m=localMean(g,w,h,Math.max(6,Math.round(Math.min(w,h)/14)));
+ const cf=1+o.c/50,bo=o.b*2.55,mg=v=>255*Math.pow(Math.min(1,v/255),1.3);
+ for(let i=0;i<n;i++){const p=i*4;let r=d[p],gg=d[p+1],b=d[p+2];
+  if(f=='gray')r=gg=b=g[i];else if(f=='bw')r=gg=b=g[i]<m[i]*.9-4?0:255;else if(f=='magic'){const k=235/Math.max(m[i],40);r=mg(r*k);gg=mg(gg*k);b=mg(b*k)}
+  d[p]=(r-128)*cf+128+bo;d[p+1]=(gg-128)*cf+128+bo;d[p+2]=(b-128)*cf+128+bo}
+ if(o.s>0){const a=o.s/100*1.2,c=new Uint8ClampedArray(d);for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const p=(y*w+x)*4;for(let k=0;k<3;k++)d[p+k]=c[p+k]*(1+4*a)-a*(c[p+k-4]+c[p+k+4]+c[p+k-w*4]+c[p+k+w*4])}}
+ return im}
+function render(img,o,maxD){let c=cv(1,1);const im=enhance(warp(img,o.q,maxD),o);c=cv(im.width,im.height);c.getContext('2d').putImageData(im,0,0);const r=((o.rot%4)+4)%4;
+ if(r){const c2=r%2?cv(c.height,c.width):cv(c.width,c.height),x=c2.getContext('2d');x.translate(c2.width/2,c2.height/2);x.rotate(r*Math.PI/2);x.drawImage(c,-c.width/2,-c.height/2);c=c2}return c}
+const FULL=()=>[[.04,.04],[.96,.04],[.96,.96],[.04,.96]];
+function detect(img){const W=img.naturalWidth,H=img.naturalHeight,k=200/Math.max(W,H),w=Math.max(8,Math.round(W*k)),h=Math.max(8,Math.round(H*k)),x=cv(w,h).getContext('2d');x.drawImage(img,0,0,w,h);
+ const d=x.getImageData(0,0,w,h).data,n=w*h,g=new Uint8Array(n),hs=new Array(256).fill(0);for(let i=0;i<n;i++){g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];hs[g[i]]++}
+ let sum=0;for(let i=0;i<256;i++)sum+=i*hs[i];let sb=0,wb=0,best=0,thr=128;for(let t=0;t<256;t++){wb+=hs[t];if(!wb)continue;const wf=n-wb;if(!wf)break;sb+=t*hs[t];const mb=sb/wb,mf=(sum-sb)/wf,v=wb*wf*(mb-mf)**2;if(v>best){best=v;thr=t}}
+ const fg=new Uint8Array(n);for(let i=0;i<n;i++)fg[i]=g[i]>thr?1:0;let cc=0,ct=0;for(let y=h*.3|0;y<h*.7;y++)for(let X=w*.3|0;X<w*.7;X++){ct++;cc+=fg[y*w+X]}if(cc/ct<.5)for(let i=0;i<n;i++)fg[i]^=1;
+ let st=-1,bd=1e9;for(let y=0;y<h;y++)for(let X=0;X<w;X++)if(fg[y*w+X]){const dd=(X-w/2)**2+(y-h/2)**2;if(dd<bd){bd=dd;st=y*w+X}}
+ if(st<0)return FULL();const seen=new Uint8Array(n),stk=[st],E=[1e9,-1e9,-1e9,1e9],Pt=[[0,0],[0,0],[0,0],[0,0]];let size=0;seen[st]=1;
+ while(stk.length){const p=stk.pop(),px=p%w,py=p/w|0;size++;const v=[px+py,px-py,px+py,px-py];
+  if(v[0]<E[0]){E[0]=v[0];Pt[0]=[px,py]}if(v[1]>E[1]){E[1]=v[1];Pt[1]=[px,py]}if(v[2]>E[2]){E[2]=v[2];Pt[2]=[px,py]}if(v[3]<E[3]){E[3]=v[3];Pt[3]=[px,py]}
+  for(const q of[px>0?p-1:-1,px<w-1?p+1:-1,py>0?p-w:-1,py<h-1?p+w:-1])if(q>=0&&fg[q]&&!seen[q]){seen[q]=1;stk.push(q)}}
+ if(size<n*.12||size>n*.97)return FULL();const Q=[Pt[0],Pt[1],Pt[2],Pt[3]].map(p=>[(p[0]+.5)/w,(p[1]+.5)/h]);let ar=0;for(let i=0;i<4;i++){const a=Q[i],b=Q[(i+1)%4];ar+=a[0]*b[1]-b[0]*a[1]}
+ return Math.abs(ar)/2<.1?FULL():Q}
+async function buildPage(orig){const img=await loadImg(orig),p={id:uid(),orig,q:detect(img),rot:0,f:prefs.filter,b:0,c:0,s:0},c=render(img,p,1800);p.out=c.toDataURL('image/jpeg',.9);p.thumb=thumbOf(c);return p}
+/* ---------- state & library ---------- */
+const S={docs:[],folders:[],folder:'all',q:'',doc:null,up:null};
+const save=d=>{d.updated=Date.now();return dbPut('docs',d)};
+async function addImages(urls,doc,name){await wait(40);const pages=[];for(const u of urls)pages.push(await buildPage(await shrink(u)));
+ if(!doc){doc={id:uid(),name:name||'Scan '+new Date().toLocaleString([],{dateStyle:'medium',timeStyle:'short'}),folder:S.folder=='all'?'':S.folder,created:Date.now(),pages:[]};S.docs.push(doc)}
+ doc.pages.push(...pages);await save(doc);return doc}
+function lib(){S.doc=null;document.body.classList.remove('dv');
+ main.innerHTML=`<div class="chips"><button class="chip ${S.folder=='all'?'on':''}" data-a="fol" data-v="all">All</button>${S.folders.map(f=>`<button class="chip ${S.folder==f.id?'on':''}" data-a="fol" data-v="${f.id}">📁 ${esc(f.name)}</button>`).join('')}<button class="chip" data-a="nf">＋ Folder</button>${S.folder!='all'?'<button class="chip" data-a="rf">✎ Rename</button><button class="chip" data-a="df">🗑 Delete</button>':''}</div><div id="gr"></div><div class="fab"><button class="btn" data-a="up">🖼 Upload</button><button class="btn" data-a="scan">📷 Scan</button></div>`;grid()}
+function grid(){const ds=S.docs.filter(d=>(S.folder=='all'||d.folder==S.folder)&&d.name.toLowerCase().includes(S.q.toLowerCase())).sort((a,b)=>b.updated-a.updated);
+ $('#gr').innerHTML=ds.length?`<div class="grid">${ds.map(d=>`<div class="dc"><div class="th" data-a="open" data-id="${d.id}" style="background-image:url(${d.pages[0]?d.pages[0].thumb:''})"></div><button class="mn" data-a="menu" data-id="${d.id}">⋯</button><div class="in"><b>${esc(d.name)}</b><small>${d.pages.length} page${d.pages.length==1?'':'s'} · ${new Date(d.updated).toLocaleDateString()}</small></div></div>`).join('')}</div>`:`<div class="emp"><div class="pgi"></div><h3>${S.q?'No matches':'No documents yet'}</h3><p>Tap Scan to capture a page, or Upload to import photos.</p></div>`}
+$('#q').oninput=e=>{S.q=e.target.value;if(!S.doc)grid()};
+function docView(){const d=S.doc;document.body.classList.add('dv');
+ main.innerHTML=`<div class="bar"><button class="ib" data-a="back">←</button><h2 data-a="ren" title="Rename">${esc(d.name)} ✎</h2><button class="btn" data-a="pdf">PDF</button></div><div class="grid">${d.pages.map((p,i)=>`<div class="pc"><img src="${p.thumb}" data-a="edit" data-i="${i}"><div class="t"><button data-a="mv" data-i="${i}" data-d="-1" ${i?'':'disabled'}>◀</button><b>${i+1}</b><button data-a="mv" data-i="${i}" data-d="1" ${i<d.pages.length-1?'':'disabled'}>▶</button><button data-a="pm" data-i="${i}">⋯</button></div></div>`).join('')}<div class="pc add" data-a="addm">＋ Add pages</div></div>`}
+async function renameDoc(d,cb){const n=await ask('Rename document',d.name);if(n){d.name=n;await save(d);cb()}}
+function docMenu(d){sheet(d.name,[['📂 Open',()=>{S.doc=d;docView()}],['✎ Rename',()=>renameDoc(d,grid)],['⧉ Duplicate',async()=>{const c=structuredClone(d);c.id=uid();c.name=d.name+' copy';c.created=Date.now();c.pages.forEach(p=>p.id=uid());S.docs.push(c);await save(c);grid();toast('Duplicated')}],
+ ['📁 Move to folder',()=>sheet('Move to…',[['No folder',async()=>{d.folder='';await save(d);grid()}],...S.folders.map(f=>['📁 '+esc(f.name),async()=>{d.folder=f.id;await save(d);grid()}])])],['⬇ Download PDF',()=>exportPDF(d)],
+ ['🗑 Delete',async()=>{if(await sure('Delete “'+esc(d.name)+'”?','This can’t be undone.')){S.docs=S.docs.filter(x=>x!=d);await dbDel('docs',d.id);grid()}},1]])}
+async function movePage(i,dir){const p=S.doc.pages;[p[i],p[i+dir]]=[p[i+dir],p[i]];await save(S.doc);docView()}
+function pageMenu(i){const d=S.doc,p=d.pages[i];sheet('Page '+(i+1),[['✂️ Crop & enhance',()=>openEditor(i)],['✍️ Sign / add text',()=>openAnnot(i)],['🔤 Extract text (OCR)',()=>ocr(i)],['🖼 Save as JPG',()=>saveFile(fname(d)+'-p'+(i+1)+'.jpg',toBlob(p.out))],
+ ['🖼 Save as PNG',async()=>{const im=await loadImg(p.out),c=cv(im.naturalWidth,im.naturalHeight);c.getContext('2d').drawImage(im,0,0);c.toBlob(b=>saveFile(fname(d)+'-p'+(i+1)+'.png',b),'image/png')}],
+ ['🗑 Delete page',async()=>{if(await sure('Delete page '+(i+1)+'?','This can’t be undone.')){d.pages.splice(i,1);await save(d);docView()}},1]])}
+const A={fol:t=>{S.folder=t.dataset.v;lib()},
+ nf:async()=>{const n=await ask('New folder');if(n){const f={id:uid(),name:n};S.folders.push(f);await dbPut('folders',f);S.folder=f.id;lib()}},
+ rf:async()=>{const f=S.folders.find(x=>x.id==S.folder),n=await ask('Rename folder',f.name);if(n){f.name=n;await dbPut('folders',f);lib()}},
+ df:async()=>{const f=S.folders.find(x=>x.id==S.folder);if(await sure('Delete folder “'+esc(f.name)+'”?','Its documents move back to All.')){for(const d of S.docs)if(d.folder==f.id){d.folder='';await dbPut('docs',d)}S.folders=S.folders.filter(x=>x!=f);await dbDel('folders',f.id);S.folder='all';lib()}},
+ open:t=>{S.doc=S.docs.find(d=>d.id==t.dataset.id);docView()},menu:t=>docMenu(S.docs.find(d=>d.id==t.dataset.id)),back:()=>lib(),scan:()=>openScanner(S.doc),
+ up:()=>{S.up=S.doc;$('#file').click()},ren:()=>renameDoc(S.doc,docView),edit:t=>openEditor(+t.dataset.i),mv:t=>movePage(+t.dataset.i,+t.dataset.d),pm:t=>pageMenu(+t.dataset.i),
+ addm:()=>sheet('Add pages',[['📷 Scan with camera',()=>openScanner(S.doc)],['🖼 Upload images',()=>A.up()]]),pdf:()=>pdfModal(S.doc)};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(t&&A[t.dataset.a]&&!t.disabled)A[t.dataset.a](t)});
+$('#file').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length)return;const done=busyOv('Scanning pages…');
+ try{const urls=[];for(const f of fs)urls.push(await readFile(f));S.doc=await addImages(urls,S.up,fs.length==1&&!S.up?fs[0].name.replace(/\.\w+$/,''):null);docView()}catch(x){toast('Couldn’t read that image file')}done()};
+/* ---------- camera scanner ---------- */
+async function openScanner(doc){let stream,facing='environment',n=0,target=doc,q=Promise.resolve();
+ const ov=document.createElement('div');ov.className='scan';
+ ov.innerHTML=`<video playsinline muted autoplay></video><div class="frame"><i></i></div><div class="sm"><div id="sx2" style="max-width:320px"></div><button class="btn" id="su">🖼 Upload photos instead</button><button class="b2" id="sc2" style="color:#111">Close</button></div><div class="ctl"><button class="ib" id="sg" title="Import from gallery">🖼</button><button class="ib" id="sf" title="Switch camera">🔄</button><button class="shut" id="sh" title="Capture"></button><button class="btn" id="sd">Done (0)</button></div>`;
+ document.body.appendChild(ov);const v=$('video',ov),stop=()=>{stream&&stream.getTracks().forEach(t=>t.stop());stream=null},upd=()=>$('#sd',ov).textContent='Done ('+n+')';
+ const fail=m=>{$('#sx2',ov).textContent=m;$('.sm',ov).style.display='grid';$('#sh',ov).disabled=true};
+ const start=async()=>{stop();if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return fail('Camera access isn’t supported in this browser or context. You can upload photos instead.');
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1920},height:{ideal:1080}},audio:false});v.srcObject=stream;await v.play()}
+  catch(e){fail(e.name=='NotAllowedError'||e.name=='SecurityError'?'Camera permission was denied or is blocked here. Allow camera access in your browser, or upload photos instead.':e.name=='NotFoundError'?'No camera was found on this device. You can upload photos instead.':'The camera couldn’t start ('+(e.message||e.name)+'). You can upload photos instead.')}};
+ const fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.multiple=true;
+ const add=urls=>{const p=q.then(async()=>{try{target=await addImages(urls,target);n+=urls.length;upd()}catch(e){toast('Couldn’t process that image')}});q=p;return p};
+ fi.onchange=async()=>{const fs=[...fi.files];fi.value='';const d=busyOv('Scanning pages…');try{await add(await Promise.all(fs.map(readFile)))}finally{d()}};
+ const fin=async()=>{const d=busyOv('Saving…');await q;d();stop();ov.remove();if(target){S.doc=target;docView()}else if(!S.doc)lib()};
+ $('#su',ov).onclick=()=>fi.click();$('#sg',ov).onclick=()=>fi.click();$('#sc2',ov).onclick=fin;$('#sd',ov).onclick=fin;
+ $('#sf',ov).onclick=()=>{facing=facing=='environment'?'user':'environment';$('.sm',ov).style.display='none';$('#sh',ov).disabled=false;start()};
+ $('#sh',ov).onclick=()=>{if(!v.videoWidth)return toast('Camera isn’t ready yet');const c=cv(v.videoWidth,v.videoHeight);c.getContext('2d').drawImage(v,0,0);const u=c.toDataURL('image/jpeg',.92);ov.classList.add('fl');setTimeout(()=>ov.classList.remove('fl'),380);n++;upd();n--;add([u]);if(navigator.vibrate)navigator.vibrate(30)};
+ start()}
+/* ---------- page editor ---------- */
+async function openEditor(i){const d=S.doc,p=d.pages[i],img=await loadImg(p.orig),E={q:p.q.map(a=>[...a]),rot:p.rot,f:p.f,b:p.b,c:p.c,s:p.s};let tab='crop',raf=0;
+ const ov=document.createElement('div');ov.className='ed';
+ ov.innerHTML=`<div class="bar"><button class="ib" id="ec">✕</button><h3>Edit page ${i+1}</h3><button class="btn" id="es">Save</button></div><div class="stage" id="stg"></div><div class="pan"><div class="tabs"><button data-t="crop">Crop</button><button data-t="filter">Filters</button><button data-t="adj">Adjust</button></div><div id="pp"></div></div>`;
+ document.body.appendChild(ov);const stg=$('#stg',ov),pp=$('#pp',ov);
+ const pv=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const c=render(img,E,800),t=$('#pv',ov);if(!t)return;t.width=c.width;t.height=c.height;t.getContext('2d').drawImage(c,0,0)})};
+ const drawQ=()=>{const cw=$('.cw',ov);if(!cw)return;$('polygon',cw).setAttribute('points',E.q.map(a=>a[0]*100+','+a[1]*100).join(' '));cw.querySelectorAll('.hd').forEach((h,k)=>{h.style.left=E.q[k][0]*100+'%';h.style.top=E.q[k][1]*100+'%'})};
+ const RW='<div class="rw"><button class="b2" data-r="-1">⟲ Rotate</button><button class="b2" data-r="1">⟳ Rotate</button></div>';
+ const show=()=>{ov.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
+  if(tab=='crop'){stg.innerHTML=`<div class="cw"><img src="${p.orig}"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon/></svg>${E.q.map((_,k)=>`<u class="hd" data-k="${k}"></u>`).join('')}</div>`;
+   pp.innerHTML=`<div class="rw"><button class="b2" id="au">✨ Auto-detect edges</button><button class="b2" id="fu">⬜ Full page</button></div>`+RW+`<small style="color:var(--mu)">Drag the corners onto the page edges — perspective is corrected on save.</small>`;drawQ()}
+  else{stg.innerHTML='<canvas id="pv"></canvas>';
+   pp.innerHTML=tab=='filter'?`<div class="rw">${[['orig','Original'],['bw','Black & White'],['gray','Grayscale'],['magic','Magic Color']].map(f=>`<button class="chip ${E.f==f[0]?'on':''}" data-f="${f[0]}">${f[1]}</button>`).join('')}</div>`+RW:
+   [['b','Brightness',-50,50],['c','Contrast',-50,50],['s','Sharpness',0,100]].map(r=>`<div class="sl"><span>${r[1]}</span><input type="range" min="${r[2]}" max="${r[3]}" value="${E[r[0]]}" data-s="${r[0]}"><em>${E[r[0]]}</em></div>`).join('')+RW;pv()}};
+ stg.onpointerdown=e=>{const h=e.target.closest('.hd');if(!h)return;h.setPointerCapture(e.pointerId);const k=+h.dataset.k,cw=h.parentNode;h.onpointermove=ev=>{const r=cw.getBoundingClientRect();E.q[k]=[Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(ev.clientY-r.top)/r.height))];drawQ()};h.onpointerup=()=>h.onpointermove=null};
+ pp.onclick=e=>{const t=e.target.closest('button');if(!t)return;if(t.id=='au'){E.q=detect(img);drawQ();toast('Edges detected — adjust if needed')}else if(t.id=='fu'){E.q=FULL();drawQ()}
+  else if(t.dataset.r){E.rot+=+t.dataset.r;tab=='crop'?toast('Rotation is applied to the final page'):pv()}else if(t.dataset.f){E.f=t.dataset.f;pp.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b==t));pv()}};
+ pp.oninput=e=>{const k=e.target.dataset.s;if(!k)return;E[k]=+e.target.value;e.target.nextElementSibling.textContent=e.target.value;pv()};
+ ov.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;show()});$('#ec',ov).onclick=()=>ov.remove();
+ $('#es',ov).onclick=async()=>{const dn=busyOv('Applying…');await wait(40);try{const c=render(img,E,1800);Object.assign(p,{q:E.q,rot:E.rot,f:E.f,b:E.b,c:E.c,s:E.s,out:c.toDataURL('image/jpeg',.9),thumb:thumbOf(c)});await save(d);ov.remove();docView()}catch(x){toast('Couldn’t save changes')}dn()};
+ show()}
+/* ---------- signature & text annotations ---------- */
+function sigPad(){return new Promise(r=>{const m=modal(`<h3>Draw your signature</h3><canvas id="sp" width="640" height="240" style="width:100%;background:#fff;border-radius:12px;border:1px solid var(--ln);touch-action:none"></canvas><div class="row" style="margin-top:10px"><label>Ink <input type="color" id="sc" value="#111827"></label><button class="b2" id="cl">Clear</button><button class="b2" id="cn">Cancel</button><button class="btn" id="us">Use</button></div>`),c=$('#sp',m),x=c.getContext('2d');let dn=false,bb=null;x.lineWidth=5;x.lineCap=x.lineJoin='round';
+ const pt=e=>{const R=c.getBoundingClientRect();return[(e.clientX-R.left)*c.width/R.width,(e.clientY-R.top)*c.height/R.height]},up=(a,b)=>{bb=bb?[Math.min(bb[0],a),Math.min(bb[1],b),Math.max(bb[2],a),Math.max(bb[3],b)]:[a,b,a,b]};
+ c.onpointerdown=e=>{dn=true;c.setPointerCapture(e.pointerId);const[a,b]=pt(e);x.strokeStyle=$('#sc',m).value;x.beginPath();x.moveTo(a,b);x.lineTo(a+.1,b);x.stroke();up(a,b)};
+ c.onpointermove=e=>{if(!dn)return;const[a,b]=pt(e);x.lineTo(a,b);x.stroke();up(a,b)};c.onpointerup=()=>dn=false;
+ $('#cl',m).onclick=()=>{x.clearRect(0,0,c.width,c.height);bb=null};$('#cn',m).onclick=()=>{m.close();r(null)};
+ $('#us',m).onclick=()=>{if(!bb)return toast('Draw your signature first');const P=8,X0=Math.max(0,bb[0]-P),Y0=Math.max(0,bb[1]-P),X1=Math.min(c.width,bb[2]+P),Y1=Math.min(c.height,bb[3]+P),o=cv(X1-X0,Y1-Y0);o.getContext('2d').drawImage(c,X0,Y0,X1-X0,Y1-Y0,0,0,X1-X0,Y1-Y0);m.close();r(o.toDataURL())}})}
+async function openAnnot(i){const d=S.doc,p=d.pages[i],img=await loadImg(p.out),W=img.naturalWidth,H=img.naturalHeight;let it=[],sel=-1,dr=null;
+ const ov=document.createElement('div');ov.className='ed';
+ ov.innerHTML=`<div class="bar"><button class="ib" id="xc">✕</button><h3>Sign &amp; annotate</h3><button class="btn" id="xs">Save</button></div><div class="stage"><canvas id="ac"></canvas></div><div class="pan"><div class="rw"><button class="b2" id="at">＋ Text</button><button class="b2" id="ag">✍ Signature</button><button class="b2" id="ad">🗑 Remove</button><input type="color" id="ak" value="#1d4ed8" style="width:44px;height:40px;border:0;background:none"></div><div class="sl"><span>Size</span><input type="range" id="az" min="3" max="40" value="12"></div><small style="color:var(--mu)">Drag items on the page to position them. Tap one to select it.</small></div>`;
+ document.body.appendChild(ov);const c=$('#ac',ov),x=c.getContext('2d');c.width=W;c.height=H;
+ const draw=hl=>{x.drawImage(img,0,0);it.forEach((o,k)=>{if(o.t){const fs=o.s*W*.35;x.font=`600 ${fs}px system-ui,Arial,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillStyle=o.col;x.fillText(o.t,o.x*W,o.y*H);const w=x.measureText(o.t).width;o.bx=[o.x*W-w/2,o.y*H-fs*.6,w,fs*1.2]}
+  else{const w=o.s*W*2.5,h=w*o.im.naturalHeight/o.im.naturalWidth;x.drawImage(o.im,o.x*W-w/2,o.y*H-h/2,w,h);o.bx=[o.x*W-w/2,o.y*H-h/2,w,h]}
+  if(hl&&k==sel){x.save();x.strokeStyle='#6c5ce7';x.lineWidth=Math.max(2,W/400);x.setLineDash([12,8]);x.strokeRect(...o.bx);x.restore()}})};
+ const pt=e=>{const R=c.getBoundingClientRect();return[(e.clientX-R.left)/R.width*W,(e.clientY-R.top)/R.height*H]};
+ c.onpointerdown=e=>{const[a,b]=pt(e);sel=-1;for(let k=it.length-1;k>=0;k--){const[bx,by,bw,bh]=it[k].bx;if(a>=bx&&a<=bx+bw&&b>=by&&b<=by+bh){sel=k;break}}if(sel>=0){dr=[a-it[sel].x*W,b-it[sel].y*H];c.setPointerCapture(e.pointerId);$('#az',ov).value=it[sel].s*100}draw(1)};
+ c.onpointermove=e=>{if(dr&&sel>=0){const[a,b]=pt(e);it[sel].x=(a-dr[0])/W;it[sel].y=(b-dr[1])/H;draw(1)}};c.onpointerup=()=>dr=null;
+ $('#at',ov).onclick=async()=>{const t=await ask('Add text','','Type your text');if(t){it.push({t,x:.5,y:.5,s:.12,col:$('#ak',ov).value});sel=it.length-1;draw(1)}};
+ $('#ag',ov).onclick=async()=>{const u=await sigPad();if(u){it.push({im:await loadImg(u),x:.5,y:.5,s:.12});sel=it.length-1;draw(1)}};
+ $('#ad',ov).onclick=()=>{if(sel<0)return toast('Select an item first');it.splice(sel,1);sel=-1;draw(1)};
+ $('#ak',ov).oninput=e=>{if(sel>=0&&it[sel].t){it[sel].col=e.target.value;draw(1)}};$('#az',ov).oninput=e=>{if(sel>=0){it[sel].s=e.target.value/100;draw(1)}};
+ $('#xc',ov).onclick=()=>ov.remove();
+ $('#xs',ov).onclick=async()=>{sel=-1;draw(0);p.out=c.toDataURL('image/jpeg',.92);p.thumb=thumbOf(c);await save(d);ov.remove();docView();toast('Annotations saved to the page')};draw(1)}
+/* ---------- PDF export, sharing, images ---------- */
+async function buildPDF(d){if(!window.jspdf)throw Error('The PDF library didn’t load. Check your connection and reload.');const{jsPDF}=window.jspdf,F={a4:[210,297],letter:[215.9,279.4],a5:[148,210],legal:[215.9,355.6]},n=d.pages.length;let pdf;
+ for(let i=0;i<n;i++){const im=await loadImg(d.pages[i].out),r=im.naturalWidth/im.naturalHeight,mg=prefs.size=='fit'?0:6,nb=prefs.nums?8:0;let pw,ph;
+  if(prefs.size=='fit'){pw=210;ph=210/r+nb}else{[pw,ph]=F[prefs.size];if(r>1)[pw,ph]=[ph,pw]}
+  const o=pw>ph?'l':'p',aw=pw-mg*2,ah=ph-mg*2-nb;let w=aw,h=w/r;if(h>ah){h=ah;w=h*r}
+  if(i)pdf.addPage([pw,ph],o);else pdf=new jsPDF({unit:'mm',format:[pw,ph],orientation:o});
+  pdf.addImage(d.pages[i].out,'JPEG',(pw-w)/2,mg+(ah-h)/2,w,h,undefined,'FAST');
+  if(prefs.nums){pdf.setFontSize(9);pdf.setTextColor(120);pdf.text(i+1+' / '+n,pw/2,ph-4,{align:'center'})}}
+ return pdf.output('blob')}
+async function exportPDF(d){if(!d.pages.length)return toast('Add a page first');const dn=busyOv('Building PDF…');try{await wait(40);const b=await buildPDF(d);dn();await saveFile(fname(d)+'.pdf',b)}catch(e){dn();toast(e.message,4000)}}
+async function shareDoc(d){if(!d.pages.length)return toast('Add a page first');const dn=busyOv('Preparing PDF…');let f;try{await wait(40);f=new File([await buildPDF(d)],fname(d)+'.pdf',{type:'application/pdf'})}catch(e){dn();return toast(e.message,4000)}dn();
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:d.name});return}catch(e){if(e.name=='AbortError')return}}
+ toast('Sharing isn’t supported here — saving the PDF instead');saveFile(f.name,f)}
+function pdfModal(d){const m=modal(`<h3>Export “${esc(d.name)}”</h3><label>Page size</label><select id="ps"><option value="a4">A4</option><option value="letter">US Letter</option><option value="a5">A5</option><option value="legal">US Legal</option><option value="fit">Fit to image</option></select><label><input type="checkbox" id="pn"> Add page numbers</label><div class="row" style="margin-top:14px"><button class="btn" id="pd">⬇ Download PDF</button><button class="b2" id="psh">↗ Share</button><button class="b2" id="pim">🖼 All pages as JPG</button></div>`);
+ $('#ps',m).value=prefs.size;$('#pn',m).checked=prefs.nums;const sv=()=>{prefs.size=$('#ps',m).value;prefs.nums=$('#pn',m).checked;savePrefs();m.close()};
+ $('#pd',m).onclick=()=>{sv();exportPDF(d)};$('#psh',m).onclick=()=>{sv();shareDoc(d)};
+ $('#pim',m).onclick=async()=>{sv();for(let i=0;i<d.pages.length;i++)if(!await saveFile(fname(d)+'-p'+(i+1)+'.jpg',toBlob(d.pages[i].out)))break}}
+/* ---------- OCR (best effort) ---------- */
+const loadScript=u=>new Promise((res,rej)=>{if(window.Tesseract)return res();const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>rej(Error('script'));document.head.appendChild(s)});
+async function ocr(i){const d=S.doc,p=d.pages[i],dn=busyOv('Reading text… the first run downloads the OCR engine');let txt;
+ try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js');const w=await Promise.race([Tesseract.createWorker('eng',1,{workerPath:'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/worker.min.js'}),wait(45000).then(()=>{throw Error('timeout')})]);const r=await w.recognize(p.out);txt=r.data.text.trim();w.terminate()}
+ catch(e){dn();return modal(`<h3>OCR unavailable here</h3><p style="color:var(--mu)">Text extraction needs to download an OCR engine and language data, which this environment blocked or couldn’t reach. Open Docy in a regular browser tab with internet access and try again — everything else works offline.</p><div class="row"><button class="btn" onclick="this.closest('.ov').remove()">OK</button></div>`)}
+ dn();const m=modal(`<h3>Extracted text</h3><textarea rows="10" id="ot">${esc(txt||'(No text found on this page)')}</textarea><div class="row"><button class="b2" id="oc">Copy</button><button class="b2" id="os">Save .txt</button><button class="btn" id="ox">Close</button></div>`);
+ $('#oc',m).onclick=async()=>{const t=$('#ot',m);try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();document.execCommand('copy')}toast('Copied')};
+ $('#os',m).onclick=()=>saveFile(fname(d)+'-p'+(i+1)+'.txt',new Blob([$('#ot',m).value],{type:'text/plain'}));$('#ox',m).onclick=()=>m.close()}
+/* ---------- init ---------- */
+(async()=>{applyTheme();[S.docs,S.folders]=await Promise.all([dbAll('docs'),dbAll('folders')]);lib();if(useMem)toast('Local storage is unavailable — documents will be lost when you close this tab',6000)})();
+</script></body></html>
