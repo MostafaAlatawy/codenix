@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Scany – QR & barcode scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf4ff;--card:rgba(255,255,255,.7);--bd:rgba(255,255,255,.95);--tx:#14183a;--mu:#5d6490;--c1:#00c6ff;--c2:#7b5cff;--c3:#ff4fd8;--g:linear-gradient(120deg,#00c6ff,#7b5cff 52%,#ff4fd8);--sh:0 12px 40px rgba(88,92,255,.2);--in:rgba(255,255,255,.8)}
+[data-theme=dark]{--bg:#0b1020;--card:rgba(255,255,255,.07);--bd:rgba(255,255,255,.14);--tx:#f1f3ff;--mu:#a4aad6;--sh:0 12px 40px rgba(0,0,0,.5);--in:rgba(255,255,255,.08)}
+*{box-sizing:border-box;margin:0}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+body{font-family:'Outfit',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;transition:background .4s,color .4s;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(100px);opacity:.5;width:44vmax;height:44vmax}
+body::before{background:var(--c1);top:-16vmax;right:-10vmax}
+body::after{background:var(--c3);bottom:-18vmax;left:-12vmax}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;touch-action:manipulation}
+:focus-visible{outline:3px solid var(--c1);outline-offset:2px}
+.glass{background:var(--card);border:1px solid var(--bd);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);box-shadow:var(--sh);border-radius:24px}
+header{display:flex;align-items:center;gap:12px;padding:max(14px,env(safe-area-inset-top)) clamp(14px,3vw,32px) 10px}
+.logo{font-weight:800;font-size:1.7rem;letter-spacing:-.04em;display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo i{width:38px;height:38px;border-radius:12px;background:var(--g);display:grid;place-items:center;box-shadow:0 6px 18px rgba(123,92,255,.5)}
+.logo svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round}
+nav{display:flex;gap:4px;padding:5px;border-radius:99px;z-index:20}
+nav button{padding:10px 20px;border-radius:99px;font-weight:600;color:var(--mu);transition:.25s;font-size:.95rem}
+nav button.on,.chips button.on{background:var(--g);color:#fff;box-shadow:0 4px 14px rgba(123,92,255,.5)}
+.ico{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.1rem}
+main{max-width:1150px;margin:auto;padding:8px clamp(14px,3vw,32px) 50px}
+.view{display:none;grid-template-columns:1.1fr 1fr;gap:20px;align-items:start}
+.view.on{display:grid}
+@media(max-width:860px){.view.on{grid-template-columns:1fr}}
+.card{padding:20px}
+h2{font-size:1.1rem;margin-bottom:12px}
+.cam{position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:24px;background:#05081a}
+video{width:100%;height:100%;object-fit:cover;display:none}
+.cam.live video{display:block}
+.frame{position:absolute;inset:14%;pointer-events:none;opacity:0;transition:opacity .3s}
+.cam.live .frame{opacity:1}
+.frame i{position:absolute;width:34px;height:34px;border:5px solid #fff;border-radius:6px;animation:pulse 1.6s ease-in-out infinite;filter:drop-shadow(0 0 8px var(--c1))}
+.frame i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0}
+.frame i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0}
+.frame i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0}
+.frame i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0}
+@keyframes pulse{50%{transform:scale(.86);border-color:var(--c1)}}
+.laser{position:absolute;left:4%;right:4%;height:3px;border-radius:3px;background:var(--g);box-shadow:0 0 16px 3px var(--c3);animation:laser 2.1s ease-in-out infinite alternate}
+@keyframes laser{from{top:3%}to{top:97%}}
+.idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;color:#dfe3ff;background:radial-gradient(circle at 30% 20%,rgba(123,92,255,.55),transparent 60%),radial-gradient(circle at 80% 90%,rgba(255,79,216,.4),transparent 55%),#080c24}
+.cam.live .idle{display:none}
+.idle svg{width:64px;height:64px;stroke:#fff;fill:none;stroke-width:1.6;stroke-linecap:round;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+.small{font-size:.85rem;color:var(--mu)}
+.idle .small{color:#ffb3d9;max-width:320px}
+.btn{padding:12px 22px;border-radius:99px;background:var(--g);color:#fff;font-weight:600;box-shadow:0 6px 18px rgba(123,92,255,.45);transition:transform .15s}
+.btn:active{transform:scale(.96)}
+.btn.alt{background:var(--in);color:var(--tx);box-shadow:none;border:1px solid var(--bd)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{padding:9px 16px;border-radius:99px;background:var(--in);border:1px solid var(--bd);font-size:.88rem}
+.drop{outline:3px dashed var(--c1)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:var(--g);color:#fff;font-size:.8rem;font-weight:600}
+.content{margin:12px 0;padding:14px;border-radius:16px;background:var(--in);border:1px solid var(--bd);white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto;user-select:text}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.92rem;margin:8px 0}
+dt{color:var(--mu)}dd{overflow-wrap:anywhere}
+.warn{color:#b45309;font-size:.85rem;margin-top:6px}
+.empty{color:var(--mu);text-align:center;padding:30px 10px}
+label{display:block;font-size:.85rem;color:var(--mu);margin:10px 0 4px}
+input[type=text],input[type=url],input[type=email],input[type=tel],input[type=search],textarea,select{width:100%;padding:11px 13px;border-radius:14px;background:var(--in);border:1px solid var(--bd)}
+select option{color:#222}
+textarea{min-height:84px;resize:vertical}
+input[type=color]{width:52px;height:40px;border:0;border-radius:10px;background:none;padding:0;cursor:pointer}
+input[type=range]{width:100%;accent-color:var(--c2)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qrbox{display:grid;place-items:center;padding:16px;border-radius:20px;background:repeating-conic-gradient(#e6e9f5 0 25%,#fff 0 50%) 50%/20px 20px;min-height:200px}
+.qrbox canvas{max-width:100%;width:min(300px,100%);height:auto;border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.hi{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--in);border:1px solid var(--bd);margin-bottom:10px}
+.hi .ic{width:42px;height:42px;border-radius:12px;background:var(--g);display:grid;place-items:center;flex:none;font-size:1.1rem}
+.hb{min-width:0;flex:1}
+.hb b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb small{color:var(--mu)}
+.ha{display:flex;gap:2px;flex:none}
+.ha button{width:38px;height:38px;border-radius:50%;font-size:1rem}
+.ha button:hover{background:var(--card)}
+.fav-on{color:#ff3d81}
+.wide{grid-column:1/-1}
+#toast{position:fixed;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom) + 84px));transform:translate(-50%,120px);padding:12px 20px;border-radius:16px;background:#1b1f4b;color:#fff;transition:.35s;z-index:50;max-width:90vw;font-size:.92rem}
+#toast.show{transform:translate(-50%,0)}
+@media(max-width:760px){
+  header{flex-wrap:wrap}
+  nav{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));justify-content:space-around}
+  nav button{flex:1;padding:13px 6px}
+  main{padding-bottom:110px}
+  input,select,textarea{font-size:16px!important}
+  .two{grid-template-columns:1fr}
+  .ha button{width:42px;height:42px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><i><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/></svg></i>Scany</div>
+  <nav class="glass" aria-label="Sections">
+    <button class="on" data-v="scan">Scan</button><button data-v="gen">Create</button><button data-v="hist">History</button>
+  </nav>
+  <button class="ico glass" id="theme" aria-label="Toggle light and dark theme">🌙</button>
+</header>
+<main>
+<!-- SCAN -->
+<section class="view on" id="v-scan">
+  <div class="card glass">
+    <div class="cam" id="cam">
+      <video id="video" playsinline muted></video>
+      <div class="frame"><i></i><i></i><i></i><i></i><b class="laser"></b></div>
+      <div class="idle">
+        <svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M13 13h3v3"/></svg>
+        <div>Scan a QR code or barcode</div>
+        <button class="btn" id="start">Start camera</button>
+        <div class="small" id="camMsg">The browser will ask for camera access only when you tap Start.</div>
+      </div>
+    </div>
+    <canvas id="work" hidden></canvas>
+    <div class="row">
+      <div class="chips" id="modes" role="group" aria-label="Code type"><button class="on" data-m="all">All codes</button><button data-m="qr">QR codes</button><button data-m="bar">Barcodes</button></div>
+    </div>
+    <div class="row">
+      <button class="btn alt" id="stop" hidden>Stop camera</button>
+      <button class="btn alt" id="flip" hidden>Switch camera</button>
+      <button class="btn alt" id="torch" hidden>Flashlight</button>
+      <button class="btn alt" id="upload">Upload image</button>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+    <p class="small" style="margin-top:10px">Barcodes: EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39. You can also drop an image here.</p>
+  </div>
+  <div class="card glass" id="result" aria-live="polite"><div class="empty">Results appear here after a real code is detected.</div></div>
+</section>
+
+<!-- CREATE -->
+<section class="view" id="v-gen">
+  <div class="card glass">
+    <h2>Create a QR code</h2>
+    <div class="chips" id="gtypes"></div>
+    <div id="gfields"></div>
+    <div class="two" style="margin-top:6px">
+      <div><label>Code color</label><input type="color" id="fg" value="#14183a"></div>
+      <div><label>Background</label><input type="color" id="bg" value="#ffffff"></div>
+    </div>
+    <label>Size: <span id="szv">512</span> px</label><input type="range" id="size" min="128" max="1024" step="32" value="512">
+    <div class="two">
+      <div><label>Error correction</label><select id="ecc"><option value="L">Low</option><option value="M" selected>Medium</option><option value="Q">Quartile</option><option value="H">High</option></select></div>
+      <div><label>Center logo</label><div class="row" style="margin:0"><button class="btn alt" id="logoBtn" type="button">Add logo</button><button class="btn alt" id="logoX" type="button" hidden>Remove</button></div><input type="file" id="logoFile" accept="image/*" hidden></div>
+    </div>
+    <p class="small" id="ghint" style="margin-top:10px"></p>
+  </div>
+  <div class="card glass">
+    <h2>Preview</h2>
+    <div class="qrbox"><canvas id="qrc" width="300" height="300"></canvas></div>
+    <p class="small" id="gmsg" style="margin-top:10px"></p>
+    <div class="row"><button class="btn" id="dlPng" disabled>Download PNG</button><button class="btn alt" id="dlSvg" disabled>Download SVG</button></div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="view" id="v-hist">
+  <div class="card glass wide">
+    <div class="row" style="margin:0 0 14px">
+      <input type="search" id="hq" placeholder="Search scan history" aria-label="Search history" style="flex:1;min-width:180px">
+      <div class="chips" id="hf"><button class="on" data-f="all">All</button><button data-f="fav">Favorites</button></div>
+      <button class="btn alt" id="clear">Clear history</button>
+    </div>
+    <div id="hlist"></div>
+  </div>
+</section>
+</main>
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{toast('Storage is full or blocked.')}}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
+async function copy(t){try{await navigator.clipboard.writeText(t)}catch{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch{}a.remove()}toast('Copied to clipboard')}
+function setTheme(t){document.documentElement.dataset.theme=t;$('#theme').textContent=t==='dark'?'☀️':'🌙';LS.set('scany.theme',t)}
+setTheme(LS.get('scany.theme',matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+$('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+/* ---------- navigation ---------- */
+function show(v){
+  if(v!=='scan')stopCam();
+  $$('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(v==='hist')renderHist();if(v==='gen')drawGen();
+}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+
+/* ---------- parsing ---------- */
+function safeUrl(t){
+  if(/\s/.test(t))return null;
+  try{const u=new URL(t);if(u.protocol==='http:'||u.protocol==='https:')return u.href;return null}catch{}
+  if(/^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([\/?#]\S*)?$/i.test(t)){try{return new URL('https://'+t).href}catch{}}
+  return null;
+}
+function parse(text,fmt){
+  const t=text.trim();
+  if(fmt!=='QR_CODE')return{type:'barcode',data:{}};
+  if(/^WIFI:/i.test(t)){
+    const d={};t.slice(5).replace(/(?:^|;)([TSPH]):((?:\\.|[^;])*)/g,(_,k,v)=>{d[k]=v.replace(/\\(.)/g,'$1')});
+    if(d.S!==undefined)return{type:'wifi',data:{ssid:d.S,pw:d.P||'',sec:d.T||'nopass',hidden:d.H==='true'}};
+  }
+  if(/^BEGIN:VCARD/i.test(t)){
+    const d={tel:[],email:[]};
+    t.split(/\r?\n/).forEach(l=>{const m=l.match(/^(FN|N|ORG|TEL|EMAIL|URL|TITLE)[^:]*:(.*)$/i);if(!m)return;const k=m[1].toUpperCase(),v=m[2].replace(/\\([,;])/g,'$1').trim();
+      if(k==='TEL')d.tel.push(v);else if(k==='EMAIL')d.email.push(v);else if(k==='N'){d.n=d.n||v.split(';').filter(Boolean).reverse().join(' ')}else d[k.toLowerCase()]=v});
+    return{type:'contact',data:{name:d.fn||d.n||'',org:d.org||'',title:d.title||'',tel:d.tel,email:d.email,url:d.url||''}};
+  }
+  if(/^mailto:[^\s]+$/i.test(t))return{type:'email',data:{addr:decodeURIComponent(t.slice(7).split('?')[0])},href:t};
+  if(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t))return{type:'email',data:{addr:t},href:'mailto:'+t};
+  if(/^tel:\+?[\d\s().-]{3,}$/i.test(t))return{type:'phone',data:{num:t.slice(4)},href:'tel:'+t.slice(4).replace(/[^\d+]/g,'')};
+  if(/^\+?[\d\s().-]{7,20}$/.test(t)&&(t.match(/\d/g)||[]).length>=7)return{type:'phone',data:{num:t},href:'tel:'+t.replace(/[^\d+]/g,'')};
+  const u=safeUrl(t);if(u)return{type:'url',data:{},href:u};
+  return{type:'text',data:{}};
+}
+const TYPE={url:['🔗','Link'],wifi:['📶','Wi-Fi'],email:['✉️','Email'],phone:['📞','Phone'],contact:['👤','Contact'],text:['📝','Text'],barcode:['▮▮','Barcode']};
+const FMT={EAN_13:'EAN-13',EAN_8:'EAN-8',UPC_A:'UPC-A',UPC_E:'UPC-E',CODE_128:'Code 128',CODE_39:'Code 39',QR_CODE:'QR code'};
+const canOpen=p=>p.type==='url'||p.type==='email'||p.type==='phone'||p.type==='contact';
+const openLabel={url:'Open link',email:'Send email',phone:'Call',contact:'Save contact'};
+
+/* ---------- history ---------- */
+let hist=LS.get('scany.history',[]),hf='all',last=null;
+const saveHist=()=>LS.set('scany.history',hist);
+function addHist(r,type){
+  const ex=hist.find(h=>h.text===r.text&&h.fmt===r.fmt);
+  const it={id:ex?ex.id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),text:r.text,fmt:r.fmt,type,ts:Date.now(),fav:ex?ex.fav:false};
+  hist=[it,...hist.filter(h=>h!==ex)].slice(0,500);saveHist();return it;
+}
+function vcf(p,text){
+  const blob=new Blob([text],{type:'text/vcard'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=(p.data.name||'contact')+'.vcf';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function act(a,it){
+  const p=parse(it.text,it.fmt);
+  if(a==='copy')copy(p.type==='wifi'?it.text:it.text);
+  else if(a==='pw')copy(p.data.pw);
+  else if(a==='open'){
+    if(p.type==='url')window.open(p.href,'_blank','noopener,noreferrer');
+    else if(p.type==='contact')vcf(p,it.text);
+    else if(p.href)location.href=p.href;
+  }else if(a==='fav'){it.fav=!it.fav;saveHist();renderHist();if(last&&last.id===it.id)renderResult(it)}
+  else if(a==='del'){hist=hist.filter(h=>h.id!==it.id);saveHist();renderHist();if(last&&last.id===it.id){last=null;$('#result').innerHTML='<div class="empty">Results appear here after a real code is detected.</div>'}toast('Deleted')}
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;
+  const it=hist.find(h=>h.id===b.dataset.id);if(it)act(b.dataset.a,it);
+});
+function renderHist(){
+  const q=$('#hq').value.trim().toLowerCase();
+  const list=hist.filter(h=>(hf==='all'||h.fav)&&(!q||h.text.toLowerCase().includes(q)||(TYPE[h.type]||[])[1]?.toLowerCase().includes(q)));
+  $('#hlist').innerHTML=list.length?list.map(h=>{
+    const p=parse(h.text,h.fmt),t=TYPE[h.type]||TYPE.text;
+    return `<div class="hi"><div class="ic">${t[0]}</div><div class="hb"><b>${esc(h.text.replace(/\s+/g,' '))}</b><small>${t[1]}${h.type==='barcode'?' • '+esc(FMT[h.fmt]||h.fmt):''} • ${new Date(h.ts).toLocaleString()}</small></div><div class="ha">
+    <button data-a="fav" data-id="${h.id}" class="${h.fav?'fav-on':''}" aria-label="Favorite">${h.fav?'♥':'♡'}</button>
+    <button data-a="copy" data-id="${h.id}" aria-label="Copy">⧉</button>
+    ${canOpen(p)?`<button data-a="open" data-id="${h.id}" aria-label="${openLabel[p.type]}">↗</button>`:''}
+    <button data-a="del" data-id="${h.id}" aria-label="Delete">🗑</button></div></div>`}).join(''):`<div class="empty">${hist.length?'No matching scans.':'No scans yet. Scanned codes are saved here on this device only.'}</div>`;
+}
+$('#hq').oninput=renderHist;
+$('#hf').onclick=e=>{const b=e.target.closest('button');if(!b)return;hf=b.dataset.f;$$('#hf button').forEach(x=>x.classList.toggle('on',x===b));renderHist()};
+$('#clear').onclick=()=>{if(!hist.length)return toast('History is already empty');if(confirm('Delete all '+hist.length+' saved scans? This cannot be undone.')){hist=[];saveHist();renderHist();toast('History cleared')}};
+
+/* ---------- result card ---------- */
+function renderResult(it){
+  const p=parse(it.text,it.fmt),t=TYPE[p.type],d=p.data;let rows='',warn='';
+  if(p.type==='wifi')rows=`<dt>Network</dt><dd>${esc(d.ssid)}</dd><dt>Security</dt><dd>${esc(d.sec==='nopass'?'Open':d.sec)}</dd><dt>Password</dt><dd>${d.pw?'<span id="pwv">••••••••</span> <button class="small" id="pwt" style="text-decoration:underline">show</button>':'None'}</dd>`;
+  if(p.type==='contact')rows=[['Name',d.name],['Company',d.org],['Title',d.title],['Phone',d.tel.join(', ')],['Email',d.email.join(', ')],['Website',d.url]].filter(r=>r[1]).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('');
+  if(p.type==='url'){const u=new URL(p.href);rows=`<dt>Opens</dt><dd><b>${esc(u.hostname)}</b></dd>`;if(u.protocol==='http:')warn='This link is not encrypted (http). Open it only if you trust the source.'}
+  if(p.type==='email')rows=`<dt>Address</dt><dd>${esc(d.addr)}</dd>`;
+  if(p.type==='phone')rows=`<dt>Number</dt><dd>${esc(d.num)}</dd>`;
+  if(p.type==='barcode')rows=`<dt>Format</dt><dd>${esc(FMT[it.fmt]||it.fmt)}</dd>`;
+  const btn=(a,l,c)=>`<button class="btn ${c||''}" data-a="${a}" data-id="${it.id}">${l}</button>`;
+  $('#result').innerHTML=`<span class="badge">${t[0]} ${t[1]}</span><div class="content">${esc(it.text)}</div>${rows?`<dl>${rows}</dl>`:''}${warn?`<div class="warn">⚠ ${warn}</div>`:''}
+  <div class="row">${btn('copy',p.type==='barcode'?'Copy value':'Copy')}${canOpen(p)?btn('open',openLabel[p.type]):''}${p.type==='wifi'&&d.pw?btn('pw','Copy password','alt'):''}${btn('fav',it.fav?'♥ Saved':'♡ Favorite','alt')}</div>
+  <p class="small" style="margin-top:12px">Saved to your history on this device.</p>`;
+  const pt=$('#pwt');if(pt)pt.onclick=()=>{const s=$('#pwv'),h=s.textContent.startsWith('•');s.textContent=h?d.pw:'••••••••';pt.textContent=h?'hide':'show'};
+}
+function onResult(r){
+  const p=parse(r.text,r.fmt);last=addHist(r,p.type);renderResult(last);
+  navigator.vibrate&&navigator.vibrate(50);
+}
+
+/* ---------- decoding ---------- */
+let mode='all',reader=null;
+const QRF=['QR_CODE'],BARF=['EAN_13','EAN_8','UPC_A','UPC_E','CODE_128','CODE_39'];
+function mkReader(){
+  const f=(mode==='qr'?QRF:mode==='bar'?BARF:[...QRF,...BARF]).map(n=>ZXing.BarcodeFormat[n]);
+  const h=new Map();h.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,f);h.set(ZXing.DecodeHintType.TRY_HARDER,true);
+  const r=new ZXing.MultiFormatReader();r.setHints(h);return r;
+}
+function decodeCanvas(c){
+  const bm=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(c)));
+  const r=reader.decodeWithState(bm);
+  return{text:r.getText(),fmt:ZXing.BarcodeFormat[r.getBarcodeFormat()]};
+}
+$('#modes').onclick=e=>{const b=e.target.closest('button');if(!b)return;mode=b.dataset.m;$$('#modes button').forEach(x=>x.classList.toggle('on',x===b));if(window.ZXing)reader=mkReader()};
+const libOk=()=>{if(window.ZXing)return true;toast('Scanner library didn’t load. Check your connection and reload.');return false};
+
+/* camera */
+let stream=null,scanning=false,raf=0,lastT=0,facing='environment',torchOn=false;
+const video=$('#video'),work=$('#work'),wctx=work.getContext('2d',{willReadFrequently:true});
+function camMsg(m){$('#camMsg').textContent=m}
+function camError(e){
+  const m={NotAllowedError:'Camera access was blocked. Allow it in your browser’s site settings, then tap Start again.',NotFoundError:'No camera was found on this device. You can still upload an image.',NotReadableError:'The camera is being used by another app. Close it and try again.',OverconstrainedError:'This camera isn’t available. Try Switch camera.',SecurityError:'Camera access needs a secure page (HTTPS).'}[e&&e.name]||'Couldn’t start the camera. You can still upload an image.';
+  camMsg(m);
+}
+async function startCam(){
+  if(!libOk())return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camMsg('This browser or page can’t access the camera (HTTPS is required). Upload an image instead.');return}
+  stopCam();reader=mkReader();camMsg('Starting camera…');
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}},audio:false});
+  }catch(e){camError(e);return}
+  video.srcObject=stream;
+  try{await video.play()}catch{}
+  scanning=true;$('#cam').classList.add('live');
+  $('#stop').hidden=false;$('#flip').hidden=false;
+  const tr=stream.getVideoTracks()[0],caps=tr.getCapabilities?tr.getCapabilities():{};
+  $('#torch').hidden=!caps.torch;torchOn=false;
+  raf=requestAnimationFrame(loop);
+}
+function loop(t){
+  if(!scanning)return;
+  if(t-lastT>110&&video.readyState>=2&&video.videoWidth){
+    lastT=t;const w=Math.min(video.videoWidth,1024),h=Math.round(video.videoHeight*w/video.videoWidth);
+    work.width=w;work.height=h;wctx.drawImage(video,0,0,w,h);
+    try{const r=decodeCanvas(work);stopCam();onResult(r);return}catch(e){}
+  }
+  raf=requestAnimationFrame(loop);
+}
+function stopCam(){
+  scanning=false;cancelAnimationFrame(raf);
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+  video.srcObject=null;$('#cam').classList.remove('live');
+  $('#stop').hidden=true;$('#flip').hidden=true;$('#torch').hidden=true;
+  camMsg('The browser will ask for camera access only when you tap Start.');
+}
+$('#start').onclick=startCam;$('#stop').onclick=stopCam;
+$('#flip').onclick=()=>{facing=facing==='environment'?'user':'environment';startCam()};
+$('#torch').onclick=async()=>{try{torchOn=!torchOn;await stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:torchOn}]})}catch{toast('Flashlight isn’t available on this camera.')}};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCam()});
+addEventListener('pagehide',stopCam);
+
+/* image upload */
+async function scanFile(f){
+  if(!f||!f.type.startsWith('image/'))return toast('Choose an image file.');
+  if(!libOk())return;
+  reader=mkReader();stopCam();
+  const url=URL.createObjectURL(f),img=new Image();
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    for(const w of [1600,900,2400,500]){
+      const s=Math.min(1,w/Math.max(img.naturalWidth,img.naturalHeight)),cw=Math.round(img.naturalWidth*s),ch=Math.round(img.naturalHeight*s);
+      work.width=cw;work.height=ch;wctx.fillStyle='#fff';wctx.fillRect(0,0,cw,ch);wctx.drawImage(img,0,0,cw,ch);
+      try{onResult(decodeCanvas(work));return}catch(e){}
+    }
+    $('#result').innerHTML='<div class="empty">No QR code or barcode was found in that image. Try a sharper, closer photo or switch the code type.</div>';
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('That image couldn’t be opened.')};
+  img.src=url;
+}
+$('#upload').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{scanFile(e.target.files[0]);e.target.value=''};
+const camEl=$('#cam');
+['dragover','dragenter'].forEach(n=>camEl.addEventListener(n,e=>{e.preventDefault();camEl.classList.add('drop')}));
+['dragleave','drop'].forEach(n=>camEl.addEventListener(n,e=>{e.preventDefault();camEl.classList.remove('drop');if(n==='drop')scanFile(e.dataTransfer.files[0])}));
+
+/* ---------- generator ---------- */
+const GT={
+  url:['Link',[['u','Website address','url','https://example.com']]],
+  text:['Text',[['t','Text','area','Type or paste anything']]],
+  wifi:['Wi-Fi',[['ssid','Network name','text',''],['pw','Password','text',''],['sec','Security','sel',['WPA','WEP','nopass']]]],
+  email:['Email',[['to','Email address','email','name@example.com'],['sub','Subject','text',''],['body','Message','area','']]],
+  phone:['Phone',[['p','Phone number','tel','+1 555 010 0100']]],
+  contact:['Contact',[['n','Full name','text',''],['o','Company','text',''],['p','Phone','tel',''],['e','Email','email',''],['w','Website','url','']]]
+};
+let gt='url',logoURL='',logoImg=null,gdata=null;
+$('#gtypes').innerHTML=Object.entries(GT).map(([k,v])=>`<button data-g="${k}" class="${k===gt?'on':''}">${v[0]}</button>`).join('');
+function gFields(){
+  $('#gfields').innerHTML=GT[gt][1].map(([id,l,t,ph])=>{
+    const i='g_'+id;
+    return `<label for="${i}">${l}</label>`+(t==='area'?`<textarea id="${i}" placeholder="${esc(ph)}"></textarea>`:t==='sel'?`<select id="${i}">${ph.map(o=>`<option value="${o}">${o==='nopass'?'None (open)':o}</option>`).join('')}</select>`:`<input type="${t}" id="${i}" placeholder="${esc(ph)}" autocomplete="off">`);
+  }).join('');
+}
+$('#gtypes').onclick=e=>{const b=e.target.closest('button');if(!b)return;gt=b.dataset.g;$$('#gtypes button').forEach(x=>x.classList.toggle('on',x===b));gFields();drawGen()};
+const gv=id=>($('#g_'+id)||{value:''}).value.trim();
+const wesc=s=>s.replace(/([\\;,:"])/g,'\\$1'),ves=s=>s.replace(/([\\;,])/g,'\\$1');
+function payload(){
+  switch(gt){
+    case 'url':{let v=gv('u');if(!v)return'';if(!/^[a-z][a-z0-9+.-]*:/i.test(v))v='https://'+v;return v}
+    case 'text':return gv('t');
+    case 'wifi':return gv('ssid')?`WIFI:T:${gv('sec')};S:${wesc(gv('ssid'))};P:${wesc(gv('pw'))};;`:'';
+    case 'email':{const to=gv('to');if(!to)return'';const q=[];if(gv('sub'))q.push('subject='+encodeURIComponent(gv('sub')));if(gv('body'))q.push('body='+encodeURIComponent(gv('body')));return'mailto:'+to+(q.length?'?'+q.join('&'):'')}
+    case 'phone':return gv('p')?'tel:'+gv('p').replace(/[^\d+]/g,''):'';
+    case 'contact':{if(!gv('n')&&!gv('p')&&!gv('e'))return'';return['BEGIN:VCARD','VERSION:3.0','FN:'+ves(gv('n')),gv('o')&&'ORG:'+ves(gv('o')),gv('p')&&'TEL:'+gv('p'),gv('e')&&'EMAIL:'+gv('e'),gv('w')&&'URL:'+gv('w'),'END:VCARD'].filter(Boolean).join('\n')}
+  }
+}
+const lum=h=>{const n=parseInt(h.slice(1),16),f=c=>{c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)};return .2126*f(n>>16)+.7152*f((n>>8)&255)+.0722*f(n&255)};
+function buildQR(text,ecc){
+  qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
+  const q=qrcode(0,ecc);q.addData(text);q.make();return q;
+}
+function render(q,size,fg,bg,cv){
+  const n=q.getModuleCount(),mg=3,N=n+2*mg,cell=Math.max(1,Math.round(size/N)),px=cell*N;
+  cv.width=cv.height=px;const c=cv.getContext('2d');c.fillStyle=bg;c.fillRect(0,0,px,px);c.fillStyle=fg;
+  for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))c.fillRect((k+mg)*cell,(r+mg)*cell,cell,cell);
+  if(logoImg){
+    const L=px*.22,pad=L*.14,x=(px-L)/2;
+    c.fillStyle=bg;c.beginPath();c.roundRect?c.roundRect(x-pad,x-pad,L+2*pad,L+2*pad,L*.18):c.rect(x-pad,x-pad,L+2*pad,L+2*pad);c.fill();
+    const s=Math.min(L/logoImg.naturalWidth,L/logoImg.naturalHeight),w=logoImg.naturalWidth*s,h=logoImg.naturalHeight*s;
+    c.drawImage(logoImg,x+(L-w)/2,x+(L-h)/2,w,h);
+  }
+  return{n,mg,N,px};
+}
+function drawGen(){
+  const text=payload(),cv=$('#qrc'),fg=$('#fg').value,bg=$('#bg').value;
+  $('#szv').textContent=$('#size').value;
+  const bad=lum(fg)>=lum(bg);
+  $('#ghint').textContent=bad?'Use a darker code color than the background so scanners can read it.':(logoImg?'Error correction is set to High so the logo doesn’t block scanning.':'Tip: always test the code with a scanner before printing.');
+  if(!text){gdata=null;cv.width=cv.height=300;cv.getContext('2d').clearRect(0,0,300,300);$('#gmsg').textContent='Fill in the details to generate your code.';$('#dlPng').disabled=$('#dlSvg').disabled=true;return}
+  if(!window.qrcode){$('#gmsg').textContent='The QR library didn’t load. Check your connection and reload.';return}
+  let q;
+  try{q=buildQR(text,logoImg?'H':$('#ecc').value)}catch{gdata=null;$('#gmsg').textContent='That’s too much data for one QR code. Shorten it or lower the error correction.';$('#dlPng').disabled=$('#dlSvg').disabled=true;return}
+  const m=render(q,+$('#size').value,fg,bg,cv);
+  gdata={q,m,fg,bg};$('#gmsg').textContent=`${m.px} × ${m.px} px • ${m.n} × ${m.n} modules`;
+  $('#dlPng').disabled=$('#dlSvg').disabled=false;
+}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+$('#dlPng').onclick=()=>$('#qrc').toBlob(b=>b&&dl(b,'scany-qr.png'),'image/png');
+$('#dlSvg').onclick=()=>{
+  if(!gdata)return;const{q,m,fg,bg}=gdata;let d='';
+  for(let r=0;r<m.n;r++)for(let k=0;k<m.n;k++)if(q.isDark(r,k))d+=`M${k+m.mg} ${r+m.mg}h1v1h-1z`;
+  let lg='';
+  if(logoImg&&logoURL){const L=m.N*.22,x=(m.N-L)/2,p=L*.14;lg=`<rect x="${x-p}" y="${x-p}" width="${L+2*p}" height="${L+2*p}" rx="${L*.18}" fill="${bg}"/><image href="${logoURL}" x="${x}" y="${x}" width="${L}" height="${L}" preserveAspectRatio="xMidYMid meet"/>`}
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${m.N} ${m.N}" width="${m.px}" height="${m.px}" shape-rendering="crispEdges"><rect width="${m.N}" height="${m.N}" fill="${bg}"/><path d="${d}" fill="${fg}"/>${lg}</svg>`;
+  dl(new Blob([svg],{type:'image/svg+xml'}),'scany-qr.svg');
+};
+['fg','bg','size','ecc'].forEach(i=>$('#'+i).oninput=drawGen);
+$('#gfields').oninput=drawGen;
+$('#logoBtn').onclick=()=>$('#logoFile').click();
+$('#logoFile').onchange=e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!f.type.startsWith('image/'))return toast('Choose an image file.');
+  const fr=new FileReader();
+  fr.onload=()=>{const im=new Image();im.onload=()=>{logoImg=im;logoURL=fr.result;$('#logoX').hidden=false;$('#logoBtn').textContent='Change logo';drawGen()};im.onerror=()=>toast('That image couldn’t be opened.');im.src=fr.result};
+  fr.readAsDataURL(f);
+};
+$('#logoX').onclick=()=>{logoImg=null;logoURL='';$('#logoX').hidden=true;$('#logoBtn').textContent='Add logo';drawGen()};
+
+gFields();drawGen();renderHist();
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)camMsg('Live scanning isn’t available here (it needs a camera and HTTPS). You can still upload an image.');
+</script>
+</body>
+</html>
