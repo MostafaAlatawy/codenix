@@ -43,6 +43,7 @@ h1 span{display:block;font-size:.5em;letter-spacing:.35em;font-style:normal;colo
 .sub{font-size:1.7em;opacity:.7;letter-spacing:.1em}
 .b{width:100%;padding:1.2em;border-radius:1.2em;border:.15em solid #fff3;background:#ffffff14;color:#fff;font:800 2em system-ui;cursor:pointer;transition:.15s}
 .b:active{transform:scale(.97)}.b.pr{background:linear-gradient(135deg,var(--pu),#5b21b6);border-color:#c4b5fd88;box-shadow:0 .5em 2em #7c3aed66}
+.b:disabled{opacity:.5;cursor:not-allowed}
 .seg{display:flex;gap:.6em;width:100%}.seg .b{padding:.7em;font-size:1.7em}.seg .b.sel{background:var(--pu);border-color:#fff}
 .ip{width:100%;padding:1em;border-radius:1em;border:.15em solid #fff4;background:#0006;color:#fff;font:800 3em ui-monospace,monospace;text-align:center;letter-spacing:.3em;user-select:text;-webkit-user-select:text}
 .msg{min-height:2.4em;font-size:1.7em;color:var(--pl)}.hint{font-size:1.4em;opacity:.55;line-height:1.6}
@@ -71,7 +72,7 @@ h1 span{display:block;font-size:.5em;letter-spacing:.35em;font-style:normal;colo
   <div class="tb" id="nr" style="background:var(--yel);color:#000;border-radius:0 1em 1em 0"><small id="ln2">CPU</small><b id="sc">0</b></div>
  </div>
  <div id="pw" class="hidden"><div id="pf"></div></div>
- <div id="tools" class="hidden"><button class="ib" id="mu">🔊</button><button class="ib" id="pa">❚❚</button></div>
+ <div id="tools" class="hidden"><button class="ib" id="mu">🔊</button><button class="ib" id="pa">❚❚</button><button class="ib" id="lv" title="Leave Match">✕</button></div>
  <div id="bn" class="hidden"></div>
  <div id="ctl" class="hidden">
   <div id="joy"><div id="knob"></div></div>
@@ -129,8 +130,6 @@ h1 span{display:block;font-size:.5em;letter-spacing:.35em;font-style:normal;colo
 const $=id=>document.getElementById(id);
 const W=1200,H=600,GY=H-80,GR=.6,BN=.75,SP=7,JF=-15,GH=160,GW=80,DT=1/60;
 const cv=$('cv'),cx=cv.getContext('2d'),stage=$('stage');
-const FB={apiKey:"AIzaSyD-x-aZQJge1oGkv2jCTm3LmA2T8JEBvb0",authDomain:"sharenix-762b8.firebaseapp.com",projectId:"sharenix-762b8",storageBucket:"sharenix-762b8.firebasestorage.app",messagingSenderId:"682034256486",appId:"1:682034256486:web:7a52a32446c396e5d2eba7"};
-const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
 
 /* ---------- audio ---------- */
 let muted=false;
@@ -157,6 +156,7 @@ function pollPad(){pad.l=pad.r=pad.u=pad.t=pad.s=0;const gs=navigator.getGamepad
  g.buttons.forEach((b,i)=>{if(!b.pressed)return;if(i===0||i===12)pad.u=1;if(i===1||i===5)pad.t=1;if(i===2||i===7)pad.s=1;if(i===14)pad.l=1;if(i===15)pad.r=1});}}
 function localInput(){pollPad();const k=keys;return{l:+!!(k.ArrowLeft||k.KeyA||tch.l||pad.l),r:+!!(k.ArrowRight||k.KeyD||tch.r||pad.r),u:+!!(k.ArrowUp||k.KeyW||tch.u||pad.u),t:+!!(k.ShiftLeft||k.ShiftRight||k.KeyK||tch.t||pad.t),s:+!!(k.Space||k.KeyJ||tch.s||pad.s)}}
 addEventListener('gamepadconnected',e=>{$('ci').textContent='🎮 Controller ready: '+e.gamepad.id.slice(0,40)});
+
 // touch joystick + buttons
 const joy=$('joy'),knob=$('knob');let jid=null;
 function jm(e){const r=joy.getBoundingClientRect(),R=r.width/2;let dx=(e.clientX-r.left-R)/R,dy=(e.clientY-r.top-R)/R;const m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}
@@ -174,10 +174,12 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 /* ---------- game logic ---------- */
 function resetPos(){ball.x=W/2;ball.y=H/3;ball.vx=(Math.random()-.5)*4;ball.vy=0;ball.flame=false;ball.trail=[];
  p.x=250;c.x=W-250;[p,c].forEach(o=>{o.y=GY;o.vx=o.vy=0;o.tk=0})}
-function startMatch(){Snd.init();sc={p:0,c:0};tl=60;p.pw=c.pw=0;resetPos();state='GOAL';frz=70;bnT='KICK OFF!';setBn(bnT);scr(null);hud(true);ui()}
+function startMatch(){Snd.init();sc={p:0,c:0};tl=60;p.pw=c.pw=0;rin={};resetPos();state='GOAL';frz=70;bnT='KICK OFF!';setBn(bnT);scr(null);hud(true);ui();if(mode==='host')snap()}
 function startCPU(){mode='cpu';online=false;names('YOU','CPU');startMatch()}
 function names(a,b){$('ln1').textContent=a;$('ln2').textContent=b}
-function hud(v){['hud','pw','tools'].forEach(i=>$(i).classList.toggle('hidden',!v));$('pa').classList.toggle('hidden',mode!=='cpu');
+function hud(v){['hud','pw','tools'].forEach(i=>$(i).classList.toggle('hidden',!v));
+ $('pa').classList.toggle('hidden',mode!=='cpu');
+ $('lv').classList.toggle('hidden',mode==='cpu');
  $('ctl').classList.toggle('hidden',!(v&&matchMedia('(pointer:coarse)').matches))}
 function setBn(t){const b=$('bn');if(!t){b.classList.add('hidden');return}b.textContent=t;b.classList.remove('hidden');b.style.animation='none';b.offsetHeight;b.style.animation=''}
 function ui(){$('sp').textContent=sc.p;$('sc').textContent=sc.c;$('tl').textContent=Math.max(0,Math.ceil(tl));
@@ -216,7 +218,7 @@ function step(){
  drive(p,k1);if(mode==='host')drive(c,rin);else ai(c);
  phys(p);phys(c);stepBall();if(state!=='PLAY')return;hit(p,k1);hit(c,mode==='host'?rin:{});tackleHit();
  if(tl<=0){tl=0;finish()}}
-function finish(){state='OVER';sfx('end');ui();showEnd()}
+function finish(){state='OVER';sfx('end');ui();if(mode==='host')snap();showEnd()}
 function showEnd(){const me=mode==='guest'?sc.c:sc.p,op=mode==='guest'?sc.p:sc.c;
  $('e-t').textContent=me>op?'VICTORY!':me<op?'DEFEAT':'DRAW';$('e-s').textContent=sc.p+' - '+sc.c;
  $('b-rm').textContent=mode==='guest'?'WAITING FOR HOST…':mode==='host'?'REMATCH':'PLAY AGAIN';$('b-rm').disabled=mode==='guest';scr('p-end')}
@@ -252,20 +254,54 @@ function draw(){cx.drawImage(bg,0,0);
  cx.save();cx.translate(ball.x,ball.y);cx.rotate(ball.rot);cx.fillStyle='#fff';cx.beginPath();cx.arc(0,0,ball.r,0,7);cx.fill();cx.strokeStyle='#000';cx.lineWidth=2;cx.stroke();cx.fillStyle='#000';
  for(let i=0;i<5;i++){cx.rotate(Math.PI*2/5);cx.fillRect(ball.r-8,-2,6,4)}cx.restore()}
 
-/* ---------- loop ---------- */
-function applyTgt(){if(!tgt)return;for(const[o,a]of[[p,tgt.p],[c,tgt.c]]){o.x+=(a[0]-o.x)*.5;o.y+=(a[1]-o.y)*.5;o.tilt=a[2];o.tk=a[3];o.pw=a[4];o.vx=a[5]}
- ball.x+=(tgt.b[0]-ball.x)*.6;ball.y+=(tgt.b[1]-ball.y)*.6;ball.rot=tgt.b[2];ball.flame=!!tgt.b[3]}
-let sendT=0,lastIn='',sn=0;
+/* ---------- loop & state sync ---------- */
+function applyTgt(){if(!tgt)return;
+ for(const[o,a]of[[p,tgt.p],[c,tgt.c]]){
+  o.x+=(a[0]-o.x)*.55;o.y+=(a[1]-o.y)*.55;o.tilt=a[2];o.tk=a[3];o.pw=a[4];o.vx=a[5];
+  if(Math.random()<.01)o.blink=10;if(o.blink>0)o.blink--;
+ }
+ if(Math.hypot(tgt.b[0]-ball.x,tgt.b[1]-ball.y)>250){ball.x=tgt.b[0];ball.y=tgt.b[1]}
+ else{ball.x+=(tgt.b[0]-ball.x)*.65;ball.y+=(tgt.b[1]-ball.y)*.65}
+ ball.rot=tgt.b[2];ball.flame=!!tgt.b[3];
+ if(ball.flame||Math.abs(tgt.b[0]-ball.x)>5){ball.trail.push({x:ball.x,y:ball.y});if(ball.trail.length>10)ball.trail.shift()}else ball.trail=[]
+}
+let sendT=0,lastIn='',sn=0,lastSnapAt=0;
 function tick(ts){requestAnimationFrame(tick);const dt=Math.min(.1,(ts-last)/1000||0);last=ts;
- if(mode==='guest'){if(online){applyTgt();parts=parts.filter(t=>(t.x+=t.vx,t.y+=t.vy,t.life-=.02)>0);ui();sendT+=dt;const k=JSON.stringify(localInput());if(k!==lastIn||sendT>.05){lastIn=k;sendT=0;tx({i:JSON.parse(k)})}}}
- else{acc+=dt;while(acc>=DT){if(state!=='PAUSE')step();acc-=DT;if(mode==='host'&&++sn%2===0)snap()}if(state==='PLAY'||state==='GOAL')ui()}
- draw()}
-function snap(){const r=a=>[Math.round(a.x),Math.round(a.y),+a.tilt.toFixed(2),a.tk,Math.round(a.pw),Math.round(a.vx)];
- tx({s:{p:r(p),c:r(c),b:[Math.round(ball.x),Math.round(ball.y),+ball.rot.toFixed(2),+ball.flame],sc:[sc.p,sc.c],t:+tl.toFixed(1),g:state,bn:state==='GOAL'?bnT:'',ev}});ev=[]}
-function onSnap(s){tgt=s;const prev=state;sc={p:s.sc[0],c:s.sc[1]};tl=s.t;state=s.g;
+ if(mode==='guest'){
+  if(online){
+   applyTgt();
+   parts=parts.filter(t=>(t.x+=t.vx,t.y+=t.vy,t.life-=.02)>0);
+   ui();
+   sendT+=dt;
+   const k=JSON.stringify(localInput());
+   if(k!==lastIn||sendT>.05){lastIn=k;sendT=0;tx({i:JSON.parse(k)})}
+   if(lastSnapAt&&performance.now()-lastSnapAt>4500){toMenu('Host disconnected')}
+  }
+ } else {
+  acc+=dt;
+  while(acc>=DT){
+   if(state!=='PAUSE')step();
+   acc-=DT;
+   // Send state snapshot ~30 times/sec over Supabase Realtime Broadcast
+   if(mode==='host'&&online&&++sn%2===0)snap();
+  }
+  if(state==='PLAY'||state==='GOAL')ui();
+ }
+ draw()
+}
+function snap(){
+ const r=a=>[Math.round(a.x),Math.round(a.y),+a.tilt.toFixed(2),a.tk,Math.round(a.pw),Math.round(a.vx)];
+ tx({s:{p:r(p),c:r(c),b:[Math.round(ball.x),Math.round(ball.y),+ball.rot.toFixed(2),+ball.flame],sc:[sc.p,sc.c],t:+tl.toFixed(1),g:state,bn:state==='GOAL'?bnT:'',ev}});
+ ev=[]
+}
+function onSnap(s){
+ lastSnapAt=performance.now();
+ tgt=s;const prev=state;sc={p:s.sc[0],c:s.sc[1]};tl=s.t;state=s.g;
  s.ev.forEach(e=>Snd.play(e));
  if(s.bn!==bnT){bnT=s.bn;setBn(bnT);if(bnT==='GOAL!')for(let i=0;i<40;i++)spark(ball.x,ball.y,['#fff','#a78bfa','#fde047'][i%3])}
- if(state==='OVER'&&prev!=='OVER')showEnd();else if(state!=='OVER'&&prev==='OVER'){scr(null)}}
+ if(state==='OVER'&&prev!=='OVER')showEnd();
+ else if(state!=='OVER'&&prev==='OVER'){scr(null)}
+}
 
 /* ---------- screens ---------- */
 function scr(id){const m=$('menu');if(!id){m.classList.add('hidden');return}m.classList.remove('hidden');['p-main','p-on','p-lob','p-end','p-pa'].forEach(i=>$(i).classList.toggle('hidden',i!==id))}
@@ -276,6 +312,7 @@ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>scr(b.dataset.go
 document.querySelectorAll('#diff .b').forEach(b=>b.onclick=()=>{lvl=+b.dataset.d;document.querySelectorAll('#diff .b').forEach(x=>x.classList.toggle('sel',x===b))});
 $('b-rm').onclick=()=>{if(mode==='guest')return;startMatch()};$('b-mn').onclick=()=>toMenu();
 $('pa').onclick=pause;$('b-rs').onclick=pause;$('b-qt').onclick=()=>toMenu();
+$('lv').onclick=()=>toMenu();
 $('mu').onclick=()=>{muted=!muted;$('mu').textContent=muted?'🔇':'🔊'};
 $('b-cn').onclick=()=>{closeNet();scr('p-on')};
 $('b-sh').onclick=()=>{const t='Play HeadStrike Arena with me! Room code: '+room+' → '+location.href;if(navigator.share)navigator.share({text:t}).catch(()=>{});else navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>$('m-lob').textContent='Copied to clipboard!')};
@@ -283,40 +320,159 @@ function fsToggle(){const d=document,e=d.documentElement;if(!d.fullscreenElement
 $('stage').addEventListener('dblclick',fsToggle);
 $('b-on').addEventListener('click',()=>{if(matchMedia('(pointer:coarse)').matches)fsToggle()},{once:true});
 
-/* ---------- online rooms (Firebase signaling + WebRTC, same project as ShareNix) ---------- */
-let fb=null,pc=null,dc=null,room=null,unsub=null,seen=0,rdy=false;
-async function loadFB(){if(fb)return fb;const V='12.17.1',g='https://www.gstatic.com/firebasejs/'+V+'/',j='https://cdn.jsdelivr.net/npm/firebase@'+V+'/',e5='https://esm.sh/firebase@'+V+'/';
- const srcs=[[g+'firebase-app.js',g+'firebase-auth.js',g+'firebase-firestore.js'],[j+'app/+esm',j+'auth/+esm',j+'firestore/+esm'],[e5+'app',e5+'auth',e5+'firestore']];let m=null;
- for(const u of srcs){try{m=await Promise.all(u.map(x=>import(x)));break}catch(err){console.warn('Firebase load failed from',u[0],err)}}
- if(!m)throw new Error('Cannot reach Firebase servers. Check your internet/VPN/ad-blocker, and open the game from your real site (not a preview window).');
- const[a,au,fs]=m;const app=a.initializeApp(FB,'headstrike'),auth=au.getAuth(app);await au.signInAnonymously(auth);fb={fs,db:fs.getFirestore(app),uid:auth.currentUser.uid};return fb}
-const rref=code=>fb.fs.doc(fb.db,'artifacts','sharenix-production','public','data','shareNixRooms','hs'+code);
-const tx=o=>{if(dc&&dc.readyState==='open')dc.send(JSON.stringify(o))};
-function closeNet(){try{unsub&&unsub()}catch(e){}unsub=null;try{dc&&dc.close()}catch(e){}try{pc&&pc.close()}catch(e){}pc=dc=null;online=false;rdy=false;seen=0;tgt=null;
- if(fb&&room)fb.fs.deleteDoc(rref(room)).catch(()=>{});room=null}
-function mkPC(isHost){pc=new RTCPeerConnection(ICE);pc.onicecandidate=e=>{if(e.candidate)fb.fs.updateDoc(rref(room),{[isHost?'hostCandidates':'viewerCandidates']:fb.fs.arrayUnion(JSON.stringify(e.candidate))}).catch(()=>{})};
- pc.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc&&pc.connectionState)&&online)toMenu('Connection lost')}}
-function bind(){dc.onopen=()=>{online=true;try{unsub&&unsub();unsub=null}catch(e){}fb.fs.deleteDoc(rref(room)).catch(()=>{});
-  if(mode==='host'){names('YOU','FRIEND');startMatch()}else{names('FRIEND','YOU');Snd.init();hud(true);scr(null)}};
- dc.onmessage=e=>{const m=JSON.parse(e.data);if(m.i&&mode==='host')rin=m.i;if(m.s&&mode==='guest')onSnap(m.s)};
- dc.onclose=()=>{if(online)toMenu('Your friend left the match')}}
-async function addCands(list){if(!pc||!pc.remoteDescription)return;for(;seen<list.length;seen++)try{await pc.addIceCandidate(JSON.parse(list[seen]))}catch(e){}}
-$('b-cr').onclick=async()=>{const m=$('m-on');m.textContent='Connecting…';
- try{await loadFB();room=String(100000+Math.floor(Math.random()*900000));mode='host';await fb.fs.setDoc(rref(room),{hostId:fb.uid,createdAt:Date.now(),status:'waiting',hostCandidates:[],viewerCandidates:[]});
-  mkPC(true);dc=pc.createDataChannel('hs',{ordered:false,maxRetransmits:0});bind();const o=await pc.createOffer();await pc.setLocalDescription(o);
-  await fb.fs.updateDoc(rref(room),{offer:JSON.stringify(o),status:'offered'});$('rc').textContent=room;$('m-lob').textContent='Waiting for your friend to join…';scr('p-lob');
-  unsub=fb.fs.onSnapshot(rref(room),async s=>{const d=s.data();if(!d)return;if(d.answer&&!pc.currentRemoteDescription)await pc.setRemoteDescription(JSON.parse(d.answer));await addCands(d.viewerCandidates||[])})
- }catch(e){console.error(e);mode='cpu';m.textContent=(e&&e.message&&e.message.startsWith('Cannot')?e.message:'Could not create room: '+((e&&e.code)||'check your connection'));closeNet()}};
-$('b-jn').onclick=async()=>{const m=$('m-on'),code=$('ic').value.trim();if(code.length!==6){m.textContent='Enter the 6-digit room code';return}
- m.textContent='Joining…';
- try{await loadFB();room=code;const s=await fb.fs.getDoc(rref(code));if(!s.exists()||!s.data().offer){m.textContent='Room not found or expired';room=null;return}
-  const d=s.data();if(d.answer){m.textContent='Room is already full';room=null;return}
-  mode='guest';mkPC(false);pc.ondatachannel=e=>{dc=e.channel;bind()};
-  await pc.setRemoteDescription(JSON.parse(d.offer));const a=await pc.createAnswer();await pc.setLocalDescription(a);
-  await fb.fs.updateDoc(rref(code),{answer:JSON.stringify(a),status:'answered'});await addCands(d.hostCandidates||[]);m.textContent='Connecting to host…';
-  unsub=fb.fs.onSnapshot(rref(code),s2=>{const d2=s2.data();if(d2)addCands(d2.hostCandidates||[])});
-  setTimeout(()=>{if(!online&&mode==='guest'){m.textContent='Could not connect. Try again.';mode='cpu';closeNet()}},15000)
- }catch(e){console.error(e);mode='cpu';m.textContent=(e&&e.message&&e.message.startsWith('Cannot')?e.message:'Could not join room: '+((e&&e.code)||'check your connection'));closeNet()}};
+/* ---------- online rooms (Pure Supabase Realtime Broadcast + Presence — No Accounts, No Tables) ---------- */
+const SB={
+ url:'https://rnlwrngfgvznndlekmrz.supabase.co',
+ key:'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt'
+};
+let sb=null,ch=null,room=null,joinTimer=null;
+const myId=Math.random().toString(36).slice(2,9),sleep=t=>new Promise(r=>setTimeout(r,t));
+
+async function loadSB(){
+ if(sb)return sb;
+ let cc=null;
+ try{
+  await new Promise((ok,no)=>{
+   const s=document.createElement('script');
+   s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.91.0/dist/umd/supabase.js';
+   s.onload=ok;s.onerror=no;document.head.appendChild(s);
+  });
+  cc=window.supabase.createClient;
+ }catch(e){console.warn('jsDelivr failed',e)}
+ if(!cc)try{cc=(await import('https://esm.sh/@supabase/supabase-js@2.91.0')).createClient}catch(e){console.warn('esm.sh failed',e)}
+ if(!cc)throw new Error('Cannot load Supabase SDK. Check your internet connection or ad-blocker.');
+ sb=cc(SB.url,SB.key,{
+  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
+  realtime:{params:{eventsPerSecond:60}}
+ });
+ return sb;
+}
+
+// Send game data directly over the Supabase Realtime channel
+const tx=o=>{if(ch&&online)ch.send({type:'broadcast',event:'game',payload:o})};
+
+function closeNet(){
+ if(joinTimer){clearTimeout(joinTimer);joinTimer=null}
+ if(ch&&sb){try{ch.untrack();sb.removeChannel(ch)}catch(e){}}
+ ch=null;online=false;tgt=null;room=null;lastSnapAt=0;
+}
+
+function openCh(code,role){
+ return new Promise((ok,no)=>{
+  ch=sb.channel('headstrike-room-'+code,{
+   config:{broadcast:{self:false},presence:{key:role+'-'+myId}}
+  });
+
+  // Handle gameplay packets (guest inputs & host state snapshots)
+  ch.on('broadcast',{event:'game'},({payload})=>{
+   if(!payload)return;
+   if(payload.i&&mode==='host')rin=payload.i;
+   if(payload.s&&mode==='guest'){
+    if(!online){
+     online=true;
+     if(joinTimer){clearTimeout(joinTimer);joinTimer=null}
+     names('FRIEND','YOU');
+     Snd.init();
+     hud(true);
+     scr(null);
+    }
+    onSnap(payload.s);
+   }
+  });
+
+  // Detect when opponent joins the room
+  ch.on('presence',{event:'join'},({key})=>{
+   if(role==='host'&&String(key).startsWith('guest-')&&!online){
+    online=true;
+    names('YOU','FRIEND');
+    startMatch();
+   }
+  });
+
+  // Detect when opponent leaves or disconnects
+  ch.on('presence',{event:'leave'},({key})=>{
+   if(online){
+    if(role==='host'&&String(key).startsWith('guest-'))toMenu('Your friend left the match');
+    if(role==='guest'&&String(key).startsWith('host-'))toMenu('Host left the match');
+   }
+  });
+
+  ch.subscribe(async st=>{
+   if(st==='SUBSCRIBED'){
+    await ch.track({role,ts:Date.now()});
+    ok();
+   }else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){
+    no(new Error('Cannot reach Supabase Realtime. Make sure Realtime is enabled in your Supabase project settings.'));
+   }
+  });
+ });
+}
+
+const keysOf=p=>Object.keys(ch?ch.presenceState():{}).filter(k=>k.startsWith(p));
+const errMsg=(e,w)=>e&&e.message&&e.message.startsWith('Cannot')?e.message:'Could not '+w+' room: '+((e&&e.message)||'check your connection').slice(0,80);
+
+// Create a 6-digit room as Host
+$('b-cr').onclick=async()=>{
+ const m=$('m-on');m.textContent='Creating room…';
+ try{
+  await loadSB();
+  room=String(100000+Math.floor(Math.random()*900000));
+  mode='host';
+  await openCh(room,'host');
+  $('rc').textContent=room;
+  $('m-lob').textContent='Waiting for your friend to join…';
+  scr('p-lob');
+ }catch(e){
+  console.error(e);
+  mode='cpu';
+  m.textContent=errMsg(e,'create');
+  closeNet();
+ }
+};
+
+// Join an existing 6-digit room as Guest
+$('b-jn').onclick=async()=>{
+ const m=$('m-on'),code=$('ic').value.trim();
+ if(code.length!==6){m.textContent='Enter the 6-digit room code';return}
+ m.textContent='Joining room…';
+ try{
+  await loadSB();
+  room=code;
+  mode='guest';
+  await openCh(code,'guest');
+  // Wait up to 4 seconds for Presence sync to confirm the host is in the room
+  let found=false;
+  for(let i=0;i<20&&!found;i++){
+   found=keysOf('host-').length>0;
+   if(!found)await sleep(200);
+  }
+  if(!found){
+   m.textContent='Room not found or expired';
+   mode='cpu';
+   closeNet();
+   return;
+  }
+  if(keysOf('guest-').length>1){
+   m.textContent='Room is already full';
+   mode='cpu';
+   closeNet();
+   return;
+  }
+  m.textContent='Starting match…';
+  joinTimer=setTimeout(()=>{
+   if(!online&&mode==='guest'&&room===code){
+    m.textContent='Host did not respond. Try again.';
+    mode='cpu';
+    closeNet();
+   }
+  },8000);
+ }catch(e){
+  console.error(e);
+  mode='cpu';
+  m.textContent=errMsg(e,'join');
+  closeNet();
+ }
+};
 
 /* ---------- boot ---------- */
 function rs(){stage.style.fontSize=Math.min(14,stage.clientWidth/100)+'px'}
