@@ -285,9 +285,11 @@ $('b-on').addEventListener('click',()=>{if(matchMedia('(pointer:coarse)').matche
 
 /* ---------- online rooms (Firebase signaling + WebRTC, same project as ShareNix) ---------- */
 let fb=null,pc=null,dc=null,room=null,unsub=null,seen=0,rdy=false;
-async function loadFB(){if(fb)return fb;const b='https://www.gstatic.com/firebasejs/12.17.1/';
- const[a,au,fs]=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-auth.js'),import(b+'firebase-firestore.js')]);
- const app=a.initializeApp(FB,'headstrike'),auth=au.getAuth(app);await au.signInAnonymously(auth);fb={fs,db:fs.getFirestore(app),uid:auth.currentUser.uid};return fb}
+async function loadFB(){if(fb)return fb;const V='12.17.1',g='https://www.gstatic.com/firebasejs/'+V+'/',j='https://cdn.jsdelivr.net/npm/firebase@'+V+'/',e5='https://esm.sh/firebase@'+V+'/';
+ const srcs=[[g+'firebase-app.js',g+'firebase-auth.js',g+'firebase-firestore.js'],[j+'app/+esm',j+'auth/+esm',j+'firestore/+esm'],[e5+'app',e5+'auth',e5+'firestore']];let m=null;
+ for(const u of srcs){try{m=await Promise.all(u.map(x=>import(x)));break}catch(err){console.warn('Firebase load failed from',u[0],err)}}
+ if(!m)throw new Error('Cannot reach Firebase servers. Check your internet/VPN/ad-blocker, and open the game from your real site (not a preview window).');
+ const[a,au,fs]=m;const app=a.initializeApp(FB,'headstrike'),auth=au.getAuth(app);await au.signInAnonymously(auth);fb={fs,db:fs.getFirestore(app),uid:auth.currentUser.uid};return fb}
 const rref=code=>fb.fs.doc(fb.db,'artifacts','sharenix-production','public','data','shareNixRooms','hs'+code);
 const tx=o=>{if(dc&&dc.readyState==='open')dc.send(JSON.stringify(o))};
 function closeNet(){try{unsub&&unsub()}catch(e){}unsub=null;try{dc&&dc.close()}catch(e){}try{pc&&pc.close()}catch(e){}pc=dc=null;online=false;rdy=false;seen=0;tgt=null;
@@ -304,7 +306,7 @@ $('b-cr').onclick=async()=>{const m=$('m-on');m.textContent='Connecting…';
   mkPC(true);dc=pc.createDataChannel('hs',{ordered:false,maxRetransmits:0});bind();const o=await pc.createOffer();await pc.setLocalDescription(o);
   await fb.fs.updateDoc(rref(room),{offer:JSON.stringify(o),status:'offered'});$('rc').textContent=room;$('m-lob').textContent='Waiting for your friend to join…';scr('p-lob');
   unsub=fb.fs.onSnapshot(rref(room),async s=>{const d=s.data();if(!d)return;if(d.answer&&!pc.currentRemoteDescription)await pc.setRemoteDescription(JSON.parse(d.answer));await addCands(d.viewerCandidates||[])})
- }catch(e){console.error(e);mode='cpu';m.textContent='Could not create room. Check your connection.';closeNet()}};
+ }catch(e){console.error(e);mode='cpu';m.textContent=(e&&e.message&&e.message.startsWith('Cannot')?e.message:'Could not create room: '+((e&&e.code)||'check your connection'));closeNet()}};
 $('b-jn').onclick=async()=>{const m=$('m-on'),code=$('ic').value.trim();if(code.length!==6){m.textContent='Enter the 6-digit room code';return}
  m.textContent='Joining…';
  try{await loadFB();room=code;const s=await fb.fs.getDoc(rref(code));if(!s.exists()||!s.data().offer){m.textContent='Room not found or expired';room=null;return}
@@ -314,7 +316,7 @@ $('b-jn').onclick=async()=>{const m=$('m-on'),code=$('ic').value.trim();if(code.
   await fb.fs.updateDoc(rref(code),{answer:JSON.stringify(a),status:'answered'});await addCands(d.hostCandidates||[]);m.textContent='Connecting to host…';
   unsub=fb.fs.onSnapshot(rref(code),s2=>{const d2=s2.data();if(d2)addCands(d2.hostCandidates||[])});
   setTimeout(()=>{if(!online&&mode==='guest'){m.textContent='Could not connect. Try again.';mode='cpu';closeNet()}},15000)
- }catch(e){console.error(e);mode='cpu';m.textContent='Could not join room. Check your connection.';closeNet()}};
+ }catch(e){console.error(e);mode='cpu';m.textContent=(e&&e.message&&e.message.startsWith('Cannot')?e.message:'Could not join room: '+((e&&e.code)||'check your connection'));closeNet()}};
 
 /* ---------- boot ---------- */
 function rs(){stage.style.fontSize=Math.min(14,stage.clientWidth/100)+'px'}
