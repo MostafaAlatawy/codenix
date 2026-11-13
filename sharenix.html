@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0f1030"><title>ShareNix – Codenix</title>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:linear-gradient(160deg,#0f1030,#1d1250 60%,#0b2a4a);color:#fff;font-family:system-ui,sans-serif}
+.s{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));text-align:center;overflow:auto}
+.s.on{display:flex}
+h2{font-size:24px}small,p{opacity:.75;font-size:14px;max-width:340px;line-height:1.4}
+button{font:700 17px system-ui;padding:14px 22px;border:0;border-radius:14px;background:#6c5cff;color:#fff;min-width:220px;box-shadow:0 4px 0 #3b2fb0;cursor:pointer}
+button:active{transform:translateY(3px);box-shadow:none}
+button.g{background:#2a2a5a;box-shadow:0 4px 0 #15153a}button:disabled{opacity:.4}
+input{font:800 30px system-ui;letter-spacing:8px;text-align:center;width:230px;padding:10px;border-radius:14px;border:3px solid #6c5cff;background:#1b1b48;color:#fff;text-transform:uppercase}
+#code{font-size:46px;font-weight:900;letter-spacing:8px;color:#ffd84d}
+video{width:min(94vw,900px);max-height:62vh;background:#000;border-radius:14px;box-shadow:0 8px 30px #0008}
+#viewer{padding:0;gap:0;background:#000}#viewer video{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;object-fit:contain}
+#vbar{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:8px;justify-content:space-between;align-items:center}
+#vbar button{min-width:0;padding:10px 14px;font-size:15px;background:#0009;box-shadow:none}
+#st{position:absolute;background:#000a;padding:12px 18px;border-radius:12px;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.row button{min-width:150px}
+select{font:600 15px system-ui;padding:10px;border-radius:10px;background:#1b1b48;color:#fff;border:2px solid #3b3b80}
+.err{color:#ff8a9a;min-height:18px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#6dff8f;margin-right:6px}
+</style></head><body>
+
+<div class="s on" id="menu">
+<svg viewBox="0 0 240 74" width="260"><rect x="4" y="8" width="56" height="56" rx="15" fill="#6c5cff"/><rect x="15" y="20" width="34" height="23" rx="5" fill="none" stroke="#fff" stroke-width="5"/><path d="M32 43v8M23 51h18" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="52" cy="16" r="7" fill="#ffd84d"/><text x="70" y="46" font-size="34" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">Share<tspan fill="#4dd2ff">Nix</tspan></text><text x="72" y="64" font-size="13" fill="#aaa" font-family="system-ui,sans-serif">by Codenix</text></svg>
+<p>Share your screen in 2 seconds. Friends watch with a room code, on phone or PC. Free.</p>
+<button id="bsh">🖥️ Share my screen</button>
+<button id="bw" class="g">👀 Watch a screen</button>
+<small id="note"></small><div class="err" id="err"></div></div>
+
+<div class="s" id="join"><h2>Watch a screen</h2><input id="ci" maxlength="5" placeholder="CODE" autocapitalize="characters" autocomplete="off"><button id="bgo">Join</button><div class="err" id="jerr"></div><button class="g" id="bjb">Back</button></div>
+
+<div class="s" id="host"><h2>You're sharing</h2><div id="code"></div><small>Friends open ShareNix → Watch a screen → enter this code</small>
+<video id="pv" muted autoplay playsinline></video>
+<div><span class="dot"></span><b id="vn">0</b> watching</div>
+<div class="row"><button id="bcp">Copy link</button><button id="bstop" class="g">Stop sharing</button></div></div>
+
+<div class="s" id="viewer"><video id="rv" autoplay playsinline muted></video><div id="st">Connecting…</div>
+<div id="vbar"><button id="bl">✕ Leave</button><span><button id="bm">🔊 Sound</button> <button id="bf">⛶</button></span></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://rnlwrngfgvznndlekmrz.supabase.co',SB_KEY='sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]},MAX=8;
+const $=q=>document.querySelector(q),me=Math.random().toString(36).slice(2,8),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let sb,ch,code,stream,pcs={},pend={},vpc,vq=[],lastHb=0,timers=[];
+try{sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+const show=s=>document.querySelectorAll('.s').forEach(e=>e.classList.toggle('on',e.id==s));
+const send=(e,d)=>ch&&ch.send({type:'broadcast',event:e,payload:d});
+const rc=()=>Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+const clr=()=>{timers.forEach(clearInterval);timers=[]};
+function openCh(c,onmsg){return new Promise((res,rej)=>{if(!sb)return rej();ch=sb.channel('sharenix-'+c,{config:{broadcast:{self:false}}});ch.on('broadcast',{event:'*'},m=>onmsg(m.event,m.payload)).subscribe(s=>{if(s=='SUBSCRIBED')res();else if(s=='CHANNEL_ERROR'||s=='TIMED_OUT')rej()})})}
+function closeCh(){clr();if(ch&&sb)sb.removeChannel(ch);ch=null}
+async function addIce(pc,c,q){if(pc&&pc.remoteDescription)try{await pc.addIceCandidate(c)}catch(e){}else q.push(c)}
+async function flush(pc,q){while(q.length)try{await pc.addIceCandidate(q.shift())}catch(e){}}
+
+/* ---------- Host ---------- */
+const canShare=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+if(!canShare){$('#bsh').disabled=true;$('#note').textContent='This browser can\'t share its screen (most phones). Use a PC browser to share — phones can watch.'}
+$('#bsh').onclick=async()=>{
+ $('#err').textContent='';
+ try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30,width:{ideal:1920}},audio:true})}catch(e){return $('#err').textContent='Sharing was cancelled'}
+ code=rc();
+ try{await openCh(code,hmsg)}catch(e){stream.getTracks().forEach(t=>t.stop());return $('#err').textContent='Cannot connect to the server'}
+ $('#code').textContent=code;$('#pv').srcObject=stream;show('host');count();
+ stream.getVideoTracks()[0].onended=stopShare;
+ timers.push(setInterval(()=>{send('hb',{n:count()})},1000));
+};
+async function hmsg(e,d){
+ if(e=='join'){if(Object.keys(pcs).length>=MAX&&!pcs[d.id])return send('full',{to:d.id});offer(d.id)}
+ else if(e=='answer'&&d.to==me&&pcs[d.from]){await pcs[d.from].setRemoteDescription(d.sdp);flush(pcs[d.from],pend[d.from])}
+ else if(e=='ice'&&d.to==me)addIce(pcs[d.from],d.c,pend[d.from]||(pend[d.from]=[]));
+ else if(e=='bye'){if(pcs[d.id])pcs[d.id].close();delete pcs[d.id];count()}
+}
+async function offer(v){
+ if(pcs[v])pcs[v].close();
+ const pc=pcs[v]=new RTCPeerConnection(ICE);pend[v]=[];
+ stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+ pc.onicecandidate=e=>e.candidate&&send('ice',{to:v,from:me,c:e.candidate});
+ pc.onconnectionstatechange=()=>{if(pc.connectionState=='failed'||pc.connectionState=='closed'){if(pcs[v]==pc)delete pcs[v]}count()};
+ await pc.setLocalDescription(await pc.createOffer());
+ send('offer',{to:v,from:me,sdp:pc.localDescription});
+}
+function count(){const n=Object.values(pcs).filter(p=>p.connectionState=='connected').length;$('#vn').textContent=n;return n}
+function stopShare(){send('end',1);Object.values(pcs).forEach(p=>p.close());pcs={};if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;setTimeout(closeCh,300);show('menu')}
+$('#bstop').onclick=stopShare;
+$('#bcp').onclick=async()=>{const u=location.href.split('#')[0]+'#'+code;try{if(navigator.share)await navigator.share({title:'ShareNix',text:'Watch my screen: '+code,url:u});else{await navigator.clipboard.writeText(u);$('#bcp').textContent='Copied ✓'}}catch(e){}};
+
+/* ---------- Viewer ---------- */
+$('#bw').onclick=()=>{$('#jerr').textContent='';show('join')};
+$('#bjb').onclick=()=>show('menu');
+$('#bgo').onclick=()=>watch($('#ci').value.trim().toUpperCase());
+async function watch(c){
+ if(c.length<5)return $('#jerr').textContent='Enter the 5-letter code';
+ $('#jerr').textContent='Connecting…';lastHb=0;
+ try{await openCh(c,vmsg)}catch(e){return $('#jerr').textContent='Cannot connect to the server'}
+ for(let i=0;i<25&&!lastHb;i++)await sleep(200);
+ if(!lastHb){closeCh();return $('#jerr').textContent='Room not found, or the host is not sharing'}
+ code=c;$('#st').style.display='';$('#st').textContent='Connecting…';show('viewer');send('join',{id:me});
+ timers.push(setInterval(()=>{if(Date.now()-lastHb>7000)status('Host disconnected')},2000));
+ setTimeout(()=>{if(!$('#rv').srcObject&&$('#viewer').classList.contains('on'))status('Could not connect. Your network may block peer-to-peer.')},15000);
+}
+const status=t=>{$('#st').style.display='';$('#st').textContent=t};
+async function vmsg(e,d){
+ if(e=='hb'){lastHb=Date.now()}
+ else if(e=='offer'&&d.to==me){
+  if(vpc)vpc.close();vpc=new RTCPeerConnection(ICE);vq=[];const pc=vpc;
+  pc.ontrack=x=>{$('#rv').srcObject=x.streams[0];$('#rv').play().catch(()=>{});$('#st').style.display='none'};
+  pc.onicecandidate=x=>x.candidate&&send('ice',{to:d.from,from:me,c:x.candidate});
+  pc.onconnectionstatechange=()=>{if(pc.connectionState=='failed')status('Connection lost')};
+  await pc.setRemoteDescription(d.sdp);flush(pc,vq);
+  await pc.setLocalDescription(await pc.createAnswer());
+  send('answer',{to:d.from,from:me,sdp:pc.localDescription});
+ }
+ else if(e=='ice'&&d.to==me)addIce(vpc,d.c,vq);
+ else if(e=='end')status('Sharing ended');
+ else if(e=='full'&&d.to==me)status('Room is full (max '+MAX+' viewers)');
+}
+function leave(){send('bye',{id:me});if(vpc)vpc.close();vpc=null;$('#rv').srcObject=null;closeCh();show('menu');history.replaceState(null,'',location.pathname)}
+$('#bl').onclick=leave;addEventListener('pagehide',()=>{if(ch)send('bye',{id:me})});
+$('#bm').onclick=()=>{const v=$('#rv');v.muted=!v.muted;$('#bm').textContent=v.muted?'🔊 Sound':'🔇 Mute';v.play().catch(()=>{})};
+$('#bf').onclick=()=>{const v=$('#rv');(v.requestFullscreen||v.webkitRequestFullscreen||v.webkitEnterFullscreen).call(v)};
+if(location.hash.length>=6){$('#ci').value=location.hash.slice(1,6).toUpperCase();show('join')}
+</script></body></html>
