@@ -1,581 +1,123 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShareNix - Screen Share & Remote Access</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass-panel { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        #video-container:fullscreen {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            max-height: none;
-            border-radius: 0;
-            border: none;
-            background-color: #000000;
-        }
-        #video-container:-webkit-full-screen {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            max-height: none;
-            border-radius: 0;
-            border: none;
-            background-color: #000000;
-        }
-    </style>
-</head>
-<body class="h-full bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
-
-    <header class="w-full border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-500/30 flex items-center justify-center">
-                <i class="fa-solid fa-display text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">ShareNix</h1>
-                <p class="text-xs text-slate-400">Secure Screen Share & Remote Access</p>
-            </div>
-        </div>
-        <div id="connection-status" class="flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-xs font-medium text-slate-300">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" id="status-dot"></span>
-            <span id="status-text">Connecting to Firebase...</span>
-        </div>
-    </header>
-
-    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-8 flex flex-col justify-center items-center">
-        
-        <!-- Mode Selection View -->
-        <div id="view-mode-select" class="w-full max-w-4xl space-y-8 animate-fadeIn">
-            <div class="text-center space-y-3">
-                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Choose Your Sharing Mode</h2>
-                <p class="text-slate-400 max-w-xl mx-auto">Share your mobile or laptop screen instantly with peer-to-peer WebRTC streaming and interactive remote access requests.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <!-- Share Screen Card (Host) -->
-                <div class="glass-panel p-8 rounded-2xl hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between group shadow-xl">
-                    <div>
-                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-laptop-code"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-white mb-2">Share My Screen</h3>
-                        <p class="text-slate-400 text-sm mb-6">Broadcast your mobile or laptop screen to another device and accept remote access control requests.</p>
-                    </div>
-                    <button onclick="startHosting()" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
-                        <span>Start Sharing</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
-
-                <!-- Join Screen Card (Viewer) -->
-                <div class="glass-panel p-8 rounded-2xl hover:border-cyan-500/50 transition-all duration-300 flex flex-col justify-between group shadow-xl">
-                    <div>
-                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-eye"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-white mb-2">Join & View Screen</h3>
-                        <p class="text-slate-400 text-sm mb-6">Enter a room code to view another device's screen and request remote control access.</p>
-                    </div>
-                    <div class="space-y-3">
-                        <input type="text" id="input-room-code" placeholder="Enter 6-digit Room Code" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono text-center tracking-widest text-lg">
-                        <button onclick="joinRoom()" class="w-full py-3 px-4 bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-xl shadow-lg shadow-cyan-600/30 transition-all flex items-center justify-center space-x-2">
-                            <span>Join Session</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-room" class="w-full max-w-5xl hidden flex-col space-y-6">
-            <!-- Room Info & Controls Header -->
-            <div class="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 flex items-center space-x-2">
-                        <span class="text-xs text-slate-400">Room Code:</span>
-                        <span id="display-room-code" class="font-mono font-bold text-indigo-400 text-lg">------</span>
-                        <button onclick="copyRoomCode()" class="text-slate-400 hover:text-white p-1" title="Copy Room Code">
-                            <i class="fa-solid fa-copy"></i>
-                        </button>
-                    </div>
-                    <div id="role-badge" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        Host
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-3">
-                <button id="btn-request-control" onclick="requestControl()" class="hidden px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-amber-600/20 transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-hand"></i>
-                    <span id="control-btn-text">Request Remote Access</span>
-                </button>
-                <button onclick="toggleFullScreen()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-xl border border-slate-700 transition-all flex items-center space-x-2" title="Toggle Full Screen">
-                    <i class="fa-solid fa-expand"></i>
-                    <span class="hidden sm:inline">Fullscreen</span>
-                </button>
-                <button onclick="leaveRoom()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-rose-600/20 transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-phone-slash"></i>
-                    <span>End Session</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Video Display Box -->
-        <div id="video-container" class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex items-center justify-center">
-            <video id="remote-video" autoplay playsinline class="w-full h-full object-contain cursor-crosshair"></video>
-            <video id="local-video" autoplay playsinline muted class="absolute bottom-4 right-4 w-48 aspect-video object-cover rounded-xl border-2 border-slate-700 shadow-lg hidden"></video>
-            
-            <!-- Remote Cursor Indicator for Host -->
-            <div id="remote-cursor" class="absolute w-6 h-6 pointer-events-none transform -translate-x-1/2 -translate-y-1/2 z-30 hidden transition-all duration-75">
-                <div class="relative">
-                    <i class="fa-solid fa-mouse-pointer text-cyan-400 text-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"></i>
-                    <span class="absolute -bottom-4 left-4 bg-cyan-600 text-white text-[10px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap shadow">Viewer</span>
-                </div>
-            </div>
-
-            <!-- Click Ripple Effect -->
-            <div id="click-ripple" class="absolute w-8 h-8 rounded-full border-2 border-cyan-400 bg-cyan-400/30 pointer-events-none transform -translate-x-1/2 -translate-y-1/2 z-20 hidden animate-ping"></div>
-
-            <!-- Waiting Overlay -->
-            <div id="waiting-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center space-y-4">
-                    <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p id="waiting-text" class="text-slate-300 font-medium">Waiting for participant to join...</p>
-                </div>
-
-                <!-- Remote Control Indicator -->
-                <div id="control-active-banner" class="absolute top-4 left-4 bg-emerald-500/90 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg hidden flex items-center space-x-1.5">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <span>Remote Control Active</span>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <div id="custom-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel max-w-md w-full p-6 rounded-2xl shadow-2xl space-y-4 text-center">
-            <div id="modal-icon" class="w-14 h-14 mx-auto rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl">
-                <i class="fa-solid fa-bell"></i>
-            </div>
-            <h3 id="modal-title" class="text-xl font-bold text-white">Notification</h3>
-            <p id="modal-message" class="text-slate-300 text-sm">Message content goes here...</p>
-            <div id="modal-actions" class="flex space-x-3 pt-2">
-                <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-all">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
-
-        // Your personal Firebase configuration & app ID
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sharenix-production';
-        const firebaseConfig = {
-            apiKey: "AIzaSyD-x-aZQJge1oGkv2jCTm3LmA2T8JEBvb0",
-            authDomain: "sharenix-762b8.firebaseapp.com",
-            projectId: "sharenix-762b8",
-            storageBucket: "sharenix-762b8.firebasestorage.app",
-            messagingSenderId: "682034256486",
-            appId: "1:682034256486:web:7a52a32446c396e5d2eba7",
-            measurementId: "G-5YM4NZPPZW"
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
-
-        let app, db, auth, analytics, currentUser;
-        let peerConnection = null;
-        let localStream = null;
-        let dataChannel = null;
-        let currentRoomId = null;
-        let isHost = false;
-        let unsubscribeRoom = null;
-
-        const iceServers = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        };
-
-        // Initialize Firebase
-        async function initFirebase() {
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                analytics = getAnalytics(app);
-
-                if (initialAuthToken) {
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } catch (tokenErr) {
-                        console.warn("Custom token sign-in failed due to project mismatch, falling back to anonymous auth:", tokenErr);
-                        await signInAnonymously(auth);
-                    }
-                } else {
-                    await signInAnonymously(auth);
-                }
-                currentUser = auth.currentUser;
-                
-                document.getElementById('status-dot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
-                document.getElementById('status-text').innerText = 'Connected to Firebase (sharenix-762b8)';
-            } catch (err) {
-                console.error("Firebase init error:", err);
-                document.getElementById('status-dot').className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-                document.getElementById('status-text').innerText = 'Firebase Connection Error';
-            }
-        }
-        initFirebase();
-
-        // Custom Modal UI helper
-        window.showModal = function(title, message, iconClass = 'fa-solid fa-bell', actionsHtml = null) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerText = message;
-            document.getElementById('modal-icon').innerHTML = `<i class="${iconClass}"></i>`;
-            
-            const actionsContainer = document.getElementById('modal-actions');
-            if (actionsHtml) {
-                actionsContainer.innerHTML = actionsHtml;
-            } else {
-                actionsContainer.innerHTML = `<button onclick="closeModal()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all">OK</button>`;
-            }
-            document.getElementById('custom-modal').classList.remove('hidden');
-        }
-
-        window.closeModal = function() {
-            document.getElementById('custom-modal').classList.add('hidden');
-        }
-
-        window.copyRoomCode = function() {
-            navigator.clipboard.writeText(currentRoomId);
-            showModal("Copied", "Room code copied to clipboard!", "fa-solid fa-check text-emerald-400");
-        }
-
-        function createPeerConnection(roomId) {
-            if (peerConnection) return peerConnection;
-            peerConnection = new RTCPeerConnection(iceServers);
-
-            peerConnection.ontrack = (event) => {
-                console.log("Received remote track");
-                const remoteVideo = document.getElementById('remote-video');
-                if (remoteVideo.srcObject !== event.streams[0]) {
-                    remoteVideo.srcObject = event.streams[0];
-                    document.getElementById('waiting-overlay').classList.add('hidden');
-                }
-            };
-
-            peerConnection.onicecandidate = async (event) => {
-                if (event.candidate) {
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'shareNixRooms', roomId);
-                    const roomSnap = await getDoc(roomRef);
-                    if (roomSnap.exists()) {
-                        const data = roomSnap.data();
-                        const candidates = isHost ? (data.hostCandidates || []) : (data.viewerCandidates || []);
-                        candidates.push(JSON.stringify(event.candidate));
-                        if (isHost) {
-                            await updateDoc(roomRef, { hostCandidates: candidates });
-                        } else {
-                            await updateDoc(roomRef, { viewerCandidates: candidates });
-                        }
-                    }
-                }
-            };
-
-            if (isHost) {
-                dataChannel = peerConnection.createDataChannel("sharenix-control");
-                setupDataChannel();
-            } else {
-                peerConnection.ondatachannel = (event) => {
-                    dataChannel = event.channel;
-                    setupDataChannel();
-                };
-            }
-
-            return peerConnection;
-        }
-
-        function setupDataChannel() {
-            dataChannel.onopen = () => { console.log("Data channel open"); };
-            dataChannel.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-                if (msg.type === 'REQUEST_CONTROL') {
-                    showModal("Remote Access Request", "A viewer is requesting remote control access to your screen.", "fa-solid fa-hand-holding", `
-                        <button onclick="denyControl()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-all">Deny</button>
-                        <button onclick="allowControl()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-all">Allow</button>
-                    `);
-                } else if (msg.type === 'CONTROL_GRANTED') {
-                    document.getElementById('control-active-banner').classList.remove('hidden');
-                    showModal("Access Granted", "You now have remote control access. Move your mouse or click over the remote screen to show your pointer to the host.", "fa-solid fa-shield-halved text-emerald-400");
-                } else if (msg.type === 'CONTROL_DENIED') {
-                    showModal("Access Denied", "The host denied your remote control request.", "fa-solid fa-ban text-rose-400");
-                } else if (isHost) {
-                    // Handle remote control pointer/clicks on Host side (using local-video since host is broadcasting)
-                    const remoteCursor = document.getElementById('remote-cursor');
-                    const clickRipple = document.getElementById('click-ripple');
-                    const videoEl = document.getElementById('local-video');
-                    const rect = videoEl.getBoundingClientRect();
-
-                    if (msg.x !== undefined && msg.y !== undefined && rect.width > 0 && rect.height > 0) {
-                        const px = msg.x * rect.width;
-                        const py = msg.y * rect.height;
-                        remoteCursor.style.left = `${px}px`;
-                        remoteCursor.style.top = `${py}px`;
-                        remoteCursor.classList.remove('hidden');
-
-                        if (msg.type === 'CLICK') {
-                            clickRipple.style.left = `${px}px`;
-                            clickRipple.style.top = `${py}px`;
-                            clickRipple.classList.remove('hidden');
-                            setTimeout(() => clickripple.classList.add('hidden'), 500);
-                        }
-                    }
-                }
-            };
-        }
-
-        window.toggleFullScreen = function() {
-            const container = document.getElementById('video-container');
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(err => {
-                    showModal("Fullscreen Error", "Unable to enter fullscreen mode.", "fa-solid fa-triangle-exclamation text-amber-400");
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        };
-
-        window.startHosting = async function() {
-            if (!auth.currentUser) {
-                showModal("Authentication Error", "Please wait for connection verification.", "fa-solid fa-triangle-exclamation text-amber-400");
-                return;
-            }
-
-            // Check if getDisplayMedia is supported
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-                showModal("Not Supported", "Screen sharing is not supported in this browser or requires an HTTPS secure connection.", "fa-solid fa-triangle-exclamation text-rose-400");
-                return;
-            }
-
-            try {
-                // Request entire screen sharing
-                try {
-                    localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                } catch (audioErr) {
-                    // Fallback to video-only if audio capture is restricted on mobile
-                    localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                }
-
-                const localVideo = document.getElementById('local-video');
-                localVideo.srcObject = localStream;
-                localVideo.classList.remove('hidden');
-
-                currentRoomId = Math.floor(100000 + Math.random() * 900000).toString();
-                isHost = true;
-
-                document.getElementById('display-room-code').innerText = currentRoomId;
-                document.getElementById('role-badge').innerText = 'Host';
-                document.getElementById('btn-request-control').classList.add('hidden');
-                document.getElementById('waiting-text').innerText = 'Waiting for participant to join room ' + currentRoomId + '...';
-                
-                document.getElementById('view-mode-select').classList.add('hidden');
-                document.getElementById('view-room').classList.remove('hidden');
-                document.getElementById('view-room').classList.add('flex');
-
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'shareNixRooms', currentRoomId);
-                await setDoc(roomRef, {
-                    hostId: currentUser.uid,
-                    createdAt: Date.now(),
-                    status: 'waiting',
-                    hostCandidates: [],
-                    viewerCandidates: []
-                });
-
-                const pc = createPeerConnection(currentRoomId);
-                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-
-                localStream.getVideoTracks()[0].onended = () => {
-                    leaveRoom();
-                };
-
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
-                await updateDoc(roomRef, { offer: JSON.stringify(offer), status: 'offered' });
-
-                unsubscribeRoom = onSnapshot(roomRef, async (snapshot) => {
-                    const data = snapshot.data();
-                    if (!data) return;
-
-                    if (data.answer && !pc.currentRemoteDescription) {
-                        await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.answer)));
-                    }
-
-                    if (data.viewerCandidates) {
-                        for (let cStr of data.viewerCandidates) {
-                            try {
-                                await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(cStr)));
-                            } catch (e) {}
-                        }
-                    }
-                });
-
-            } catch (err) {
-                console.error("Error starting share:", err);
-                showModal("Sharing Notice", "Screen sharing permission was cancelled or blocked by your browser/device settings. On mobile, ensure you select 'Entire Screen' when prompted.", "fa-solid fa-triangle-exclamation text-amber-400");
-            }
-        };
-
-        window.joinRoom = async function() {
-            const roomCodeInput = document.getElementById('input-room-code').value.trim();
-            if (roomCodeInput.length !== 6) {
-                showModal("Invalid Code", "Please enter a valid 6-digit room code.", "fa-solid fa-triangle-exclamation text-amber-400");
-                return;
-            }
-
-            currentRoomId = roomCodeInput;
-            isHost = false;
-
-            document.getElementById('display-room-code').innerText = currentRoomId;
-            document.getElementById('role-badge').innerText = 'Viewer';
-            document.getElementById('btn-request-control').classList.remove('hidden');
-            document.getElementById('waiting-text').innerText = 'Connecting to host stream...';
-
-            document.getElementById('view-mode-select').classList.add('hidden');
-            document.getElementById('view-room').classList.remove('hidden');
-            document.getElementById('view-room').classList.add('flex');
-
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'shareNixRooms', currentRoomId);
-            const roomSnap = await getDoc(roomRef);
-
-            if (!roomSnap.exists()) {
-                showModal("Room Not Found", "The room code entered does not exist or has expired.", "fa-solid fa-triangle-exclamation text-rose-400");
-                leaveRoom();
-                return;
-            }
-
-            const data = roomSnap.data();
-            const pc = createPeerConnection(currentRoomId);
-
-            await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.offer)));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-
-            await updateDoc(roomRef, { answer: JSON.stringify(answer), status: 'answered' });
-
-            if (data.hostCandidates) {
-                for (let cStr of data.hostCandidates) {
-                    try {
-                        await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(cStr)));
-                    } catch (e) {}
-                }
-            }
-
-            unsubscribeRoom = onSnapshot(roomRef, async (snapshot) => {
-                const sData = snapshot.data();
-                if (!sData) return;
-                if (sData.hostCandidates) {
-                    for (let cStr of sData.hostCandidates) {
-                        try {
-                            await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(cStr)));
-                        } catch (e) {}
-                    }
-                }
-            });
-        };
-
-        window.requestControl = function() {
-            if (dataChannel && dataChannel.readyState === 'open') {
-                dataChannel.send(JSON.stringify({ type: 'REQUEST_CONTROL' }));
-                showModal("Request Sent", "Waiting for host approval to control screen...", "fa-solid fa-paper-plane text-cyan-400");
-            } else {
-                showModal("Connection Error", "Data channel not ready yet. Please wait.", "fa-solid fa-triangle-exclamation text-amber-400");
-            }
-        };
-
-        window.allowControl = function() {
-            closeModal();
-            if (dataChannel && dataChannel.readyState === 'open') {
-                dataChannel.send(JSON.stringify({ type: 'CONTROL_GRANTED' }));
-                document.getElementById('control-active-banner').classList.remove('hidden');
-                document.getElementById('control-active-banner').innerHTML = `<i class="fa-solid fa-shield-halved"></i><span>Viewer Controlling Screen</span>`;
-            }
-        };
-
-        window.denyControl = function() {
-            closeModal();
-            if (dataChannel && dataChannel.readyState === 'open') {
-                dataChannel.send(JSON.stringify({ type: 'CONTROL_DENIED' }));
-            }
-        };
-
-        const remoteVideoEl = document.getElementById('remote-video');
-
-        // Send mouse move & click events from Viewer to Host when control is active
-        remoteVideoEl.addEventListener('mousemove', (e) => {
-            if (!isHost && dataChannel && dataChannel.readyState === 'open' && !document.getElementById('control-active-banner').classList.contains('hidden')) {
-                const rect = e.target.getBoundingClientRect();
-                const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-                dataChannel.send(JSON.stringify({ type: 'MOUSE_MOVE', x, y }));
-            }
-        });
-
-        remoteVideoEl.addEventListener('click', (e) => {
-            if (!isHost && dataChannel && dataChannel.readyState === 'open' && !document.getElementById('control-active-banner').classList.contains('hidden')) {
-                const rect = e.target.getBoundingClientRect();
-                const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-                dataChannel.send(JSON.stringify({ type: 'CLICK', x, y }));
-            }
-        });
-
-        window.leaveRoom = function() {
-            if (unsubscribeRoom) unsubscribeRoom();
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-            if (dataChannel) {
-                dataChannel.close();
-                dataChannel = null;
-            }
-
-            currentRoomId = null;
-            isHost = false;
-
-            document.getElementById('remote-video').srcObject = null;
-            document.getElementById('local-video').srcObject = null;
-            document.getElementById('local-video').classList.add('hidden');
-            document.getElementById('waiting-overlay').classList.remove('hidden');
-            document.getElementById('waiting-text').innerText = 'Waiting for participant to join...';
-            document.getElementById('control-active-banner').classList.add('hidden');
-
-            document.getElementById('view-room').classList.add('hidden');
-            document.getElementById('view-room').classList.remove('flex');
-            document.getElementById('view-mode-select').classList.remove('hidden');
-        };
-
-        document.getElementById('remote-video').addEventListener('click', (e) => {
-            if (!isHost && dataChannel && dataChannel.readyState === 'open' && !document.getElementById('control-active-banner').classList.contains('hidden')) {
-                const rect = e.target.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / rect.width;
-                const y = (e.clientY - rect.top) / rect.height;
-                dataChannel.send(JSON.stringify({ type: 'SIMULATE_CLICK', x, y }));
-            }
-        });
-    </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0f1030"><title>ShareNix – Codenix</title>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:linear-gradient(160deg,#0f1030,#1d1250 60%,#0b2a4a);color:#fff;font-family:system-ui,sans-serif}
+.s{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));text-align:center;overflow:auto}
+.s.on{display:flex}
+h2{font-size:24px}small,p{opacity:.75;font-size:14px;max-width:340px;line-height:1.4}
+button{font:700 17px system-ui;padding:14px 22px;border:0;border-radius:14px;background:#6c5cff;color:#fff;min-width:220px;box-shadow:0 4px 0 #3b2fb0;cursor:pointer}
+button:active{transform:translateY(3px);box-shadow:none}
+button.g{background:#2a2a5a;box-shadow:0 4px 0 #15153a}button:disabled{opacity:.4}
+input{font:800 30px system-ui;letter-spacing:8px;text-align:center;width:230px;padding:10px;border-radius:14px;border:3px solid #6c5cff;background:#1b1b48;color:#fff;text-transform:uppercase}
+#code{font-size:46px;font-weight:900;letter-spacing:8px;color:#ffd84d}
+video{width:min(94vw,900px);max-height:62vh;background:#000;border-radius:14px;box-shadow:0 8px 30px #0008}
+#viewer{padding:0;gap:0;background:#000}#viewer video{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;object-fit:contain}
+#vbar{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:8px;justify-content:space-between;align-items:center}
+#vbar button{min-width:0;padding:10px 14px;font-size:15px;background:#0009;box-shadow:none}
+#st{position:absolute;background:#000a;padding:12px 18px;border-radius:12px;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.row button{min-width:150px}
+select{font:600 15px system-ui;padding:10px;border-radius:10px;background:#1b1b48;color:#fff;border:2px solid #3b3b80}
+.err{color:#ff8a9a;min-height:18px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#6dff8f;margin-right:6px}
+</style></head><body>
+
+<div class="s on" id="menu">
+<svg viewBox="0 0 240 74" width="260"><rect x="4" y="8" width="56" height="56" rx="15" fill="#6c5cff"/><rect x="15" y="20" width="34" height="23" rx="5" fill="none" stroke="#fff" stroke-width="5"/><path d="M32 43v8M23 51h18" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="52" cy="16" r="7" fill="#ffd84d"/><text x="70" y="46" font-size="34" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">Share<tspan fill="#4dd2ff">Nix</tspan></text><text x="72" y="64" font-size="13" fill="#aaa" font-family="system-ui,sans-serif">by Codenix</text></svg>
+<p>Share your screen in 2 seconds. Friends watch with a room code, on phone or PC. Free.</p>
+<button id="bsh">🖥️ Share my screen</button>
+<button id="bw" class="g">👀 Watch a screen</button>
+<small id="note"></small><div class="err" id="err"></div></div>
+
+<div class="s" id="join"><h2>Watch a screen</h2><input id="ci" maxlength="5" placeholder="CODE" autocapitalize="characters" autocomplete="off"><button id="bgo">Join</button><div class="err" id="jerr"></div><button class="g" id="bjb">Back</button></div>
+
+<div class="s" id="host"><h2>You're sharing</h2><div id="code"></div><small>Friends open ShareNix → Watch a screen → enter this code</small>
+<video id="pv" muted autoplay playsinline></video>
+<div><span class="dot"></span><b id="vn">0</b> watching</div>
+<div class="row"><button id="bcp">Copy link</button><button id="bstop" class="g">Stop sharing</button></div></div>
+
+<div class="s" id="viewer"><video id="rv" autoplay playsinline muted></video><div id="st">Connecting…</div>
+<div id="vbar"><button id="bl">✕ Leave</button><span><button id="bm">🔊 Sound</button> <button id="bf">⛶</button></span></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://rnlwrngfgvznndlekmrz.supabase.co',SB_KEY='sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]},MAX=8;
+const $=q=>document.querySelector(q),me=Math.random().toString(36).slice(2,8),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let sb,ch,code,stream,pcs={},pend={},vpc,vq=[],lastHb=0,timers=[];
+try{sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+const show=s=>document.querySelectorAll('.s').forEach(e=>e.classList.toggle('on',e.id==s));
+const send=(e,d)=>ch&&ch.send({type:'broadcast',event:e,payload:d});
+const rc=()=>Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+const clr=()=>{timers.forEach(clearInterval);timers=[]};
+function openCh(c,onmsg){return new Promise((res,rej)=>{if(!sb)return rej();ch=sb.channel('sharenix-'+c,{config:{broadcast:{self:false}}});ch.on('broadcast',{event:'*'},m=>onmsg(m.event,m.payload)).subscribe(s=>{if(s=='SUBSCRIBED')res();else if(s=='CHANNEL_ERROR'||s=='TIMED_OUT')rej()})})}
+function closeCh(){clr();if(ch&&sb)sb.removeChannel(ch);ch=null}
+async function addIce(pc,c,q){if(pc&&pc.remoteDescription)try{await pc.addIceCandidate(c)}catch(e){}else q.push(c)}
+async function flush(pc,q){while(q.length)try{await pc.addIceCandidate(q.shift())}catch(e){}}
+
+/* ---------- Host ---------- */
+const canShare=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+if(!canShare){$('#bsh').disabled=true;$('#note').textContent='This browser can\'t share its screen (most phones). Use a PC browser to share — phones can watch.'}
+$('#bsh').onclick=async()=>{
+ $('#err').textContent='';
+ try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30,width:{ideal:1920}},audio:true})}catch(e){return $('#err').textContent='Sharing was cancelled'}
+ code=rc();
+ try{await openCh(code,hmsg)}catch(e){stream.getTracks().forEach(t=>t.stop());return $('#err').textContent='Cannot connect to the server'}
+ $('#code').textContent=code;$('#pv').srcObject=stream;show('host');count();
+ stream.getVideoTracks()[0].onended=stopShare;
+ timers.push(setInterval(()=>{send('hb',{n:count()})},1000));
+};
+async function hmsg(e,d){
+ if(e=='join'){if(Object.keys(pcs).length>=MAX&&!pcs[d.id])return send('full',{to:d.id});offer(d.id)}
+ else if(e=='answer'&&d.to==me&&pcs[d.from]){await pcs[d.from].setRemoteDescription(d.sdp);flush(pcs[d.from],pend[d.from])}
+ else if(e=='ice'&&d.to==me)addIce(pcs[d.from],d.c,pend[d.from]||(pend[d.from]=[]));
+ else if(e=='bye'){if(pcs[d.id])pcs[d.id].close();delete pcs[d.id];count()}
+}
+async function offer(v){
+ if(pcs[v])pcs[v].close();
+ const pc=pcs[v]=new RTCPeerConnection(ICE);pend[v]=[];
+ stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+ pc.onicecandidate=e=>e.candidate&&send('ice',{to:v,from:me,c:e.candidate});
+ pc.onconnectionstatechange=()=>{if(pc.connectionState=='failed'||pc.connectionState=='closed'){if(pcs[v]==pc)delete pcs[v]}count()};
+ await pc.setLocalDescription(await pc.createOffer());
+ send('offer',{to:v,from:me,sdp:pc.localDescription});
+}
+function count(){const n=Object.values(pcs).filter(p=>p.connectionState=='connected').length;$('#vn').textContent=n;return n}
+function stopShare(){send('end',1);Object.values(pcs).forEach(p=>p.close());pcs={};if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;setTimeout(closeCh,300);show('menu')}
+$('#bstop').onclick=stopShare;
+$('#bcp').onclick=async()=>{const u=location.href.split('#')[0]+'#'+code;try{if(navigator.share)await navigator.share({title:'ShareNix',text:'Watch my screen: '+code,url:u});else{await navigator.clipboard.writeText(u);$('#bcp').textContent='Copied ✓'}}catch(e){}};
+
+/* ---------- Viewer ---------- */
+$('#bw').onclick=()=>{$('#jerr').textContent='';show('join')};
+$('#bjb').onclick=()=>show('menu');
+$('#bgo').onclick=()=>watch($('#ci').value.trim().toUpperCase());
+async function watch(c){
+ if(c.length<5)return $('#jerr').textContent='Enter the 5-letter code';
+ $('#jerr').textContent='Connecting…';lastHb=0;
+ try{await openCh(c,vmsg)}catch(e){return $('#jerr').textContent='Cannot connect to the server'}
+ for(let i=0;i<25&&!lastHb;i++)await sleep(200);
+ if(!lastHb){closeCh();return $('#jerr').textContent='Room not found, or the host is not sharing'}
+ code=c;$('#st').style.display='';$('#st').textContent='Connecting…';show('viewer');send('join',{id:me});
+ timers.push(setInterval(()=>{if(Date.now()-lastHb>7000)status('Host disconnected')},2000));
+ setTimeout(()=>{if(!$('#rv').srcObject&&$('#viewer').classList.contains('on'))status('Could not connect. Your network may block peer-to-peer.')},15000);
+}
+const status=t=>{$('#st').style.display='';$('#st').textContent=t};
+async function vmsg(e,d){
+ if(e=='hb'){lastHb=Date.now()}
+ else if(e=='offer'&&d.to==me){
+  if(vpc)vpc.close();vpc=new RTCPeerConnection(ICE);vq=[];const pc=vpc;
+  pc.ontrack=x=>{$('#rv').srcObject=x.streams[0];$('#rv').play().catch(()=>{});$('#st').style.display='none'};
+  pc.onicecandidate=x=>x.candidate&&send('ice',{to:d.from,from:me,c:x.candidate});
+  pc.onconnectionstatechange=()=>{if(pc.connectionState=='failed')status('Connection lost')};
+  await pc.setRemoteDescription(d.sdp);flush(pc,vq);
+  await pc.setLocalDescription(await pc.createAnswer());
+  send('answer',{to:d.from,from:me,sdp:pc.localDescription});
+ }
+ else if(e=='ice'&&d.to==me)addIce(vpc,d.c,vq);
+ else if(e=='end')status('Sharing ended');
+ else if(e=='full'&&d.to==me)status('Room is full (max '+MAX+' viewers)');
+}
+function leave(){send('bye',{id:me});if(vpc)vpc.close();vpc=null;$('#rv').srcObject=null;closeCh();show('menu');history.replaceState(null,'',location.pathname)}
+$('#bl').onclick=leave;addEventListener('pagehide',()=>{if(ch)send('bye',{id:me})});
+$('#bm').onclick=()=>{const v=$('#rv');v.muted=!v.muted;$('#bm').textContent=v.muted?'🔊 Sound':'🔇 Mute';v.play().catch(()=>{})};
+$('#bf').onclick=()=>{const v=$('#rv');(v.requestFullscreen||v.webkitRequestFullscreen||v.webkitEnterFullscreen).call(v)};
+if(location.hash.length>=6){$('#ci').value=location.hash.slice(1,6).toUpperCase();show('join')}
+</script></body></html>
