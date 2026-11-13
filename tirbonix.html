@@ -1,0 +1,245 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#12122a"><title>TirboNix – Codenix</title>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:none}
+html,body{height:100%;overflow:hidden;background:#12122a;font-family:system-ui,sans-serif;color:#fff}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.s{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(14,14,40,.9);padding:16px;text-align:center;overflow:auto}
+.s.on{display:flex}
+h2{font-size:26px}small{opacity:.7;font-size:14px}
+button{font:700 18px system-ui;padding:13px 22px;border:0;border-radius:14px;background:#6c5cff;color:#fff;min-width:210px;box-shadow:0 4px 0 #3b2fb0}
+button:active{transform:translateY(3px);box-shadow:none}
+button.g{background:#2a2a55;box-shadow:0 4px 0 #15153a}
+button:disabled{opacity:.35}
+input{font:800 30px system-ui;letter-spacing:8px;text-align:center;width:210px;padding:10px;border-radius:14px;border:3px solid #6c5cff;background:#1b1b44;color:#fff;text-transform:uppercase;user-select:text;-webkit-user-select:text;touch-action:auto}
+#rc{color:#ffd84d;letter-spacing:5px}
+.pr{display:flex;align-items:center;gap:10px;background:#1b1b44;padding:8px 16px;border-radius:12px;min-width:230px;font-weight:700}
+.pr i{width:22px;height:22px;border-radius:7px}.pr em{margin-left:auto;font-style:normal;color:#6dff8f;font-size:12px}
+#sw{display:flex;gap:12px}#sw b{width:46px;height:46px;border-radius:13px;border:4px solid transparent}#sw b.on{border-color:#fff;transform:scale(1.12)}
+#lg{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}#lg button{min-width:0;width:58px;height:58px;padding:0}
+#hud{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;right:8px;display:none;gap:10px;align-items:center;font-weight:800;font-size:14px;pointer-events:none}
+#hud span{background:rgba(0,0,0,.4);padding:6px 10px;border-radius:10px}
+#dot{width:12px;height:12px;border-radius:50%;background:#ff5d73}#dot.ok{background:#6dff8f}
+#pb{margin-left:auto;pointer-events:auto;background:rgba(0,0,0,.5);width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
+#tc{position:fixed;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));display:none;justify-content:space-between;padding:0 16px;pointer-events:none}
+#tc button{pointer-events:auto;min-width:0;width:78px;height:78px;border-radius:50%;font-size:30px;padding:0;opacity:.8;margin-right:8px}
+#tc button:last-child{margin:0}
+@media(pointer:coarse){#tc.on{display:flex}}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="hud"><span id="hl"></span><span id="hk"></span><span id="hn"></span><i id="dot"></i><b id="pb">❚❚</b></div>
+<div id="tc"><div><button id="bl">◀</button><button id="br">▶</button></div><button id="bj">▲</button></div>
+
+<div class="s on" id="menu">
+<svg viewBox="0 0 230 74" width="250"><rect x="4" y="8" width="54" height="54" rx="14" fill="#6c5cff"/><path d="M17 23h28M31 23v28" stroke="#fff" stroke-width="9" stroke-linecap="round"/><rect x="46" y="42" width="18" height="18" rx="5" fill="#ffd84d"/><rect x="40" y="10" width="12" height="12" rx="4" fill="#ff5d73"/><text x="72" y="46" font-size="34" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">Tirbo<tspan fill="#4dd2ff">Nix</tspan></text><text x="74" y="64" font-size="13" fill="#aaa" font-family="system-ui,sans-serif">by Codenix</text></svg>
+<small>Co-op puzzle adventure · 2–4 players</small>
+<button id="bc">Create room</button><button id="bjn" class="g">Join room</button><button id="bs" class="g">Solo practice</button><small id="err"></small></div>
+
+<div class="s" id="join"><h2>Join room</h2><input id="ci" maxlength="4" placeholder="CODE" autocapitalize="characters" autocomplete="off"><button id="bgo">Join</button><small id="jerr"></small><button class="g" id="bjb">Back</button></div>
+
+<div class="s" id="lobby"><h2>Room <span id="rc"></span></h2><small>Share this code with friends</small><div id="pl"></div><small>Choose your character</small><div id="sw"></div><button id="bst">Choose level</button><small id="wt"></small><button class="g" id="blv">Leave</button></div>
+
+<div class="s" id="levels"><h2>Select level</h2><div id="lg"></div><button class="g" id="blb">Back</button></div>
+
+<div class="s" id="pause"><h2>Paused</h2><small>In multiplayer the world keeps running</small><button id="brs">Resume</button><button id="brt" class="g">Restart level</button><button id="bsn" class="g">Sound: on</button><button id="bq" class="g">Leave game</button></div>
+
+<div class="s" id="win"><h2 id="wt2"></h2><button id="bnx">Next level</button><button class="g" id="bwl">Level select</button><small id="ww"></small></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script>
+/* ===== Config & levels ===== */
+const SB_URL='https://rnlwrngfgvznndlekmrz.supabase.co',SB_KEY='sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+const T=32,W=24,H=10,$=q=>document.querySelector(q),COL=['#ff5d73','#4dd2ff','#ffd84d','#6dff8f'];
+/* # wall, S spawn, K key, D door, B box, M/V moving platform, ^ spikes, p/P plate+gate, q/Q double plate+gate, _ ground row */
+const GA='#..........P',GB='#...............Q';
+const LV=[
+["","","","","","","","#.........K","#..S.................D","_"],
+["","","","","","#.....K","#.....###....#","#............#","#..S.........#.......D","_"],
+["","","","","#............K","#...........#####","","","#..S...B.............D","_"],
+["","",GA.slice(0,10).replace('.........','........'),"#........P","#........P","#........P","#........P","#........P","#S.B..p..P....K......D","_"],
+["","","","","","","","","#..S.............K...D","#######...MM..##########"],
+["","","","","#...........K","#..........####","","","#..S.................D","#######.VV.#############"],
+["","","#..........Q","#..........Q","#..........Q","#..........Q","#..........Q","#..........Q","#SB.B.qq...Q..K......D","_"],
+["","","","","","#..........K","","#.........MM","#..S....^^^^^^^......D","_"],
+["","","","","#....K","#..######","","#.............#","#.........S...#......D","_"],
+["","","#........P","#........P","#........P","#........P","#........P....K","#........P...MM","#SB..p...P..^^^^^....D","_"],
+["","","","#..............P","#..........p...P","#........####..P","#..............P","#..............P","#..S...........P..K..D","####.VV.################"],
+["","","","","","#...........K","","#.......MM....MM","#..S..^^^^^^^^^^^^^^.D","_"],
+["","","#.................Q","#.................Q","#.................Q","#...........#.....Q","#...........#.....Q","#...........#.....Q","#..S.B.K....#..qq.Q..D","_"],
+["","","","","#.......K","#......###","","#............MM","#S.........^^^^^^^...D","###.VV.#################"],
+["","","#...............Q","#...............Q","#...............Q","#...............Q","#...............Q","#.....MM........Q","#S..^^^^^^.Bqq..Q.K..D","_"]
+];
+// fix helper rows for level 4 (gate P at col 9, rows 2-8)
+LV[3][2]='#........P';
+
+/* ===== Audio ===== */
+const Snd={c:null,on:1,init(){if(this.c)return;try{this.c=new(window.AudioContext||window.webkitAudioContext)();const n=[262,330,392,523,392,330,294,370,440,587,440,370];let i=0;setInterval(()=>{if(this.on&&!document.hidden)this.b(n[i++%12],.2,'triangle',.025)},250)}catch(e){}},
+b(f,d=.1,t='square',v=.04,e=0){if(!this.c||!this.on)return;try{const o=this.c.createOscillator(),g=this.c.createGain();o.type=t;o.frequency.setValueAtTime(f,this.c.currentTime);if(e)o.frequency.linearRampToValueAtTime(e,this.c.currentTime+d);g.gain.setValueAtTime(v,this.c.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.c.currentTime+d);o.connect(g);g.connect(this.c.destination);o.start();o.stop(this.c.currentTime+d)}catch(x){}},
+jump(){this.b(300,.12,'square',.04,600)},key(){this.b(800,.1);setTimeout(()=>this.b(1200,.2),90)},win(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>this.b(f,.25,'square',.05),i*120))},die(){this.b(300,.3,'sawtooth',.05,80)}};
+
+/* ===== State ===== */
+let sb,L=0,g=[],boxes=[],plats=[],key=null,door=null,spawn={x:48,y:240},keyTaken=0,latch={},state='menu',me={x:0,y:0,w:22,h:28,vx:0,vy:0,f:1,gr:0,gt:0},rem={},off=0,cam=0,paused=0,solo=0,myColor=0,keys={l:0,r:0,j:0},s=1,viewW=800,oy=0,pushT=0,unlocked=1;
+try{unlocked=+localStorage.tbx_u||1}catch(e){}
+const cv=$('#cv'),cx=cv.getContext('2d'),now=()=>Date.now()+off;
+const Net={id:Math.random().toString(36).slice(2,8),ch:null,peers:{},ok:0};
+const ids=()=>solo?[Net.id]:Object.keys(Net.peers).sort(),isHost=()=>solo||ids()[0]==Net.id,slot=()=>Math.max(0,ids().indexOf(Net.id));
+const ov=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+
+/* ===== Net ===== */
+Net.send=(e,d)=>{if(Net.ch&&Net.ok)Net.ch.send({type:'broadcast',event:e,payload:d})};
+Net.leave=()=>{if(Net.ch&&sb)sb.removeChannel(Net.ch);Net.ch=null;Net.ok=0;Net.peers={};rem={}};
+Net.join=(code,create)=>new Promise(res=>{
+ Net.leave();let done=0;
+ const c=Net.ch=sb.channel('tbx-'+code,{config:{broadcast:{self:false},presence:{key:Net.id}}});
+ c.on('presence',{event:'sync'},()=>{const o=Object.keys(Net.peers).length;Net.peers=c.presenceState();for(const k in rem)if(!Net.peers[k])delete rem[k];const n=Object.keys(Net.peers).length;if(state=='play'&&n>o&&isHost())Net.send('go',{l:L,s:1});lobby()})
+ .on('broadcast',{event:'*'},m=>recv(m.event,m.payload))
+ .subscribe(st=>{Net.ok=st=='SUBSCRIBED'?1:0;
+  if(st=='SUBSCRIBED'&&!done){done=1;setTimeout(async()=>{const n=Object.keys(Net.peers).length;if(create&&n)return res('Code in use, try again');if(!create&&!n)return res('Room not found');if(n>=4)return res('Room is full');await c.track({c:myColor});res(true)},900)}
+  else if((st=='CHANNEL_ERROR'||st=='TIMED_OUT')&&!done){done=1;res('Cannot connect to server')}});
+});
+function recv(e,d){
+ if(e=='p'){let r=rem[d.i];if(!r)r=rem[d.i]={x:d.x,y:d.y,w:22,h:28,f:1};r.tx=d.x;r.ty=d.y;r.f=d.f;if(d.h)off=d.h-Date.now()}
+ else if(e=='go'){if(d.s&&state=='play'&&L==d.l)return;start(d.l)}
+ else if(e=='k')keyTaken=1;
+ else if(e=='b'){if(Date.now()-pushT>400)boxes.forEach((b,i)=>{if(d[i]){b.x=d[i][0];b.y=d[i][1];b.vy=0}})}
+ else if(e=='w')win();
+}
+
+/* ===== Level & physics ===== */
+function load(n){
+ g=[];boxes=[];plats=[];key=null;door=null;spawn={x:48,y:240};keyTaken=0;latch={};
+ for(let y=0;y<H;y++){let r=LV[n][y]||'';if(r=='_')r='#'.repeat(W);r=r.padEnd(W,'.');g[y]=[];
+  for(let x=0;x<W;x++){const c=(x==0||x==W-1)?'#':r[x];
+   if(c=='B')boxes.push({x:x*T+1,y:y*T+2,w:30,h:30,vy:0,sx:x*T+1,sy:y*T+2});
+   else if(c=='M'||c=='V')plats.push({c,x0:x*T,y0:y*T+(c=='V'?T-12:0),x:x*T,y:y*T,dx:0,dy:0,n:0});
+   else if(c=='K')key={x:x*T+8,y:y*T+8};
+   else if(c=='D')door={x:x*T,y:y*T};
+   else if(c=='S')spawn={x:x*T+5,y:y*T+2};
+   g[y][x]='BMVKDS'.includes(c)?'.':c}}
+}
+const open=c=>latch[c.toLowerCase()]>now();
+const sol=(x,y)=>{if(x<0||x>=W)return 1;if(y<0||y>=H)return 0;const c=g[y][x];return c=='#'||((c=='P'||c=='Q')&&!open(c))};
+function blk(r,self){
+ for(let y=Math.floor(r.y/T),ye=Math.floor((r.y+r.h-.01)/T);y<=ye;y++)for(let x=Math.floor(r.x/T),xe=Math.floor((r.x+r.w-.01)/T);x<=xe;x++)if(sol(x,y))return{x:x*T,y:y*T,w:T,h:T};
+ for(const p of plats){const q={x:p.x,y:p.y,w:T,h:12};if(ov(r,q))return{...q,p}}
+ for(const b of boxes)if(b!=self&&ov(r,b))return{x:b.x,y:b.y,w:b.w,h:b.h,box:b}
+}
+function tl(r,f){for(let y=Math.max(0,Math.floor(r.y/T)),ye=Math.min(H-1,Math.floor((r.y+r.h-.01)/T));y<=ye;y++)for(let x=Math.max(0,Math.floor(r.x/T)),xe=Math.min(W-1,Math.floor((r.x+r.w-.01)/T));x<=xe;x++)f(g[y][x],x,y)}
+function respawn(snd){me.x=spawn.x+slot()*7;me.y=spawn.y;me.vx=me.vy=0;if(snd)Snd.die()}
+function start(l){L=l;load(l);respawn();state='play';paused=0;show('');Net.send&&0}
+function updPlats(){const t=now()/1000;for(const p of plats){const ox=p.x,py=p.y;if(p.c=='M')p.x=p.x0+Math.sin(t*1.1)*64;else p.y=p.y0-(.5+.5*Math.sin(t*.9-1.57))*96;p.dx=p.n?p.x-ox:0;p.dy=p.n?p.y-py:0;p.n=1}}
+function plates(){
+ const c={p:0,q:0},t=now();
+ for(const e of [me,...Object.values(rem),...boxes]){const sn={};tl(e,ch=>{if((ch=='p'||ch=='q')&&!sn[ch]){sn[ch]=1;c[ch]++}else if(ch=='P'||ch=='Q'){const k=ch.toLowerCase();latch[k]=Math.max(latch[k]||0,t+400)}})}
+ if(c.p>=1)latch.p=t+3000;if(c.q>=2)latch.q=t+3000;
+}
+function upd(dt){
+ updPlats();plates();
+ for(const b of boxes){b.vy=Math.min(b.vy+1700*dt,800);b.y+=b.vy*dt;const k=blk(b,b);if(k){if(b.vy>0)b.y=k.y-b.h;else b.y=k.y+k.h;b.vy=0;if(k.p){b.x+=k.p.dx;b.y+=k.p.dy}}if(b.y>H*T+60){b.x=b.sx;b.y=b.sy;b.vy=0}}
+ const ax=paused?0:keys.r-keys.l;
+ if(ax)me.f=ax;
+ if(me.on&&me.on.p){me.x+=me.on.p.dx;me.y+=me.on.p.dy}
+ if(blk(me,me)){for(let i=0;i<40&&blk(me,me);i++)me.y-=4;if(blk(me,me))respawn()}
+ me.gt=me.gr?.1:me.gt-dt;
+ if(!paused&&keys.j&&me.gt>0){me.vy=-640;me.gt=0;me.gr=0;Snd.jump()}
+ me.vy=Math.min(me.vy+1700*dt,800);
+ const dx=ax*190*dt;me.x+=dx;let b=blk(me,me);
+ if(b){if(b.box&&dx){const bx=b.box;bx.x+=dx;if(blk(bx,bx)||bx.x<T||bx.x>W*T-T-bx.w)bx.x-=dx;else{pushT=Date.now();b=blk(me,me)}}
+  if(b)me.x=dx>0?b.x-me.w:b.x+b.w}
+ const py=me.y;me.y+=me.vy*dt;me.gr=0;me.on=null;b=blk(me,me);
+ if(b){if(me.vy>0){me.y=b.y-me.h;me.gr=1;me.on=b}else me.y=b.y+b.h;me.vy=0}
+ if(me.vy>=0)for(const id in rem){const r=rem[id];if(ov(me,r)&&py+me.h<=r.y+10){me.y=r.y-me.h;me.vy=0;me.gr=1}}
+ let hurt=me.y>H*T+120||me.x<0;tl({x:me.x+4,y:me.y+10,w:14,h:18},c=>{if(c=='^')hurt=1});
+ if(hurt)respawn(1);
+ if(key&&!keyTaken&&ov(me,{x:key.x-6,y:key.y-6,w:28,h:28})){keyTaken=1;Net.send('k',1);Snd.key()}
+ for(const id in rem){const r=rem[id];if(r.tx==null)continue;if(Math.abs(r.tx-r.x)+Math.abs(r.ty-r.y)>120){r.x=r.tx;r.y=r.ty}else{const k=Math.min(1,dt*14);r.x+=(r.tx-r.x)*k;r.y+=(r.ty-r.y)*k}}
+ if(isHost()&&keyTaken&&door){const dr={x:door.x+4,y:door.y,w:24,h:32};if(ids().every(i=>i==Net.id?ov(me,dr):rem[i]&&ov(rem[i],dr))){Net.send('w',{l:L});win()}}
+ const tx=me.x+11-viewW/2,mx=W*T-viewW;cam+=((mx<0?mx/2:Math.max(0,Math.min(mx,tx)))-cam)*Math.min(1,dt*6);
+}
+function win(){
+ if(state!='play')return;state='win';Snd.win();unlocked=Math.min(15,Math.max(unlocked,L+2));try{localStorage.tbx_u=unlocked}catch(e){}
+ const h=isHost();$('#wt2').textContent=L==14?'🏆 You beat TirboNix!':'Level '+(L+1)+' complete!';
+ $('#bnx').style.display=h&&L<14?'':'none';$('#bwl').style.display=h?'':'none';$('#ww').textContent=h?'':'Waiting for host…';show('win');
+}
+
+/* ===== Rendering ===== */
+function pl(x,y,col,f,lab,vx){
+ cx.fillStyle='rgba(0,0,0,.25)';cx.fillRect(x+2,y+26,20,3);
+ cx.fillStyle=col;cx.beginPath();cx.roundRect(x,y,22,28,6);cx.fill();
+ cx.fillStyle='rgba(0,0,0,.18)';cx.fillRect(x,y+20,22,8);
+ cx.fillStyle='#fff';cx.fillRect(x+4,y+7,6,7);cx.fillRect(x+12,y+7,6,7);
+ cx.fillStyle='#111';cx.fillRect(x+6+f*1.5,y+9,3,5);cx.fillRect(x+14+f*1.5,y+9,3,5);
+ cx.fillStyle='#fff';cx.font='bold 9px system-ui';cx.textAlign='center';cx.fillText(lab,x+11,y-4);
+}
+function draw(){
+ cx.setTransform(1,0,0,1,0,0);const hue=190+L*17;
+ const gr=cx.createLinearGradient(0,0,0,cv.height);gr.addColorStop(0,`hsl(${hue},60%,24%)`);gr.addColorStop(1,`hsl(${hue+40},55%,11%)`);cx.fillStyle=gr;cx.fillRect(0,0,cv.width,cv.height);
+ if(state!='play'&&state!='win')return;
+ cx.setTransform(s,0,0,s,-cam*s,oy*s);
+ const t=now();
+ for(let i=0;i<8;i++){cx.fillStyle='rgba(255,255,255,.07)';cx.fillRect((i*137+L*40)%(W*T),30+(i*53)%160,50+i*8,14)}
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const c=g[y][x];if(c=='.')continue;const X=x*T,Y=y*T;
+  if(c=='#'){cx.fillStyle=`hsl(${hue},38%,${(x+y)%2?30:27}%)`;cx.fillRect(X,Y,T,T);if(!(y&&g[y-1][x]=='#')){cx.fillStyle=`hsl(${hue+30},60%,50%)`;cx.fillRect(X,Y,T,6)}cx.fillStyle='rgba(0,0,0,.18)';cx.fillRect(X,Y+T-3,T,3);cx.fillRect(X+T-3,Y,3,T)}
+  else if(c=='^'){cx.fillStyle='#ff4d6d';for(let i=0;i<2;i++){cx.beginPath();cx.moveTo(X+i*16,Y+T);cx.lineTo(X+i*16+8,Y+10);cx.lineTo(X+i*16+16,Y+T);cx.fill()}}
+  else if(c=='p'||c=='q'){const on=latch[c]>t;cx.fillStyle=c=='p'?'#ff9f43':'#e056fd';cx.fillRect(X+2,Y+(on?27:23),28,on?5:9);if(c=='q'){cx.fillStyle='#fff';cx.fillRect(X+12,Y+(on?28:25),8,3)}}
+  else{const o=open(c);cx.fillStyle=c=='P'?'#ff9f43':'#e056fd';cx.globalAlpha=o?.15:1;cx.fillRect(X+6,Y,20,T);cx.fillStyle='#fff';cx.globalAlpha=o?.1:.35;cx.fillRect(X+6,Y,5,T);cx.globalAlpha=1}
+ }
+ if(door){cx.fillStyle=keyTaken?'#b388ff':'#5a4a8a';cx.fillRect(door.x+2,door.y-8,28,40);cx.fillStyle=keyTaken?'#2b1b5a':'#2a2142';cx.fillRect(door.x+7,door.y-2,18,34);cx.fillStyle='#ffd84d';cx.fillRect(door.x+20,door.y+14,4,4)}
+ if(key&&!keyTaken){const ky=key.y+Math.sin(t/300)*3;cx.fillStyle='#ffd84d';cx.beginPath();cx.arc(key.x+4,ky+4,6,0,7);cx.fill();cx.fillRect(key.x+8,ky+2,10,4);cx.fillRect(key.x+14,ky+5,3,5);cx.fillStyle='#fff8';cx.fillRect(key.x+2,ky+1,3,3)}
+ for(const p of plats){cx.fillStyle=p.c=='M'?'#4dd2ff':'#ff7ab8';cx.fillRect(p.x,p.y,T,12);cx.fillStyle='#fff6';cx.fillRect(p.x,p.y,T,3)}
+ for(const b of boxes){cx.fillStyle='#c98b4b';cx.fillRect(b.x,b.y,b.w,b.h);cx.strokeStyle='#7a4b1e';cx.lineWidth=3;cx.strokeRect(b.x+1.5,b.y+1.5,b.w-3,b.h-3);cx.beginPath();cx.moveTo(b.x+4,b.y+4);cx.lineTo(b.x+b.w-4,b.y+b.h-4);cx.moveTo(b.x+b.w-4,b.y+4);cx.lineTo(b.x+4,b.y+b.h-4);cx.stroke()}
+ const list=ids();
+ for(const id in rem){const r=rem[id],m=Net.peers[id];pl(r.x,r.y,COL[(m&&m[0].c)||0],r.f,'P'+(list.indexOf(id)+1))}
+ pl(me.x,me.y+(me.gr&&(keys.l||keys.r)?Math.sin(t/60)*.8:0),COL[myColor],me.f,'P'+(slot()+1));
+}
+let ht=0;
+function hud(){if(state=='menu'||Date.now()-ht<250)return;ht=Date.now();$('#hl').textContent='Level '+(L+1);$('#hk').textContent=keyTaken?'🔑 ✔ Reach the door!':'🔑 Find the key';$('#hn').textContent='👥 '+ids().length;$('#dot').className=solo||Net.ok?'ok':''}
+
+/* ===== UI ===== */
+function show(id){document.querySelectorAll('.s').forEach(e=>e.classList.toggle('on',e.id==id));$('#tc').classList.toggle('on',state=='play'&&!id);$('#hud').style.display=state=='play'&&!id||paused&&state=='play'?'flex':'none'}
+function lobby(){
+ if(state!='lobby')return;const l=ids();
+ $('#pl').innerHTML=l.map((id,i)=>{const m=Net.peers[id];return`<div class="pr"><i style="background:${COL[(m&&m[0].c)||0]}"></i>P${i+1}${id==Net.id?' (you)':''}${i==0?' ★':''}<em>● online</em></div>`}).join('');
+ $('#bst').style.display=isHost()?'':'none';$('#wt').textContent=isHost()?(l.length<2?'Waiting for friends… or start alone':''):'Waiting for host to pick a level…';
+}
+function buildLv(){$('#lg').innerHTML=LV.map((_,i)=>`<button ${i<unlocked?'':'disabled'} data-l="${i}">${i+1}</button>`).join('');$('#lg').querySelectorAll('button').forEach(b=>b.onclick=()=>{Snd.init();go(+b.dataset.l)})}
+function go(l){if(!solo)Net.send('go',{l});start(l)}
+function enter(code){state='lobby';$('#rc').textContent=code;show('lobby');lobby()}
+function leave(){Net.leave();solo=0;state='menu';paused=0;show('menu')}
+const rc=()=>Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+$('#sw').innerHTML=COL.map((c,i)=>`<b style="background:${c}" class="${i?'':'on'}"></b>`).join('');
+$('#sw').querySelectorAll('b').forEach((b,i)=>b.onclick=()=>{myColor=i;$('#sw').querySelectorAll('b').forEach((x,j)=>x.classList.toggle('on',i==j));if(Net.ch&&Net.ok)Net.ch.track({c:i})});
+$('#bc').onclick=async()=>{Snd.init();if(!sb)return $('#err').textContent='Could not load Supabase. Check your connection.';solo=0;$('#err').textContent='Creating room…';let r;for(let i=0;i<3;i++){const c=rc();r=await Net.join(c,1);if(r===true){$('#err').textContent='';return enter(c)}if(r!='Code in use, try again')break}$('#err').textContent=r;Net.leave()};
+$('#bjn').onclick=()=>{Snd.init();$('#jerr').textContent='';show('join')};
+$('#bjb').onclick=()=>show('menu');
+$('#bgo').onclick=async()=>{const c=$('#ci').value.trim().toUpperCase();if(c.length<4||!sb)return $('#jerr').textContent=sb?'Enter the 4-letter code':'Supabase not loaded';solo=0;$('#jerr').textContent='Connecting…';const r=await Net.join(c,0);if(r===true)enter(c);else{$('#jerr').textContent=r;Net.leave()}};
+$('#bs').onclick=()=>{Snd.init();solo=1;state='lobby';buildLv();show('levels')};
+$('#bst').onclick=()=>{buildLv();show('levels')};
+$('#blb').onclick=()=>{if(solo){state='menu';solo=0;show('menu')}else show('lobby')};
+$('#blv').onclick=leave;$('#bq').onclick=leave;
+$('#pb').onclick=()=>{paused=1;show('pause')};
+$('#brs').onclick=()=>{paused=0;show('')};
+$('#brt').onclick=()=>{paused=0;if(isHost())go(L);else{respawn();show('')}};
+$('#bsn').onclick=()=>{Snd.on=!Snd.on;$('#bsn').textContent='Sound: '+(Snd.on?'on':'off')};
+$('#bnx').onclick=()=>go(L+1);
+$('#bwl').onclick=()=>{state='lobby';buildLv();show('levels')};
+
+/* ===== Input ===== */
+const km={ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',ArrowUp:'j',w:'j',W:'j',' ':'j'};
+addEventListener('keydown',e=>{if(e.target.tagName=='INPUT')return;const k=km[e.key];if(k){keys[k]=1;e.preventDefault();Snd.init()}if((e.key=='Escape'||e.key=='p')&&state=='play'){paused=!paused;show(paused?'pause':'')}});
+addEventListener('keyup',e=>{const k=km[e.key];if(k)keys[k]=0});
+addEventListener('blur',()=>keys.l=keys.r=keys.j=0);
+[['bl','l'],['br','r'],['bj','j']].forEach(([id,k])=>{const b=$('#'+id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=1;Snd.init()});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,e=>{e.preventDefault();keys[k]=0}));b.addEventListener('contextmenu',e=>e.preventDefault())});
+
+/* ===== Boot ===== */
+function rs(){const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;s=Math.min(cv.height/(H*T),cv.width/(14*T));viewW=cv.width/s;oy=(cv.height/s-H*T)*.4}
+addEventListener('resize',rs);rs();
+try{sb=supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:20}}})}catch(e){}
+let lt=performance.now(),sa=0;
+function loop(n){
+ const dt=Math.min(.033,(n-lt)/1000);lt=n;
+ if(state=='play'&&!(solo&&paused)){upd(dt);sa+=dt;if(sa>.08){sa=0;if(!solo){Net.send('p',{i:Net.id,x:Math.round(me.x),y:Math.round(me.y),f:me.f,h:isHost()?Math.round(now()):0});if(Date.now()-pushT<500)Net.send('b',boxes.map(b=>[Math.round(b.x),Math.round(b.y)]))}}}
+ draw();hud();requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>
