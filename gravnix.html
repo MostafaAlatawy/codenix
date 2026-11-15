@@ -1,0 +1,215 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#10102a"><title>GravNix – Codenix</title>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:none}
+html,body{height:100%;overflow:hidden;background:#10102a;font-family:system-ui,sans-serif;color:#fff}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.s{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(14,14,42,.93);padding:16px;text-align:center;overflow:auto}
+.s.on{display:flex}
+h2{font-size:26px}small{opacity:.7;font-size:14px}
+button{font:800 18px system-ui;padding:13px 22px;border:0;border-radius:14px;background:#7c5cff;color:#fff;min-width:210px;box-shadow:0 4px 0 #4a34b8}
+button:active{transform:translateY(3px);box-shadow:none}
+button.g{background:#2a2a5a;box-shadow:0 4px 0 #15153a}button.on{outline:3px solid #ffd84d}
+input{font:800 30px system-ui;letter-spacing:8px;text-align:center;width:210px;padding:10px;border-radius:14px;border:3px solid #7c5cff;background:#1b1b48;color:#fff;text-transform:uppercase;user-select:text;-webkit-user-select:text;touch-action:auto}
+#rc{color:#ffd84d;letter-spacing:5px}
+.pr{display:flex;align-items:center;gap:10px;background:#1b1b48;padding:8px 16px;border-radius:12px;min-width:250px;font-weight:700}
+.pr i{width:22px;height:22px;border-radius:7px}.pr em{margin-left:auto;font-style:normal;font-size:13px;color:#6dff8f}
+#sw,#df{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}#sw b{width:42px;height:42px;border-radius:12px;border:4px solid transparent}#sw b.on{border-color:#fff;transform:scale(1.12)}
+#df button{min-width:0;padding:10px 14px;font-size:15px}
+#hud{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;right:8px;display:none;gap:8px;align-items:center;font-weight:900;font-size:15px;pointer-events:none}
+#hud span{background:rgba(0,0,0,.45);padding:6px 10px;border-radius:10px}
+#cd{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:110px;font-weight:900;text-shadow:0 6px 0 #0008;pointer-events:none}
+#tip{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-weight:800;font-size:16px;text-shadow:0 2px 0 #000a;pointer-events:none;display:none}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="hud"><span id="ht"></span><span id="hc"></span><span id="hp"></span><span id="mu" style="pointer-events:auto">🔊</span></div><div id="cd"></div><div id="tip">👆 Tap to flip gravity · it keeps getting faster!</div>
+
+<div class="s on" id="menu">
+<svg viewBox="0 0 250 74" width="270"><rect x="4" y="8" width="58" height="58" rx="15" fill="#7c5cff"/><rect x="14" y="16" width="38" height="5" rx="2" fill="#fff"/><rect x="14" y="53" width="38" height="5" rx="2" fill="#fff"/><rect x="25" y="29" width="16" height="16" rx="4" fill="#ffd84d"/><path d="M33 24l-5 5h10zM33 50l-5-5h10z" fill="#fff"/><text x="72" y="46" font-size="34" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">Grav<tspan fill="#4dd2ff">Nix</tspan></text><text x="74" y="64" font-size="13" fill="#aaa" font-family="system-ui,sans-serif">by Codenix</text></svg>
+<small>One tap flips gravity · race your friends · 2–4 players</small>
+<button id="bc">Create room</button><button id="bjn" class="g">Join room</button><button id="bs" class="g">Solo practice</button><small id="err"></small></div>
+<div class="s" id="join"><h2>Join room</h2><input id="ci" maxlength="4" placeholder="CODE" autocapitalize="characters" autocomplete="off"><button id="bgo">Join</button><small id="jerr"></small><button class="g" id="bjb">Back</button></div>
+<div class="s" id="lobby"><h2>Room <span id="rc"></span></h2><small>Share this code with friends</small><div id="pl"></div><small>Choose your color</small><div id="sw"></div><div id="df"></div><button id="bst">Start race</button><small id="wt"></small><button class="g" id="blv">Leave</button></div>
+<div class="s" id="res"><h2 id="rt">Results</h2><div id="rl"></div><button id="bag">Race again</button><button class="g" id="bback">Back</button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://rnlwrngfgvznndlekmrz.supabase.co',SB_KEY='sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+const $=q=>document.querySelector(q),COL=['#ff4d6d','#4dd2ff','#ffd84d','#6dff8f','#c084fc','#ff9f43'],T=40,ROWS=9,PS=28,DN=['Rookie','Pro','Insane'];
+const E='............',B='############';
+/* 12-col chunks, 9 rows. # solid  ^ spike  o coin. Hazards start at col 3 so there is always time to flip. */
+const CH=[
+[B,E,E,E,E,E,E,E,B],
+[B,'........##..','........##..','........##..',E,'...##.......','...##.......','...##.......',B],
+[B,'........^^..',E,E,E,E,E,'...^^^......',B],
+[B,'....oooo....',E,E,E,E,E,E,'####....####'],
+['####....####',E,E,E,E,E,E,'....oooo....',B],
+[B,'...##.......','...##.......','...##.......',E,'.......##...','.......##...','.......##...',B],
+[B,E,E,'.....##.....','.....##.....','.....##.....',E,E,B],
+['#########..#',E,E,E,E,E,E,E,'####..######'],
+[B,E,E,'...##.......','...##.......','...##.......',E,'........^^^.',B], // squeeze: floating block, then spikes
+[B,'.......^^^..',E,E,E,E,E,'...f........',B], // floor pad throws you up into spikes
+[B,'...f........',E,E,E,E,E,'.......^^^..',B], // ceiling pad throws you down into spikes
+[B,'........##..','........##..','...##...##..','...##...##..','...##...##..','...##.......','...##.......',B], // tall pillars
+[B,E,E,E,E,E,E,'...^^^^^^^..',B], // long spike field (stay on the ceiling)
+[B,'...^^^^^^^..',E,E,E,E,E,E,B], // long spike field above (stay on the floor)
+[B,'......^.....',E,E,E,E,E,'...^.....^..',B], // zigzag single spikes
+[B,'......##....','......##....',E,E,E,'......##....','......##....',B]]; // needle gate: fly through the gap
+const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+let hue=200,padT=new Set(),sp=230,sb,ch,state='menu',solo=0,cols=[],starts=[],finX=0,spd=230,G=3000,MAXV=1000,dif=0,seed=1,taken=new Set(),me={},rem={},fin={},seen={},peers={},hb=0,myC=0,raceT=0,cd=0,cam=0,shake=0,parts=[],lastCd=9,cw=1,ch_=1,s=1,oy=0,cx,cv;
+const id=Math.random().toString(36).slice(2,8);cv=$('#cv');cx=cv.getContext('2d');
+const ids=()=>solo?[id]:Object.keys(peers).sort(),isHost=()=>solo||ids()[0]==id,slot=()=>Math.max(0,ids().indexOf(id));
+
+/* ---- Audio ---- */
+const Snd={c:null,init(){if(this.c)return;try{this.c=new(window.AudioContext||window.webkitAudioContext)()}catch(x){}},
+b(f,d=.12,t='square',v=.05,e=0){if(!this.c)return;try{const o=this.c.createOscillator(),g=this.c.createGain();o.type=t;o.frequency.setValueAtTime(f,this.c.currentTime);if(e)o.frequency.linearRampToValueAtTime(e,this.c.currentTime+d);g.gain.setValueAtTime(v,this.c.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.c.currentTime+d);o.connect(g);g.connect(this.c.destination);o.start();o.stop(this.c.currentTime+d)}catch(x){}},
+on:1,mus:0,stp:0,
+flip(g){this.b(g>0?300:500,.1,'square',.04,g>0?200:700)},die(){this.b(260,.35,'sawtooth',.06,60);this.noise(.3,.07)},coin(){this.b(1000,.08);setTimeout(()=>this.b(1500,.1),60)},pad(){this.b(400,.25,'sawtooth',.04,1200)},
+win(){[523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>this.b(f,.3,'square',.05),i*110))},
+noise(d=.05,v=.03){if(!this.c||!this.on)return;try{const n=this.c.sampleRate*d|0,buf=this.c.createBuffer(1,n,this.c.sampleRate),a=buf.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=this.c.createBufferSource(),g=this.c.createGain();s.buffer=buf;g.gain.setValueAtTime(v,this.c.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.c.currentTime+d);s.connect(g);g.connect(this.c.destination);s.start()}catch(x){}},
+startMusic(){this.stopMusic();if(!this.c||!this.on)return;this.stp=0;const BASS=[0,0,7,0,5,5,3,5],ARP=[12,15,19,24,19,15,17,20],tick=()=>{if(!this.mus)return;const p=Math.min(1,Math.max(0,(me.x||0)/(finX||1))),bpm=125+p*75,i=this.stp++,root=[55,49,58][dif]||55;
+  if(i%2==0)this.b(110,.12,'sine',.09,40);else this.noise(.03,.02);
+  this.b(root*2**(BASS[i%8]/12),.2,'triangle',.07);if(i%2==1||p>.5)this.b(root*4*2**(ARP[i%8]/12),.09,'square',.018);
+  this.mus=setTimeout(tick,60000/bpm/2)};this.mus=setTimeout(tick,0)},
+stopMusic(){if(this.mus)clearTimeout(this.mus);this.mus=0}};
+
+/* ---- Map ---- */
+function gen(d,sd){
+ const rnd=mul(sd),n=[24,40,64][d],pool=[[0,1,2,6,8,12,13],[1,2,3,4,5,6,7,8,9,10,11,12,13,14],[1,2,3,4,5,7,8,9,10,11,14,15,15,9,10,14,11]][d];cols=[];starts=[];taken=new Set();padT=new Set();
+ const add=(k,fl)=>{starts.push(cols.length);const R=fl?[...CH[k]].reverse():CH[k];for(let c=0;c<12;c++)cols.push(R.map(r=>r[c]))};
+ add(0);add(0);let last=-1;for(let i=0;i<n;i++){let k;do k=pool[rnd()*pool.length|0];while(k==last);last=k;add(k,rnd()<.5)}
+ add(0);finX=cols.length*T;add(0);add(0);
+ spd=[320,390,470][d]*(.94+rnd()*.12);hue=sd%360;
+}
+const tile=(c,r)=>c<0?'#':(c>=cols.length||r<0||r>=ROWS)?'.':cols[c][r];
+function scan(x,y,f){const c0=Math.floor(x/T),c1=Math.floor((x+PS-.01)/T),r0=Math.floor(y/T),r1=Math.floor((y+PS-.01)/T);for(let c=c0;c<=c1;c++)for(let r=r0;r<=r1;r++)if(f(tile(c,r),c,r))return 1;return 0}
+const hitS=(x,y)=>scan(x,y,t=>t=='#');
+const hitSp=(x,y)=>scan(x,y,(t,c,r)=>t=='^'&&x+PS-6>c*T+9&&x+6<c*T+T-9&&y+PS-6>r*T+9&&y+6<r*T+T-9);
+
+/* ---- Race ---- */
+function startRace(d,sd){
+ dif=d;seed=sd;gen(d,sd);me={x:4,y:(ROWS-1)*T-PS,vy:0,g:1,dead:0,coins:0,fin:0,sq:0,deaths:0,tr:[],gr:0};Snd.startMusic();rem={};fin={};parts=[];
+ cd=3.4;raceT=0;lastCd=9;state='race';cam=-100;show('');$('#tip').style.display='block';setTimeout(()=>$('#tip').style.display='none',5000);
+}
+function flip(dir){if(state!='race'||cd>0||me.dead>0||me.fin)return;me.g=dir||-me.g;me.vy=me.g*160;me.sq=.18;Snd.flip(me.g);
+ for(let i=0;i<6;i++)parts.push({x:me.x+14,y:me.y+14,vx:-spd*.4+Math.random()*60-30,vy:(Math.random()-.5)*160,l:.4,c:COL[myC]})}
+function die(){if(me.dead>0)return;me.dead=.8;me.deaths=(me.deaths||0)+1;shake=.3;Snd.die();for(let i=0;i<22;i++)parts.push({x:me.x+14,y:me.y+14,vx:(Math.random()-.5)*420,vy:(Math.random()-.5)*420,l:.7,c:i%2?COL[myC]:'#fff'})}
+function respawn(){me.x=4;me.g=1;me.y=(ROWS-1)*T-PS;me.vy=0;me.dead=0;me.coins=0;me.tr=[];taken=new Set();padT.clear()}
+function upd(dt){
+ if(cd>0){cd-=dt;const c=Math.ceil(cd);if(c<lastCd&&c>=0&&c<=3){lastCd=c;Snd.b(c?440:880,c?.12:.4)}}
+ else if(!me.fin){
+  raceT+=dt;me.sq=Math.max(0,me.sq-dt);
+  if(me.dead>0){me.dead-=dt;if(me.dead<=0)respawn()}
+  else{
+   sp=spd*(1+.4*Math.min(1,me.x/finX));G=3000*(sp/230)**2;MAXV=1000*sp/230;me.x+=sp*dt;if(hitS(me.x,me.y))return die();
+   me.gr=0;me.vy+=G*me.g*dt;me.vy=Math.max(-MAXV,Math.min(MAXV,me.vy));me.y+=me.vy*dt;
+   if(hitS(me.x,me.y)){if(me.g>0)me.y=Math.floor((me.y+PS)/T)*T-PS;else me.y=(Math.floor(me.y/T)+1)*T;me.vy=0;me.gr=1;if(hitS(me.x,me.y))return die()}
+   if(me.y<-90||me.y>ROWS*T+90||hitSp(me.x,me.y))return die();
+   scan(me.x,me.y,(t,c,r)=>{if(t=='f'&&!padT.has(c*10+r)){padT.add(c*10+r);me.g=-me.g;me.vy=me.g*160;me.sq=.18;Snd.pad()}if(t=='o'&&!taken.has(c*10+r)){taken.add(c*10+r);me.coins++;Snd.coin()}return 0});
+   me.tr.push({x:me.x,y:me.y});if(me.tr.length>7)me.tr.shift();
+   if(me.x>=finX){me.fin=1;Snd.stopMusic();fin[id]=raceT;send('fin',{i:id,t:raceT,c:me.coins});state='done';showRes();Snd.win()}}
+ }
+ for(const k in rem){const r=rem[k],q=Math.min(1,dt*12);r.x+=(r.tx-r.x)*q;r.y+=(r.ty-r.y)*q}
+ for(let k=parts.length-1;k>=0;k--){const p=parts[k];p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=dt;if(p.l<=0)parts.splice(k,1)}
+ shake=Math.max(0,shake-dt);cam+=((me.x-cw/s*.28)-cam)*Math.min(1,dt*8);
+}
+function ranks(){const a=[{k:id,x:me.x,t:fin[id],c:me.coins}];for(const k in rem)a.push({k,x:rem[k].x,t:fin[k],c:rem[k].c||0});
+ a.sort((p,q)=>(p.t!=null&&q.t!=null)?p.t-q.t:p.t!=null?-1:q.t!=null?1:q.x-p.x);return a}
+const nm=k=>k==id?'You':'P'+(ids().indexOf(k)+1),colOf=k=>k==id?COL[myC]:COL[(peers[k]&&peers[k][0].c)||0];
+function showRes(){Snd.stopMusic();show('res');$('#bag').style.display=isHost()?'':'none';$('#bback').textContent=solo?'Menu':'Back to lobby'}
+setInterval(()=>{if(!$('#res').classList.contains('on'))return;$('#rl').innerHTML=ranks().map((x,i)=>`<div class="pr"><i style="background:${colOf(x.k)}"></i>${i+1}. ${nm(x.k)}<em>${x.t!=null?x.t.toFixed(2)+'s · 🪙'+(x.c||0):'racing… '+Math.min(99,Math.round(x.x/finX*100))+'%'}</em></div>`).join('')},400);
+
+/* ---- Render ---- */
+function rs(){const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;cw=cv.width;ch_=cv.height;s=Math.min(ch_/(ROWS*T+80),cw/660);oy=(ch_/s-ROWS*T)/2}
+addEventListener('resize',rs);rs();
+const shade=(h,p)=>{const n=parseInt(h.slice(1),16),q=v=>Math.round(v+(p>0?(255-v)*p:v*p));return`rgb(${q(n>>16)},${q(n>>8&255)},${q(n&255)})`};
+function sq(x,y,g,c,lab,a,st,run){
+ const t=Date.now(),ph=Math.sin(t/70+x*.01)*5,w=Math.sin(t/200)*1.5;
+ cx.save();cx.globalAlpha=a;cx.translate(x+14,y+14);cx.scale(1+st*1.2,g*(1-st*1.2));
+ cx.fillStyle='#1b1b3a';cx.beginPath();cx.roundRect(-10+(run?ph:0),9,8,run?8:6,3);cx.fill();cx.beginPath();cx.roundRect(2-(run?ph:0),9,8,run?8:6,3);cx.fill();
+ const gr=cx.createLinearGradient(0,-14,0,12);gr.addColorStop(0,shade(c,.5));gr.addColorStop(1,c);
+ cx.fillStyle=gr;cx.strokeStyle=shade(c,-.5);cx.lineWidth=2;cx.beginPath();cx.roundRect(-14,-14,28,26,9);cx.fill();cx.stroke();
+ cx.fillStyle='#fff8';cx.beginPath();cx.roundRect(-10,-11,9,3,2);cx.fill();
+ cx.fillStyle='#14142e';cx.beginPath();cx.roundRect(-3,-9,17,12,6);cx.fill();cx.fillStyle='#7df9ff';
+ if((t/1000)%3.4<.13){cx.fillRect(2,-3,4,1.5);cx.fillRect(8,-3,4,1.5)}else{cx.beginPath();cx.arc(4,-3,2.6,0,7);cx.arc(10,-3,2.6,0,7);cx.fill()}
+ cx.strokeStyle='#fff';cx.lineWidth=2;cx.beginPath();cx.moveTo(-7,-14);cx.lineTo(-9,-20+w);cx.stroke();cx.fillStyle='#ffd84d';cx.beginPath();cx.arc(-9,-21+w,3,0,7);cx.fill();
+ cx.restore();cx.globalAlpha=1;if(lab){cx.fillStyle='#fff';cx.font='bold 11px system-ui';cx.textAlign='center';cx.fillText(lab,x+14,g>0?y-26:y+PS+30)}}
+function draw(){
+ cx.setTransform(1,0,0,1,0,0);const h=hue;
+ const gr=cx.createLinearGradient(0,0,0,ch_);gr.addColorStop(0,`hsl(${h},55%,20%)`);gr.addColorStop(1,`hsl(${h+50},50%,9%)`);cx.fillStyle=gr;cx.fillRect(0,0,cw,ch_);
+ if(state!='race'&&state!='done')return;
+ for(let i=0;i<9;i++){const x=(((i*310-cam*s*.3)%2800)+2800)%2800-300;cx.fillStyle='rgba(255,255,255,.04)';cx.fillRect(x,0,120+i*14,ch_)}
+ const sh=shake>0?(Math.random()-.5)*14*shake:0;
+ cx.setTransform(s,0,0,s,-cam*s+sh,oy*s+sh);
+ const c0=Math.max(0,Math.floor(cam/T)-1),c1=c0+Math.ceil(cw/s/T)+3;
+ for(let c=c0;c<=c1;c++)for(let r=0;r<ROWS;r++){const t=tile(c,r),X=c*T,Y=r*T;if(t=='.')continue;
+  if(t=='#'){cx.fillStyle=`hsl(${h},35%,${(c+r)%2?30:27}%)`;cx.fillRect(X,Y,T,T);cx.fillStyle=`hsl(${h+30},70%,60%)`;if(tile(c,r-1)!='#')cx.fillRect(X,Y,T,4);if(tile(c,r+1)!='#')cx.fillRect(X,Y+T-4,T,4)}
+  else if(t=='^'){const up=tile(c,r+1)=='#'||r==ROWS-1;cx.fillStyle='#ff4d6d';for(let i=0;i<2;i++){cx.beginPath();if(up){cx.moveTo(X+i*20,Y+T);cx.lineTo(X+i*20+10,Y+6);cx.lineTo(X+i*20+20,Y+T)}else{cx.moveTo(X+i*20,Y);cx.lineTo(X+i*20+10,Y+T-6);cx.lineTo(X+i*20+20,Y)}cx.fill()}}
+  else if(t=='f'){const up=tile(c,r+1)=='#'||r==ROWS-1;cx.globalAlpha=padT.has(c*10+r)?.3:1;cx.fillStyle='#4dd2ff';cx.fillRect(X+2,up?Y+T-8:Y,T-4,8);cx.fillStyle='#fff';cx.beginPath();if(up){cx.moveTo(X+20,Y+T-30);cx.lineTo(X+10,Y+T-14);cx.lineTo(X+30,Y+T-14)}else{cx.moveTo(X+20,Y+30);cx.lineTo(X+10,Y+14);cx.lineTo(X+30,Y+14)}cx.fill();cx.globalAlpha=1}
+  else if(t=='o'&&!taken.has(c*10+r)){cx.fillStyle='#ffd84d';cx.beginPath();cx.arc(X+20,Y+20+Math.sin(Date.now()/250+c)*3,9,0,7);cx.fill();cx.fillStyle='#fff8';cx.fillRect(X+16,Y+14,3,6)}}
+ for(let r=0;r<ROWS*2;r++){cx.fillStyle=r%2?'#fff':'#111';cx.fillRect(finX,r*T/2,10,T/2);cx.fillStyle=r%2?'#111':'#fff';cx.fillRect(finX+10,r*T/2,10,T/2)}
+ for(const p of parts){cx.globalAlpha=Math.min(1,p.l*2);cx.fillStyle=p.c;cx.fillRect(p.x-3,p.y-3,6,6)}cx.globalAlpha=1;
+ for(const k in rem){const r=rem[k];if(!r.d)sq(r.x,r.y,r.g,colOf(k),nm(k),.7,0,r.r)}
+ if(me.dead<=0){me.tr.forEach((p,i)=>{cx.globalAlpha=i/me.tr.length*.22;cx.fillStyle=COL[myC];cx.beginPath();cx.roundRect(p.x+2,p.y+2,24,24,8);cx.fill()});cx.globalAlpha=1;sq(me.x,me.y,me.g,COL[myC],'',1,me.sq,me.gr)}
+ // progress bar
+ cx.setTransform(1,0,0,1,0,0);const d=devicePixelRatio||1,bx=24*d,bw=cw-48*d,by=56*d;cx.fillStyle='#0006';cx.fillRect(bx,by-3*d,bw,6*d);cx.fillStyle='#fff';cx.fillRect(bx+bw-3*d,by-9*d,3*d,18*d);
+ const dot=(x,c,r)=>{cx.fillStyle=c;cx.beginPath();cx.arc(bx+Math.min(1,Math.max(0,x/finX))*bw,by,r*d,0,7);cx.fill()};
+ for(const k in rem)dot(rem[k].x,colOf(k),5);dot(me.x,COL[myC],7);
+}
+function hud(){if(state!='race'&&state!='done')return;const r=ranks().findIndex(x=>x.k==id)+1;
+ $('#ht').textContent='⏱ '+raceT.toFixed(1)+'s · 💀'+(me.deaths||0);$('#hc').textContent='🪙 '+me.coins;$('#hp').textContent='🏁 '+r+'/'+ranks().length;
+ const c=$('#cd');if(cd>0){c.style.display='flex';c.textContent=Math.ceil(cd)}else c.style.display='none'}
+
+/* ---- Net (broadcast heartbeats) ---- */
+const send=(e,d)=>ch&&ch.send({type:'broadcast',event:e,payload:d});
+function roster(){const t=Date.now(),p={};if(hb)p[id]=[{c:myC}];for(const k in seen){if(t-seen[k].t<3500)p[k]=[{c:seen[k].c}];else delete seen[k]}peers=p;for(const k in rem)if(!p[k])delete rem[k];lobby()}
+setInterval(()=>{if(ch&&hb)send('hb',{i:id,c:myC});if(!solo)roster()},1000);
+function leaveNet(){if(ch&&sb)sb.removeChannel(ch);ch=null;hb=0;seen={};peers={};rem={}}
+function joinNet(code,create){return new Promise(res=>{
+ leaveNet();let done=0;ch=sb.channel('gravnix-'+code,{config:{broadcast:{self:false}}});
+ ch.on('broadcast',{event:'*'},m=>recv(m.event,m.payload)).subscribe(st=>{
+  if(st=='SUBSCRIBED'&&!done){done=1;let n=0;const iv=setInterval(()=>{n++;const c=Object.keys(seen).length;
+   if(!create&&c){clearInterval(iv);if(c>=4)return res('Room is full');hb=1;return res(true)}
+   if(create&&c){clearInterval(iv);return res('Code in use, try again')}
+   if(n>=(create?8:25)){clearInterval(iv);if(create){hb=1;res(true)}else res('Room not found')}},200)}
+  else if((st=='CHANNEL_ERROR'||st=='TIMED_OUT')&&!done){done=1;res('Cannot connect to server')}})})}
+function recv(e,d){
+ if(e=='hb')seen[d.i]={t:Date.now(),c:d.c};
+ else if(e=='p'){let r=rem[d.i];if(!r)r=rem[d.i]={x:d.x,y:d.y,tx:d.x,ty:d.y,g:1};r.tx=d.x;r.ty=d.y;r.g=d.g;r.d=d.d;r.c=d.c;r.r=d.r}
+ else if(e=='go')startRace(d.d,d.s);
+ else if(e=='fin'){fin[d.i]=d.t;if(rem[d.i])rem[d.i].c=d.c}
+}
+
+/* ---- UI ---- */
+function show(i){document.querySelectorAll('.s').forEach(e=>e.classList.toggle('on',e.id==i));const r=state=='race'||state=='done';$('#hud').style.display=r?'flex':'none';if(!r)$('#cd').style.display='none'}
+function lobby(){if(state!='lobby')return;const l=ids();
+ $('#pl').innerHTML=l.map((k,i)=>`<div class="pr"><i style="background:${colOf(k)}"></i>P${i+1}${k==id?' (you)':''}${i==0?' ★':''}<em>● online</em></div>`).join('');
+ $('#bst').style.display=isHost()?'':'none';$('#df').style.display=isHost()?'flex':'none';$('#wt').textContent=isHost()?(l.length<2?'Waiting for friends… or start alone':''):'Waiting for host to start…'}
+$('#sw').innerHTML=COL.map((c,i)=>`<b style="background:${c}" class="${i?'':'on'}"></b>`).join('');
+$('#sw').querySelectorAll('b').forEach((b,i)=>b.onclick=()=>{myC=i;$('#sw').querySelectorAll('b').forEach((x,j)=>x.classList.toggle('on',i==j));if(!solo&&hb)send('hb',{i:id,c:myC})});
+$('#df').innerHTML=DN.map((n,i)=>`<button class="g ${i?'':'on'}" data-d="${i}">${n}</button>`).join('');
+$('#df').querySelectorAll('button').forEach(b=>b.onclick=()=>{dif=+b.dataset.d;$('#df').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x==b))});
+const rc=()=>Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+function enter(c){state='lobby';$('#rc').textContent=c;show('lobby');lobby()}
+function go(){const sd=Math.random()*1e9|0;if(!solo)send('go',{d:dif,s:sd});startRace(dif,sd)}
+$('#bc').onclick=async()=>{Snd.init();if(!sb)return $('#err').textContent='Could not load Supabase';solo=0;$('#err').textContent='Creating room…';let r;for(let i=0;i<3;i++){const c=rc();r=await joinNet(c,1);if(r===true){$('#err').textContent='';return enter(c)}if(r!='Code in use, try again')break}$('#err').textContent=r;leaveNet()};
+$('#bjn').onclick=()=>{Snd.init();$('#jerr').textContent='';show('join')};$('#bjb').onclick=()=>show('menu');
+$('#bgo').onclick=async()=>{const c=$('#ci').value.trim().toUpperCase();if(c.length<4||!sb)return $('#jerr').textContent=sb?'Enter the 4-letter code':'Supabase not loaded';solo=0;$('#jerr').textContent='Connecting…';const r=await joinNet(c,0);if(r===true)enter(c);else{$('#jerr').textContent=r;leaveNet()}};
+$('#bs').onclick=()=>{Snd.init();solo=1;state='lobby';$('#rc').textContent='SOLO';show('lobby');lobby()};
+$('#bst').onclick=go;$('#bag').onclick=go;
+const back=()=>{Snd.stopMusic();leaveNet();solo=0;state='menu';show('menu')};
+$('#blv').onclick=back;$('#bback').onclick=()=>{if(solo)back();else{state='lobby';show('lobby');lobby()}};
+
+/* ---- Input: one tap = flip gravity ---- */
+addEventListener('pointerdown',e=>{if(state=='race'&&!document.querySelector('.s.on')&&!e.target.closest('#mu')){e.preventDefault();Snd.init();flip()}});
+addEventListener('keydown',e=>{if(e.target.tagName=='INPUT'||e.repeat)return;const k=e.key;if(k==' '||k=='Enter'){e.preventDefault();flip()}else if(k=='ArrowUp'||k=='w'||k=='W'){e.preventDefault();flip(-1)}else if(k=='ArrowDown'||k=='s'||k=='S'){e.preventDefault();flip(1)}});
+
+const mute=()=>{Snd.on=!Snd.on;$('#mu').textContent=Snd.on?'🔊':'🔇';if(!Snd.on)Snd.stopMusic();else if(state=='race')Snd.startMusic()};
+$('#mu').onclick=mute;addEventListener('keydown',e=>{if(e.key=='m'||e.key=='M')mute()});
+/* ---- Loop ---- */
+try{sb=supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:20}}})}catch(e){}
+let lt=performance.now(),sa=0;
+function loop(n){const dt=Math.min(.04,(n-lt)/1000);lt=n;
+ if(state=='race'||state=='done'){upd(dt);sa+=dt;if(sa>.066){sa=0;if(!solo)send('p',{i:id,x:Math.round(me.x),y:Math.round(me.y),g:me.g,d:me.dead>0?1:0,c:me.coins,r:me.gr?1:0})}}
+ draw();hud();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script></body></html>
