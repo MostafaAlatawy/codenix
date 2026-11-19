@@ -1,946 +1,1510 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codenix ID - Sign In, Authentication & Security Gate</title>
-    <link rel="icon" type="image/png" href="/logo.png">
-    <link rel="apple-touch-icon" href="/logo.png">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts & Font Awesome Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Supabase JS Library & QRCode Generator -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codenix Studio — Sign In & Sign Up</title>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Google Font: Inter & Noto Sans Arabic for crisp multilingual typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Load Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#F5F3FF',
-                            100: '#EDE9FE',
-                            200: '#DDD6FE',
-                            300: '#C4B5FD',
-                            400: '#A78BFA',
-                            500: '#8B5CF6',
-                            600: '#7C3AED',
-                            700: '#6D28D9',
-                            800: '#5B21B6',
-                            900: '#4C1D95',
-                        },
-                        codenixDark: '#08080A',
-                        codenixCardDark: '#111115',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
+  <script>
+    // Configure Tailwind with Codenix Studio official purple palette and dark mode support
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans Arabic', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            codenix: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+              950: '#2e1065',
             }
+          },
+          boxShadow: {
+            'glow-purple': '0 0 35px -5px rgba(124, 58, 237, 0.35)',
+            'glow-purple-lg': '0 10px 40px -10px rgba(124, 58, 237, 0.45)',
+          }
         }
-    </script>
+      }
+    };
+  </script>
 
-    <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #08080A;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4C1D95;
-            border-radius: 3px;
-        }
-        .codenix-card {
-            background: rgba(17, 17, 21, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .codenix-input {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #ffffff;
-            transition: all 0.2s ease;
-        }
-        .codenix-input:focus {
-            outline: none;
-            border-color: #8B5CF6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-            background: rgba(255, 255, 255, 0.07);
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #FFFFFF 0%, #A78BFA 50%, #C4B5FD 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .glow-effect {
-            box-shadow: 0 0 50px -10px rgba(124, 58, 237, 0.25);
-        }
-        .step-circle {
-            transition: all 0.3s ease;
-        }
-        .step-circle.active {
-            background-color: #7C3AED;
-            border-color: #A78BFA;
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(124, 58, 237, 0.6);
-        }
-        .step-circle.completed {
-            background-color: #10B981;
-            border-color: #34D399;
-            color: #ffffff;
-        }
-    </style>
+  <style>
+    /* Subtle background grid & ambient glow for Codenix Studio aesthetic */
+    .codenix-grid-bg {
+      background-image: radial-gradient(rgba(124, 58, 237, 0.14) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .dark .codenix-grid-bg {
+      background-image: radial-gradient(rgba(167, 139, 250, 0.12) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Smooth tab & card transitions */
+    .fade-in {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hide number/PIN spin buttons */
+    input[type="password"].pin-field::-webkit-outer-spin-button,
+    input[type="password"].pin-field::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
 </head>
-<body class="bg-codenixDark text-slate-100 font-sans min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-brand-500 selection:text-white">
 
-    <!-- HEADER NAVIGATION -->
-    <header class="w-full px-6 sm:px-12 py-5 flex items-center justify-between border-b border-white/10 bg-codenixDark/80 backdrop-blur-md sticky top-0 z-50">
-        <a href="/" class="flex items-center gap-3 group">
-            <div class="w-9 h-9 rounded-xl bg-brand-600/20 border border-brand-500/40 flex items-center justify-center overflow-hidden shadow-md transition-transform group-hover:scale-105">
-                <span class="font-mono font-black text-brand-300 text-lg leading-none">C</span>
-            </div>
-            <div class="flex flex-col">
-                <span class="text-xl font-extrabold tracking-tight text-white leading-none">CODENIX ID</span>
-                <span class="text-[9px] font-mono text-brand-400 uppercase tracking-widest mt-0.5">Secure Gateway</span>
-            </div>
-        </a>
+<body class="min-h-screen bg-white text-slate-900 dark:bg-black dark:text-white codenix-grid-bg transition-colors duration-300 antialiased selection:bg-codenix-600 selection:text-white">
+  <!-- Ambient Purple Glows -->
+  <div class="pointer-events-none fixed inset-0 overflow-hidden z-0">
+    <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[36rem] h-[22rem] rounded-full bg-codenix-500/15 dark:bg-codenix-600/20 blur-3xl"></div>
+    <div class="absolute bottom-0 right-0 w-[26rem] h-[26rem] rounded-full bg-codenix-400/10 dark:bg-codenix-800/20 blur-3xl"></div>
+  </div>
 
-        <div class="flex items-center gap-4 text-xs">
-            <a href="/policy/" target="_blank" class="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 font-medium">
-                <i class="fa-solid fa-file-contract"></i>
-                <span>Privacy Policy</span>
-            </a>
-            <div class="h-4 w-[1px] bg-white/10"></div>
-            <span id="authStatusPill" class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-mono text-[11px] border border-white/5 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span id="statusText">Guest Mode</span>
-            </span>
+  <!-- Main Wrapper -->
+  <div class="relative z-10 min-h-screen flex flex-col justify-between px-4 py-6 sm:px-6 lg:px-8">
+    <!-- Top Bar: Theme Toggle & Language Switcher -->
+    <header class="w-full max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <a href="/" class="inline-flex items-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-codenix-600 dark:hover:text-codenix-400 transition-colors">
+        <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-codenix-50 dark:bg-codenix-950 border border-codenix-200 dark:border-codenix-800 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Codenix Studio Logo"
+            class="h-6 w-6 object-contain"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <span class="hidden h-full w-full items-center justify-center text-xs font-extrabold text-codenix-600 dark:text-codenix-400">CX</span>
+        </span>
+        <span class="tracking-tight">Codenix Studio</span>
+      </a>
+
+      <div class="flex items-center gap-2.5">
+        <!-- Language Selector (12 Supported Languages) -->
+        <div class="relative">
+          <label for="languageSelect" class="sr-only" data-i18n="selectLanguageLabel">Select Language</label>
+          <select
+            id="languageSelect"
+            aria-label="Language Selector"
+            class="appearance-none rounded-xl border border-slate-200 dark:border-codenix-900 bg-white/90 dark:bg-zinc-950/90 px-3.5 py-2 pr-8 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-100 shadow-sm hover:border-codenix-400 dark:hover:border-codenix-600 focus:outline-none focus:ring-2 focus:ring-codenix-500 transition-all cursor-pointer"
+          >
+            <option value="en">English</option>
+            <option value="ar">العربية (Arabic)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="ja">日本語 (Japanese)</option>
+            <option value="it">Italiano (Italian)</option>
+            <option value="nl">Nederlands (Dutch)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="ru">Русский (Russian)</option>
+            <option value="zh">中文 (Chinese)</option>
+            <option value="tr">Türkçe (Turkish)</option>
+            <option value="fr">Français (French)</option>
+            <option value="pt">Português (Portuguese)</option>
+          </select>
+          <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-codenix-600 dark:text-codenix-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
+
+        <!-- Theme Toggle Button (Light: Purple & White | Dark: Purple & Black) -->
+        <button
+          id="themeToggleBtn"
+          type="button"
+          aria-label="Toggle Theme"
+          class="inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-codenix-900 bg-white/90 dark:bg-zinc-950/90 p-2.5 text-slate-700 dark:text-codenix-300 shadow-sm hover:border-codenix-400 dark:hover:border-codenix-600 hover:bg-codenix-50 dark:hover:bg-codenix-950/60 focus:outline-none focus:ring-2 focus:ring-codenix-500 transition-all cursor-pointer"
+        >
+          <!-- Sun icon shown in Dark Mode -->
+          <svg id="sunIcon" class="hidden h-4 w-4 text-codenix-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <!-- Moon icon shown in Light Mode -->
+          <svg id="moonIcon" class="h-4 w-4 text-codenix-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+      </div>
     </header>
 
-    <!-- MAIN INTERACTIVE CONTAINER -->
-    <main class="flex-grow flex items-center justify-center px-4 py-12 relative z-10">
-        
-        <!-- Ambient Glowing Orbs -->
-        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-600/15 rounded-full blur-[120px] pointer-events-none"></div>
-        <div class="absolute bottom-10 right-10 w-80 h-80 bg-purple-900/20 rounded-full blur-[100px] pointer-events-none"></div>
-
-        <div class="w-full max-w-md relative">
-
-            <!-- ================= VIEW 1: AUTHENTICATION (SIGN IN / SIGN UP) ================= -->
-            <div id="authCard" class="codenix-card p-8 rounded-3xl glow-effect space-y-6">
-                
-                <div class="text-center space-y-2">
-                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white" id="authTitle">Welcome to Codenix</h1>
-                    <p class="text-xs sm:text-sm text-slate-400" id="authSubtitle">Sign in or create your account to access the ecosystem.</p>
-                </div>
-
-                <!-- Auth Mode Switcher Tabs -->
-                <div class="grid grid-cols-2 p-1 rounded-2xl bg-white/5 border border-white/10 text-xs font-semibold text-center">
-                    <button id="tabSignIn" onclick="switchAuthMode('signin')" class="py-2 rounded-xl bg-brand-600 text-white shadow-md transition-all">Sign In</button>
-                    <button id="tabSignUp" onclick="switchAuthMode('signup')" class="py-2 rounded-xl text-slate-400 hover:text-white transition-all">Create Account</button>
-                </div>
-
-                <!-- OAuth Social Sign In Buttons -->
-                <div class="space-y-3 pt-1">
-                    <button onclick="handleOAuthLogin('google')" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center justify-center gap-3 transition-all hover:scale-[1.01]">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                        </svg>
-                        <span>Continue with Google</span>
-                    </button>
-
-                    <button onclick="handleOAuthLogin('github')" class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center justify-center gap-3 transition-all hover:scale-[1.01]">
-                        <i class="fa-brands fa-github text-base"></i>
-                        <span>Continue with GitHub</span>
-                    </button>
-                </div>
-
-                <div class="flex items-center gap-3 text-[11px] text-slate-500 uppercase tracking-widest font-mono my-2">
-                    <div class="h-[1px] bg-white/10 flex-grow"></div>
-                    <span>or email</span>
-                    <div class="h-[1px] bg-white/10 flex-grow"></div>
-                </div>
-
-                <!-- Email & Password Form -->
-                <form id="emailAuthForm" onsubmit="handleEmailAuth(event)" class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-mono text-slate-300 font-medium" id="authEmailLabel">Email Address or Username</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-user-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                            <input type="text" id="authEmail" required placeholder="name@domain.com or username" class="w-full pl-10 pr-4 py-2.5 rounded-xl codenix-input text-xs font-medium" />
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-mono text-slate-300 font-medium">Password</label>
-                            <a href="#" onclick="showToast('Password reset link requested. Check your email.', 'info')" class="text-[10px] text-brand-400 hover:underline">Forgot?</a>
-                        </div>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                            <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 rounded-xl codenix-input text-xs font-medium" />
-                        </div>
-                    </div>
-
-                    <div id="signUpCheckContainer" class="hidden text-xs text-slate-400 space-y-2 pt-1">
-                        <label class="flex items-start gap-2.5 cursor-pointer">
-                            <input type="checkbox" id="authPolicyAgree" class="mt-0.5 rounded border-white/20 bg-white/5 text-brand-600 focus:ring-brand-500" />
-                            <span class="text-[11px] leading-tight">
-                                I agree to the <a href="/policy/" target="_blank" class="text-brand-400 underline">Privacy Policy</a> & Terms of Service.
-                            </span>
-                        </label>
-                    </div>
-
-                    <button type="submit" id="btnSubmitAuth" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2">
-                        <span id="btnSubmitAuthText">Sign In to Codenix</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </form>
-
-                <div class="pt-2 text-center text-[11px] text-slate-500">
-                    Need help? Contact <a href="mailto:codenixai@gmail.com" class="text-slate-400 hover:underline">codenixai@gmail.com</a>
-                </div>
-            </div>
-
-
-            <!-- ================= VIEW 2: REQUIRED ONBOARDING SECURITY GATE ================= -->
-            <div id="onboardingGateCard" class="codenix-card p-8 rounded-3xl glow-effect space-y-6 hidden">
-                
-                <div class="text-center space-y-2">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-                        <i class="fa-solid fa-lock"></i> Verification Required
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight text-white">Complete Security Profile</h2>
-                    <p class="text-xs text-slate-400">You must complete all 3 requirements below before accessing your dashboard and tools.</p>
-                </div>
-
-                <!-- Step Tracker Pills -->
-                <div class="flex items-center justify-between relative max-w-xs mx-auto py-2">
-                    <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-white/10 -translate-y-1/2 -z-10"></div>
-                    
-                    <div class="flex flex-col items-center gap-1">
-                        <div id="circleStep1" class="w-8 h-8 rounded-full border-2 border-white/20 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active">1</div>
-                        <span class="text-[9px] font-mono text-slate-400">Policy</span>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-1">
-                        <div id="circleStep2" class="w-8 h-8 rounded-full border-2 border-white/20 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle">2</div>
-                        <span class="text-[9px] font-mono text-slate-400">Virtual ID</span>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-1">
-                        <div id="circleStep3" class="w-8 h-8 rounded-full border-2 border-white/20 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle">3</div>
-                        <span class="text-[9px] font-mono text-slate-400">MFA</span>
-                    </div>
-                </div>
-
-                <!-- STEP 1 CONTENT: Privacy Policy Acceptance -->
-                <div id="stepContent1" class="space-y-4 pt-2">
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-3">
-                        <div class="flex items-center gap-2 text-brand-400 font-semibold text-sm">
-                            <i class="fa-solid fa-shield-cat"></i> Step 1: Privacy Policy Agreement
-                        </div>
-                        <p class="text-slate-300 leading-relaxed text-[11px]">
-                            To protect user privacy and secure our decentralized open AI ecosystem, you must review and explicitly accept our privacy policies hosted at <code class="text-brand-300">/policy/</code>.
-                        </p>
-                        <a href="/policy/" target="_blank" class="inline-flex items-center gap-2 text-xs text-brand-400 font-medium hover:underline">
-                            <span>Open Privacy Policy Document</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                        </a>
-                    </div>
-
-                    <label class="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                        <input type="checkbox" id="gateCheckPolicy" class="mt-0.5 rounded border-white/20 bg-white/5 text-brand-600 focus:ring-brand-500" />
-                        <span class="text-xs text-slate-200 leading-tight">
-                            I have read, understood, and accept the Privacy Policy from <strong>/policy/</strong>.
-                        </span>
-                    </label>
-
-                    <button onclick="submitStep1()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg transition-all flex items-center justify-center gap-2">
-                        <span>Confirm & Continue to Virtual ID</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </div>
-
-                <!-- STEP 2 CONTENT: Create Virtual ID (username@codenix) -->
-                <div id="stepContent2" class="space-y-4 pt-2 hidden">
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-2">
-                        <div class="flex items-center gap-2 text-brand-400 font-semibold text-sm">
-                            <i class="fa-solid fa-at"></i> Step 2: Set Virtual Codenix ID
-                        </div>
-                        <p class="text-slate-300 text-[11px]">
-                            Create your unique handles across all Codenix AI models, arcade leaderboards, and developer utilities. Format must be <code>username@codenix</code>.
-                        </p>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-mono text-slate-300 font-medium">Desired Username</label>
-                        <div class="relative flex items-center">
-                            <input type="text" id="virtualUsernameInput" placeholder="alex_dev" oninput="formatVirtualIDPreview()" class="w-full pr-24 pl-4 py-2.5 rounded-xl codenix-input text-xs font-mono" />
-                            <span class="absolute right-3 text-xs font-mono font-bold text-brand-400 bg-brand-500/10 px-2 py-1 rounded-lg border border-brand-500/20">@codenix</span>
-                        </div>
-                        <p class="text-[10px] text-slate-500 font-mono mt-1" id="virtualIdPreviewText">Your handle will be: <span class="text-brand-300 font-bold">username@codenix</span></p>
-                    </div>
-
-                    <button onclick="submitStep2()" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 font-semibold text-xs text-white shadow-lg transition-all flex items-center justify-center gap-2">
-                        <span>Save Handle & Continue to MFA</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </button>
-                </div>
-
-                <!-- STEP 3 CONTENT: Multi-Factor Authentication (MFA) -->
-                <div id="stepContent3" class="space-y-4 pt-2 hidden">
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-2">
-                        <div class="flex items-center gap-2 text-brand-400 font-semibold text-sm">
-                            <i class="fa-solid fa-key"></i> Step 3: Enable Multi-Factor Authentication (MFA)
-                        </div>
-                        <p class="text-slate-300 text-[11px]">
-                            Scan the QR code below using Google Authenticator, Authy, or 1Password, then enter the 6-digit code.
-                        </p>
-                    </div>
-
-                    <div class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-inner max-w-[200px] mx-auto">
-                        <div id="qrcodeCanvas"></div>
-                    </div>
-
-                    <div class="text-center space-y-1">
-                        <span class="text-[10px] text-slate-400 font-mono">Or manually enter secret key:</span>
-                        <div class="font-mono text-xs text-brand-300 bg-white/5 p-2 rounded-xl border border-white/10 select-all" id="mfaSecretText">CODENIX-MFA-9842-8812</div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-mono text-slate-300 font-medium">Enter 6-Digit Authenticator Code</label>
-                        <input type="text" id="mfaCodeInput" maxlength="6" placeholder="123456" class="w-full py-2.5 px-4 rounded-xl codenix-input text-center text-lg font-mono tracking-widest" />
-                    </div>
-
-                    <button onclick="submitStep3()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-semibold text-xs text-white shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>Verify Code & Unlock Dashboard</span>
-                    </button>
-                </div>
-
-            </div>
-
-
-            <!-- ================= VIEW 3: UNLOCKED CODENIX DASHBOARD ================= -->
-            <div id="dashboardCard" class="codenix-card p-8 rounded-3xl glow-effect space-y-6 hidden">
-                
-                <div class="flex items-center justify-between pb-4 border-b border-white/10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-purple-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            <span id="userAvatarChar">C</span>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                                <span id="dashDisplayName">User</span>
-                                <i class="fa-solid fa-circle-check text-emerald-400 text-xs" title="Fully Verified"></i>
-                            </h2>
-                            <p class="text-xs font-mono text-brand-400" id="dashVirtualId">username@codenix</p>
-                        </div>
-                    </div>
-                    <button onclick="handleSignOut()" class="p-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 transition-all text-xs" title="Sign Out">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </button>
-                </div>
-
-                <!-- Verification Badges Matrix -->
-                <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
-                    <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 space-y-1">
-                        <i class="fa-solid fa-file-shield text-sm"></i>
-                        <div>Privacy Policy</div>
-                        <div class="font-bold">ACCEPTED</div>
-                    </div>
-                    <div class="p-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-300 space-y-1">
-                        <i class="fa-solid fa-id-badge text-sm"></i>
-                        <div>Virtual ID</div>
-                        <div class="font-bold">CLAIMED</div>
-                    </div>
-                    <div class="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 space-y-1">
-                        <i class="fa-solid fa-lock text-sm"></i>
-                        <div>MFA Security</div>
-                        <div class="font-bold">ACTIVE</div>
-                    </div>
-                </div>
-
-                <!-- Quick Ecosystem Shortcuts -->
-                <div class="space-y-3">
-                    <span class="text-[11px] font-mono text-slate-400 uppercase tracking-widest font-semibold">Ecosystem Portal Access</span>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="/" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 space-y-1.5 transition-all group">
-                            <div class="flex items-center justify-between text-brand-400">
-                                <i class="fa-solid fa-code text-base"></i>
-                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                            </div>
-                            <div class="text-xs font-semibold text-white">AI Code-X</div>
-                            <div class="text-[10px] text-slate-400">Neural Generator</div>
-                        </a>
-
-                        <a href="/" class="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 space-y-1.5 transition-all group">
-                            <div class="flex items-center justify-between text-pink-400">
-                                <i class="fa-solid fa-gamepad text-base"></i>
-                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                            </div>
-                            <div class="text-xs font-semibold text-white">Web Arcade</div>
-                            <div class="text-[10px] text-slate-400">WebGL Gaming</div>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex items-center justify-between text-[11px] text-slate-500 font-mono border-t border-white/5">
-                    <span>Codenix ID Session: Active</span>
-                    <a href="/" class="text-brand-400 hover:underline">Return to Main Hub</a>
-                </div>
-
-            </div>
-
+    <!-- Center Auth Card -->
+    <main class="w-full max-w-md mx-auto my-8">
+      <div class="rounded-3xl border border-slate-200/90 dark:border-codenix-900/80 bg-white/95 dark:bg-zinc-950/95 p-6 sm:p-8 shadow-xl dark:shadow-glow-purple backdrop-blur-xl">
+        <!-- Brand Header & Logo from /logo.png -->
+        <div class="text-center mb-6">
+          <div class="mx-auto mb-3.5 flex h-16 w-16 items-center justify-center rounded-2xl border border-codenix-200 dark:border-codenix-800 bg-codenix-50 dark:bg-codenix-950 shadow-sm overflow-hidden">
+            <img
+              id="brandLogo"
+              src="/logo.png"
+              alt="Codenix Studio"
+              class="h-12 w-12 object-contain"
+              onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');"
+            />
+            <span id="logoFallback" class="hidden text-xl font-extrabold tracking-tight text-codenix-600 dark:text-codenix-400">CX</span>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white" data-i18n="brandTitle">
+            Codenix Studio
+          </h1>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400" data-i18n="brandSubtitle">
+            Build, create, and ship faster with Codenix.
+          </p>
         </div>
+
+        <!-- Mode Switcher Tabs: Sign In / Sign Up -->
+        <div class="grid grid-cols-2 gap-1.5 rounded-2xl bg-slate-100 dark:bg-zinc-900 p-1.5 mb-6 border border-slate-200/70 dark:border-codenix-950">
+          <button
+            id="tabSignIn"
+            type="button"
+            class="rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer"
+            data-i18n="signInTab"
+          >
+            Sign In
+          </button>
+          <button
+            id="tabSignUp"
+            type="button"
+            class="rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+            data-i18n="signUpTab"
+          >
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Status / Feedback Banner (Replaces alert/confirm) -->
+        <div id="statusBanner" class="hidden mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm font-medium transition-all" role="alert">
+          <div class="flex items-start gap-2.5">
+            <span id="statusIcon" class="mt-0.5 shrink-0"></span>
+            <div id="statusText" class="leading-relaxed"></div>
+          </div>
+        </div>
+
+        <!-- OAuth Buttons: Google & GitHub -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          <button
+            id="googleAuthBtn"
+            type="button"
+            class="flex items-center justify-center gap-2.5 rounded-xl border border-slate-200 dark:border-codenix-900 bg-white dark:bg-zinc-900/90 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-codenix-400 dark:hover:border-codenix-600 hover:bg-codenix-50/50 dark:hover:bg-codenix-950/50 focus:outline-none focus:ring-2 focus:ring-codenix-500 transition-all cursor-pointer"
+          >
+            <!-- Google SVG -->
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z" />
+              <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z" />
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z" />
+            </svg>
+            <span data-i18n="googleBtn">Google</span>
+          </button>
+
+          <button
+            id="githubAuthBtn"
+            type="button"
+            class="flex items-center justify-center gap-2.5 rounded-xl border border-slate-200 dark:border-codenix-900 bg-white dark:bg-zinc-900/90 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-codenix-400 dark:hover:border-codenix-600 hover:bg-codenix-50/50 dark:hover:bg-codenix-950/50 focus:outline-none focus:ring-2 focus:ring-codenix-500 transition-all cursor-pointer"
+          >
+            <!-- GitHub SVG -->
+            <svg class="h-4 w-4 shrink-0 fill-current" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            <span data-i18n="githubBtn">GitHub</span>
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative flex items-center my-5">
+          <div class="flex-grow border-t border-slate-200 dark:border-codenix-900"></div>
+          <span class="mx-3 shrink-0 text-xs font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500" data-i18n="orEmail">
+            or continue with email
+          </span>
+          <div class="flex-grow border-t border-slate-200 dark:border-codenix-900"></div>
+        </div>
+
+        <!-- SIGN IN FORM (Email + Password Only, No Magic Link or Reset Password) -->
+        <form id="signInForm" class="space-y-4 fade-in" novalidate>
+          <div>
+            <label for="signInEmail" class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="emailLabel">
+              Email Address
+            </label>
+            <input
+              id="signInEmail"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="name@example.com"
+              class="w-full rounded-xl border border-slate-200 dark:border-codenix-900 bg-slate-50/60 dark:bg-zinc-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-codenix-500 focus:bg-white dark:focus:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-codenix-500/40 transition-all"
+            />
+          </div>
+
+          <div>
+            <label for="signInPassword" class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="passwordLabel">
+              Password
+            </label>
+            <div class="relative">
+              <input
+                id="signInPassword"
+                name="password"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="••••••••"
+                class="w-full rounded-xl border border-slate-200 dark:border-codenix-900 bg-slate-50/60 dark:bg-zinc-900 px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-codenix-500 focus:bg-white dark:focus:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-codenix-500/40 transition-all"
+              />
+              <button
+                type="button"
+                data-toggle-password="signInPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-codenix-600 dark:hover:text-codenix-400 cursor-pointer"
+                aria-label="Toggle password visibility"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Optional PIN verification box if the user's account has a PIN configured -->
+          <div id="signInPinContainer" class="hidden rounded-2xl border border-codenix-200 dark:border-codenix-800 bg-codenix-50/60 dark:bg-codenix-950/40 p-3.5 space-y-2">
+            <label for="signInPin" class="block text-xs font-semibold text-codenix-800 dark:text-codenix-300" data-i18n="enterPinLabel">
+              Account Security PIN (4–8 digits)
+            </label>
+            <input
+              id="signInPin"
+              name="pin"
+              type="password"
+              inputmode="numeric"
+              maxlength="8"
+              placeholder="••••"
+              class="pin-field w-full rounded-xl border border-codenix-300 dark:border-codenix-700 bg-white dark:bg-zinc-950 px-3.5 py-2 text-sm tracking-widest text-slate-900 dark:text-white focus:border-codenix-500 focus:outline-none focus:ring-2 focus:ring-codenix-500/40"
+            />
+            <p class="text-[11px] text-slate-600 dark:text-slate-400" data-i18n="pinHintSignIn">
+              Enter your security PIN to complete sign-in.
+            </p>
+          </div>
+
+          <button
+            id="signInSubmitBtn"
+            type="submit"
+            class="w-full rounded-xl bg-codenix-600 hover:bg-codenix-700 active:bg-codenix-800 px-4 py-3 text-sm font-semibold text-white shadow-md hover:shadow-glow-purple focus:outline-none focus:ring-2 focus:ring-codenix-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950 transition-all cursor-pointer"
+            data-i18n="signInBtn"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <!-- SIGN UP FORM (Email, Password, Optional Security PIN, Privacy Policy /policy, Age > 15) -->
+        <form id="signUpForm" class="hidden space-y-4 fade-in" novalidate>
+          <div>
+            <label for="signUpEmail" class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="emailLabel">
+              Email Address
+            </label>
+            <input
+              id="signUpEmail"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="name@example.com"
+              class="w-full rounded-xl border border-slate-200 dark:border-codenix-900 bg-slate-50/60 dark:bg-zinc-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-codenix-500 focus:bg-white dark:focus:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-codenix-500/40 transition-all"
+            />
+          </div>
+
+          <div>
+            <label for="signUpPassword" class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="passwordLabel">
+              Password
+            </label>
+            <div class="relative">
+              <input
+                id="signUpPassword"
+                name="password"
+                type="password"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="At least 6 characters"
+                class="w-full rounded-xl border border-slate-200 dark:border-codenix-900 bg-slate-50/60 dark:bg-zinc-900 px-3.5 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-codenix-500 focus:bg-white dark:focus:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-codenix-500/40 transition-all"
+              />
+              <button
+                type="button"
+                data-toggle-password="signUpPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-codenix-600 dark:hover:text-codenix-400 cursor-pointer"
+                aria-label="Toggle password visibility"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Account Protection Options: Optional PIN after Email & Password -->
+          <div class="rounded-2xl border border-codenix-200/80 dark:border-codenix-900 bg-codenix-50/40 dark:bg-codenix-950/30 p-3.5 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <label for="enablePinToggle" class="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  id="enablePinToggle"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 dark:border-codenix-700 text-codenix-600 focus:ring-codenix-500 cursor-pointer"
+                />
+                <span class="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200" data-i18n="enablePinOption">
+                  Add extra protection: Security PIN
+                </span>
+              </label>
+              <span class="rounded-full bg-codenix-100 dark:bg-codenix-900/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-codenix-700 dark:text-codenix-300" data-i18n="optionalBadge">
+                Optional
+              </span>
+            </div>
+
+            <div id="signUpPinWrapper" class="hidden pt-1 space-y-2">
+              <label for="signUpPin" class="block text-xs font-medium text-slate-700 dark:text-slate-300" data-i18n="createPinLabel">
+                Create PIN (4 to 8 digits)
+              </label>
+              <input
+                id="signUpPin"
+                name="pin"
+                type="password"
+                inputmode="numeric"
+                maxlength="8"
+                placeholder="1234"
+                class="pin-field w-full rounded-xl border border-slate-200 dark:border-codenix-800 bg-white dark:bg-zinc-900 px-3.5 py-2 text-sm tracking-widest text-slate-900 dark:text-white focus:border-codenix-500 focus:outline-none focus:ring-2 focus:ring-codenix-500/40"
+              />
+              <p class="text-[11px] text-slate-500 dark:text-slate-400" data-i18n="pinSavedInfo">
+                Your security preferences and PIN setting will be saved to your Codenix Studio profile in Supabase.
+              </p>
+            </div>
+          </div>
+
+          <!-- Mandatory Checkboxes: Privacy Policy (/policy) & Age > 15 -->
+          <div class="space-y-2.5 pt-1">
+            <label class="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+              <input
+                id="acceptPolicyCheckbox"
+                type="checkbox"
+                required
+                class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 dark:border-codenix-700 text-codenix-600 focus:ring-codenix-500 cursor-pointer"
+              />
+              <span>
+                <span data-i18n="agreePrefix">I agree to the</span>
+                <a
+                  id="privacyPolicyLink"
+                  href="/policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-codenix-600 dark:text-codenix-400 underline underline-offset-2 hover:text-codenix-700 dark:hover:text-codenix-300"
+                  data-i18n="privacyPolicyLinkText"
+                >
+                  Privacy Policy
+                </a>
+              </span>
+            </label>
+
+            <label class="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+              <input
+                id="ageOver15Checkbox"
+                type="checkbox"
+                required
+                class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 dark:border-codenix-700 text-codenix-600 focus:ring-codenix-500 cursor-pointer"
+              />
+              <span data-i18n="ageOver15Text">
+                I confirm that I am more than 15 years old.
+              </span>
+            </label>
+          </div>
+
+          <button
+            id="signUpSubmitBtn"
+            type="submit"
+            class="w-full rounded-xl bg-codenix-600 hover:bg-codenix-700 active:bg-codenix-800 px-4 py-3 text-sm font-semibold text-white shadow-md hover:shadow-glow-purple focus:outline-none focus:ring-2 focus:ring-codenix-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950 transition-all cursor-pointer"
+            data-i18n="createAccountBtn"
+          >
+            Create Account
+          </button>
+        </form>
+      </div>
     </main>
 
-    <!-- FOOTER -->
-    <footer class="w-full py-6 text-center text-xs text-slate-500 border-t border-white/5 bg-codenixDark relative z-10">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>© 2026 Codenix AI Ecosystem. All rights reserved.</div>
-            <div class="flex items-center gap-6 text-[11px]">
-                <a href="/policy/" target="_blank" class="hover:text-slate-300 transition-colors">Privacy Policy (/policy/)</a>
-                <a href="mailto:codenixai@gmail.com" class="hover:text-slate-300 transition-colors">Contact Support</a>
-            </div>
-        </div>
+    <!-- Footer: Contact Codenix Team -->
+    <footer class="w-full max-w-5xl mx-auto text-center text-xs sm:text-sm text-slate-600 dark:text-slate-400 space-y-1">
+      <div>
+        <span data-i18n="contactPrompt">Contact Codenix team:</span>
+        <a
+          href="mailto:codenix.ai@gmail.com"
+          class="font-semibold text-codenix-600 dark:text-codenix-400 hover:underline ml-1"
+        >
+          codenix.ai@gmail.com
+        </a>
+      </div>
+      <div class="text-xs text-slate-400 dark:text-zinc-500">
+        &copy; <span id="currentYear"></span> Codenix Studio. <span data-i18n="allRightsReserved">All rights reserved.</span>
+      </div>
     </footer>
+  </div>
 
-    <!-- TOAST NOTIFICATIONS CONTAINER -->
-    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-2xl codenix-card border border-white/10 text-xs font-semibold shadow-2xl flex items-center gap-3">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-base" id="toastIcon"></i>
-        <span id="toastMsg">Operation successful</span>
-    </div>
+  <script>
+    (function () {
+      'use strict';
 
+      // =========================================================================
+      // 1. SUPABASE CONFIGURATION & INITIALIZATION
+      // =========================================================================
+      const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
 
-    <!-- JAVASCRIPT LOGIC WITH SUPABASE CLIENT INTEGRATION -->
-    <script>
-        // Supabase Configuration provided by user
-        const SUPABASE_URL = "https://rnlwrngfgvznndlekmrz.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt";
+      let supabaseClient = null;
+      try {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+      } catch (err) {
+        console.error('Failed to initialize Supabase client:', err);
+      }
 
-        // Safe getter function to prevent global scope variable identifier collisions with the library bundle
-        function getSupabaseClient() {
-            if (!window.codenixSupabase) {
-                try {
-                    if (window.supabase && typeof window.supabase.createClient === 'function') {
-                        window.codenixSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                    } else if (typeof createClient === 'function') {
-                        window.codenixSupabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-                    }
-                } catch (err) {
-                    console.warn("Supabase initialization fallback mode:", err);
-                }
-            }
-            return window.codenixSupabase;
+      // =========================================================================
+      // 2. TRANSLATIONS (12 LANGUAGES: EN, AR, ES, JA, IT, NL, DE, RU, ZH, TR, FR, PT)
+      // =========================================================================
+      const TRANSLATIONS = {
+        en: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Build, create, and ship faster with Codenix.',
+          signInTab: 'Sign In',
+          signUpTab: 'Sign Up',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'or continue with email',
+          emailLabel: 'Email Address',
+          passwordLabel: 'Password',
+          signInBtn: 'Sign In',
+          createAccountBtn: 'Create Account',
+          enablePinOption: 'Add extra protection: Security PIN',
+          optionalBadge: 'Optional',
+          createPinLabel: 'Create PIN (4 to 8 digits)',
+          enterPinLabel: 'Account Security PIN (4–8 digits)',
+          pinHintSignIn: 'Enter your security PIN to complete sign-in.',
+          pinSavedInfo: 'Your security preferences and PIN setting will be saved to your Codenix Studio profile in Supabase.',
+          agreePrefix: 'I agree to the',
+          privacyPolicyLinkText: 'Privacy Policy',
+          ageOver15Text: 'I confirm that I am more than 15 years old.',
+          contactPrompt: 'Contact Codenix team:',
+          allRightsReserved: 'All rights reserved.',
+          errEmailRequired: 'Please enter a valid email address.',
+          errPasswordRequired: 'Please enter your password.',
+          errPasswordMin: 'Password must be at least 6 characters long.',
+          errPinInvalid: 'Security PIN must contain 4 to 8 numeric digits.',
+          errPinMismatch: 'Incorrect security PIN for this account.',
+          errPolicyRequired: 'You must accept the Privacy Policy (/policy) to create an account.',
+          errAgeRequired: 'You must confirm that you are more than 15 years old to create an account.',
+          errSupabaseUnavailable: 'Authentication service is currently unavailable. Please try again.',
+          msgSigningIn: 'Signing in to Codenix Studio...',
+          msgCreatingAccount: 'Creating your account and saving preferences to Supabase...',
+          msgAccountCreated: 'Account created! Please check your email if confirmation is required, then sign in.',
+          msgRedirecting: 'Signed in successfully! Redirecting...',
+          msgOAuthRedirect: 'Redirecting to provider...'
+        },
+        ar: {
+          dir: 'rtl',
+          brandTitle: 'كودنيكس ستوديو',
+          brandSubtitle: 'ابنِ وأبدع وأطلق مشاريعك بشكل أسرع مع كودنيكس.',
+          signInTab: 'تسجيل الدخول',
+          signUpTab: 'إنشاء حساب',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'أو المتابعة عبر البريد الإلكتروني',
+          emailLabel: 'البريد الإلكتروني',
+          passwordLabel: 'كلمة المرور',
+          signInBtn: 'تسجيل الدخول',
+          createAccountBtn: 'إنشاء حساب',
+          enablePinOption: 'إضافة حماية إضافية: رمز PIN أمني',
+          optionalBadge: 'اختياري',
+          createPinLabel: 'إنشاء رمز PIN (من 4 إلى 8 أرقام)',
+          enterPinLabel: 'رمز PIN لحماية الحساب (4–8 أرقام)',
+          pinHintSignIn: 'أدخل رمز PIN الخاص بحسابك لإتمام تسجيل الدخول.',
+          pinSavedInfo: 'سيتم حفظ تفضيلات الأمان وإعداد رمز PIN في ملفك الشخصي على Supabase.',
+          agreePrefix: 'أوافق على',
+          privacyPolicyLinkText: 'سياسة الخصوصية',
+          ageOver15Text: 'أؤكد أن عمري أكثر من 15 عاماً.',
+          contactPrompt: 'تواصل مع فريق كودنيكس:',
+          allRightsReserved: 'جميع الحقوق محفوظة.',
+          errEmailRequired: 'يرجى إدخال بريد إلكتروني صحيح.',
+          errPasswordRequired: 'يرجى إدخال كلمة المرور.',
+          errPasswordMin: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
+          errPinInvalid: 'يجب أن يتكون رمز PIN من 4 إلى 8 أرقام.',
+          errPinMismatch: 'رمز PIN الخاص بالحساب غير صحيح.',
+          errPolicyRequired: 'يجب الموافقة على سياسة الخصوصية (/policy) لإنشاء حساب.',
+          errAgeRequired: 'يجب تأكيد أن عمرك أكثر من 15 عاماً لإنشاء حساب.',
+          errSupabaseUnavailable: 'خدمة المصادقة غير متاحة حالياً. يرجى المحاولة مرة أخرى.',
+          msgSigningIn: 'جاري تسجيل الدخول إلى كودنيكس ستوديو...',
+          msgCreatingAccount: 'جاري إنشاء الحساب وحفظ التفضيلات في Supabase...',
+          msgAccountCreated: 'تم إنشاء الحساب! يرجى التحقق من بريدك الإلكتروني إذا كان التأكيد مطلوباً ثم تسجيل الدخول.',
+          msgRedirecting: 'تم تسجيل الدخول بنجاح! جاري التوجيه...',
+          msgOAuthRedirect: 'جاري التوجيه إلى مزود الخدمة...'
+        },
+        es: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Crea, diseña y lanza más rápido con Codenix.',
+          signInTab: 'Iniciar sesión',
+          signUpTab: 'Registrarse',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'o continúa con tu correo',
+          emailLabel: 'Correo electrónico',
+          passwordLabel: 'Contraseña',
+          signInBtn: 'Iniciar sesión',
+          createAccountBtn: 'Crear cuenta',
+          enablePinOption: 'Añadir protección extra: PIN de seguridad',
+          optionalBadge: 'Opcional',
+          createPinLabel: 'Crear PIN (4 a 8 dígitos)',
+          enterPinLabel: 'PIN de seguridad de la cuenta (4–8 dígitos)',
+          pinHintSignIn: 'Introduce tu PIN de seguridad para completar el inicio de sesión.',
+          pinSavedInfo: 'Tus preferencias de seguridad y PIN se guardarán en tu perfil de Codenix Studio en Supabase.',
+          agreePrefix: 'Acepto la',
+          privacyPolicyLinkText: 'Política de privacidad',
+          ageOver15Text: 'Confirmo que tengo más de 15 años.',
+          contactPrompt: 'Contacta con el equipo de Codenix:',
+          allRightsReserved: 'Todos los derechos reservados.',
+          errEmailRequired: 'Introduce un correo electrónico válido.',
+          errPasswordRequired: 'Introduce tu contraseña.',
+          errPasswordMin: 'La contraseña debe tener al menos 6 caracteres.',
+          errPinInvalid: 'El PIN debe tener entre 4 y 8 dígitos numéricos.',
+          errPinMismatch: 'El PIN de seguridad de esta cuenta es incorrecto.',
+          errPolicyRequired: 'Debes aceptar la Política de privacidad (/policy) para crear una cuenta.',
+          errAgeRequired: 'Debes confirmar que tienes más de 15 años para crear una cuenta.',
+          errSupabaseUnavailable: 'El servicio de autenticación no está disponible. Inténtalo de nuevo.',
+          msgSigningIn: 'Iniciando sesión en Codenix Studio...',
+          msgCreatingAccount: 'Creando cuenta y guardando preferencias en Supabase...',
+          msgAccountCreated: '¡Cuenta creada! Revisa tu correo si se requiere confirmación e inicia sesión.',
+          msgRedirecting: '¡Sesión iniciada! Redirigiendo...',
+          msgOAuthRedirect: 'Redirigiendo al proveedor...'
+        },
+        ja: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Codenix でより速く構築・作成・リリース。',
+          signInTab: 'サインイン',
+          signUpTab: '新規登録',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'またはメールアドレスで続行',
+          emailLabel: 'メールアドレス',
+          passwordLabel: 'パスワード',
+          signInBtn: 'サインイン',
+          createAccountBtn: 'アカウント作成',
+          enablePinOption: '追加保護：セキュリティ PIN を設定',
+          optionalBadge: '任意',
+          createPinLabel: 'PIN を作成（4〜8桁の数字）',
+          enterPinLabel: 'アカウント セキュリティ PIN（4〜8桁）',
+          pinHintSignIn: 'サインインを完了するにはセキュリティ PIN を入力してください。',
+          pinSavedInfo: 'セキュリティ設定と PIN 情報は Supabase の Codenix Studio プロフィールに保存されます。',
+          agreePrefix: '次に同意します：',
+          privacyPolicyLinkText: 'プライバシーポリシー',
+          ageOver15Text: '15歳以上であることを確認します。',
+          contactPrompt: 'Codenix チームへのお問い合わせ：',
+          allRightsReserved: 'All rights reserved.',
+          errEmailRequired: '有効なメールアドレスを入力してください。',
+          errPasswordRequired: 'パスワードを入力してください。',
+          errPasswordMin: 'パスワードは6文字以上で入力してください。',
+          errPinInvalid: 'PIN は4〜8桁の数字で入力してください。',
+          errPinMismatch: 'セキュリティ PIN が正しくありません。',
+          errPolicyRequired: 'アカウントを作成するにはプライバシーポリシー（/policy）に同意する必要があります。',
+          errAgeRequired: 'アカウントを作成するには15歳以上であることを確認する必要があります。',
+          errSupabaseUnavailable: '認証サービスを利用できません。もう一度お試しください。',
+          msgSigningIn: 'Codenix Studio にサインイン中...',
+          msgCreatingAccount: 'アカウントを作成し、Supabase に設定を保存中...',
+          msgAccountCreated: 'アカウントが作成されました！必要に応じてメールを確認してからサインインしてください。',
+          msgRedirecting: 'サインインしました！リダイレクト中...',
+          msgOAuthRedirect: 'プロバイダーへリダイレクト中...'
+        },
+        it: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Crea, sviluppa e rilascia più velocemente con Codenix.',
+          signInTab: 'Accedi',
+          signUpTab: 'Registrati',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'oppure continua con email',
+          emailLabel: 'Indirizzo email',
+          passwordLabel: 'Password',
+          signInBtn: 'Accedi',
+          createAccountBtn: 'Crea account',
+          enablePinOption: 'Aggiungi protezione extra: PIN di sicurezza',
+          optionalBadge: 'Opzionale',
+          createPinLabel: 'Crea PIN (da 4 a 8 cifre)',
+          enterPinLabel: 'PIN di sicurezza account (4–8 cifre)',
+          pinHintSignIn: 'Inserisci il tuo PIN di sicurezza per completare l’accesso.',
+          pinSavedInfo: 'Le preferenze di sicurezza e il PIN verranno salvati nel tuo profilo Codenix Studio su Supabase.',
+          agreePrefix: 'Accetto la',
+          privacyPolicyLinkText: 'Informativa sulla privacy',
+          ageOver15Text: 'Confermo di avere più di 15 anni.',
+          contactPrompt: 'Contatta il team Codenix:',
+          allRightsReserved: 'Tutti i diritti riservati.',
+          errEmailRequired: 'Inserisci un indirizzo email valido.',
+          errPasswordRequired: 'Inserisci la password.',
+          errPasswordMin: 'La password deve contenere almeno 6 caratteri.',
+          errPinInvalid: 'Il PIN deve contenere da 4 a 8 cifre numeriche.',
+          errPinMismatch: 'PIN di sicurezza non valido per questo account.',
+          errPolicyRequired: 'Devi accettare l’Informativa sulla privacy (/policy) per creare un account.',
+          errAgeRequired: 'Devi confermare di avere più di 15 anni per creare un account.',
+          errSupabaseUnavailable: 'Servizio di autenticazione non disponibile. Riprova.',
+          msgSigningIn: 'Accesso a Codenix Studio in corso...',
+          msgCreatingAccount: 'Creazione account e salvataggio preferenze su Supabase...',
+          msgAccountCreated: 'Account creato! Controlla la tua email se richiesta la conferma, poi accedi.',
+          msgRedirecting: 'Accesso riuscito! Reindirizzamento...',
+          msgOAuthRedirect: 'Reindirizzamento al provider...'
+        },
+        nl: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Bouw, creëer en lanceer sneller met Codenix.',
+          signInTab: 'Inloggen',
+          signUpTab: 'Registreren',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'of ga verder met e-mail',
+          emailLabel: 'E-mailadres',
+          passwordLabel: 'Wachtwoord',
+          signInBtn: 'Inloggen',
+          createAccountBtn: 'Account aanmaken',
+          enablePinOption: 'Extra beveiliging toevoegen: pincode',
+          optionalBadge: 'Optioneel',
+          createPinLabel: 'Maak een pincode (4 tot 8 cijfers)',
+          enterPinLabel: 'Accountbeveiligingspincode (4–8 cijfers)',
+          pinHintSignIn: 'Voer je pincode in om het inloggen te voltooien.',
+          pinSavedInfo: 'Je beveiligingsvoorkeuren en pincode worden opgeslagen in je Codenix Studio-profiel in Supabase.',
+          agreePrefix: 'Ik ga akkoord met het',
+          privacyPolicyLinkText: 'Privacybeleid',
+          ageOver15Text: 'Ik bevestig dat ik ouder ben dan 15 jaar.',
+          contactPrompt: 'Neem contact op met het Codenix-team:',
+          allRightsReserved: 'Alle rechten voorbehouden.',
+          errEmailRequired: 'Voer een geldig e-mailadres in.',
+          errPasswordRequired: 'Voer je wachtwoord in.',
+          errPasswordMin: 'Wachtwoord moet minimaal 6 tekens bevatten.',
+          errPinInvalid: 'De pincode moet uit 4 tot 8 cijfers bestaan.',
+          errPinMismatch: 'Onjuiste pincode voor dit account.',
+          errPolicyRequired: 'Je moet akkoord gaan met het Privacybeleid (/policy) om een account aan te maken.',
+          errAgeRequired: 'Je moet bevestigen dat je ouder bent dan 15 jaar om een account aan te maken.',
+          errSupabaseUnavailable: 'Authenticatieservice is momenteel niet beschikbaar. Probeer het opnieuw.',
+          msgSigningIn: 'Bezig met inloggen bij Codenix Studio...',
+          msgCreatingAccount: 'Account aanmaken en voorkeuren opslaan in Supabase...',
+          msgAccountCreated: 'Account aangemaakt! Controleer je e-mail indien bevestiging nodig is en log daarna in.',
+          msgRedirecting: 'Succesvol ingelogd! Doorsturen...',
+          msgOAuthRedirect: 'Doorsturen naar provider...'
+        },
+        de: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Schneller entwickeln, gestalten und veröffentlichen mit Codenix.',
+          signInTab: 'Anmelden',
+          signUpTab: 'Registrieren',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'oder mit E-Mail fortfahren',
+          emailLabel: 'E-Mail-Adresse',
+          passwordLabel: 'Passwort',
+          signInBtn: 'Anmelden',
+          createAccountBtn: 'Konto erstellen',
+          enablePinOption: 'Zusätzlicher Schutz: Sicherheits-PIN',
+          optionalBadge: 'Optional',
+          createPinLabel: 'PIN erstellen (4 bis 8 Ziffern)',
+          enterPinLabel: 'Konto-Sicherheits-PIN (4–8 Ziffern)',
+          pinHintSignIn: 'Gib deine Sicherheits-PIN ein, um die Anmeldung abzuschließen.',
+          pinSavedInfo: 'Deine Sicherheitseinstellungen und PIN werden in deinem Codenix Studio-Profil in Supabase gespeichert.',
+          agreePrefix: 'Ich stimme der',
+          privacyPolicyLinkText: 'Datenschutzerklärung',
+          ageOver15Text: 'Ich bestätige, dass ich älter als 15 Jahre bin.',
+          contactPrompt: 'Codenix-Team kontaktieren:',
+          allRightsReserved: 'Alle Rechte vorbehalten.',
+          errEmailRequired: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+          errPasswordRequired: 'Bitte gib dein Passwort ein.',
+          errPasswordMin: 'Das Passwort muss mindestens 6 Zeichen lang sein.',
+          errPinInvalid: 'Die PIN muss aus 4 bis 8 Ziffern bestehen.',
+          errPinMismatch: 'Falsche Sicherheits-PIN für dieses Konto.',
+          errPolicyRequired: 'Du musst der Datenschutzerklärung (/policy) zustimmen, um ein Konto zu erstellen.',
+          errAgeRequired: 'Du musst bestätigen, dass du älter als 15 Jahre bist, um ein Konto zu erstellen.',
+          errSupabaseUnavailable: 'Der Authentifizierungsdienst ist derzeit nicht verfügbar. Bitte versuche es erneut.',
+          msgSigningIn: 'Anmeldung bei Codenix Studio läuft...',
+          msgCreatingAccount: 'Konto wird erstellt und Einstellungen in Supabase gespeichert...',
+          msgAccountCreated: 'Konto erstellt! Prüfe ggf. deine E-Mails zur Bestätigung und melde dich dann an.',
+          msgRedirecting: 'Erfolgreich angemeldet! Weiterleitung...',
+          msgOAuthRedirect: 'Weiterleitung zum Anbieter...'
+        },
+        ru: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Создавайте, разрабатывайте и запускайте быстрее с Codenix.',
+          signInTab: 'Вход',
+          signUpTab: 'Регистрация',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'или продолжить через email',
+          emailLabel: 'Электронная почта',
+          passwordLabel: 'Пароль',
+          signInBtn: 'Войти',
+          createAccountBtn: 'Создать аккаунт',
+          enablePinOption: 'Дополнительная защита: PIN-код',
+          optionalBadge: 'Необязательно',
+          createPinLabel: 'Создайте PIN-код (от 4 до 8 цифр)',
+          enterPinLabel: 'PIN-код безопасности аккаунта (4–8 цифр)',
+          pinHintSignIn: 'Введите PIN-код безопасности для завершения входа.',
+          pinSavedInfo: 'Настройки безопасности и PIN-код будут сохранены в вашем профиле Codenix Studio в Supabase.',
+          agreePrefix: 'Я принимаю',
+          privacyPolicyLinkText: 'Политику конфиденциальности',
+          ageOver15Text: 'Я подтверждаю, что мне больше 15 лет.',
+          contactPrompt: 'Связаться с командой Codenix:',
+          allRightsReserved: 'Все права защищены.',
+          errEmailRequired: 'Введите корректный адрес электронной почты.',
+          errPasswordRequired: 'Введите пароль.',
+          errPasswordMin: 'Пароль должен содержать не менее 6 символов.',
+          errPinInvalid: 'PIN-код должен содержать от 4 до 8 цифр.',
+          errPinMismatch: 'Неверный PIN-код безопасности для этого аккаунта.',
+          errPolicyRequired: 'Для создания аккаунта необходимо принять Политику конфиденциальности (/policy).',
+          errAgeRequired: 'Для создания аккаунта необходимо подтвердить, что вам больше 15 лет.',
+          errSupabaseUnavailable: 'Сервис аутентификации недоступен. Попробуйте снова.',
+          msgSigningIn: 'Вход в Codenix Studio...',
+          msgCreatingAccount: 'Создание аккаунта и сохранение настроек в Supabase...',
+          msgAccountCreated: 'Аккаунт создан! Проверьте почту при необходимости подтверждения и войдите.',
+          msgRedirecting: 'Вход выполнен! Перенаправление...',
+          msgOAuthRedirect: 'Перенаправление к провайдеру...'
+        },
+        zh: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: '使用 Codenix 更高效地构建、创作与发布。',
+          signInTab: '登录',
+          signUpTab: '注册',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: '或使用邮箱继续',
+          emailLabel: '邮箱地址',
+          passwordLabel: '密码',
+          signInBtn: '登录',
+          createAccountBtn: '创建账号',
+          enablePinOption: '添加额外保护：安全 PIN 码',
+          optionalBadge: '可选',
+          createPinLabel: '创建 PIN 码（4 至 8 位数字）',
+          enterPinLabel: '账号安全 PIN 码（4–8 位数字）',
+          pinHintSignIn: '请输入您的安全 PIN 码以完成登录。',
+          pinSavedInfo: '您的安全偏好设置和 PIN 码将保存到 Supabase 的 Codenix Studio 个人资料中。',
+          agreePrefix: '我同意',
+          privacyPolicyLinkText: '隐私政策',
+          ageOver15Text: '我确认我的年龄超过 15 岁。',
+          contactPrompt: '联系 Codenix 团队：',
+          allRightsReserved: '保留所有权利。',
+          errEmailRequired: '请输入有效的邮箱地址。',
+          errPasswordRequired: '请输入密码。',
+          errPasswordMin: '密码长度至少为 6 个字符。',
+          errPinInvalid: 'PIN 码必须为 4 到 8 位数字。',
+          errPinMismatch: '此账号的安全 PIN 码不正确。',
+          errPolicyRequired: '创建账号前必须同意隐私政策（/policy）。',
+          errAgeRequired: '创建账号前必须确认您已年满 15 岁以上。',
+          errSupabaseUnavailable: '身份验证服务当前不可用，请重试。',
+          msgSigningIn: '正在登录 Codenix Studio...',
+          msgCreatingAccount: '正在创建账号并将偏好设置保存到 Supabase...',
+          msgAccountCreated: '账号已创建！如需验证请查收邮件，然后登录。',
+          msgRedirecting: '登录成功！正在跳转...',
+          msgOAuthRedirect: '正在跳转到授权服务...'
+        },
+        tr: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Codenix ile daha hızlı üret, tasarla ve yayınla.',
+          signInTab: 'Giriş Yap',
+          signUpTab: 'Kayıt Ol',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'veya e-posta ile devam et',
+          emailLabel: 'E-posta Adresi',
+          passwordLabel: 'Şifre',
+          signInBtn: 'Giriş Yap',
+          createAccountBtn: 'Hesap Oluştur',
+          enablePinOption: 'Ek koruma ekle: Güvenlik PIN’i',
+          optionalBadge: 'İsteğe Bağlı',
+          createPinLabel: 'PIN Oluştur (4 ile 8 haneli rakam)',
+          enterPinLabel: 'Hesap Güvenlik PIN’i (4–8 hane)',
+          pinHintSignIn: 'Girişi tamamlamak için güvenlik PIN’inizi girin.',
+          pinSavedInfo: 'Güvenlik tercihleriniz ve PIN ayarınız Supabase’deki Codenix Studio profilinize kaydedilecektir.',
+          agreePrefix: 'Şunu kabul ediyorum:',
+          privacyPolicyLinkText: 'Gizlilik Politikası',
+          ageOver15Text: '15 yaşından büyük olduğumu onaylıyorum.',
+          contactPrompt: 'Codenix ekibiyle iletişime geçin:',
+          allRightsReserved: 'Tüm hakları saklıdır.',
+          errEmailRequired: 'Lütfen geçerli bir e-posta adresi girin.',
+          errPasswordRequired: 'Lütfen şifrenizi girin.',
+          errPasswordMin: 'Şifre en az 6 karakter uzunluğunda olmalıdır.',
+          errPinInvalid: 'PIN 4 ile 8 haneli sayılardan oluşmalıdır.',
+          errPinMismatch: 'Bu hesap için güvenlik PIN’i hatalı.',
+          errPolicyRequired: 'Hesap oluşturmak için Gizlilik Politikasını (/policy) kabul etmelisiniz.',
+          errAgeRequired: 'Hesap oluşturmak için 15 yaşından büyük olduğunuzu onaylamalısınız.',
+          errSupabaseUnavailable: 'Kimlik doğrulama hizmeti şu anda kullanılamıyor. Lütfen tekrar deneyin.',
+          msgSigningIn: 'Codenix Studio’ya giriş yapılıyor...',
+          msgCreatingAccount: 'Hesap oluşturuluyor ve tercihler Supabase’e kaydediliyor...',
+          msgAccountCreated: 'Hesap oluşturuldu! Gerekirse e-postanızı doğrulayıp giriş yapın.',
+          msgRedirecting: 'Giriş başarılı! Yönlendiriliyor...',
+          msgOAuthRedirect: 'Sağlayıcıya yönlendiriliyor...'
+        },
+        fr: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Créez, concevez et publiez plus vite avec Codenix.',
+          signInTab: 'Connexion',
+          signUpTab: 'Inscription',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'ou continuer avec un e-mail',
+          emailLabel: 'Adresse e-mail',
+          passwordLabel: 'Mot de passe',
+          signInBtn: 'Connexion',
+          createAccountBtn: 'Créer un compte',
+          enablePinOption: 'Ajouter une protection : code PIN de sécurité',
+          optionalBadge: 'Optionnel',
+          createPinLabel: 'Créer un PIN (4 à 8 chiffres)',
+          enterPinLabel: 'PIN de sécurité du compte (4–8 chiffres)',
+          pinHintSignIn: 'Saisissez votre code PIN pour finaliser la connexion.',
+          pinSavedInfo: 'Vos préférences de sécurité et votre PIN seront enregistrés dans votre profil Codenix Studio sur Supabase.',
+          agreePrefix: 'J’accepte la',
+          privacyPolicyLinkText: 'Politique de confidentialité',
+          ageOver15Text: 'Je confirme avoir plus de 15 ans.',
+          contactPrompt: 'Contacter l’équipe Codenix :',
+          allRightsReserved: 'Tous droits réservés.',
+          errEmailRequired: 'Veuillez saisir une adresse e-mail valide.',
+          errPasswordRequired: 'Veuillez saisir votre mot de passe.',
+          errPasswordMin: 'Le mot de passe doit contenir au moins 6 caractères.',
+          errPinInvalid: 'Le PIN doit comporter entre 4 et 8 chiffres.',
+          errPinMismatch: 'Code PIN de sécurité incorrect pour ce compte.',
+          errPolicyRequired: 'Vous devez accepter la Politique de confidentialité (/policy) pour créer un compte.',
+          errAgeRequired: 'Vous devez confirmer avoir plus de 15 ans pour créer un compte.',
+          errSupabaseUnavailable: 'Le service d’authentification est indisponible. Veuillez réessayer.',
+          msgSigningIn: 'Connexion à Codenix Studio...',
+          msgCreatingAccount: 'Création du compte et enregistrement des préférences sur Supabase...',
+          msgAccountCreated: 'Compte créé ! Vérifiez votre e-mail si nécessaire, puis connectez-vous.',
+          msgRedirecting: 'Connexion réussie ! Redirection...',
+          msgOAuthRedirect: 'Redirection vers le fournisseur...'
+        },
+        pt: {
+          dir: 'ltr',
+          brandTitle: 'Codenix Studio',
+          brandSubtitle: 'Crie, construa e publique mais rápido com a Codenix.',
+          signInTab: 'Entrar',
+          signUpTab: 'Cadastrar',
+          googleBtn: 'Google',
+          githubBtn: 'GitHub',
+          orEmail: 'ou continue com e-mail',
+          emailLabel: 'Endereço de e-mail',
+          passwordLabel: 'Senha',
+          signInBtn: 'Entrar',
+          createAccountBtn: 'Criar conta',
+          enablePinOption: 'Adicionar proteção extra: PIN de segurança',
+          optionalBadge: 'Opcional',
+          createPinLabel: 'Criar PIN (4 a 8 dígitos)',
+          enterPinLabel: 'PIN de segurança da conta (4–8 dígitos)',
+          pinHintSignIn: 'Digite seu PIN de segurança para concluir o login.',
+          pinSavedInfo: 'Suas preferências de segurança e PIN serão salvos no seu perfil Codenix Studio no Supabase.',
+          agreePrefix: 'Eu concordo com a',
+          privacyPolicyLinkText: 'Política de Privacidade',
+          ageOver15Text: 'Confirmo que tenho mais de 15 anos.',
+          contactPrompt: 'Fale com a equipe Codenix:',
+          allRightsReserved: 'Todos os direitos reservados.',
+          errEmailRequired: 'Digite um endereço de e-mail válido.',
+          errPasswordRequired: 'Digite sua senha.',
+          errPasswordMin: 'A senha deve ter pelo menos 6 caracteres.',
+          errPinInvalid: 'O PIN deve conter de 4 a 8 dígitos numéricos.',
+          errPinMismatch: 'PIN de segurança incorreto para esta conta.',
+          errPolicyRequired: 'Você deve aceitar a Política de Privacidade (/policy) para criar uma conta.',
+          errAgeRequired: 'Você deve confirmar que tem mais de 15 anos para criar uma conta.',
+          errSupabaseUnavailable: 'O serviço de autenticação está indisponível no momento. Tente novamente.',
+          msgSigningIn: 'Entrando no Codenix Studio...',
+          msgCreatingAccount: 'Criando conta e salvando preferências no Supabase...',
+          msgAccountCreated: 'Conta criada! Verifique seu e-mail se for necessária confirmação e faça login.',
+          msgRedirecting: 'Login realizado! Redirecionando...',
+          msgOAuthRedirect: 'Redirecionando para o provedor...'
+        }
+      };
+
+      const SUPPORTED_LANGS = Object.keys(TRANSLATIONS);
+
+      /**
+       * Detects user browser language and maps to one of the 12 supported languages.
+       * Defaults to 'en' if unsupported.
+       */
+      function detectBrowserLanguage() {
+        const saved = localStorage.getItem('codenix_lang');
+        if (saved && SUPPORTED_LANGS.includes(saved)) {
+          return saved;
+        }
+        const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+          ? navigator.languages
+          : [navigator.language || 'en'];
+
+        for (const raw of candidates) {
+          const base = String(raw || '').toLowerCase().split('-')[0];
+          if (SUPPORTED_LANGS.includes(base)) {
+            return base;
+          }
+        }
+        return 'en';
+      }
+
+      let currentLang = detectBrowserLanguage();
+
+      function t(key) {
+        const dict = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+        return dict[key] || TRANSLATIONS.en[key] || key;
+      }
+
+      function applyLanguage(lang) {
+        currentLang = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
+        localStorage.setItem('codenix_lang', currentLang);
+
+        const dict = TRANSLATIONS[currentLang];
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = dict.dir || 'ltr';
+
+        const selectEl = document.getElementById('languageSelect');
+        if (selectEl) {
+          selectEl.value = currentLang;
         }
 
-        // Global User Profile State
-        let currentAuthMode = 'signin'; // 'signin' or 'signup'
-        let currentUserSession = null;
-        let currentFactorId = null; // Supabase MFA TOTP Factor ID
-        let userSecurityProfile = {
-            privacyAccepted: false,
-            virtualId: null,
-            mfaCompleted: false
-        };
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+          const key = el.getAttribute('data-i18n');
+          if (key && dict[key]) {
+            el.textContent = dict[key];
+          }
+        });
+      }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const client = getSupabaseClient();
-            if (client && client.auth) {
-                try {
-                    // Check active session
-                    const { data: { session } } = await client.auth.getSession();
-                    if (session) {
-                        handleUserSession(session);
-                    }
+      // =========================================================================
+      // 3. THEME MANAGEMENT (LIGHT: PURPLE & WHITE | DARK: PURPLE & BLACK)
+      // =========================================================================
+      function getInitialTheme() {
+        const savedTheme = localStorage.getItem('codenix_theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+          return savedTheme;
+        }
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+      }
 
-                    // Listen for state changes (e.g. OAuth redirects)
-                    client.auth.onAuthStateChange((event, session) => {
-                        if (session) {
-                            handleUserSession(session);
-                        } else {
-                            showAuthView();
-                        }
-                    });
-                } catch (e) {
-                    console.warn("Auth listener notice:", e);
-                }
+      function applyTheme(theme) {
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        localStorage.setItem('codenix_theme', theme);
+
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        if (sunIcon && moonIcon) {
+          sunIcon.classList.toggle('hidden', !isDark);
+          moonIcon.classList.toggle('hidden', isDark);
+        }
+      }
+
+      // =========================================================================
+      // 4. REDIRECT URL RESOLUTION (QUERY PARAM / HASH / DOMAIN REDIRECT OR /dashboard)
+      // =========================================================================
+      function getRedirectTarget() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const candidate =
+            urlParams.get('redirect') ||
+            urlParams.get('redirect_to') ||
+            urlParams.get('next') ||
+            '';
+
+          if (!candidate) {
+            return '/dashboard';
+          }
+
+          // Allow relative paths within the domain (e.g. /dashboard, /workspace)
+          if (candidate.startsWith('/') && !candidate.startsWith('//')) {
+            return candidate;
+          }
+
+          // Allow same-origin full URLs in the current domain
+          const parsed = new URL(candidate, window.location.origin);
+          if (parsed.origin === window.location.origin) {
+            return parsed.href;
+          }
+        } catch (err) {
+          console.warn('Invalid redirect parameter, defaulting to /dashboard:', err);
+        }
+        return '/dashboard';
+      }
+
+      function performRedirect() {
+        const target = getRedirectTarget();
+        setTimeout(() => {
+          window.location.assign(target);
+        }, 700);
+      }
+
+      // =========================================================================
+      // 5. UI FEEDBACK & FORM SWITCHING
+      // =========================================================================
+      function showStatus(message, type = 'info') {
+        const banner = document.getElementById('statusBanner');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        if (!banner || !icon || !text) return;
+
+        banner.className = 'mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm font-medium transition-all fade-in';
+
+        if (type === 'error') {
+          banner.classList.add(
+            'bg-red-50', 'dark:bg-red-950/50',
+            'border-red-200', 'dark:border-red-800',
+            'text-red-700', 'dark:text-red-300'
+          );
+          icon.innerHTML = '<svg class="h-4 w-4 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+        } else if (type === 'success') {
+          banner.classList.add(
+            'bg-emerald-50', 'dark:bg-emerald-950/50',
+            'border-emerald-200', 'dark:border-emerald-800',
+            'text-emerald-700', 'dark:text-emerald-300'
+          );
+          icon.innerHTML = '<svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+        } else {
+          banner.classList.add(
+            'bg-codenix-50', 'dark:bg-codenix-950/60',
+            'border-codenix-200', 'dark:border-codenix-800',
+            'text-codenix-800', 'dark:text-codenix-200'
+          );
+          icon.innerHTML = '<svg class="h-4 w-4 text-codenix-600 dark:text-codenix-400 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>';
+        }
+
+        text.textContent = message;
+        banner.classList.remove('hidden');
+      }
+
+      function hideStatus() {
+        const banner = document.getElementById('statusBanner');
+        if (banner) banner.classList.add('hidden');
+      }
+
+      function setMode(mode) {
+        const isSignUp = mode === 'signup';
+        const tabSignIn = document.getElementById('tabSignIn');
+        const tabSignUp = document.getElementById('tabSignUp');
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+
+        hideStatus();
+
+        if (isSignUp) {
+          tabSignUp.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer';
+          tabSignIn.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
+          signInForm.classList.add('hidden');
+          signUpForm.classList.remove('hidden');
+        } else {
+          tabSignIn.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer';
+          tabSignUp.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
+          signUpForm.classList.add('hidden');
+          signInForm.classList.remove('hidden');
+        }
+      }
+
+      // =========================================================================
+      // 6. PIN & SUPABASE PROFILE PERSISTENCE HELPERS
+      // =========================================================================
+      async function hashPin(pin) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(`codenix_pin_salt:${pin}`);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      function isValidPin(pin) {
+        return /^\d{4,8}$/.test(pin);
+      }
+
+      /**
+       * Saves user account choices (policy accepted, >15 age confirmed, PIN enabled/hash, language)
+       * to Supabase `user_security_preferences` table (if created in Supabase) as well as user_metadata.
+       */
+      async function saveAccountChoicesToSupabase(user, choices) {
+        if (!supabaseClient || !user) return;
+
+        try {
+          // Update auth user_metadata so choices are always attached to the user record
+          await supabaseClient.auth.updateUser({
+            data: {
+              accepted_privacy_policy: choices.acceptedPrivacyPolicy,
+              policy_version_url: '/policy',
+              age_over_15: choices.ageOver15,
+              pin_enabled: choices.pinEnabled,
+              pin_hash: choices.pinHash || null,
+              preferred_language: choices.language
             }
+          });
+        } catch (metaErr) {
+          console.warn('Could not update auth user_metadata:', metaErr);
+        }
+
+        try {
+          // Also upsert into a dedicated `profiles` / `user_security_preferences` table if present
+          await supabaseClient
+            .from('user_security_preferences')
+            .upsert(
+              {
+                user_id: user.id,
+                email: user.email,
+                accepted_privacy_policy: choices.acceptedPrivacyPolicy,
+                age_over_15: choices.ageOver15,
+                pin_enabled: choices.pinEnabled,
+                pin_hash: choices.pinHash || null,
+                preferred_language: choices.language,
+                updated_at: new Date().toISOString()
+              },
+              { onConflict: 'user_id' }
+            );
+        } catch (tableErr) {
+          // Non-blocking if custom table isn't created yet; metadata & local cache still hold choices
+          console.warn('Optional table upsert skipped:', tableErr);
+        }
+      }
+
+      // Cache PIN metadata locally per email as a helper for sign-in prompt if PIN was set
+      function cachePinMetaForEmail(email, pinEnabled, pinHash) {
+        if (!email) return;
+        const mapKey = 'codenix_pin_meta_map';
+        try {
+          const existing = JSON.parse(localStorage.getItem(mapKey) || '{}');
+          existing[email.toLowerCase()] = {
+            pinEnabled: Boolean(pinEnabled),
+            pinHash: pinHash || null
+          };
+          localStorage.setItem(mapKey, JSON.stringify(existing));
+        } catch (e) {
+          console.warn('Unable to cache PIN metadata:', e);
+        }
+      }
+
+      function getCachedPinMetaForEmail(email) {
+        if (!email) return null;
+        try {
+          const existing = JSON.parse(localStorage.getItem('codenix_pin_meta_map') || '{}');
+          return existing[email.toLowerCase()] || null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      // =========================================================================
+      // 7. AUTHENTICATION HANDLERS (EMAIL SIGN IN, EMAIL SIGN UP, GOOGLE, GITHUB)
+      // =========================================================================
+      async function handleSignIn(e) {
+        e.preventDefault();
+        hideStatus();
+
+        if (!supabaseClient) {
+          showStatus(t('errSupabaseUnavailable'), 'error');
+          return;
+        }
+
+        const emailInput = document.getElementById('signInEmail');
+        const passwordInput = document.getElementById('signInPassword');
+        const pinContainer = document.getElementById('signInPinContainer');
+        const pinInput = document.getElementById('signInPin');
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showStatus(t('errEmailRequired'), 'error');
+          emailInput.focus();
+          return;
+        }
+        if (!password) {
+          showStatus(t('errPasswordRequired'), 'error');
+          passwordInput.focus();
+          return;
+        }
+
+        showStatus(t('msgSigningIn'), 'info');
+
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) {
+            showStatus(error.message, 'error');
+            return;
+          }
+
+          const user = data?.user;
+          const metaPinEnabled = Boolean(user?.user_metadata?.pin_enabled);
+          const metaPinHash = user?.user_metadata?.pin_hash || null;
+          const cachedMeta = getCachedPinMetaForEmail(email);
+
+          const pinRequired = metaPinEnabled || Boolean(cachedMeta?.pinEnabled);
+          const expectedPinHash = metaPinHash || cachedMeta?.pinHash || null;
+
+          if (pinRequired && expectedPinHash) {
+            // Reveal PIN box if not yet filled
+            if (pinContainer.classList.contains('hidden')) {
+              pinContainer.classList.remove('hidden');
+              hideStatus();
+              pinInput.focus();
+              return;
+            }
+
+            const enteredPin = pinInput.value.trim();
+            if (!isValidPin(enteredPin)) {
+              showStatus(t('errPinInvalid'), 'error');
+              pinInput.focus();
+              return;
+            }
+
+            const enteredHash = await hashPin(enteredPin);
+            if (enteredHash !== expectedPinHash) {
+              showStatus(t('errPinMismatch'), 'error');
+              pinInput.focus();
+              return;
+            }
+          }
+
+          showStatus(t('msgRedirecting'), 'success');
+          performRedirect();
+        } catch (err) {
+          console.error('Sign-in error:', err);
+          showStatus(err?.message || t('errSupabaseUnavailable'), 'error');
+        }
+      }
+
+      async function handleSignUp(e) {
+        e.preventDefault();
+        hideStatus();
+
+        if (!supabaseClient) {
+          showStatus(t('errSupabaseUnavailable'), 'error');
+          return;
+        }
+
+        const emailInput = document.getElementById('signUpEmail');
+        const passwordInput = document.getElementById('signUpPassword');
+        const enablePinToggle = document.getElementById('enablePinToggle');
+        const pinInput = document.getElementById('signUpPin');
+        const policyCheckbox = document.getElementById('acceptPolicyCheckbox');
+        const ageCheckbox = document.getElementById('ageOver15Checkbox');
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const pinEnabled = enablePinToggle.checked;
+        const rawPin = pinInput.value.trim();
+        const acceptedPrivacyPolicy = policyCheckbox.checked;
+        const ageOver15 = ageCheckbox.checked;
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showStatus(t('errEmailRequired'), 'error');
+          emailInput.focus();
+          return;
+        }
+        if (!password || password.length < 6) {
+          showStatus(t('errPasswordMin'), 'error');
+          passwordInput.focus();
+          return;
+        }
+        if (pinEnabled && !isValidPin(rawPin)) {
+          showStatus(t('errPinInvalid'), 'error');
+          pinInput.focus();
+          return;
+        }
+        if (!acceptedPrivacyPolicy) {
+          showStatus(t('errPolicyRequired'), 'error');
+          policyCheckbox.focus();
+          return;
+        }
+        if (!ageOver15) {
+          showStatus(t('errAgeRequired'), 'error');
+          ageCheckbox.focus();
+          return;
+        }
+
+        showStatus(t('msgCreatingAccount'), 'info');
+
+        try {
+          const pinHash = pinEnabled ? await hashPin(rawPin) : null;
+          const redirectUrl = getRedirectTarget();
+          const fullRedirectUrl = redirectUrl.startsWith('http')
+            ? redirectUrl
+            : `${window.location.origin}${redirectUrl}`;
+
+          const accountChoices = {
+            accepted_privacy_policy: true,
+            policy_url: '/policy',
+            age_over_15: true,
+            pin_enabled: pinEnabled,
+            pin_hash: pinHash,
+            preferred_language: currentLang
+          };
+
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: fullRedirectUrl,
+              data: accountChoices
+            }
+          });
+
+          if (error) {
+            showStatus(error.message, 'error');
+            return;
+          }
+
+          cachePinMetaForEmail(email, pinEnabled, pinHash);
+
+          if (data?.user) {
+            await saveAccountChoicesToSupabase(data.user, {
+              acceptedPrivacyPolicy: true,
+              ageOver15: true,
+              pinEnabled,
+              pinHash,
+              language: currentLang
+            });
+          }
+
+          // If session is immediately active (email confirmation disabled in Supabase), redirect
+          if (data?.session) {
+            showStatus(t('msgRedirecting'), 'success');
+            performRedirect();
+          } else {
+            showStatus(t('msgAccountCreated'), 'success');
+          }
+        } catch (err) {
+          console.error('Sign-up error:', err);
+          showStatus(err?.message || t('errSupabaseUnavailable'), 'error');
+        }
+      }
+
+      async function handleOAuth(provider) {
+        hideStatus();
+
+        if (!supabaseClient) {
+          showStatus(t('errSupabaseUnavailable'), 'error');
+          return;
+        }
+
+        showStatus(t('msgOAuthRedirect'), 'info');
+
+        try {
+          const redirectTarget = getRedirectTarget();
+          const redirectTo = redirectTarget.startsWith('http')
+            ? redirectTarget
+            : `${window.location.origin}${redirectTarget}`;
+
+          const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo
+            }
+          });
+
+          if (error) {
+            showStatus(error.message, 'error');
+          }
+        } catch (err) {
+          console.error(`OAuth (${provider}) error:`, err);
+          showStatus(err?.message || t('errSupabaseUnavailable'), 'error');
+        }
+      }
+
+      // =========================================================================
+      // 8. INITIALIZATION & EVENT BINDINGS
+      // =========================================================================
+      document.addEventListener('DOMContentLoaded', () => {
+        // Set copyright year
+        const yearEl = document.getElementById('currentYear');
+        if (yearEl) {
+          yearEl.textContent = new Date().getFullYear();
+        }
+
+        // Apply initial theme & detected language
+        applyTheme(getInitialTheme());
+        applyLanguage(currentLang);
+
+        // Theme toggle button
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if (themeBtn) {
+          themeBtn.addEventListener('click', () => {
+            const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            applyTheme(nextTheme);
+          });
+        }
+
+        // Language selector dropdown
+        const langSelect = document.getElementById('languageSelect');
+        if (langSelect) {
+          langSelect.addEventListener('change', (e) => {
+            applyLanguage(e.target.value);
+          });
+        }
+
+        // Sign In / Sign Up tab buttons
+        document.getElementById('tabSignIn')?.addEventListener('click', () => setMode('signin'));
+        document.getElementById('tabSignUp')?.addEventListener('click', () => setMode('signup'));
+
+        // Toggle optional PIN field in Sign Up
+        const enablePinToggle = document.getElementById('enablePinToggle');
+        const signUpPinWrapper = document.getElementById('signUpPinWrapper');
+        if (enablePinToggle && signUpPinWrapper) {
+          enablePinToggle.addEventListener('change', () => {
+            signUpPinWrapper.classList.toggle('hidden', !enablePinToggle.checked);
+            if (enablePinToggle.checked) {
+              document.getElementById('signUpPin')?.focus();
+            } else {
+              const pinField = document.getElementById('signUpPin');
+              if (pinField) pinField.value = '';
+            }
+          });
+        }
+
+        // Sanitize numeric PIN inputs
+        document.querySelectorAll('.pin-field').forEach((input) => {
+          input.addEventListener('input', () => {
+            input.value = input.value.replace(/\D/g, '').slice(0, 8);
+          });
         });
 
-        // OAuth Social Login Handler (Google, GitHub)
-        async function handleOAuthLogin(provider) {
-            const client = getSupabaseClient();
-            if (client && client.auth) {
-                showToast(`Redirecting to ${provider} sign in...`, 'info');
-                try {
-                    const { data, error } = await client.auth.signInWithOAuth({
-                        provider: provider,
-                        options: {
-                            redirectTo: window.location.href
-                        }
-                    });
-                    if (error) throw error;
-                } catch (err) {
-                    showToast(err.message || `OAuth error with ${provider}`, 'error');
-                }
-            } else {
-                showToast(`Simulating ${provider} OAuth sign-in...`, 'info');
-                setTimeout(() => {
-                    simulateMockLogin(`user_${provider}@codenix.id`);
-                }, 800);
+        // Password visibility toggles
+        document.querySelectorAll('[data-toggle-password]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-toggle-password');
+            const input = document.getElementById(targetId);
+            if (input) {
+              input.type = input.type === 'password' ? 'text' : 'password';
             }
-        }
+          });
+        });
 
-        // Mock Login Fallback
-        function simulateMockLogin(email) {
-            const mockSession = {
-                user: {
-                    id: 'mock-' + Math.random().toString(36).substring(2, 9),
-                    email: email,
-                    user_metadata: {
-                        privacy_accepted: false,
-                        virtual_id: null,
-                        mfa_completed: false
-                    }
-                }
-            };
-            showToast('Fallback session active.', 'info');
-            handleUserSession(mockSession);
-        }
-
-        // AUTH MODE SWITCHING (SIGN IN / SIGN UP)
-        function switchAuthMode(mode) {
-            currentAuthMode = mode;
-            const btnSignIn = document.getElementById('tabSignIn');
-            const btnSignUp = document.getElementById('tabSignUp');
-            const title = document.getElementById('authTitle');
-            const subtitle = document.getElementById('authSubtitle');
-            const submitText = document.getElementById('btnSubmitAuthText');
-            const checkContainer = document.getElementById('signUpCheckContainer');
-            const emailLabel = document.getElementById('authEmailLabel');
-
-            if (mode === 'signup') {
-                btnSignUp.className = "py-2 rounded-xl bg-brand-600 text-white shadow-md transition-all";
-                btnSignIn.className = "py-2 rounded-xl text-slate-400 hover:text-white transition-all";
-                title.textContent = "Create Codenix Account";
-                subtitle.textContent = "Join the open AI ecosystem with your new account.";
-                submitText.textContent = "Create Account & Verify";
-                checkContainer.classList.remove('hidden');
-                if (emailLabel) emailLabel.textContent = "Email Address";
-            } else {
-                btnSignIn.className = "py-2 rounded-xl bg-brand-600 text-white shadow-md transition-all";
-                btnSignUp.className = "py-2 rounded-xl text-slate-400 hover:text-white transition-all";
-                title.textContent = "Welcome to Codenix";
-                subtitle.textContent = "Sign in or create your account to access the ecosystem.";
-                submitText.textContent = "Sign In to Codenix";
-                checkContainer.classList.add('hidden');
-                if (emailLabel) emailLabel.textContent = "Email Address or Username";
-            }
-        }
-
-        async function handleEmailAuth(e) {
-            e.preventDefault();
-            const identifier = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value;
-            const client = getSupabaseClient();
-
-            if (currentAuthMode === 'signup') {
-                const policyAgree = document.getElementById('authPolicyAgree').checked;
-                if (!policyAgree) {
-                    showToast('You must agree to the Privacy Policy to sign up.', 'error');
-                    return;
-                }
-                
-                showToast('Creating account...', 'info');
-                if (client && client.auth) {
-                    try {
-                        const { data, error } = await client.auth.signUp({
-                            email: identifier,
-                            password: password,
-                            options: {
-                                data: {
-                                    privacy_accepted: true
-                                }
-                            }
-                        });
-                        if (error) throw error;
-                        userSecurityProfile.privacyAccepted = true;
-                        showToast('Account created! Proceeding to verification gate.', 'success');
-                        if (data.session) handleUserSession(data.session);
-                    } catch (err) {
-                        showToast(err.message, 'error');
-                    }
-                } else {
-                    simulateMockLogin(identifier);
-                }
-            } else {
-                showToast('Signing in...', 'info');
-                let targetEmail = identifier;
-
-                if (client && client.auth) {
-                    try {
-                        // Resolve username to email if identifier is not standard email format
-                        if (!identifier.includes('@') || identifier.endsWith('@codenix')) {
-                            const cleanUsername = identifier.replace('@codenix', '').toLowerCase();
-                            const fullVirtualId = `${cleanUsername}@codenix`;
-
-                            const { data: profile } = await client
-                                .from('profiles')
-                                .select('email')
-                                .or(`virtual_id.eq.${fullVirtualId},virtual_id.eq.${cleanUsername}`)
-                                .maybeSingle();
-
-                            if (profile && profile.email) {
-                                targetEmail = profile.email;
-                            }
-                        }
-
-                        const { data, error } = await client.auth.signInWithPassword({ 
-                            email: targetEmail, 
-                            password: password 
-                        });
-                        if (error) throw error;
-                        showToast('Signed in successfully!', 'success');
-                        handleUserSession(data.session);
-                    } catch (err) {
-                        showToast(err.message || 'Invalid login credentials.', 'error');
-                    }
-                } else {
-                    simulateMockLogin(identifier.includes('@') ? identifier : `${identifier}@codenix.com`);
-                }
-            }
-        }
-
-        // USER SESSION CONTROLLER & VERIFICATION GATE EVALUATOR
-        function handleUserSession(session) {
-            currentUserSession = session;
-            const user = session.user;
-
-            document.getElementById('statusText').textContent = user.email || 'Authenticated';
-            document.getElementById('authStatusPill').className = "px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-[11px] border border-emerald-500/20 flex items-center gap-1.5";
-
-            // Extract User Metadata
-            const meta = user.user_metadata || {};
-            userSecurityProfile.privacyAccepted = meta.privacy_accepted || userSecurityProfile.privacyAccepted || false;
-            userSecurityProfile.virtualId = meta.virtual_id || userSecurityProfile.virtualId || null;
-            userSecurityProfile.mfaCompleted = meta.mfa_completed || userSecurityProfile.mfaCompleted || false;
-
-            // MANDATORY SECURITY GATE CHECK BEFORE DASHBOARD REDIRECT:
-            if (!userSecurityProfile.privacyAccepted || !userSecurityProfile.virtualId || !userSecurityProfile.mfaCompleted) {
-                showOnboardingGate();
-            } else {
-                redirectToDashboard();
-            }
-        }
-
-        function redirectToDashboard() {
-            showToast('Security gate cleared! Redirecting to /dashboard...', 'success');
-            setTimeout(() => {
-                window.location.href = '/dashboard';
-            }, 800);
-        }
-
-        // SHOW ONBOARDING GATE (3 STEPS)
-        function showOnboardingGate() {
-            document.getElementById('authCard').classList.add('hidden');
-            document.getElementById('dashboardCard').classList.add('hidden');
-            document.getElementById('onboardingGateCard').classList.remove('hidden');
-
-            updateStepIndicators();
-        }
-
-        function updateStepIndicators() {
-            const s1 = document.getElementById('circleStep1');
-            const c1 = document.getElementById('stepContent1');
-            const s2 = document.getElementById('circleStep2');
-            const c2 = document.getElementById('stepContent2');
-            const s3 = document.getElementById('circleStep3');
-            const c3 = document.getElementById('stepContent3');
-
-            if (!userSecurityProfile.privacyAccepted) {
-                s1.className = "w-8 h-8 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active";
-                c1.classList.remove('hidden');
-                c2.classList.add('hidden');
-                c3.classList.add('hidden');
-            } else if (!userSecurityProfile.virtualId) {
-                s1.className = "w-8 h-8 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle completed";
-                s1.innerHTML = `<i class="fa-solid fa-check"></i>`;
-                
-                s2.className = "w-8 h-8 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active";
-                c1.classList.add('hidden');
-                c2.classList.remove('hidden');
-                c3.classList.add('hidden');
-            } else if (!userSecurityProfile.mfaCompleted) {
-                s1.className = "w-8 h-8 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle completed";
-                s1.innerHTML = `<i class="fa-solid fa-check"></i>`;
-                
-                s2.className = "w-8 h-8 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle completed";
-                s2.innerHTML = `<i class="fa-solid fa-check"></i>`;
-
-                s3.className = "w-8 h-8 rounded-full border-2 bg-codenixDark text-xs font-mono font-bold flex items-center justify-center step-circle active";
-                c1.classList.add('hidden');
-                c2.classList.add('hidden');
-                c3.classList.remove('hidden');
-
-                // Initialize Real Supabase TOTP MFA Enrollment
-                initSupabaseTOTP();
-            }
-        }
-
-        async function initSupabaseTOTP() {
-            const client = getSupabaseClient();
-            if (client && client.auth && currentUserSession) {
-                try {
-                    // Check if user already has TOTP factor enrolled
-                    const { data: factorsData, error: listErr } = await client.auth.mfa.listFactors();
-                    if (listErr) throw listErr;
-
-                    const allTotp = factorsData?.totp || [];
-                    const verifiedFactor = allTotp.find(f => f.status === 'verified');
-                    const unverifiedFactor = allTotp.find(f => f.status === 'unverified');
-
-                    // If a verified factor already exists, mark MFA as active
-                    if (verifiedFactor) {
-                        currentFactorId = verifiedFactor.id;
-                        userSecurityProfile.mfaCompleted = true;
-                        document.getElementById('mfaSecretText').textContent = "TOTP Factor Active & Verified";
-                        document.getElementById('qrcodeCanvas').innerHTML = '<div class="text-xs text-slate-800 font-mono text-center p-2"><i class="fa-solid fa-shield-halved text-emerald-500 text-3xl mb-1 block"></i>MFA Active</div>';
-                        return;
-                    }
-
-                    // If an unverified factor already exists, unenroll it first to clear stale enrollment
-                    if (unverifiedFactor) {
-                        try {
-                            await client.auth.mfa.unenroll({ factorId: unverifiedFactor.id });
-                        } catch (unenrollErr) {
-                            console.warn("Could not unenroll stale factor:", unenrollErr);
-                        }
-                    }
-
-                    // Enroll fresh TOTP factor
-                    const { data: enrollData, error: enrollErr } = await client.auth.mfa.enroll({
-                        factorType: 'totp',
-                        issuer: 'Codenix',
-                        friendlyName: currentUserSession.user.email || 'Codenix User'
-                    });
-                    if (enrollErr) throw enrollErr;
-
-                    currentFactorId = enrollData.id;
-                    renderMFAQRCode(enrollData.totp.qr_code, enrollData.totp.uri, enrollData.totp.secret);
-                } catch (err) {
-                    console.warn("Supabase MFA initialization note:", err);
-                    renderMockQRCode();
-                }
-            } else {
-                renderMockQRCode();
-            }
-        }
-
-        function renderMFAQRCode(qrSvgOrData, uri, secret) {
-            const qrContainer = document.getElementById('qrcodeCanvas');
-            document.getElementById('mfaSecretText').textContent = secret || 'CODENIX-MFA-9842';
-            qrContainer.innerHTML = '';
-
-            if (qrSvgOrData && qrSvgOrData.startsWith('data:image/svg+xml')) {
-                const img = document.createElement('img');
-                img.src = qrSvgOrData;
-                img.className = "w-36 h-36 mx-auto";
-                qrContainer.appendChild(img);
-            } else if (uri && window.QRCode) {
-                new QRCode(qrContainer, {
-                    text: uri,
-                    width: 140,
-                    height: 140,
-                    colorDark: "#08080A",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            } else {
-                renderMockQRCode();
-            }
-        }
-
-        function renderMockQRCode() {
-            const qrContainer = document.getElementById('qrcodeCanvas');
-            if (qrContainer && window.QRCode) {
-                qrContainer.innerHTML = '';
-                new QRCode(qrContainer, {
-                    text: "otpauth://totp/CodenixID:user?secret=CODENIXMFA98428812&issuer=Codenix",
-                    width: 140,
-                    height: 140,
-                    colorDark: "#08080A",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            }
-        }
-
-        // STEP 1 SUBMISSION: Accept Privacy Policy from /policy/
-        async function submitStep1() {
-            const check = document.getElementById('gateCheckPolicy').checked;
-            if (!check) {
-                showToast('Please confirm accepting the Privacy Policy to proceed.', 'error');
-                return;
-            }
-
-            userSecurityProfile.privacyAccepted = true;
-            await updateUserMetadata({ privacy_accepted: true });
-            showToast('Privacy Policy accepted!', 'success');
-            updateStepIndicators();
-        }
-
-        // STEP 2 SUBMISSION: Format & Store Virtual ID (username@codenix)
-        function formatVirtualIDPreview() {
-            const val = document.getElementById('virtualUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            document.getElementById('virtualUsernameInput').value = val;
-            const preview = val ? `${val}@codenix` : 'username@codenix';
-            document.getElementById('virtualIdPreviewText').innerHTML = `Your handle will be: <span class="text-brand-300 font-bold">${preview}</span>`;
-        }
-
-        async function submitStep2() {
-            const username = document.getElementById('virtualUsernameInput').value.trim();
-            if (!username || username.length < 3) {
-                showToast('Please enter a username of at least 3 characters.', 'error');
-                return;
-            }
-
-            const formattedVirtualId = `${username}@codenix`;
-            userSecurityProfile.virtualId = formattedVirtualId;
-            await updateUserMetadata({ virtual_id: formattedVirtualId });
-            
-            showToast(`Virtual ID registered: ${formattedVirtualId}`, 'success');
-            updateStepIndicators();
-        }
-
-        async function submitStep3() {
-            const code = document.getElementById('mfaCodeInput').value.trim();
-            if (code.length !== 6 || isNaN(code)) {
-                showToast('Please enter a valid 6-digit MFA verification code.', 'error');
-                return;
-            }
-
-            const client = getSupabaseClient();
-            if (client && client.auth && currentFactorId) {
-                showToast('Verifying code with Supabase TOTP...', 'info');
-                try {
-                    // Create MFA Challenge
-                    const { data: challengeData, error: challengeErr } = await client.auth.mfa.challenge({
-                        factorId: currentFactorId
-                    });
-                    if (challengeErr) throw challengeErr;
-
-                    // Verify MFA Challenge with user token
-                    const { data: verifyData, error: verifyErr } = await client.auth.mfa.verify({
-                        factorId: currentFactorId,
-                        challengeId: challengeData.id,
-                        code: code
-                    });
-                    if (verifyErr) throw verifyErr;
-
-                    showToast('Supabase TOTP verification successful!', 'success');
-                } catch (err) {
-                    showToast(err.message || 'Invalid MFA code. Please try again.', 'error');
-                    return;
-                }
-            }
-
-            userSecurityProfile.mfaCompleted = true;
-            await updateUserMetadata({ mfa_completed: true });
-
-            redirectToDashboard();
-        }
-
-        // UPDATE USER METADATA IN SUPABASE AUTH & PROFILES TABLE
-        async function updateUserMetadata(dataObj) {
-            const client = getSupabaseClient();
-            if (client && client.auth && currentUserSession) {
-                try {
-                    // Update auth user metadata first (always allowed for logged in user)
-                    const { error: authErr } = await client.auth.updateUser({
-                        data: dataObj
-                    });
-                    if (authErr) console.warn("Auth metadata update notice:", authErr.message);
-
-                    // Sync metadata to public profiles table with conflict handling
-                    if (dataObj.virtual_id && currentUserSession.user) {
-                        const { error: profileErr } = await client.from('profiles').upsert({
-                            id: currentUserSession.user.id,
-                            email: currentUserSession.user.email,
-                            virtual_id: dataObj.virtual_id,
-                            privacy_accepted: userSecurityProfile.privacyAccepted || true,
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
-
-                        if (profileErr) {
-                            console.warn("Profiles database sync notice (RLS policy check):", profileErr.message);
-                        }
-                    }
-                } catch (err) {
-                    console.warn("Metadata update notice:", err);
-                }
-            }
-        }
-
-        function showAuthView() {
-            document.getElementById('dashboardCard').classList.add('hidden');
-            document.getElementById('onboardingGateCard').classList.add('hidden');
-            document.getElementById('authCard').classList.remove('hidden');
-            document.getElementById('statusText').textContent = 'Guest Mode';
-            document.getElementById('authStatusPill').className = "px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-mono text-[11px] border border-white/5 flex items-center gap-1.5";
-        }
-
-        // SIGN OUT HANDLER
-        async function handleSignOut() {
-            const client = getSupabaseClient();
-            if (client && client.auth) {
-                await client.auth.signOut();
-            }
-            currentUserSession = null;
-            userSecurityProfile = { privacyAccepted: false, virtualId: null, mfaCompleted: false };
-            showToast('Signed out of Codenix ID.', 'info');
-            showAuthView();
-        }
-
-        // TOAST NOTIFIER HELPER
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toastNotification');
-            const icon = document.getElementById('toastIcon');
-            const msgEl = document.getElementById('toastMsg');
-
-            msgEl.textContent = msg;
-
-            if (type === 'error') {
-                icon.className = "fa-solid fa-circle-exclamation text-rose-400 text-base";
-            } else if (type === 'info') {
-                icon.className = "fa-solid fa-circle-info text-brand-400 text-base";
-            } else {
-                icon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
-            }
-
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3500);
-        }
-    </script>
+        // Form & OAuth bindings
+        document.getElementById('signInForm')?.addEventListener('submit', handleSignIn);
+        document.getElementById('signUpForm')?.addEventListener('submit', handleSignUp);
+        document.getElementById('googleAuthBtn')?.addEventListener('click', () => handleOAuth('google'));
+        document.getElementById('githubAuthBtn')?.addEventListener('click', () => handleOAuth('github'));
+      });
+    })();
+  </script>
 </body>
 </html>
