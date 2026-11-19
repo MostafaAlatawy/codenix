@@ -1469,8 +1469,8 @@
       async function recordSignInAttempt(email, isIncorrect) {
         const nowMs = Date.now();
         const prev = await loadSignInAttemptState(email);
-        const nextTimestamps = [...prev.timestamps, nowMs];
-        const nextIncorrect = isIncorrect ? prev.totalIncorrectTries + 1 : prev.totalIncorrectTries;
+        const nextTimestamps = isIncorrect ? [...prev.timestamps, nowMs] : [];
+        const nextIncorrect = isIncorrect ? prev.totalIncorrectTries + 1 : 0;
         const nextState = computeAttemptState(nextTimestamps, nextIncorrect, nowMs);
 
         await saveSignInAttemptState(email, nextState, isIncorrect);
