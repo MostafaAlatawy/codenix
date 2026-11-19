@@ -299,6 +299,20 @@
             </p>
           </div>
 
+          <!-- Remember Me Option -->
+          <div class="flex items-center justify-between pt-0.5">
+            <label for="rememberMeCheckbox" class="flex items-center gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+              <input
+                id="rememberMeCheckbox"
+                name="rememberMe"
+                type="checkbox"
+                checked
+                class="h-4 w-4 rounded border-slate-300 dark:border-codenix-700 text-codenix-600 focus:ring-codenix-500 cursor-pointer"
+              />
+              <span data-i18n="rememberMeLabel">Remember me</span>
+            </label>
+          </div>
+
           <button
             id="signInSubmitBtn"
             type="submit"
@@ -492,6 +506,7 @@
           orEmail: 'or continue with email',
           emailLabel: 'Email Address',
           passwordLabel: 'Password',
+          rememberMeLabel: 'Remember me',
           signInBtn: 'Sign In',
           createAccountBtn: 'Create Account',
           enablePinOption: 'Add extra protection: Security PIN',
@@ -530,6 +545,7 @@
           orEmail: 'أو المتابعة عبر البريد الإلكتروني',
           emailLabel: 'البريد الإلكتروني',
           passwordLabel: 'كلمة المرور',
+          rememberMeLabel: 'تذكرني',
           signInBtn: 'تسجيل الدخول',
           createAccountBtn: 'إنشاء حساب',
           enablePinOption: 'إضافة حماية إضافية: رمز PIN أمني',
@@ -568,6 +584,7 @@
           orEmail: 'o continúa con tu correo',
           emailLabel: 'Correo electrónico',
           passwordLabel: 'Contraseña',
+          rememberMeLabel: 'Recordarme',
           signInBtn: 'Iniciar sesión',
           createAccountBtn: 'Crear cuenta',
           enablePinOption: 'Añadir protección extra: PIN de seguridad',
@@ -606,6 +623,7 @@
           orEmail: 'またはメールアドレスで続行',
           emailLabel: 'メールアドレス',
           passwordLabel: 'パスワード',
+          rememberMeLabel: 'ログイン状態を保持する',
           signInBtn: 'サインイン',
           createAccountBtn: 'アカウント作成',
           enablePinOption: '追加保護：セキュリティ PIN を設定',
@@ -644,6 +662,7 @@
           orEmail: 'oppure continua con email',
           emailLabel: 'Indirizzo email',
           passwordLabel: 'Password',
+          rememberMeLabel: 'Ricordami',
           signInBtn: 'Accedi',
           createAccountBtn: 'Crea account',
           enablePinOption: 'Aggiungi protezione extra: PIN di sicurezza',
@@ -682,6 +701,7 @@
           orEmail: 'of ga verder met e-mail',
           emailLabel: 'E-mailadres',
           passwordLabel: 'Wachtwoord',
+          rememberMeLabel: 'Onthoud mij',
           signInBtn: 'Inloggen',
           createAccountBtn: 'Account aanmaken',
           enablePinOption: 'Extra beveiliging toevoegen: pincode',
@@ -720,6 +740,7 @@
           orEmail: 'oder mit E-Mail fortfahren',
           emailLabel: 'E-Mail-Adresse',
           passwordLabel: 'Passwort',
+          rememberMeLabel: 'Angemeldet bleiben',
           signInBtn: 'Anmelden',
           createAccountBtn: 'Konto erstellen',
           enablePinOption: 'Zusätzlicher Schutz: Sicherheits-PIN',
@@ -758,6 +779,7 @@
           orEmail: 'или продолжить через email',
           emailLabel: 'Электронная почта',
           passwordLabel: 'Пароль',
+          rememberMeLabel: 'Запомнить меня',
           signInBtn: 'Войти',
           createAccountBtn: 'Создать аккаунт',
           enablePinOption: 'Дополнительная защита: PIN-код',
@@ -796,6 +818,7 @@
           orEmail: '或使用邮箱继续',
           emailLabel: '邮箱地址',
           passwordLabel: '密码',
+          rememberMeLabel: '记住我',
           signInBtn: '登录',
           createAccountBtn: '创建账号',
           enablePinOption: '添加额外保护：安全 PIN 码',
@@ -834,6 +857,7 @@
           orEmail: 'veya e-posta ile devam et',
           emailLabel: 'E-posta Adresi',
           passwordLabel: 'Şifre',
+          rememberMeLabel: 'Beni hatırla',
           signInBtn: 'Giriş Yap',
           createAccountBtn: 'Hesap Oluştur',
           enablePinOption: 'Ek koruma ekle: Güvenlik PIN’i',
@@ -872,6 +896,7 @@
           orEmail: 'ou continuer avec un e-mail',
           emailLabel: 'Adresse e-mail',
           passwordLabel: 'Mot de passe',
+          rememberMeLabel: 'Se souvenir de moi',
           signInBtn: 'Connexion',
           createAccountBtn: 'Créer un compte',
           enablePinOption: 'Ajouter une protection : code PIN de sécurité',
@@ -910,6 +935,7 @@
           orEmail: 'ou continue com e-mail',
           emailLabel: 'Endereço de e-mail',
           passwordLabel: 'Senha',
+          rememberMeLabel: 'Lembrar de mim',
           signInBtn: 'Entrar',
           createAccountBtn: 'Criar conta',
           enablePinOption: 'Adicionar proteção extra: PIN de segurança',
@@ -1056,68 +1082,101 @@
         }, 700);
       }
 
+      /**
+       * Checks if the user is already signed in via Supabase session and redirects
+       * to the domain redirect URL or /dashboard.
+       */
+      async function checkExistingSessionAndRedirect() {
+        if (!supabaseClient) return;
+        try {
+          const { data, error } = await supabaseClient.auth.getSession();
+          if (error) {
+            console.warn('Error checking existing session:', error);
+            return;
+          }
+          if (data && data.session && data.session.user) {
+            // If user previously disabled "Remember me" and is opening a fresh browser tab/session
+            // without a remembered session flag, sign out instead of auto-redirecting.
+            const rememberPref = localStorage.getItem('codenix_remember_me');
+            const sessionActiveFlag = sessionStorage.getItem('codenix_session_active');
+            if (rememberPref === 'false' && !sessionActiveFlag) {
+              await supabaseClient.auth.signOut();
+              return;
+            }
+            showStatus(t('msgRedirecting'), 'success');
+            window.location.assign(getRedirectTarget());
+          }
+        } catch (err) {
+          console.warn('Session check failed:', err);
+        }
+      }
+
       // =========================================================================
-      // 5. UI FEEDBACK & FORM SWITCHING
+      // 5. UI FEEDBACK & MODE SWITCHING HELPERS
       // =========================================================================
       function showStatus(message, type = 'info') {
         const banner = document.getElementById('statusBanner');
-        const icon = document.getElementById('statusIcon');
-        const text = document.getElementById('statusText');
-        if (!banner || !icon || !text) return;
+        const textEl = document.getElementById('statusText');
+        const iconEl = document.getElementById('statusIcon');
+        if (!banner || !textEl || !iconEl) return;
 
         banner.className = 'mb-5 rounded-2xl border px-4 py-3 text-xs sm:text-sm font-medium transition-all fade-in';
 
         if (type === 'error') {
           banner.classList.add(
+            'border-red-300', 'dark:border-red-900/80',
             'bg-red-50', 'dark:bg-red-950/50',
-            'border-red-200', 'dark:border-red-800',
-            'text-red-700', 'dark:text-red-300'
+            'text-red-800', 'dark:text-red-300'
           );
-          icon.innerHTML = '<svg class="h-4 w-4 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+          iconEl.innerHTML = '<svg class="h-4 w-4 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
         } else if (type === 'success') {
           banner.classList.add(
+            'border-emerald-300', 'dark:border-emerald-900/80',
             'bg-emerald-50', 'dark:bg-emerald-950/50',
-            'border-emerald-200', 'dark:border-emerald-800',
-            'text-emerald-700', 'dark:text-emerald-300'
+            'text-emerald-800', 'dark:text-emerald-300'
           );
-          icon.innerHTML = '<svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+          iconEl.innerHTML = '<svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
         } else {
           banner.classList.add(
-            'bg-codenix-50', 'dark:bg-codenix-950/60',
             'border-codenix-200', 'dark:border-codenix-800',
-            'text-codenix-800', 'dark:text-codenix-200'
+            'bg-codenix-50', 'dark:bg-codenix-950/60',
+            'text-codenix-900', 'dark:text-codenix-200'
           );
-          icon.innerHTML = '<svg class="h-4 w-4 text-codenix-600 dark:text-codenix-400 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>';
+          iconEl.innerHTML = '<svg class="h-4 w-4 text-codenix-600 dark:text-codenix-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
         }
 
-        text.textContent = message;
+        textEl.textContent = message;
         banner.classList.remove('hidden');
       }
 
       function hideStatus() {
         const banner = document.getElementById('statusBanner');
-        if (banner) banner.classList.add('hidden');
+        if (banner) {
+          banner.classList.add('hidden');
+        }
       }
 
       function setMode(mode) {
-        const isSignUp = mode === 'signup';
+        hideStatus();
+        const isSignIn = mode === 'signin';
         const tabSignIn = document.getElementById('tabSignIn');
         const tabSignUp = document.getElementById('tabSignUp');
         const signInForm = document.getElementById('signInForm');
         const signUpForm = document.getElementById('signUpForm');
 
-        hideStatus();
+        if (tabSignIn && tabSignUp) {
+          tabSignIn.className = isSignIn
+            ? 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer'
+            : 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
 
-        if (isSignUp) {
-          tabSignUp.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer';
-          tabSignIn.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
-          signInForm.classList.add('hidden');
-          signUpForm.classList.remove('hidden');
-        } else {
-          tabSignIn.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer';
-          tabSignUp.className = 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
-          signUpForm.classList.add('hidden');
-          signInForm.classList.remove('hidden');
+          tabSignUp.className = !isSignIn
+            ? 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 bg-codenix-600 text-white shadow-sm cursor-pointer'
+            : 'rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
+        }
+
+        if (signInForm && signUpForm) {
+          signInForm.classList.toggle('hidden', !isSignIn);
+          signUpForm.classList.toggle('hidden', isSignIn);
         }
       }
 
@@ -1227,6 +1286,10 @@
 
         const email = emailInput.value.trim();
         const password = passwordInput.value;
+        const rememberMe = Boolean(document.getElementById('rememberMeCheckbox')?.checked);
+
+        localStorage.setItem('codenix_remember_me', String(rememberMe));
+        sessionStorage.setItem('codenix_session_active', 'true');
 
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           showStatus(t('errEmailRequired'), 'error');
@@ -1433,7 +1496,7 @@
       // =========================================================================
       // 8. INITIALIZATION & EVENT BINDINGS
       // =========================================================================
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', async () => {
         // Set copyright year
         const yearEl = document.getElementById('currentYear');
         if (yearEl) {
@@ -1444,16 +1507,26 @@
         applyTheme(getInitialTheme());
         applyLanguage(currentLang);
 
-        // Theme toggle button
-        const themeBtn = document.getElementById('themeToggleBtn');
-        if (themeBtn) {
-          themeBtn.addEventListener('click', () => {
-            const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            applyTheme(nextTheme);
-          });
-        }
+        // Check if user is already signed in and redirect to /dashboard (or redirect param)
+        await checkExistingSessionAndRedirect();
 
-        // Language selector dropdown
+        // Sync remember-me checkbox state from saved preference
+        const rememberCheckbox = document.getElementById('rememberMeCheckbox');
+        const savedRemember = localStorage.getItem('codenix_remember_me');
+        if (rememberCheckbox && savedRemember !== null) {
+          rememberCheckbox.checked = savedRemember === 'true';
+        }
+        rememberCheckbox?.addEventListener('change', (e) => {
+          localStorage.setItem('codenix_remember_me', String(e.target.checked));
+        });
+
+        // Theme toggle button
+        document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
+          const isCurrentlyDark = document.documentElement.classList.contains('dark');
+          applyTheme(isCurrentlyDark ? 'light' : 'dark');
+        });
+
+        // Language selector
         const langSelect = document.getElementById('languageSelect');
         if (langSelect) {
           langSelect.addEventListener('change', (e) => {
