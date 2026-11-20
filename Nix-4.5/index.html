@@ -43,6 +43,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Puter.js v2 SDK -->
+    <script>window.puter = window.puter || {}; window.puter.quiet = true;</script>
     <script src="https://js.puter.com/v2/"></script>
 
     <!-- Supabase JS Client CDN -->
@@ -948,6 +949,25 @@
     </div>
 
     <script>
+        if (window.puter) {
+            window.puter.quiet = true;
+        }
+
+        // Ignore noisy external browser extension / telemetry rejections outside our app
+        window.addEventListener('error', function(event) {
+            const src = event?.filename || '';
+            if (src.includes('kaspersky-labs.com') || src.includes('cloudflareinsights.com')) {
+                event.preventDefault();
+            }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function(event) {
+            const msg = String(event?.reason?.message || event?.reason || '');
+            if (msg.includes('kaspersky-labs.com') || msg.includes('cloudflareinsights.com')) {
+                event.preventDefault();
+            }
+        });
+
         // Guard against any script attempting to set restricted headers such as "Origin"
         (function guardUnsafeRequestHeaders() {
             const forbiddenHeaders = new Set(['origin', 'referer', 'host', 'cookie', 'user-agent']);
@@ -1754,9 +1774,16 @@
         });
 
         window.addEventListener('DOMContentLoaded', () => {
+            if (window.puter) {
+                window.puter.quiet = true;
+            }
             loadLocalState();
             applyTheme(appState.theme);
-            if (appState.conversations.length === 0) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlChatId = urlParams.get('chat') || urlParams.get('id');
+            if (urlChatId && appState.conversations.some(c => c.id === urlChatId)) {
+                appState.activeConversationId = urlChatId;
+            } else if (appState.conversations.length === 0) {
                 createNewConversation(false);
             } else if (!appState.activeConversationId) {
                 appState.activeConversationId = appState.conversations[0].id;
