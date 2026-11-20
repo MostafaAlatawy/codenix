@@ -1074,87 +1074,147 @@
         let dictationRecognition = null;
         let isDictating = false;
 
-        function loadLocalState() {
+        function applySignedInUser(user) {
+            supabaseUser = user || null;
+            const label = document.getElementById('accountLabel');
+            const badge = document.getElementById('supabaseSyncBadge');
+            const syncText = document.getElementById('syncText');
+            if (supabaseUser) {
+                const displayIdentity = supabaseUser.email || supabaseUser.user_metadata?.full_name || supabaseUser.id;
+                if (label) label.innerText = displayIdentity;
+                if (badge) badge.classList.remove('hidden');
+                if (syncText) syncText.innerText = 'Account Synced';
+            } else {
+                if (label) label.innerText = 'Guest • Sign in on /Start';
+                if (badge) badge.classList.add('hidden');
+            }
+            updateGuestQuotaUi();
+        }
+
+        async function hydrateSupabaseAccountSession() {
+            if (!supabaseClient || !supabaseClient.auth) {
+                applySignedInUser(null);
+                return;
+            }
             try {
-                const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (parsed && typeof parsed === 'object') {
-                        appState = { ...appState, ...parsed };
+                // Support tokens passed via URL hash or query parameters from /Start redirect
+                const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+                const queryParams = new URLSearchParams(window.location.search || '');
+                const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
+
+                if (accessToken && refreshToken && typeof supabaseClient.auth.setSession === 'function') {
+                    const { data: tokenSessionData } = await supabaseClient.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    });
+                    if (tokenSessionData?.session?.user) {
+                        applySignedInUser(tokenSessionData.session.user);
                     }
                 }
-            } catch (e) {
-                console.warn('Failed to load local state from localStorage:', e);
+
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session?.user) {
+                    applySignedInUser(session.user);
+                } else {
+                    applySignedInUser(null);
+                }
+
+                supabaseClient.auth.onAuthStateChange((_event, nextSession) => {
+                    applySignedInUser(nextSession?.user || null);
+                });
+            } catch (err) {
+                console.warn('Failed to identify Supabase account session:', err);
+                applySignedInUser(null);
             }
         }
+
+        window.addEventListener('message', async (event) => {
+            if (!event || !event.data || typeof event.data !== 'object') return;
+            if (event.data.type === 'NIX_SUPABASE_SESSION' && event.data.session && supabaseClient?.auth?.setSession) {
+                try {
+                    const { data } = await supabaseClient.auth.setSession({
+                        access_token: event.data.session.access_token,
+                        refresh_token: event.data.session.refresh_token
+                    });
+                    if (data?.session?.user) {
+                        applySignedInUser(data.session.user);
+                    }
+                } catch (_) {}
+            }
+        });
 
         function saveLocalState() {
             try {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
-            } catch (e) {
-                console.warn('Failed to save state to localStorage:', e);
-            }
+            } catch (_) {}
         }
 
-        function applyTheme(theme) {
-            appState.theme = theme || 'dark';
-            if (appState.theme === 'dark') {
-                document.documentElement.classList.add('dark');
+        function updateMemoryBadge() {
+            const badge = document.getElementById('memoryCountBadge');
+            if (badge) badge.innerText = String((appState.memories || []).length);
+        }
+
+        function updateGuestQuotaUi() {
+            const hint = document.getElementById('guestQuotaHint');
+            const ipEl = document.getElementById('guestIpDisplay');
+            if (ipEl) ipEl.innerText = appState.guestIp || 'Detecting...';
+            if (!hint) return;
+            if (supabaseUser) {
+                hint.innerText = 'Nix 4.5 • Signed in account active with cloud sync.';
             } else {
-                document.documentElement.classList.remove('dark');
+                const used = Number(appState.guestMessageCount || 0);
+                const remaining = Math.max(0, 1 - used);
+                hint.innerText = `Nix 4.5 • Guest mode: ${remaining}/1 free message remaining before /Start sign in.`;
             }
         }
 
-        function toggleTheme() {
-            const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
-            applyTheme(newTheme);
-            saveLocalState();
-            showToast(`Theme switched to ${newTheme} mode`);
-        }
-
-        function navigateToStartPage(event) {
-            if (event) event.preventDefault();
-            try {
-                window.location.assign('/Start?redirect=/Nix-4.5/');
-            } catch (_) {
-                window.location.href = '/Start?redirect=/Nix-4.5/';
+        function renderConversationsList() {
+            const list = document.getElementById('conversationsList');
+            if (!list) return;
+            const query = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+            const convs = (appState.conversations || []).filter(c => !query || (c.title || '').toLowerCase().includes(query));
+            if (convs.length === 0) {
+                list.innerHTML = '<div class="px-3 py-6 text-center text-xs text-slate-400 dark:text-zinc-500">No conversations yet. Start chatting below!</div>';
+                return;
             }
+            list.innerHTML = convs.map(conv => {
+                const isActive = conv.id === appState.activeConversationId;
+                return `
+                    <button onclick="selectConversation('${conv.id}')" class="w-full text-left px-3 py-2 rounded-xl text-xs truncate transition-colors ${isActive ? 'bg-nix-600/15 dark:bg-nix-600/25 text-nix-700 dark:text-nix-200 font-semibold border border-nix-500/30' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60'}">
+                        ${(conv.title || 'New Conversation').replace(/</g, '&lt;')}
+                    </button>
+                `;
+            }).join('');
         }
 
-        function navigateToNix45Page(event) {
-            if (event) event.preventDefault();
-            try {
-                window.location.assign('/Nix-4.5/');
-            } catch (_) {
-                window.location.href = '/Nix-4.5/';
+        function renderActiveConversationMessages() {
+            const hero = document.getElementById('emptyHero');
+            const msgList = document.getElementById('messagesList');
+            const conv = (appState.conversations || []).find(c => c.id === appState.activeConversationId);
+            const messages = conv?.messages || [];
+            if (!messages.length) {
+                if (hero) hero.classList.remove('hidden');
+                if (msgList) msgList.innerHTML = '';
+                return;
             }
-        }
-
-        function handleComposerInput(el) {
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
-            const counter = document.getElementById('charCounter');
-            if (counter) counter.innerText = `${el.value.length} chars`;
-        }
-
-        function toggleNixyVisibility() {
-            appState.nixyVisible = !appState.nixyVisible;
-            saveLocalState();
-            syncNixyCompanionVisibility();
-            showToast(appState.nixyVisible ? 'Nixy companion shown' : 'Nixy companion hidden');
-        }
-
-        function syncNixyCompanionVisibility() {
-            const floating = document.getElementById('floatingNixyCompanion');
-            const label = document.getElementById('nixyToggleLabel');
-            if (label) label.innerText = appState.nixyVisible ? 'Nixy' : 'Show Nixy';
-            if (!floating) return;
-            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            const hasMessages = Boolean(activeConv && activeConv.messages && activeConv.messages.length > 0);
-            if (appState.nixyVisible && hasMessages) {
-                floating.classList.remove('hidden');
-            } else {
-                floating.classList.add('hidden');
+            if (hero) hero.classList.add('hidden');
+            if (!msgList) return;
+            msgList.innerHTML = messages.map(m => {
+                const isUser = m.role === 'user';
+                const bodyHtml = isUser
+                    ? `<div class="whitespace-pre-wrap text-sm">${(m.content || '').replace(/</g, '&lt;')}</div>`
+                    : `<div class="prose prose-sm dark:prose-invert max-w-none">${window.marked ? window.marked.parse(m.content || '') : (m.content || '').replace(/</g, '&lt;')}</div>`;
+                return `
+                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                        <div class="${isUser ? 'max-w-[82%] bg-nix-600 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md' : 'w-full bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-sm'}">
+                            ${bodyHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (window.hljs) {
+                msgList.querySelectorAll('pre code').forEach(el => window.hljs.highlightElement(el));
             }
         }
 
@@ -1162,670 +1222,64 @@
             const orb = document.getElementById('nixyOrb');
             const heroMount = document.getElementById('heroNixyMount');
             const floatingMount = document.getElementById('floatingNixyMount');
+            const floatingWrap = document.getElementById('floatingNixyCompanion');
+            const eyes = document.getElementById('nixyEyesContainer');
             if (!orb) return;
-            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            const hasMessages = Boolean(activeConv && activeConv.messages && activeConv.messages.length > 0);
-            const target = hasMessages ? floatingMount : heroMount;
-            if (target && orb.parentElement !== target) {
-                target.appendChild(orb);
-            }
-            orb.classList.toggle('w-20', !hasMessages);
-            orb.classList.toggle('h-20', !hasMessages);
-            orb.classList.toggle('w-12', hasMessages);
-            orb.classList.toggle('h-12', hasMessages);
-            syncNixyCompanionVisibility();
-        }
 
-        function setNixyMood(mood, speechText) {
-            const orb = document.getElementById('nixyOrb');
-            const bubble = document.getElementById('floatingNixyBubble');
-            if (orb) {
-                orb.classList.remove('mood-thinking', 'mood-happy', 'mood-error', 'mood-listening');
-                if (mood && mood !== 'idle') {
-                    orb.classList.add(`mood-${mood}`);
-                }
-            }
-            if (bubble && speechText) {
-                bubble.innerText = speechText;
-                bubble.classList.remove('hidden');
-            }
-        }
-
-        function createNewConversation(autoSwitch = true) {
-            const newConv = {
-                id: generateUUID(),
-                title: 'New Conversation',
-                model: 'gpt-4o-mini',
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-                messages: []
-            };
-            appState.conversations.unshift(newConv);
-            if (autoSwitch) {
-                appState.activeConversationId = newConv.id;
-            }
-            saveLocalState();
-            renderConversationsList();
-            renderActiveConversationMessages();
-        }
-
-        function switchConversation(convId) {
-            appState.activeConversationId = convId;
-            saveLocalState();
-            renderConversationsList();
-            renderActiveConversationMessages();
-        }
-
-        function deleteConversation(convId, event) {
-            if (event) event.stopPropagation();
-            appState.conversations = appState.conversations.filter(c => c.id !== convId);
-            if (appState.activeConversationId === convId) {
-                appState.activeConversationId = appState.conversations[0]?.id || null;
-            }
-            if (appState.conversations.length === 0) {
-                createNewConversation(false);
-            }
-            saveLocalState();
-            renderConversationsList();
-            renderActiveConversationMessages();
-        }
-
-        function renderConversationsList() {
-            const container = document.getElementById('conversationsList');
-            if (!container) return;
-            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
-            container.innerHTML = '';
-
-            const filtered = appState.conversations.filter(c =>
-                c.title.toLowerCase().includes(searchVal) ||
-                c.messages.some(m => m.content.toLowerCase().includes(searchVal))
-            );
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 dark:text-zinc-500 text-center py-4">No conversations found.</p>`;
+            if (!appState.nixyVisible) {
+                orb.classList.add('hidden');
+                if (floatingWrap) floatingWrap.classList.add('hidden');
                 return;
             }
+            orb.classList.remove('hidden');
 
-            filtered.forEach(conv => {
-                const isActive = conv.id === appState.activeConversationId;
-                const el = document.createElement('div');
-                el.className = `group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs transition-all ${
-                    isActive
-                        ? 'bg-nix-600/15 dark:bg-nix-600/25 border border-nix-500/40 text-nix-700 dark:text-white font-medium shadow-sm'
-                        : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60 hover:text-slate-900 dark:hover:text-zinc-200'
-                }`;
-                el.onclick = () => switchConversation(conv.id);
-                el.innerHTML = `
-                    <div class="flex items-center space-x-2.5 truncate flex-1 pr-2">
-                        <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0 ${isActive ? 'text-nix-600 dark:text-nix-400' : 'text-slate-400 dark:text-zinc-500'}"></i>
-                        <span class="truncate">${escapeHtml(conv.title)}</span>
-                    </div>
-                    <button onclick="deleteConversation('${conv.id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-500 p-1 rounded transition-opacity">
-                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
-                    </button>
-                `;
-                container.appendChild(el);
-            });
-
-            if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                window.lucide.createIcons();
+            const hasMessages = (appState.conversations || []).some(c => (c.messages || []).length > 0);
+            if (hasMessages && floatingMount && floatingWrap) {
+                floatingWrap.classList.remove('hidden');
+                orb.classList.remove('w-20', 'h-20');
+                orb.classList.add('w-14', 'h-14');
+                floatingMount.appendChild(orb);
+            } else if (heroMount) {
+                if (floatingWrap) floatingWrap.classList.add('hidden');
+                orb.classList.remove('w-14', 'h-14');
+                orb.classList.add('w-20', 'h-20');
+                heroMount.appendChild(orb);
             }
-        }
 
-        function filterConversations() {
-            renderConversationsList();
-        }
-
-        function buildSystemPrompt() {
-            let sys = "You are Nix 4.5, an elite AI assistant with a purple visual identity. Provide clear, structured responses with Markdown formatting.";
-            if (appState.memories.length > 0) {
-                sys += "\n\n[USER PERSONALIZATION MEMORIES]:\n";
-                appState.memories.forEach(m => {
-                    sys += `- (${m.category}): ${m.content}\n`;
+            if (!window.__nixyEyeTrackerBound) {
+                window.__nixyEyeTrackerBound = true;
+                window.addEventListener('mousemove', (e) => {
+                    if (!eyes) return;
+                    const rect = orb.getBoundingClientRect();
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    const dx = Math.max(-4, Math.min(4, (e.clientX - cx) / 45));
+                    const dy = Math.max(-4, Math.min(4, (e.clientY - cy) / 45));
+                    eyes.style.transform = `translate(${dx}px, ${dy}px)`;
                 });
             }
-            return sys;
         }
 
         async function detectGuestIp() {
-            if (appState.guestIp) return appState.guestIp;
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.ip) {
-                        appState.guestIp = String(data.ip);
+                    if (data?.ip) {
+                        appState.guestIp = data.ip;
                         saveLocalState();
-                        return appState.guestIp;
+                        updateGuestQuotaUi();
                     }
                 }
             } catch (_) {}
-            appState.guestIp = 'unknown-ip';
-            return appState.guestIp;
         }
-
-        async function logGuestSessionToSupabase(promptText, replyText) {
-            const ip = await detectGuestIp();
-            const ipLabel = document.getElementById('guestIpDisplay');
-            if (ipLabel) ipLabel.innerText = ip;
-            if (!supabaseClient) return;
-            try {
-                await supabaseClient.from('nix_guest_sessions').insert({
-                    ip_address: ip,
-                    message_count: appState.guestMessageCount,
-                    last_prompt: promptText.slice(0, 500),
-                    last_reply: (replyText || '').slice(0, 500)
-                });
-            } catch (_) {}
-        }
-
-        function openAuthModal() {
-            const ipLabel = document.getElementById('guestIpDisplay');
-            if (ipLabel) ipLabel.innerText = appState.guestIp || 'Detecting...';
-            detectGuestIp().then(ip => {
-                if (ipLabel) ipLabel.innerText = ip;
-            });
-            const modal = document.getElementById('authModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeAuthModal() {
-            const modal = document.getElementById('authModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function updateGuestQuotaUi() {
-            const hint = document.getElementById('guestQuotaHint');
-            if (!hint) return;
-            if (!supabaseUser) {
-                const remaining = Math.max(0, 1 - (appState.guestMessageCount || 0));
-                hint.innerText = `Nix 4.5 • Guest mode: ${remaining} free message left before /Start (redirects to /Nix-4.5/).`;
-            } else {
-                hint.innerText = 'Nix 4.5 • Signed in with Supabase Cloud Sync.';
-            }
-        }
-
-        async function sendMessage() {
-            if (isGenerating) return;
-
-            if (!supabaseUser && (appState.guestMessageCount || 0) >= 1) {
-                setNixyMood('error', 'Guest limit reached! Sign in on /Start.');
-                openAuthModal();
-                return;
-            }
-
-            const inputEl = document.getElementById('userInput');
-            let content = (inputEl?.value || '').trim();
-            if (!content && !currentAttachedFileText) return;
-
-            if (currentAttachedFileText) {
-                content = `[Attached File Context]:\n${currentAttachedFileText}\n\n[User Prompt]: ${content}`;
-                clearAttachedFile();
-            }
-
-            let activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            if (!activeConv) {
-                createNewConversation(true);
-                activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            }
-
-            const userMsg = { role: 'user', content: content, timestamp: Date.now() };
-            activeConv.messages.push(userMsg);
-            if (activeConv.messages.length === 1) {
-                activeConv.title = content.slice(0, 32) + (content.length > 32 ? '...' : '');
-            }
-            activeConv.updatedAt = Date.now();
-
-            if (!supabaseUser) {
-                appState.guestMessageCount = (appState.guestMessageCount || 0) + 1;
-            }
-
-            saveLocalState();
-            updateGuestQuotaUi();
-
-            if (inputEl) {
-                inputEl.value = '';
-                handleComposerInput(inputEl);
-            }
-
-            renderConversationsList();
-            renderActiveConversationMessages();
-
-            const aiMsg = { role: 'assistant', content: '', timestamp: Date.now() };
-            activeConv.messages.push(aiMsg);
-
-            isGenerating = true;
-            updateSendButtonState(true);
-            setNixyMood('thinking', 'Nix 4.5 is thinking...');
-
-            const msgListEl = document.getElementById('messagesList');
-            const aiBubbleEl = renderSingleMessage(aiMsg, activeConv.messages.length - 1);
-            msgListEl.appendChild(aiBubbleEl);
-            scrollToBottom();
-
-            const textContainer = aiBubbleEl.querySelector('.prose-body');
-
-            try {
-                const systemPrompt = buildSystemPrompt();
-                const historyPayload = activeConv.messages.slice(0, -1).map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-                const promptText = `${systemPrompt}\n\n${historyPayload}`;
-
-                if (window.puter && window.puter.ai && typeof window.puter.ai.chat === 'function') {
-                    const response = await window.puter.ai.chat(promptText, { model: 'gpt-4o-mini' });
-                    const finalResponseText = typeof response === 'string'
-                        ? response
-                        : (response?.message?.content || response?.text || String(response));
-                    aiMsg.content = finalResponseText;
-                    if (textContainer) {
-                        textContainer.innerHTML = window.marked ? window.marked.parse(finalResponseText) : escapeHtml(finalResponseText);
-                        textContainer.classList.remove('typing-cursor');
-                    }
-                    setNixyMood('happy', 'Response ready!');
-                    if (!supabaseUser) {
-                        await logGuestSessionToSupabase(content, finalResponseText);
-                    }
-                } else {
-                    aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or offline.";
-                    if (textContainer) textContainer.innerHTML = escapeHtml(aiMsg.content);
-                    setNixyMood('error', 'Puter AI unavailable');
-                }
-            } catch (err) {
-                console.error('Puter AI error:', err);
-                aiMsg.content = `**Generation Error:** ${err.message || 'Failed to connect to Puter.js AI.'}`;
-                if (textContainer) textContainer.innerHTML = window.marked ? window.marked.parse(aiMsg.content) : escapeHtml(aiMsg.content);
-                setNixyMood('error', 'Hit a snag!');
-            } finally {
-                isGenerating = false;
-                updateSendButtonState(false);
-                saveLocalState();
-                highlightCodeBlocks();
-                scrollToBottom();
-                if (!supabaseUser && (appState.guestMessageCount || 0) >= 1) {
-                    setTimeout(() => openAuthModal(), 900);
-                }
-            }
-        }
-
-        function renderActiveConversationMessages() {
-            const container = document.getElementById('messagesList');
-            const emptyHero = document.getElementById('emptyHero');
-            if (!container || !emptyHero) return;
-            container.innerHTML = '';
-
-            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            if (!activeConv || activeConv.messages.length === 0) {
-                emptyHero.classList.remove('hidden');
-                container.classList.add('hidden');
-                mountNixyOrb();
-                return;
-            }
-
-            emptyHero.classList.add('hidden');
-            container.classList.remove('hidden');
-            mountNixyOrb();
-
-            activeConv.messages.forEach((msg, idx) => {
-                container.appendChild(renderSingleMessage(msg, idx));
-            });
-
-            highlightCodeBlocks();
-            scrollToBottom();
-        }
-
-        function renderSingleMessage(msg) {
-            const wrapper = document.createElement('div');
-            const isUser = msg.role === 'user';
-            wrapper.className = `flex gap-3 sm:gap-4 ${isUser ? 'justify-end' : 'justify-start'} text-sm leading-relaxed`;
-
-            if (isUser) {
-                wrapper.innerHTML = `
-                    <div class="max-w-[85%] sm:max-w-[75%] bg-nix-600 text-white dark:bg-nix-600/25 dark:border dark:border-nix-500/30 dark:text-zinc-100 rounded-2xl rounded-tr-sm p-4 shadow-sm">
-                        <div class="whitespace-pre-wrap font-sans">${escapeHtml(msg.content)}</div>
-                    </div>
-                    <div class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
-                        <i data-lucide="user" class="w-4 h-4 text-slate-600 dark:text-zinc-300"></i>
-                    </div>
-                `;
-            } else {
-                const parsedContent = msg.content
-                    ? (window.marked ? window.marked.parse(msg.content) : escapeHtml(msg.content))
-                    : '<span class="typing-cursor text-slate-400 dark:text-zinc-400">Nix 4.5 is thinking...</span>';
-                wrapper.innerHTML = `
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nix-700 to-nix-500 flex items-center justify-center shrink-0 nix-glow-sm">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
-                    </div>
-                    <div class="max-w-[90%] sm:max-w-[82%] bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-slate-800 dark:text-zinc-200 rounded-2xl rounded-tl-sm p-4 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-nix-borderdark/60 pb-2 text-xs text-slate-400 dark:text-zinc-400">
-                            <span class="font-bold bg-gradient-to-r from-nix-600 to-purple-500 dark:from-nix-300 dark:to-purple-200 bg-clip-text text-transparent">Nix 4.5</span>
-                            <div class="flex items-center space-x-1.5">
-                                <button onclick="copyToClipboard(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-600 dark:hover:text-nix-300 p-1" title="Copy text"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
-                                <button onclick="speakText(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-600 dark:hover:text-nix-300 p-1" title="Read Aloud"><i data-lucide="volume-2" class="w-3.5 h-3.5"></i></button>
-                            </div>
-                        </div>
-                        <div class="prose max-w-none prose-body text-xs sm:text-sm">${parsedContent}</div>
-                    </div>
-                `;
-            }
-
-            setTimeout(() => {
-                if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                    window.lucide.createIcons();
-                }
-            }, 0);
-            return wrapper;
-        }
-
-        function openMemoryModal() {
-            renderMemoriesList();
-            document.getElementById('memoryModal')?.classList.remove('hidden');
-        }
-
-        function closeMemoryModal() {
-            document.getElementById('memoryModal')?.classList.add('hidden');
-        }
-
-        function addMemory() {
-            const input = document.getElementById('newMemoryInput');
-            const category = document.getElementById('memoryCategory')?.value || 'Preference';
-            const content = (input?.value || '').trim();
-            if (!content) return;
-            appState.memories.push({ id: 'mem_' + Date.now(), category, content, createdAt: Date.now() });
-            input.value = '';
-            saveLocalState();
-            renderMemoriesList();
-            updateMemoryBadge();
-            showToast('Memory saved.');
-        }
-
-        function deleteMemory(id) {
-            appState.memories = appState.memories.filter(m => m.id !== id);
-            saveLocalState();
-            renderMemoriesList();
-            updateMemoryBadge();
-        }
-
-        function clearAllMemories() {
-            appState.memories = [];
-            saveLocalState();
-            renderMemoriesList();
-            updateMemoryBadge();
-            showToast('All memories cleared.');
-        }
-
-        function renderMemoriesList() {
-            const container = document.getElementById('memoriesListContainer');
-            if (!container) return;
-            container.innerHTML = '';
-            if (appState.memories.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 dark:text-zinc-500 italic text-center py-2">No active memories stored.</p>`;
-                return;
-            }
-            appState.memories.forEach(m => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs';
-                item.innerHTML = `
-                    <div class="space-y-0.5 truncate pr-2">
-                        <span class="text-[10px] font-bold px-1.5 py-0.2 bg-nix-600/20 text-nix-600 dark:text-nix-300 rounded">${escapeHtml(m.category)}</span>
-                        <p class="text-slate-800 dark:text-zinc-200 truncate mt-0.5">${escapeHtml(m.content)}</p>
-                    </div>
-                    <button onclick="deleteMemory('${m.id}')" class="text-slate-400 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                `;
-                container.appendChild(item);
-            });
-            if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                window.lucide.createIcons();
-            }
-        }
-
-        function updateMemoryBadge() {
-            const badge = document.getElementById('memoryCountBadge');
-            if (badge) badge.innerText = appState.memories.length;
-        }
-
-        function openSettingsModal(defaultTab = 'general') {
-            switchSettingsTab(defaultTab);
-            document.getElementById('settingsModal')?.classList.remove('hidden');
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settingsModal')?.classList.add('hidden');
-        }
-
-        function switchSettingsTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50';
-            });
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-            if (activeBtn) activeBtn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-600 dark:text-nix-300 bg-nix-600/10 dark:bg-nix-600/20';
-            document.getElementById(`tabContent-${tabId}`)?.classList.remove('hidden');
-        }
-
-        function exportAllData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `nix_45_backup_${Date.now()}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function clearAllLocalData() {
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-            window.location.reload();
-        }
-
-        function sendQuickPrompt(text) {
-            const input = document.getElementById('userInput');
-            if (!input) return;
-            input.value = text;
-            handleComposerInput(input);
-            sendMessage();
-        }
-
-        function handleKeyDown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        }
-
-        function triggerFileInput() {
-            document.getElementById('fileInput')?.click();
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentAttachedFileText = e.target.result;
-                const fileNameEl = document.getElementById('fileName');
-                if (fileNameEl) fileNameEl.innerText = file.name;
-                document.getElementById('filePreview')?.classList.remove('hidden');
-                showToast(`Attached ${file.name}`);
-            };
-            reader.readAsText(file);
-        }
-
-        function clearAttachedFile() {
-            currentAttachedFileText = null;
-            const input = document.getElementById('fileInput');
-            if (input) input.value = '';
-            document.getElementById('filePreview')?.classList.add('hidden');
-        }
-
-        function toggleDictation() {
-            const btn = document.getElementById('dictationBtn');
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                showToast('Voice dictation not supported.');
-                return;
-            }
-            if (!dictationRecognition) {
-                dictationRecognition = new SpeechRecognition();
-                dictationRecognition.continuous = false;
-                dictationRecognition.interimResults = false;
-                dictationRecognition.onresult = (e) => {
-                    const transcript = e.results[0][0].transcript;
-                    const input = document.getElementById('userInput');
-                    if (input) {
-                        input.value += (input.value ? ' ' : '') + transcript;
-                        handleComposerInput(input);
-                    }
-                };
-                dictationRecognition.onend = () => {
-                    isDictating = false;
-                    btn?.classList.remove('text-rose-500', 'animate-pulse');
-                    setNixyMood('idle');
-                };
-            }
-            if (isDictating) {
-                dictationRecognition.stop();
-            } else {
-                dictationRecognition.start();
-                isDictating = true;
-                btn?.classList.add('text-rose-500', 'animate-pulse');
-                setNixyMood('listening', 'Listening...');
-                showToast('Listening...');
-            }
-        }
-
-        function speakText(text) {
-            if (!('speechSynthesis' in window)) {
-                showToast('Text-to-speech not supported.');
-                return;
-            }
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 1.0;
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function copyToClipboard(text) {
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showToast('Copied to clipboard!');
-        }
-
-        function exportCurrentChat() {
-            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            if (!activeConv || activeConv.messages.length === 0) {
-                showToast('No active messages to export.');
-                return;
-            }
-            const blob = new Blob([JSON.stringify(activeConv, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${activeConv.title.replace(/[^a-z0-9]/gi, '_')}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function clearCurrentChat() {
-            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
-            if (activeConv) {
-                activeConv.messages = [];
-                saveLocalState();
-                renderActiveConversationMessages();
-                showToast('Chat history cleared.');
-            }
-        }
-
-        function toggleMobileSidebar() {
-            document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
-            document.getElementById('mobileBackdrop')?.classList.toggle('hidden');
-        }
-
-        function updateSendButtonState(generating) {
-            const btn = document.getElementById('sendBtn');
-            if (!btn) return;
-            if (generating) {
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
-                btn.disabled = true;
-            } else {
-                btn.innerHTML = `<i data-lucide="arrow-up" class="w-4 h-4"></i>`;
-                btn.disabled = false;
-            }
-            if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                window.lucide.createIcons();
-            }
-        }
-
-        function highlightCodeBlocks() {
-            if (!window.hljs) return;
-            document.querySelectorAll('pre code').forEach((block) => {
-                try { window.hljs.highlightElement(block); } catch (_) {}
-            });
-        }
-
-        function scrollToBottom() {
-            const container = document.getElementById('messagesContainer');
-            if (container) container.scrollTop = container.scrollHeight;
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-20 right-6 bg-slate-900 text-white dark:bg-nix-carddark border border-nix-500/50 px-4 py-2.5 rounded-xl text-xs shadow-2xl z-50 transition-all duration-300 transform translate-y-2 opacity-0';
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 2500);
-        }
-
-        function escapeHtml(str) {
-            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        function escapeJsString(str) {
-            return (str || '').replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
-        }
-
-        document.addEventListener('mousemove', (e) => {
-            const eyes = document.querySelectorAll('#nixyOrb .nixy-eye-ball');
-            if (!eyes.length) return;
-            const orb = document.getElementById('nixyOrb');
-            if (!orb) return;
-            const rect = orb.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
-            const dist = Math.min(3.5, Math.hypot(e.clientX - cx, e.clientY - cy) / 60);
-            const dx = Math.cos(angle) * dist;
-            const dy = Math.sin(angle) * dist;
-            eyes.forEach((eye) => {
-                eye.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
-            });
-        });
 
         window.addEventListener('DOMContentLoaded', () => {
-            if (window.puter) {
-                window.puter.quiet = true;
-            }
-            loadLocalState();
-            applyTheme(appState.theme);
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlChatId = urlParams.get('chat') || urlParams.get('id');
-            if (urlChatId && appState.conversations.some(c => c.id === urlChatId)) {
-                appState.activeConversationId = urlChatId;
-            } else if (appState.conversations.length === 0) {
-                createNewConversation(false);
-            } else if (!appState.activeConversationId) {
-                appState.activeConversationId = appState.conversations[0].id;
-            }
             renderConversationsList();
             renderActiveConversationMessages();
             updateMemoryBadge();
-            updateGuestQuotaUi();
+            applySignedInUser(null);
+            hydrateSupabaseAccountSession();
             mountNixyOrb();
             detectGuestIp();
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
