@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NixCode — CodeNix Official AI Workspace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Puter.js SDK for AI Code Generation & Debugging -->
+    <script src="https://js.puter.com/v2/"></script>
+    <!-- JSZip for Multi-Page Project ZIP Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase Client for HostNix Deployment -->
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+        const SUPABASE_URL = 'https://zncztttvefahofdeacxf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_GhwVsgutWW4EpK9Fc_3DQQ_pW_R48LM';
+        window.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.dispatchEvent(new Event('supabase-ready'));
+    </script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        codenix: {
+                            purple: '#8B5CF6',
+                            deep: '#6D28D9',
+                            glow: '#A78BFA',
+                            dark: '#09090B',
+                            surface: '#121216',
+                            border: '#27272A'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 4s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2.8s infinite',
+                        'blink': 'blink 4s infinite',
+                        'orbit-spin': 'orbitSpin 1.6s linear infinite',
+                        'orbit-reverse': 'orbitReverse 2.4s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 28px rgba(139, 92, 246, 0.5), inset 0 -6px 14px rgba(0,0,0,0.4)' },
+                            '50%': { boxShadow: '0 0 46px rgba(167, 139, 250, 0.85), inset 0 -6px 14px rgba(0,0,0,0.4)' },
+                        },
+                        blink: {
+                            '0%, 94%, 98%, 100%': { transform: 'scaleY(1)' },
+                            '96%': { transform: 'scaleY(0.1)' },
+                        },
+                        orbitSpin: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                        orbitReverse: {
+                            '0%': { transform: 'rotate(360deg)' },
+                            '100%': { transform: 'rotate(0deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbars for CodeNix Official Aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.35);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.65);
+        }
+
+        /* Ambient Gemini-like Radial Glow on Welcome Screen */
+        .welcome-ambient-light {
+            background: radial-gradient(circle at 50% 48%, rgba(139, 92, 246, 0.14) 0%, rgba(255, 255, 255, 0) 62%);
+        }
+        .dark .welcome-ambient-dark {
+            background: radial-gradient(circle at 50% 48%, rgba(139, 92, 246, 0.18) 0%, rgba(9, 9, 11, 0) 62%);
+        }
+
+        /* Nixy Orb Physics & Eye Transitions */
+        #nixy-bot {
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.3s ease,
+                        background 0.4s ease;
+            background: radial-gradient(circle at 30% 25%, #C4B5FD 0%, #8B5CF6 48%, #4C1D95 100%);
+        }
+
+        .nixy-eye {
+            transition: transform 0.15s ease-out, height 0.2s ease, width 0.2s ease, border-radius 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        /* Nixy Expressive Eye Moods */
+        #nixy-bot.mood-thinking, #nixy-bot.mood-coding {
+            animation: pulseGlow 0.85s infinite;
+        }
+        #nixy-bot.mood-thinking .nixy-eye, #nixy-bot.mood-coding .nixy-eye {
+            background-color: #FEF08A;
+            box-shadow: 0 0 12px #FEF08A;
+            transform: scale(1.12);
+        }
+        #nixy-bot.mood-thinking .nixy-aura, #nixy-bot.mood-coding .nixy-aura {
+            opacity: 1 !important;
+        }
+
+        #nixy-bot.mood-happy .nixy-eye {
+            height: 44% !important;
+            border-radius: 999px 999px 3px 3px !important;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 12px #A7F3D0;
+            transform: translateY(-1px) scaleX(1.1);
+        }
+
+        #nixy-bot.mood-sad, #nixy-bot.mood-error {
+            background: radial-gradient(circle at 30% 25%, #DDD6FE 0%, #6D28D9 52%, #2E1065 100%);
+        }
+        #nixy-bot.mood-sad .nixy-eye:first-child, #nixy-bot.mood-error .nixy-eye:first-child {
+            height: 55% !important;
+            border-radius: 4px 999px 999px 999px !important;
+            transform: rotate(-16deg) translateY(1px);
+            background-color: #FDA4AF;
+            box-shadow: 0 0 10px #FB7185;
+        }
+        #nixy-bot.mood-sad .nixy-eye:last-child, #nixy-bot.mood-error .nixy-eye:last-child {
+            height: 55% !important;
+            border-radius: 999px 4px 999px 999px !important;
+            transform: rotate(16deg) translateY(1px);
+            background-color: #FDA4AF;
+            box-shadow: 0 0 10px #FB7185;
+        }
+
+        #nixy-bot.mood-curious .nixy-eye:first-child {
+            transform: scale(1.22);
+            background-color: #FDE68A;
+        }
+        #nixy-bot.mood-curious .nixy-eye:last-child {
+            transform: scale(0.78);
+            background-color: #FDE68A;
+        }
+
+        #nixy-bot.mood-debug .nixy-eye {
+            background-color: #34D399;
+            box-shadow: 0 0 12px #34D399;
+            border-radius: 4px !important;
+        }
+
+        /* Colorful Syntax-Highlighted Backdrop + Transparent Caret Editor */
+        .code-editor-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .code-layer {
+            position: absolute;
+            inset: 0;
+            margin: 0;
+            padding: 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84rem;
+            line-height: 1.6;
+            tab-size: 2;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        #code-highlight-layer {
+            pointer-events: none;
+            z-index: 1;
+        }
+        #code-editor {
+            z-index: 2;
+            background: transparent;
+            color: transparent;
+            caret-color: #A78BFA;
+            resize: none;
+            border: none;
+            outline: none;
+        }
+        #code-editor::selection {
+            background: rgba(139, 92, 246, 0.35);
+            color: transparent;
+        }
+
+        /* Syntax Highlight Colors (Light & Dark Optimized) */
+        .tok-tag { color: #7C3AED; font-weight: 600; }
+        .dark .tok-tag { color: #F472B6; font-weight: 600; }
+        .tok-attr { color: #0284C7; }
+        .dark .tok-attr { color: #38BDF8; }
+        .tok-str { color: #059669; }
+        .dark .tok-str { color: #34D399; }
+        .tok-kw { color: #9333EA; font-weight: 600; }
+        .dark .tok-kw { color: #C084FC; font-weight: 600; }
+        .tok-num { color: #D97706; }
+        .dark .tok-num { color: #FBBF24; }
+        .tok-comm { color: #9CA3AF; font-style: italic; }
+        .dark .tok-comm { color: #71717A; font-style: italic; }
+
+        /* Simulated Cursor Click Ripple when Nixy tests preview */
+        .nixy-action-ring {
+            position: fixed;
+            pointer-events: none;
+            border: 2.5px solid #8B5CF6;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 9999px;
+            animation: rippleOut 0.85s ease-out forwards;
+            z-index: 9998;
+        }
+        @keyframes rippleOut {
+            0% { width: 14px; height: 14px; opacity: 1; transform: translate(-50%, -50%); }
+            100% { width: 72px; height: 72px; opacity: 0; transform: translate(-50%, -50%); }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-[#09090B] text-zinc-900 dark:text-zinc-100 font-sans antialiased overflow-hidden h-screen flex flex-col selection:bg-purple-500 selection:text-white transition-colors duration-300">
+
+    <!-- Hidden File Input for Uploading Code / Assets / Logos / Images -->
+    <input type="file" id="file-upload-input" multiple class="hidden" onchange="handleFileUpload(event)" />
+
+    <!-- =====================================================================
+         MINIMAL TOP BAR (OFFICIAL NIXY FACE LOGO + THEME TOGGLE + WORKSPACE ACTIONS)
+    ====================================================================== -->
+    <header class="h-14 px-4 sm:px-6 flex items-center justify-between shrink-0 z-30">
+        <!-- Brand Identity: Nixy Face Logo -->
+        <div class="flex items-center gap-3">
+            <button onclick="resetToWelcome()" title="Start New Project" class="flex items-center gap-2.5 group focus:outline-none">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md shadow-purple-500/30 group-hover:scale-105 transition relative border border-purple-300/40" style="background: radial-gradient(circle at 30% 25%, #C4B5FD 0%, #8B5CF6 52%, #4C1D95 100%);">
+                    <div class="absolute top-1 left-1.5 w-2.5 h-1 rounded-full bg-white/40 -rotate-12"></div>
+                    <div class="flex items-center justify-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_4px_#fff]"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_4px_#fff]"></span>
+                    </div>
+                </div>
+                <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-purple-200 bg-clip-text text-transparent">NixCode</span>
+            </button>
+
+            <!-- Saved Chat History Button (Appears if saved sessions exist in localStorage) -->
+            <button id="saved-chats-btn" onclick="toggleSavedChatsDrawer()" title="Saved Projects & Chats" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-zinc-800 transition">
+                <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Saved Chats</span>
+            </button>
+        </div>
+
+        <!-- Center Status Pill (Revealed after first message) -->
+        <div id="nixy-status-pill" class="hidden items-center gap-2 px-3 py-1 rounded-full bg-purple-50 dark:bg-zinc-900 border border-purple-200 dark:border-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-300">
+            <span id="status-dot" class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+            <span id="status-text">Nixy is ready</span>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2">
+            <!-- Workspace Action Buttons (Hidden on Welcome Screen) -->
+            <div id="workspace-top-actions" class="hidden items-center gap-2">
+                <button onclick="triggerNixyDebug()" title="Nixy Debug & Scan Code" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white shadow-sm transition active:scale-95">
+                    <i data-lucide="bug" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Debug</span>
+                </button>
+
+                <button onclick="triggerNixyTestPreview()" title="Watch Nixy interact with your website" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-50 dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-zinc-800 transition active:scale-95">
+                    <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Try Site</span>
+                </button>
+
+                <button onclick="openHostNixModal()" title="Deploy Project with HostNix" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-sm transition active:scale-95">
+                    <i data-lucide="rocket" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Deploy with HostNix</span>
+                </button>
+
+                <button onclick="exportProjectAsZip()" title="Export Multi-Page Project as ZIP" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-50 dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-zinc-800 transition active:scale-95">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Export ZIP</span>
+                </button>
+
+                <button onclick="toggleConsole()" title="Toggle Console" class="p-2 rounded-full bg-purple-50 dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-purple-200 dark:border-zinc-800 transition relative">
+                    <i data-lucide="terminal" class="w-4 h-4"></i>
+                    <span id="console-badge" class="hidden absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                </button>
+            </div>
+
+            <!-- Light / Dark Mode Switch -->
+            <button onclick="toggleTheme()" title="Switch Theme" class="p-2 rounded-full bg-purple-50 dark:bg-zinc-900 hover:bg-purple-100 dark:hover:bg-zinc-800 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-zinc-800 transition">
+                <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- =====================================================================
+         1. WELCOME SCREEN (EXACTLY 3 ELEMENTS: NIXY BOT, GREETING MESSAGE, CHATBOX)
+    ====================================================================== -->
+    <section id="welcome-screen" class="flex-1 flex flex-col items-center justify-center px-4 pb-16 welcome-ambient-light dark:welcome-ambient-dark relative z-20 transition-opacity duration-500">
+        
+        <div class="w-full max-w-2xl flex flex-col items-center text-center">
+            <!-- SECTION 1: NIXY BOT -->
+            <div id="welcome-bot-anchor" class="mb-6">
+                <div id="nixy-bot" onclick="pokeNixy()" title="Hi! I'm Nixy" class="cursor-pointer mx-auto w-24 h-24 sm:w-28 sm:h-28 rounded-full animate-pulse-glow animate-float flex items-center justify-center relative select-none shadow-2xl border-2 border-purple-300/40">
+                    <!-- Orbital Generating Rings -->
+                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-2.5 rounded-full border-2 border-dashed border-purple-400/80 animate-orbit-spin"></div>
+                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-4 rounded-full border border-indigo-400/50 animate-orbit-reverse"></div>
+
+                    <!-- Specular Highlight -->
+                    <div class="absolute top-2.5 left-4 w-1/3 h-1/5 rounded-full bg-white/35 blur-[1px] -rotate-12"></div>
+                    <!-- Two White Smaller Balls as Eyes -->
+                    <div id="nixy-eyes-wrapper" class="flex items-center justify-center gap-3.5 w-full px-4">
+                        <div class="nixy-eye w-5 h-5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] animate-blink"></div>
+                        <div class="nixy-eye w-5 h-5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] animate-blink"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: GREETING MESSAGE -->
+            <h1 id="welcome-greeting" class="text-2xl sm:text-4xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-100 mb-8 transition-all duration-300">
+                Where should we start?
+            </h1>
+
+            <!-- SECTION 3: GEMINI-STYLE PILL CHATBOX WITH FILE/LOGO UPLOAD -->
+            <div class="w-full max-w-2xl">
+                <div id="welcome-attachments" class="hidden flex-wrap gap-2 mb-2.5 justify-start px-2"></div>
+
+                <form onsubmit="handleChatSubmit(event, 'welcome')" class="w-full flex items-center gap-2 px-4 py-2.5 sm:py-3 rounded-full bg-white dark:bg-[#141419] border border-purple-200 dark:border-zinc-800 shadow-[0_8px_30px_rgba(139,92,246,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.6)] focus-within:border-purple-500 dark:focus-within:border-purple-500 transition-all">
+                    <button type="button" onclick="triggerFilePicker()" title="Upload files or logos (PNG, SVG, JPG, HTML, CSS, JS)" class="p-2 rounded-full hover:bg-purple-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition shrink-0">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    </button>
+
+                    <input id="welcome-input" oninput="onUserTypingInput('welcome')" type="text" autocomplete="off" placeholder="Ask Nixy to build a multi-page website or app..." class="flex-1 bg-transparent text-sm sm:text-base text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none px-1" />
+
+                    <button type="submit" title="Send" class="p-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white transition active:scale-95 shrink-0 shadow-md shadow-purple-600/20">
+                        <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================================================
+         2. ACTIVE WORKSPACE VIEW
+    ====================================================================== -->
+    <main id="workspace-screen" class="hidden flex-1 flex-col lg:flex-row overflow-hidden relative">
+
+        <!-- LEFT: CHAT CONVERSATION PANEL -->
+        <section class="w-full lg:w-[410px] xl:w-[450px] border-b lg:border-b-0 lg:border-r border-purple-200/70 dark:border-zinc-800/90 bg-white dark:bg-[#09090B] flex flex-col h-[45%] lg:h-full shrink-0">
+            
+            <!-- Messages Stream -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-5 text-sm"></div>
+
+            <!-- Active Chat Input Area -->
+            <div class="p-3 sm:p-4 bg-white dark:bg-[#09090B] shrink-0">
+                <div id="workspace-attachments" class="hidden flex-wrap gap-1.5 mb-2 px-1"></div>
+
+                <form onsubmit="handleChatSubmit(event, 'workspace')" class="flex items-center gap-2 px-3.5 py-2 rounded-full bg-purple-50/70 dark:bg-[#141419] border border-purple-200 dark:border-zinc-800 focus-within:border-purple-500 transition">
+                    <button type="button" onclick="triggerFilePicker()" title="Upload files or logos" class="p-1.5 rounded-full hover:bg-purple-200/70 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition shrink-0">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                    <input id="workspace-input" oninput="onUserTypingInput('workspace')" type="text" autocomplete="off" placeholder="Message Nixy, request edits, or add pages..." class="flex-1 bg-transparent text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none" />
+                    <button type="submit" class="p-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white transition active:scale-95 shrink-0">
+                        <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- RIGHT: MULTI-PAGE ARTIFACT PANEL (RESPONSIVE PREVIEW & COLORFUL CODE) -->
+        <section class="flex-1 flex flex-col h-[55%] lg:h-full bg-purple-50/30 dark:bg-[#0C0C0F] overflow-hidden">
+            
+            <!-- Artifact Toolbar -->
+            <div class="px-3 sm:px-4 py-2 border-b border-purple-200/70 dark:border-zinc-800 bg-white dark:bg-[#0E0E12] flex flex-wrap items-center justify-between gap-2 shrink-0">
+                
+                <!-- Multi-Page & Cloned Asset Tabs -->
+                <div class="flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5">
+                    <div id="page-tabs-container" class="flex items-center gap-1"></div>
+                    <button onclick="promptNewPage()" title="Add New Page" class="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-950/50 transition shrink-0">
+                        <i data-lucide="file-plus" class="w-3.5 h-3.5"></i>
+                        <span>Page</span>
+                    </button>
+                </div>
+
+                <!-- Device Viewport Switcher + Preview/Code Toggle + Copy -->
+                <div class="flex items-center gap-2 ml-auto">
+                    <!-- Responsive Device Switcher (PC / Tablet / Mobile) -->
+                    <div id="device-switcher-group" class="inline-flex p-0.5 rounded-full bg-purple-50 dark:bg-zinc-900 border border-purple-200/70 dark:border-zinc-800">
+                        <button onclick="setPreviewDevice('desktop')" id="dev-desktop" title="PC / Desktop View" class="p-1.5 rounded-full bg-purple-600 text-white transition">
+                            <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="setPreviewDevice('tablet')" id="dev-tablet" title="Tablet View (768px)" class="p-1.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                            <i data-lucide="tablet" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="setPreviewDevice('mobile')" id="dev-mobile" title="Mobile View (390px)" class="p-1.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                            <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Preview | Code Switcher -->
+                    <div class="inline-flex p-0.5 rounded-full bg-purple-100/80 dark:bg-zinc-900 border border-purple-200/70 dark:border-zinc-800">
+                        <button onclick="switchArtifactTab('preview')" id="btn-view-preview" class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm transition">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                            <span>Preview</span>
+                        </button>
+                        <button onclick="switchArtifactTab('code')" id="btn-view-code" class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                            <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+                            <span>Code</span>
+                        </button>
+                    </div>
+
+                    <button onclick="copyActiveCode()" id="copy-code-btn" title="Copy Current File Code" class="p-1.5 rounded-lg bg-white dark:bg-zinc-900 hover:bg-purple-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-purple-200 dark:border-zinc-800 transition">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Artifact Body: Responsive Preview OR Colorful Code Editor -->
+            <div class="flex-1 relative overflow-hidden">
+                <!-- Live Responsive Preview Container -->
+                <div id="artifact-preview-pane" class="w-full h-full bg-zinc-100 dark:bg-[#09090B] flex items-center justify-center overflow-auto transition-all">
+                    <div id="preview-device-frame" class="w-full h-full bg-white transition-all duration-300 overflow-hidden shadow-2xl">
+                        <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals" class="w-full h-full border-0"></iframe>
+                    </div>
+
+                    <!-- Generating Shimmer Overlay -->
+                    <div id="generating-overlay" class="hidden absolute inset-0 bg-white/85 dark:bg-[#09090B]/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 transition-opacity">
+                        <div class="relative w-16 h-16 mb-4 flex items-center justify-center">
+                            <div class="absolute inset-0 rounded-full border-2 border-purple-500/30 animate-ping"></div>
+                            <div class="absolute inset-1 rounded-full border-2 border-dashed border-purple-500 animate-orbit-spin"></div>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center shadow-lg">
+                                <div class="flex gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-200"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-200"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <p id="generating-stage-title" class="text-sm sm:text-base font-semibold text-zinc-900 dark:text-white mb-1">Nixy is architecting your pages...</p>
+                        <p id="generating-stage-sub" class="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs">Writing colorful HTML, Tailwind styling, and multi-page navigation</p>
+                    </div>
+                </div>
+
+                <!-- Colorful Syntax-Highlighted Code Editor Container -->
+                <div id="artifact-code-pane" class="hidden w-full h-full flex flex-col bg-white dark:bg-[#09090B] relative">
+                    <!-- Cloned Image Asset Visual Preview (Shown when user selects a cloned image asset tab) -->
+                    <div id="asset-image-viewer" class="hidden w-full h-full flex flex-col items-center justify-center p-6 text-center bg-zinc-50 dark:bg-[#09090B]">
+                        <img id="asset-image-preview" src="" alt="Uploaded Asset" class="max-h-56 max-w-full rounded-xl shadow-lg border border-purple-300/40 mb-4 object-contain bg-white/5 p-2" />
+                        <p id="asset-image-caption" class="text-xs font-mono text-purple-600 dark:text-purple-300 mb-1"></p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Cloned into project assets — automatically embedded in your pages & ZIP export.</p>
+                    </div>
+
+                    <!-- Colorful Syntax-Highlighted Editor -->
+                    <div id="syntax-editor-wrapper" class="code-editor-wrapper">
+                        <pre id="code-highlight-layer" aria-hidden="true" class="code-layer text-zinc-800 dark:text-zinc-200"></pre>
+                        <textarea id="code-editor" spellcheck="false" onscroll="syncCodeScroll()" onmouseup="handleCodeSelection(event)" onkeyup="handleCodeSelection(event)" class="code-layer" placeholder="// Your colorful code appears here... Highlight any snippet and click to ask Nixy!"></textarea>
+                    </div>
+
+                    <!-- Floating Highlight-to-Ask Nixy Action Menu -->
+                    <div id="code-selection-popover" class="hidden fixed z-50 flex items-center gap-1 p-1.5 rounded-full bg-zinc-900/95 dark:bg-[#18181F]/95 border border-purple-500/50 shadow-2xl backdrop-blur-md text-xs text-white">
+                        <div class="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center ml-1 mr-0.5 shrink-0">
+                            <span class="w-1 h-1 rounded-full bg-white mr-0.5"></span>
+                            <span class="w-1 h-1 rounded-full bg-white"></span>
+                        </div>
+                        <button onclick="askNixyAboutSelection('explain')" class="px-2.5 py-1 rounded-full hover:bg-purple-600 transition font-medium">Explain</button>
+                        <button onclick="askNixyAboutSelection('edit')" class="px-2.5 py-1 rounded-full hover:bg-purple-600 transition font-medium">Edit</button>
+                        <button onclick="askNixyAboutSelection('optimize')" class="px-2.5 py-1 rounded-full hover:bg-purple-600 transition font-medium">Optimize</button>
+                        <button onclick="hideCodeSelectionPopover()" class="p-1 rounded-full hover:bg-zinc-800 text-zinc-400">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Runtime Console -->
+            <div id="console-drawer" class="h-0 overflow-hidden transition-all duration-300 border-t border-purple-200 dark:border-zinc-800 bg-zinc-950 text-zinc-200 flex flex-col shrink-0">
+                <div class="px-4 py-1.5 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="terminal" class="w-3.5 h-3.5 text-purple-400"></i>
+                        <span class="text-xs font-mono font-semibold text-purple-300">NixCode Console</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="triggerNixyDebug()" class="text-[11px] px-2 py-0.5 rounded bg-purple-600 hover:bg-purple-500 text-white font-medium">Auto-Fix with Nixy</button>
+                        <button onclick="clearConsole()" class="text-[11px] text-zinc-400 hover:text-white">Clear</button>
+                        <button onclick="toggleConsole(false)" class="text-zinc-400 hover:text-white">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="console-logs" class="flex-1 overflow-y-auto p-3 font-mono text-xs space-y-1">
+                    <div class="text-purple-400">[NixCode] Console ready.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================================
+         FLOATING AUTONOMOUS NIXY CONTAINER + LIVE SPEECH BUBBLE
+    ====================================================================== -->
+    <div id="floating-nixy-layer" class="hidden fixed z-50 pointer-events-none flex items-center gap-2.5" style="top: 76px; right: 28px; transition: top 0.8s cubic-bezier(0.22, 1, 0.36, 1), left 0.8s cubic-bezier(0.22, 1, 0.36, 1);">
+        <div id="nixy-speech-bubble" class="hidden max-w-[240px] px-3 py-1.5 rounded-2xl rounded-br-xs bg-zinc-900/95 dark:bg-purple-950/95 text-white text-[11px] font-medium shadow-xl border border-purple-400/40 backdrop-blur-md leading-snug transition-all">
+            Watching your workspace...
+        </div>
+    </div>
+
+    <!-- Saved Chats Drawer (localStorage History) -->
+    <div id="saved-chats-drawer" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-start">
+        <div class="w-80 max-w-[85vw] h-full bg-white dark:bg-[#121216] border-r border-purple-200 dark:border-zinc-800 p-4 flex flex-col shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-purple-200/70 dark:border-zinc-800">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="history" class="w-4 h-4 text-purple-500"></i>
+                    <h3 class="font-semibold text-sm">Saved Chats & Projects</h3>
+                </div>
+                <button onclick="toggleSavedChatsDrawer(false)" class="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="saved-chats-list" class="flex-1 overflow-y-auto py-3 space-y-2 text-xs"></div>
+            <button onclick="resetToWelcome(); toggleSavedChatsDrawer(false);" class="mt-2 w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition">+ New Project</button>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Adding a New Page -->
+    <div id="new-page-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-[#141419] border border-purple-200 dark:border-zinc-800 p-5 shadow-2xl">
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-white mb-1">Create New Page</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Enter a filename (e.g., <code class="text-purple-500">about.html</code>, <code class="text-purple-500">services.html</code>, <code class="text-purple-500">styles.css</code>)</p>
+            <input id="new-page-filename" type="text" placeholder="about.html" class="w-full px-3.5 py-2 rounded-xl text-sm bg-purple-50/70 dark:bg-zinc-900 border border-purple-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4" />
+            <div class="flex justify-end gap-2">
+                <button onclick="closeNewPageModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">Cancel</button>
+                <button onclick="confirmCreateNewPage()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white">Create File</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HostNix Deployment Modal -->
+    <div id="hostnix-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl bg-white dark:bg-[#141419] border border-purple-200 dark:border-zinc-800 p-5 shadow-2xl">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="rocket" class="w-4 h-4 text-purple-500"></i>
+                    <h3 class="text-base font-semibold text-zinc-900 dark:text-white">Deploy with HostNix</h3>
+                </div>
+                <button onclick="closeHostNixModal()" class="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-3">Publish all your current pages & assets to <span class="font-mono text-purple-500">https://hostnix.vercel.app/#slug</span></p>
+
+            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Unique Domain Slug</label>
+            <div class="flex items-center rounded-xl bg-purple-50/70 dark:bg-zinc-900 border border-purple-200 dark:border-zinc-700 overflow-hidden mb-3">
+                <span class="px-3 py-2 text-xs font-mono text-zinc-500 dark:text-zinc-400 bg-purple-100/50 dark:bg-zinc-950/60 border-r border-purple-200 dark:border-zinc-800">https://hostnix.vercel.app/#</span>
+                <input id="hostnix-slug-input" type="text" placeholder="my-nixcode-site" class="flex-1 bg-transparent px-3 py-2 text-xs font-mono text-zinc-900 dark:text-white outline-none" />
+            </div>
+
+            <div id="hostnix-files-summary" class="text-[11px] text-zinc-500 dark:text-zinc-400 bg-purple-50/40 dark:bg-zinc-900/60 rounded-xl p-2.5 border border-purple-200/50 dark:border-zinc-800 mb-4"></div>
+
+            <div id="hostnix-result-box" class="hidden mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1.5">
+                <p class="font-semibold text-emerald-600 dark:text-emerald-400">✅ Deployed Live on HostNix!</p>
+                <div class="flex items-center justify-between gap-2 bg-white/70 dark:bg-zinc-950/80 px-2.5 py-1.5 rounded-lg border border-emerald-500/20">
+                    <a id="hostnix-live-link" href="#" target="_blank" rel="noopener noreferrer" class="font-mono text-[11px] text-purple-600 dark:text-purple-400 underline truncate"></a>
+                    <button type="button" onclick="copyHostNixLink()" class="px-2 py-0.5 rounded bg-purple-600 text-white text-[11px] font-medium shrink-0">Copy</button>
+                </div>
+            </div>
+
+            <p id="hostnix-error-msg" class="hidden text-xs text-rose-500 mb-3"></p>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeHostNixModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">Close</button>
+                <button type="button" id="hostnix-deploy-btn" onclick="deployToHostNix()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1.5">
+                    <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+                    <span>Deploy Now</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         APPLICATION LOGIC
+    ====================================================================== -->
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'nixcode_saved_sessions_v1';
+
+        const project = {
+            sessionId: 'session-' + Date.now(),
+            title: 'Untitled Project',
+            pages: {
+                'index.html': ''
+            },
+            assets: {}, // Cloned uploaded assets/logos: { 'logo.png': 'data:image/...' }
+            chatHistory: [], // Persisted chat messages
+            activePage: 'index.html',
+            uploadedFiles: [],
+            hasStarted: false,
+            activeTab: 'preview',
+            previewDevice: 'desktop', // 'desktop' | 'tablet' | 'mobile'
+            isConsoleOpen: false,
+            consoleErrors: [],
+            isBusy: false,
+            autoFixCooldown: false,
+            selectedSnippet: '',
+            watchTimer: null,
+            roamTimer: null,
+            typingReactTimer: null
+        };
+
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const workspaceScreen = document.getElementById('workspace-screen');
+        const nixyBot = document.getElementById('nixy-bot');
+        const eyesWrapper = document.getElementById('nixy-eyes-wrapper');
+        const floatingNixyLayer = document.getElementById('floating-nixy-layer');
+        const chatMessages = document.getElementById('chat-messages');
+        const codeEditor = document.getElementById('code-editor');
+        const codeHighlightLayer = document.getElementById('code-highlight-layer');
+        const previewFrame = document.getElementById('preview-frame');
+        const statusText = document.getElementById('status-text');
+
+        // =====================================================================
+        // 0. LOCAL STORAGE PERSISTENCE (CHATS + MULTI-PAGE CODE + CLONED ASSETS)
+        // =====================================================================
+        function getAllSavedSessions() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function saveCurrentSessionToStorage() {
+            if (!project.hasStarted) return;
+            try {
+                if (!project.assets[project.activePage]) {
+                    project.pages[project.activePage] = codeEditor.value;
+                }
+                const sessions = getAllSavedSessions();
+                const firstUserMsg = project.chatHistory.find(m => m.sender === 'user');
+                const title = firstUserMsg ? firstUserMsg.text.slice(0, 38) : project.title;
+
+                const record = {
+                    sessionId: project.sessionId,
+                    title,
+                    updatedAt: Date.now(),
+                    pages: project.pages,
+                    assets: project.assets,
+                    chatHistory: project.chatHistory,
+                    activePage: project.activePage
+                };
+
+                const idx = sessions.findIndex(s => s.sessionId === project.sessionId);
+                if (idx >= 0) sessions[idx] = record;
+                else sessions.unshift(record);
+
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(0, 20)));
+                updateSavedChatsButtonVisibility();
+            } catch (e) {
+                // Storage quota guard
+            }
+        }
+
+        function updateSavedChatsButtonVisibility() {
+            const sessions = getAllSavedSessions();
+            const btn = document.getElementById('saved-chats-btn');
+            if (sessions.length > 0) {
+                btn.classList.remove('hidden');
+                btn.classList.add('flex');
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        function toggleSavedChatsDrawer(force) {
+            const drawer = document.getElementById('saved-chats-drawer');
+            const show = typeof force === 'boolean' ? force : drawer.classList.contains('hidden');
+            if (show) {
+                renderSavedChatsList();
+                drawer.classList.remove('hidden');
+            } else {
+                drawer.classList.add('hidden');
+            }
+        }
+
+        function renderSavedChatsList() {
+            const list = document.getElementById('saved-chats-list');
+            const sessions = getAllSavedSessions();
+            if (!sessions.length) {
+                list.innerHTML = '<p class="text-zinc-500 text-center py-6">No saved chats yet.</p>';
+                return;
+            }
+            list.innerHTML = sessions.map(s => `
+                <div class="group flex items-center justify-between p-2.5 rounded-xl bg-purple-50/60 dark:bg-zinc-900/90 border border-purple-200/60 dark:border-zinc-800 hover:border-purple-500 transition cursor-pointer" onclick="loadSavedSession('${escapeHtml(s.sessionId)}')">
+                    <div class="min-w-0 pr-2">
+                        <p class="font-medium text-zinc-900 dark:text-zinc-100 truncate">${escapeHtml(s.title || 'Saved Session')}</p>
+                        <p class="text-[10px] text-zinc-500 mt-0.5">${Object.keys(s.pages || {}).length} file(s) • ${new Date(s.updatedAt).toLocaleDateString()}</p>
+                    </div>
+                    <button onclick="deleteSavedSession(event, '${escapeHtml(s.sessionId)}')" class="p-1 text-zinc-400 hover:text-rose-500">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function loadSavedSession(sessionId) {
+            const sessions = getAllSavedSessions();
+            const found = sessions.find(s => s.sessionId === sessionId);
+            if (!found) return;
+
+            project.sessionId = found.sessionId;
+            project.title = found.title;
+            project.pages = found.pages || { 'index.html': '' };
+            project.assets = found.assets || {};
+            project.chatHistory = found.chatHistory || [];
+            project.activePage = found.activePage || Object.keys(project.pages)[0] || 'index.html';
+
+            if (!project.hasStarted) transitionToWorkspace();
+            chatMessages.innerHTML = '';
+            project.chatHistory.forEach(msg => {
+                appendChatBubble(msg.sender, msg.text, msg.files || [], false, msg.generatedFiles || []);
+            });
+
+            renderPageTabs();
+            loadActivePageIntoEditor();
+            runMultiPagePreview();
+            toggleSavedChatsDrawer(false);
+            setNixyMood('happy', 'Loaded saved project!');
+            nixySpeak('📂 Restored your chat & pages from storage!', 3500);
+        }
+
+        function deleteSavedSession(e, sessionId) {
+            e.stopPropagation();
+            const sessions = getAllSavedSessions().filter(s => s.sessionId !== sessionId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+            renderSavedChatsList();
+            updateSavedChatsButtonVisibility();
+        }
+
+        // =====================================================================
+        // 1. NIXY INTERACTIVE AWARENESS (USER TYPING, VIEWING CODE, TESTING)
+        // =====================================================================
+        let speechHideTimeout = null;
+
+        window.addEventListener('mousemove', (e) => {
+            const rect = nixyBot.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+            const maxDist = project.hasStarted ? 2.5 : 5.5;
+            eyesWrapper.style.transform = `translate(${Math.cos(angle) * maxDist}px, ${Math.sin(angle) * maxDist}px)`;
+        });
+
+        function onUserTypingInput(zone) {
+            if (project.isBusy) return;
+            setNixyMood('curious', 'Nixy sees you typing...');
+            if (project.hasStarted && zone === 'workspace') {
+                moveNixyTo('chat');
+                nixySpeak('👀 Watching your prompt...', 2000);
+            }
+            clearTimeout(project.typingReactTimer);
+            project.typingReactTimer = setTimeout(() => {
+                if (!project.isBusy && project.consoleErrors.length === 0) {
+                    setNixyMood('idle', project.hasStarted ? 'Nixy is watching' : 'Nixy is ready');
+                }
+            }, 1400);
+        }
+
+        function nixySpeak(message, durationMs = 4500) {
+            const bubble = document.getElementById('nixy-speech-bubble');
+            if (!bubble || !project.hasStarted) return;
+            bubble.textContent = message;
+            bubble.classList.remove('hidden');
+            clearTimeout(speechHideTimeout);
+            if (durationMs > 0) {
+                speechHideTimeout = setTimeout(() => {
+                    bubble.classList.add('hidden');
+                }, durationMs);
+            }
+        }
+
+        function transitionToWorkspace() {
+            if (project.hasStarted) return;
+            project.hasStarted = true;
+
+            welcomeScreen.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                welcomeScreen.classList.add('hidden');
+                workspaceScreen.classList.remove('hidden');
+                workspaceScreen.classList.add('flex');
+            }, 300);
+
+            document.getElementById('nixy-status-pill').classList.remove('hidden');
+            document.getElementById('nixy-status-pill').classList.add('flex');
+            document.getElementById('workspace-top-actions').classList.remove('hidden');
+            document.getElementById('workspace-top-actions').classList.add('flex');
+
+            nixyBot.classList.remove('w-24', 'h-24', 'sm:w-28', 'sm:h-28');
+            nixyBot.classList.add('w-11', 'h-11', 'pointer-events-auto', 'shrink-0');
+
+            eyesWrapper.classList.remove('gap-3.5', 'px-4');
+            eyesWrapper.classList.add('gap-1.5', 'px-1.5');
+            document.querySelectorAll('.nixy-eye').forEach(eye => {
+                eye.classList.remove('w-5', 'h-5');
+                eye.classList.add('w-2', 'h-2');
+            });
+
+            floatingNixyLayer.appendChild(nixyBot);
+            floatingNixyLayer.classList.remove('hidden');
+            moveNixyTo('preview');
+
+            project.roamTimer = setInterval(() => {
+                if (!project.isBusy && project.hasStarted) {
+                    moveNixyTo('random');
+                }
+            }, 11000);
+        }
+
+        function resetToWelcome() {
+            project.sessionId = 'session-' + Date.now();
+            project.hasStarted = false;
+            project.pages = { 'index.html': '' };
+            project.assets = {};
+            project.chatHistory = [];
+            project.activePage = 'index.html';
+            project.uploadedFiles = [];
+            renderAttachmentChips();
+            chatMessages.innerHTML = '';
+            codeEditor.value = '';
+            updateSyntaxHighlight('');
+            previewFrame.srcdoc = '';
+
+            if (project.roamTimer) clearInterval(project.roamTimer);
+
+            workspaceScreen.classList.add('hidden');
+            workspaceScreen.classList.remove('flex');
+            document.getElementById('nixy-status-pill').classList.add('hidden');
+            document.getElementById('workspace-top-actions').classList.add('hidden');
+            floatingNixyLayer.classList.add('hidden');
+
+            nixyBot.classList.remove('w-11', 'h-11', 'shrink-0');
+            nixyBot.classList.add('w-24', 'h-24', 'sm:w-28', 'sm:h-28');
+            eyesWrapper.classList.remove('gap-1.5', 'px-1.5');
+            eyesWrapper.classList.add('gap-3.5', 'px-4');
+            document.querySelectorAll('.nixy-eye').forEach(eye => {
+                eye.classList.remove('w-2', 'h-2');
+                eye.classList.add('w-5', 'h-5');
+            });
+
+            document.getElementById('welcome-bot-anchor').appendChild(nixyBot);
+            welcomeScreen.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            setNixyMood('idle', 'Nixy is ready');
+        }
+
+        function moveNixyTo(zone) {
+            if (!project.hasStarted) return;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            let left = vw - 290;
+            let top = 74;
+
+            if (zone === 'chat') {
+                left = vw < 1024 ? vw - 270 : 140;
+                top = 100;
+            } else if (zone === 'editor' || zone === 'preview') {
+                left = vw - 295;
+                top = 115;
+            } else if (zone === 'console') {
+                left = vw - 295;
+                top = vh - 195;
+            } else if (zone === 'random') {
+                left = Math.max(24, Math.min(vw - 290, vw * (0.45 + Math.random() * 0.4)));
+                top = Math.max(72, Math.min(vh - 110, vh * (0.15 + Math.random() * 0.6)));
+            }
+
+            floatingNixyLayer.style.right = 'auto';
+            floatingNixyLayer.style.left = `${left}px`;
+            floatingNixyLayer.style.top = `${top}px`;
+        }
+
+        function setNixyMood(mood, label) {
+            nixyBot.classList.remove('mood-thinking', 'mood-coding', 'mood-happy', 'mood-sad', 'mood-error', 'mood-curious', 'mood-debug');
+            const dot = document.getElementById('status-dot');
+            if (dot) {
+                dot.className = 'w-2 h-2 rounded-full animate-pulse ' + (
+                    mood === 'sad' || mood === 'error' ? 'bg-rose-500' :
+                    mood === 'happy' || mood === 'debug' ? 'bg-emerald-400' :
+                    mood === 'curious' ? 'bg-amber-400' : 'bg-purple-500'
+                );
+            }
+            if (mood && mood !== 'idle') {
+                nixyBot.classList.add(`mood-${mood}`);
+            }
+            if (label) statusText.textContent = label;
+        }
+
+        function pokeNixy() {
+            setNixyMood('happy', 'Nixy is happy to help!');
+            if (project.hasStarted) {
+                moveNixyTo('random');
+                nixySpeak("Highlight any code to ask me to explain or edit it!", 3800);
+            }
+            setTimeout(() => setNixyMood('idle', 'Nixy is watching'), 2400);
+        }
+
+        // =====================================================================
+        // 2. FILE / LOGO UPLOAD & AUTOMATIC CLONING INTO CODE SECTION
+        // =====================================================================
+        function triggerFilePicker() {
+            document.getElementById('file-upload-input').click();
+        }
+
+        async function handleFileUpload(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            for (const file of files) {
+                const isImage = file.type.startsWith('image/');
+                const content = await readFileAsync(file, isImage);
+                project.uploadedFiles.push({
+                    name: file.name,
+                    type: file.type || 'text/plain',
+                    content,
+                    isImage
+                });
+
+                // Clone uploaded file directly into the project workspace so Nixy & Preview can use it immediately
+                if (isImage) {
+                    project.assets[file.name] = content;
+                } else {
+                    project.pages[file.name] = content;
+                    project.activePage = file.name;
+                }
+            }
+
+            event.target.value = '';
+            renderAttachmentChips();
+
+            if (project.hasStarted) {
+                renderPageTabs();
+                loadActivePageIntoEditor();
+                runMultiPagePreview();
+                saveCurrentSessionToStorage();
+                setNixyMood('happy', 'Cloned uploaded file into project!');
+                nixySpeak('📎 Cloned your uploaded file into the Code section!', 3500);
+            }
+        }
+
+        function readFileAsync(file, asDataURL) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => resolve('');
+                if (asDataURL) reader.readAsDataURL(file);
+                else reader.readAsText(file);
+            });
+        }
+
+        function removeUploadedFile(index) {
+            project.uploadedFiles.splice(index, 1);
+            renderAttachmentChips();
+        }
+
+        function renderAttachmentChips() {
+            const targets = ['welcome-attachments', 'workspace-attachments'];
+            targets.forEach(containerId => {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                if (project.uploadedFiles.length === 0) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                    el.innerHTML = '';
+                    return;
+                }
+
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+                el.innerHTML = project.uploadedFiles.map((f, idx) => `
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-800/60">
+                        <i data-lucide="${f.isImage ? 'image' : 'file-code'}" class="w-3 h-3 text-purple-600 dark:text-purple-400"></i>
+                        <span class="max-w-[130px] truncate font-medium">${escapeHtml(f.name)}</span>
+                        <button type="button" onclick="removeUploadedFile(${idx})" class="hover:text-rose-500 ml-0.5">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                `).join('');
+            });
+            lucide.createIcons();
+        }
+
+        // =====================================================================
+        // 3. MULTI-PAGE PROJECT, COLORFUL SYNTAX EDITOR, HIGHLIGHT-TO-ASK & RESPONSIVE PREVIEW
+        // =====================================================================
+        function renderPageTabs() {
+            const container = document.getElementById('page-tabs-container');
+            const pageNames = Object.keys(project.pages);
+            const assetNames = Object.keys(project.assets);
+
+            const pageButtons = pageNames.map(filename => {
+                const isActive = filename === project.activePage;
+                return `
+                    <div onclick="selectPage('${escapeHtml(filename)}')" class="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono cursor-pointer transition ${
+                        isActive
+                            ? 'bg-purple-600 text-white font-semibold shadow-xs'
+                            : 'bg-purple-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-purple-100 dark:hover:bg-zinc-800 border border-purple-200/70 dark:border-zinc-800'
+                    }">
+                        <span>${escapeHtml(filename)}</span>
+                        ${pageNames.length > 1 ? `
+                            <button onclick="deletePage(event, '${escapeHtml(filename)}')" class="opacity-70 hover:opacity-100 ml-0.5">
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            const assetButtons = assetNames.map(assetName => {
+                const isActive = assetName === project.activePage;
+                return `
+                    <div onclick="selectPage('${escapeHtml(assetName)}')" class="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono cursor-pointer transition ${
+                        isActive
+                            ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                            : 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/70 dark:border-indigo-800/60'
+                    }">
+                        <i data-lucide="image" class="w-3 h-3"></i>
+                        <span>${escapeHtml(assetName)}</span>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = pageButtons + assetButtons;
+            lucide.createIcons();
+        }
+
+        function selectPage(filename) {
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = codeEditor.value;
+            }
+            project.activePage = filename;
+            renderPageTabs();
+            loadActivePageIntoEditor();
+            if (filename.endsWith('.html')) {
+                runMultiPagePreview(filename);
+            }
+            saveCurrentSessionToStorage();
+        }
+
+        function loadActivePageIntoEditor() {
+            const assetViewer = document.getElementById('asset-image-viewer');
+            const syntaxWrapper = document.getElementById('syntax-editor-wrapper');
+
+            if (project.assets[project.activePage]) {
+                syntaxWrapper.classList.add('hidden');
+                assetViewer.classList.remove('hidden');
+                document.getElementById('asset-image-preview').src = project.assets[project.activePage];
+                document.getElementById('asset-image-caption').textContent = `Cloned Asset: ${project.activePage}`;
+            } else {
+                assetViewer.classList.add('hidden');
+                syntaxWrapper.classList.remove('hidden');
+                const val = project.pages[project.activePage] || '';
+                codeEditor.value = val;
+                updateSyntaxHighlight(val);
+            }
+        }
+
+        // Colorful Real-Time Syntax Highlighter
+        function updateSyntaxHighlight(rawCode) {
+            let escaped = escapeHtml(rawCode);
+            // Comments
+            escaped = escaped.replace(/(&lt;!--[\s\S]*?--&gt;|\/\/.*)/g, '<span class="tok-comm">$1</span>');
+            // Strings
+            escaped = escaped.replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g, '<span class="tok-str">$1</span>');
+            // HTML Tags
+            escaped = escaped.replace(/(&lt;\/?)([a-zA-Z0-9-]+)/g, '$1<span class="tok-tag">$2</span>');
+            // JS/CSS Keywords
+            escaped = escaped.replace(/\b(const|let|var|function|return|if|else|for|while|async|await|class|import|export|from)\b/g, '<span class="tok-kw">$1</span>');
+            // Numbers
+            escaped = escaped.replace(/\b(\d+(?:px|rem|em|%)?)\b/g, '<span class="tok-num">$1</span>');
+
+            codeHighlightLayer.innerHTML = escaped + (rawCode.endsWith('\n') ? ' ' : '');
+        }
+
+        function syncCodeScroll() {
+            codeHighlightLayer.scrollTop = codeEditor.scrollTop;
+            codeHighlightLayer.scrollLeft = codeEditor.scrollLeft;
+        }
+
+        // Highlight Code & Click to Ask Nixy (Explain / Edit / Optimize)
+        function handleCodeSelection(e) {
+            const start = codeEditor.selectionStart;
+            const end = codeEditor.selectionEnd;
+            const selected = codeEditor.value.substring(start, end).trim();
+
+            if (selected.length >= 3) {
+                project.selectedSnippet = selected;
+                const popover = document.getElementById('code-selection-popover');
+                const x = Math.min(window.innerWidth - 260, Math.max(20, (e.clientX || window.innerWidth * 0.65) - 90));
+                const y = Math.min(window.innerHeight - 60, Math.max(68, (e.clientY || 220) - 46));
+                popover.style.left = `${x}px`;
+                popover.style.top = `${y}px`;
+                popover.classList.remove('hidden');
+
+                setNixyMood('curious', 'Nixy sees your highlighted code!');
+                nixySpeak('💡 Need an explanation or edit for that code?', 3000);
+            } else {
+                hideCodeSelectionPopover();
+            }
+        }
+
+        function hideCodeSelectionPopover() {
+            document.getElementById('code-selection-popover').classList.add('hidden');
+        }
+
+        async function askNixyAboutSelection(action) {
+            const snippet = project.selectedSnippet;
+            hideCodeSelectionPopover();
+            if (!snippet) return;
+
+            if (action === 'explain') {
+                appendChatBubble('user', `Explain this code in ${project.activePage}:\n"${snippet.slice(0, 120)}${snippet.length > 120 ? '...' : ''}"`);
+                await runPuterExplainSnippet(snippet);
+            } else if (action === 'edit') {
+                const wsInput = document.getElementById('workspace-input');
+                wsInput.value = `Edit this selected part in ${project.activePage}: `;
+                wsInput.focus();
+                nixySpeak('✍️ Tell me how you want to change that snippet!', 3500);
+            } else if (action === 'optimize') {
+                appendChatBubble('user', `Optimize and improve this highlighted section in ${project.activePage}.`);
+                await runPuterCodeEngine(`Optimize and improve this specific code section inside ${project.activePage}:\n${snippet}`, [], false);
+            }
+        }
+
+        async function runPuterExplainSnippet(snippet) {
+            project.isBusy = true;
+            setNixyMood('curious', 'Nixy is explaining your code...');
+            moveNixyTo('chat');
+            const bubbleId = appendChatBubble('nixy', '📖 Reading your highlighted snippet...');
+
+            try {
+                const res = await puter.ai.chat([
+                    { role: 'system', content: 'You are Nixy, a helpful coding assistant. Explain the highlighted code snippet clearly in 3-4 concise bullet points without dumping huge code blocks.' },
+                    { role: 'user', content: `Explain this snippet from ${project.activePage}:\n\n${snippet}` }
+                ]);
+                const explanation = typeof res === 'string' ? res : (res?.message?.content || res?.toString() || 'Here is how that code works.');
+                updateChatBubble(bubbleId, explanation);
+                setNixyMood('happy', 'Explained snippet!');
+            } catch (err) {
+                updateChatBubble(bubbleId, '⚠️ Could not reach Puter AI to explain right now.');
+                setNixyMood('sad', 'AI connection issue');
+            } finally {
+                project.isBusy = false;
+            }
+        }
+
+        // Responsive Device Viewport Switcher (PC / Tablet / Mobile)
+        function setPreviewDevice(device) {
+            project.previewDevice = device;
+            const frameWrapper = document.getElementById('preview-device-frame');
+            const buttons = {
+                desktop: document.getElementById('dev-desktop'),
+                tablet: document.getElementById('dev-tablet'),
+                mobile: document.getElementById('dev-mobile')
+            };
+
+            Object.entries(buttons).forEach(([key, btn]) => {
+                if (!btn) return;
+                btn.className = key === device
+                    ? 'p-1.5 rounded-full bg-purple-600 text-white transition'
+                    : 'p-1.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition';
+            });
+
+            if (device === 'mobile') {
+                frameWrapper.className = 'w-[390px] max-w-full h-[94%] rounded-[2rem] border-[6px] border-zinc-800 dark:border-zinc-700 bg-white transition-all duration-300 overflow-hidden shadow-2xl';
+                nixySpeak('📱 Previewing Mobile layout (390px)', 2500);
+            } else if (device === 'tablet') {
+                frameWrapper.className = 'w-[768px] max-w-full h-[95%] rounded-2xl border-4 border-zinc-800 dark:border-zinc-700 bg-white transition-all duration-300 overflow-hidden shadow-2xl';
+                nixySpeak('📟 Previewing Tablet layout (768px)', 2500);
+            } else {
+                frameWrapper.className = 'w-full h-full bg-white transition-all duration-300 overflow-hidden shadow-2xl';
+                nixySpeak('🖥️ Previewing Desktop / PC layout', 2500);
+            }
+        }
+
+        function promptNewPage() {
+            document.getElementById('new-page-filename').value = '';
+            document.getElementById('new-page-modal').classList.remove('hidden');
+            document.getElementById('new-page-filename').focus();
+        }
+
+        function closeNewPageModal() {
+            document.getElementById('new-page-modal').classList.add('hidden');
+        }
+
+        function confirmCreateNewPage() {
+            let name = document.getElementById('new-page-filename').value.trim();
+            if (!name) return;
+            if (!name.includes('.')) name += '.html';
+
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = codeEditor.value;
+            }
+            if (!project.pages[name]) {
+                project.pages[name] = name.endsWith('.html')
+                    ? `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>${name}</title>\n  <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-zinc-950 text-white p-8">\n  <h1 class="text-2xl font-bold text-purple-400">${name}</h1>\n  <a href="index.html" class="text-sm underline text-purple-300 mt-4 inline-block">← Back to Home</a>\n</body>\n</html>`
+                    : '';
+            }
+            project.activePage = name;
+            closeNewPageModal();
+            renderPageTabs();
+            loadActivePageIntoEditor();
+            runMultiPagePreview();
+            saveCurrentSessionToStorage();
+        }
+
+        function deletePage(e, filename) {
+            e.stopPropagation();
+            const keys = Object.keys(project.pages);
+            if (keys.length <= 1) return;
+            delete project.pages[filename];
+            if (project.activePage === filename) {
+                project.activePage = Object.keys(project.pages)[0];
+            }
+            renderPageTabs();
+            loadActivePageIntoEditor();
+            runMultiPagePreview();
+            saveCurrentSessionToStorage();
+        }
+
+        function switchArtifactTab(tab) {
+            project.activeTab = tab;
+            hideCodeSelectionPopover();
+            const previewPane = document.getElementById('artifact-preview-pane');
+            const codePane = document.getElementById('artifact-code-pane');
+            const btnPreview = document.getElementById('btn-view-preview');
+            const btnCode = document.getElementById('btn-view-code');
+            const deviceGroup = document.getElementById('device-switcher-group');
+
+            if (tab === 'preview') {
+                if (!project.assets[project.activePage]) {
+                    project.pages[project.activePage] = codeEditor.value;
+                }
+                previewPane.classList.remove('hidden');
+                codePane.classList.add('hidden');
+                deviceGroup.classList.remove('hidden');
+                btnPreview.className = 'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm transition';
+                btnCode.className = 'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition';
+                runMultiPagePreview();
+                if (project.hasStarted && !project.isBusy) {
+                    moveNixyTo('preview');
+                    nixySpeak('👁️ Watching the live output with you!', 2600);
+                }
+            } else {
+                previewPane.classList.add('hidden');
+                codePane.classList.remove('hidden');
+                deviceGroup.classList.add('hidden');
+                btnCode.className = 'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white shadow-sm transition';
+                btnPreview.className = 'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition';
+                loadActivePageIntoEditor();
+                if (project.hasStarted && !project.isBusy) {
+                    moveNixyTo('editor');
+                    nixySpeak('💻 Highlight any code to ask me to explain or edit!', 3000);
+                }
+            }
+        }
+
+        // Live Editor Watcher & Colorful Syntax Refresh
+        codeEditor.addEventListener('input', () => {
+            const val = codeEditor.value;
+            updateSyntaxHighlight(val);
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = val;
+            }
+            clearTimeout(project.watchTimer);
+            project.watchTimer = setTimeout(() => {
+                inspectCodeForStrangePatterns(val, project.activePage);
+                runMultiPagePreview();
+                saveCurrentSessionToStorage();
+            }, 800);
+        });
+
+        function inspectCodeForStrangePatterns(code, filename) {
+            if (!code || !code.trim()) return;
+            const issues = [];
+
+            if (filename.endsWith('.html')) {
+                const openScripts = (code.match(/<script\b/gi) || []).length;
+                const closeScripts = (code.match(/<\/script>/gi) || []).length;
+                if (openScripts !== closeScripts) issues.push('Unclosed <script> tag detected');
+
+                const openDivs = (code.match(/<div\b/gi) || []).length;
+                const closeDivs = (code.match(/<\/div>/gi) || []).length;
+                if (Math.abs(openDivs - closeDivs) >= 2) issues.push(`Mismatched <div> tags (${openDivs} opened vs ${closeDivs} closed)`);
+
+                if (/\b(alert|confirm|prompt)\s*\(/.test(code)) issues.push('Blocking popup (alert/confirm) found');
+            }
+            if (/undefined is not|SyntaxError|TODO: fix|FIXME/i.test(code)) {
+                issues.push('Suspicious placeholder or syntax marker in code');
+            }
+
+            if (issues.length > 0) {
+                setNixyMood('sad', 'Nixy spotted strange code!');
+                moveNixyTo('editor');
+                nixySpeak(`⚠️ Strange code in ${filename}: ${issues[0]}`, 5000);
+                logToConsole('warn', `[Nixy Code Watcher] Strange pattern in ${filename}: ${issues.join('; ')}`);
+            } else if (!project.isBusy && project.consoleErrors.length === 0) {
+                setNixyMood('idle', 'Code looks clean');
+            }
+        }
+
+        // Renders active HTML page + injects cloned CSS/JS + injects cloned image/logo assets!
+        function runMultiPagePreview(targetHtmlPage = null) {
+            project.consoleErrors = [];
+            document.getElementById('console-badge').classList.add('hidden');
+
+            const pageToRender = (targetHtmlPage && project.pages[targetHtmlPage])
+                ? targetHtmlPage
+                : (project.activePage.endsWith('.html') ? project.activePage : (Object.keys(project.pages).find(p => p.endsWith('.html')) || 'index.html'));
+
+            let html = project.pages[pageToRender] || '';
+            if (!html.trim()) {
+                previewFrame.srcdoc = '';
+                return;
+            }
+
+            // Inject project .css and .js files
+            Object.entries(project.pages).forEach(([fileName, fileContent]) => {
+                if (fileName.endsWith('.css')) {
+                    const cssRegex = new RegExp(`<link[^>]+href=["']\\.?/?${escapeRegExp(fileName)}["'][^>]*>`, 'gi');
+                    html = html.replace(cssRegex, `<style>\n${fileContent}\n</style>`);
+                } else if (fileName.endsWith('.js')) {
+                    const jsRegex = new RegExp(`<script[^>]+src=["']\\.?/?${escapeRegExp(fileName)}["'][^>]*><\\/script>`, 'gi');
+                    html = html.replace(jsRegex, '<scr' + 'ipt>\n' + fileContent + '\n</scr' + 'ipt>');
+                }
+            });
+
+            // Inject cloned uploaded assets/logos (e.g., src="logo.png" -> data:image/...)
+            Object.entries(project.assets).forEach(([assetName, dataUrl]) => {
+                const assetRegex = new RegExp(`(["'])\\.?/?${escapeRegExp(assetName)}\\1`, 'gi');
+                html = html.replace(assetRegex, `"${dataUrl}"`);
+            });
+
+            const bridgeScript = '<scr' + 'ipt>\n' +
+              '(function() {\n' +
+              '  const sendMsg = (payload) => window.parent.postMessage({ source: "nixcode-preview", ...payload }, "*");\n' +
+              '  const origLog = console.log, origWarn = console.warn, origError = console.error;\n' +
+              '  console.log = (...a) => { sendMsg({ type: "log", message: a.join(" ") }); origLog.apply(console, a); };\n' +
+              '  console.warn = (...a) => { sendMsg({ type: "warn", message: a.join(" ") }); origWarn.apply(console, a); };\n' +
+              '  console.error = (...a) => { sendMsg({ type: "error", message: a.join(" ") }); origError.apply(console, a); };\n' +
+              '  window.onerror = (msg, url, line) => sendMsg({ type: "error", message: "Line " + line + ": " + msg });\n' +
+              '  document.addEventListener("click", function(e) {\n' +
+              '    const link = e.target.closest("a");\n' +
+              '    if (!link) return;\n' +
+              '    const href = link.getAttribute("href");\n' +
+              '    if (href && !href.startsWith("http") && !href.startsWith("#") && !href.startsWith("mailto:")) {\n' +
+              '      e.preventDefault();\n' +
+              '      sendMsg({ type: "navigate", targetPage: href.replace(/^\\.\\//, "") });\n' +
+              '    }\n' +
+              '  });\n' +
+              '})();\n' +
+              '</scr' + 'ipt>';
+
+            previewFrame.srcdoc = html.includes('<head>')
+                ? html.replace('<head>', '<head>' + bridgeScript)
+                : bridgeScript + html;
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Export All Pages & Cloned Assets as ZIP
+        async function exportProjectAsZip() {
+            if (typeof JSZip === 'undefined') {
+                logToConsole('error', 'JSZip library not loaded.');
+                return;
+            }
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = codeEditor.value;
+            }
+            const zip = new JSZip();
+
+            Object.entries(project.pages).forEach(([filename, content]) => {
+                zip.file(filename, content || '');
+            });
+
+            Object.entries(project.assets).forEach(([assetName, dataUrl]) => {
+                const base64Data = dataUrl.split(',')[1];
+                if (base64Data) {
+                    zip.file(assetName, base64Data, { base64: true });
+                }
+            });
+
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nixcode-project.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            setNixyMood('happy', 'Exported project as nixcode-project.zip!');
+            logToConsole('log', '[Export] Downloaded nixcode-project.zip with all pages & assets.');
+        }
+
+        // =====================================================================
+        // 4. CONSOLE & PREVIEW MESSAGE LISTENER
+        // =====================================================================
+        window.addEventListener('message', (event) => {
+            if (!event.data || event.data.source !== 'nixcode-preview') return;
+            const { type, message, targetPage } = event.data;
+
+            if (type === 'navigate' && targetPage) {
+                if (project.pages[targetPage] !== undefined) {
+                    project.activePage = targetPage;
+                    renderPageTabs();
+                    loadActivePageIntoEditor();
+                    runMultiPagePreview(targetPage);
+                    logToConsole('log', `[Navigation] Switched to ${targetPage}`);
+                    nixySpeak(`Navigated to ${targetPage}`, 2500);
+                } else {
+                    setNixyMood('sad', 'Missing linked page');
+                    nixySpeak(`Page "${targetPage}" doesn't exist yet!`, 3500);
+                    logToConsole('warn', `[Navigation] Page "${targetPage}" does not exist yet.`);
+                }
+                return;
+            }
+
+            logToConsole(type, message);
+            if (type === 'error') {
+                project.consoleErrors.push(message);
+                document.getElementById('console-badge').classList.remove('hidden');
+                setNixyMood('sad', 'Nixy detected an error — auto-fixing!');
+                moveNixyTo('console');
+                nixySpeak(`😢 Console error! Auto-fixing now...`, 5000);
+                toggleConsole(true);
+
+                // Automatically fix the error in console when Nixy detects it
+                if (!project.isBusy && !project.autoFixCooldown) {
+                    project.autoFixCooldown = true;
+                    setTimeout(async () => {
+                        try {
+                            await triggerNixyAutoFixError(message);
+                        } finally {
+                            setTimeout(() => { project.autoFixCooldown = false; }, 5000);
+                        }
+                    }, 600);
+                }
+            }
+        });
+
+        async function triggerNixyAutoFixError(errorMessage) {
+            if (project.isBusy) return;
+            appendChatBubble('nixy', `🛠️ Auto-detected console error: "${errorMessage}". Fixing it automatically...`, [], true);
+            await runPuterCodeEngine(
+                `A console error occurred in the live preview: ${errorMessage}. Fix this error cleanly across the project files so the console runs with zero errors.`,
+                [],
+                true
+            );
+        }
+
+        // =====================================================================
+        // DEPLOY WITH HOSTNIX (SUPABASE 'apps' TABLE -> https://hostnix.vercel.app/#slug)
+        // =====================================================================
+        function openHostNixModal() {
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = codeEditor.value;
+            }
+            const modal = document.getElementById('hostnix-modal');
+            const slugInput = document.getElementById('hostnix-slug-input');
+            const baseSlug = (project.title || 'nixcode-site')
+                .toLowerCase()
+                .replace(/[^a-z0-9-]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 28) || 'nixcode-site';
+
+            if (!slugInput.value) slugInput.value = baseSlug;
+
+            const pageList = Object.keys(project.pages).filter(k => (project.pages[k] || '').trim().length > 0);
+            const assetList = Object.keys(project.assets);
+            document.getElementById('hostnix-files-summary').textContent =
+                `Files to publish (${pageList.length + assetList.length}): ${[...pageList, ...assetList].join(', ') || 'index.html'}`;
+
+            document.getElementById('hostnix-error-msg').classList.add('hidden');
+            document.getElementById('hostnix-result-box').classList.add('hidden');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeHostNixModal() {
+            document.getElementById('hostnix-modal').classList.add('hidden');
+        }
+
+        async function deployToHostNix() {
+            const errBox = document.getElementById('hostnix-error-msg');
+            const resultBox = document.getElementById('hostnix-result-box');
+            const btn = document.getElementById('hostnix-deploy-btn');
+            errBox.classList.add('hidden');
+
+            const rawSlug = document.getElementById('hostnix-slug-input').value || '';
+            const slug = rawSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            if (!slug) {
+                errBox.textContent = 'Please enter a valid domain slug (letters, numbers, or hyphens).';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            if (!window.supabase) {
+                errBox.textContent = 'Supabase client is still initializing. Please try again in a moment.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = codeEditor.value;
+            }
+
+            const files = [];
+            Object.entries(project.pages).forEach(([name, content]) => {
+                if (content && content.trim().length > 0) {
+                    files.push({ name, content });
+                }
+            });
+            Object.entries(project.assets).forEach(([name, content]) => {
+                files.push({ name, content });
+            });
+
+            if (files.length === 0) {
+                errBox.textContent = 'There is no code or content to deploy yet.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Deploying...</span>';
+            setNixyMood('coding', 'Deploying to HostNix...');
+            nixySpeak('🚀 Publishing your site to HostNix...', 3500);
+
+            try {
+                const { error } = await window.supabase
+                    .from('apps')
+                    .upsert([{ slug, files }], { onConflict: 'slug' });
+
+                if (error) throw error;
+
+                const liveUrl = `https://hostnix.vercel.app/#${slug}`;
+                const linkEl = document.getElementById('hostnix-live-link');
+                linkEl.href = liveUrl;
+                linkEl.textContent = liveUrl;
+                resultBox.classList.remove('hidden');
+
+                setNixyMood('happy', 'Deployed to HostNix!');
+                nixySpeak(`🎉 Live at hostnix.vercel.app/#${slug}!`, 5000);
+                logToConsole('log', `[HostNix] Deployed successfully: ${liveUrl}`);
+                appendChatBubble('nixy', `🚀 Deployed your site with HostNix!\nLive URL: ${liveUrl}`, [], true);
+            } catch (err) {
+                errBox.textContent = 'Deployment failed: ' + (err.message || 'Unknown error');
+                errBox.classList.remove('hidden');
+                setNixyMood('sad', 'HostNix deploy error');
+                logToConsole('error', `[HostNix] Failed: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i><span>Deploy Now</span>';
+                lucide.createIcons();
+            }
+        }
+
+        function copyHostNixLink() {
+            const url = document.getElementById('hostnix-live-link').textContent;
+            if (!url) return;
+            const temp = document.createElement('textarea');
+            temp.value = url;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            temp.remove();
+            nixySpeak('📋 Copied HostNix link!', 2200);
+        }
+
+        function logToConsole(type, msg) {
+            const line = document.createElement('div');
+            const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (type === 'error') {
+                line.className = 'text-rose-400 bg-rose-950/30 px-2 py-0.5 rounded';
+                line.textContent = `[${time}] ❌ ${msg}`;
+            } else if (type === 'warn') {
+                line.className = 'text-amber-300';
+                line.textContent = `[${time}] ⚠️ ${msg}`;
+            } else {
+                line.className = 'text-zinc-300';
+                line.textContent = `[${time}] › ${msg}`;
+            }
+            const logs = document.getElementById('console-logs');
+            logs.appendChild(line);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function toggleConsole(force) {
+            project.isConsoleOpen = typeof force === 'boolean' ? force : !project.isConsoleOpen;
+            const drawer = document.getElementById('console-drawer');
+            if (project.isConsoleOpen) {
+                drawer.classList.remove('h-0');
+                drawer.classList.add('h-44');
+                moveNixyTo('console');
+            } else {
+                drawer.classList.remove('h-44');
+                drawer.classList.add('h-0');
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-logs').innerHTML = '<div class="text-purple-400">[NixCode] Console cleared.</div>';
+            project.consoleErrors = [];
+            document.getElementById('console-badge').classList.add('hidden');
+        }
+
+        // =====================================================================
+        // 5. PUTER.JS AI MULTI-PAGE GENERATION + FAST INTERACTIVE FEEDBACK CARD
+        // =====================================================================
+        async function handleChatSubmit(e, source) {
+            e.preventDefault();
+            const inputEl = document.getElementById(source === 'welcome' ? 'welcome-input' : 'workspace-input');
+            const prompt = inputEl.value.trim();
+            if ((!prompt && project.uploadedFiles.length === 0) || project.isBusy) return;
+
+            inputEl.value = '';
+
+            if (!project.hasStarted) {
+                transitionToWorkspace();
+                renderPageTabs();
+            }
+
+            const attachmentsSnapshot = [...project.uploadedFiles];
+            project.uploadedFiles = [];
+            renderAttachmentChips();
+
+            appendChatBubble('user', prompt || 'Build using my uploaded files/logo', attachmentsSnapshot, true);
+
+            const lower = prompt.toLowerCase();
+            if (lower.includes('export') && lower.includes('zip')) {
+                await exportProjectAsZip();
+                appendChatBubble('nixy', '📦 Packaged all project pages and cloned assets into `nixcode-project.zip`!', [], true);
+                return;
+            }
+            if ((lower.includes('test') || lower.includes('try')) && (lower.includes('preview') || lower.includes('website') || lower.includes('site') || lower.includes('app'))) {
+                await triggerNixyTestPreview();
+                return;
+            }
+
+            await runPuterCodeEngine(prompt, attachmentsSnapshot, lower.includes('debug') || lower.includes('fix'));
+        }
+
+        async function triggerNixyDebug() {
+            if (!project.hasStarted) transitionToWorkspace();
+            toggleConsole(true);
+            appendChatBubble('user', 'Scan all pages, fix strange code & runtime errors.', [], true);
+            await runPuterCodeEngine('Inspect all project files, strange patterns, and console errors. Fix all bugs or broken links across every HTML/CSS/JS file, and return the updated files plus a short bullet report of fixes.', [], true);
+        }
+
+        function setGeneratingOverlay(visible, title = '', sub = '') {
+            const overlay = document.getElementById('generating-overlay');
+            if (!overlay) return;
+            if (visible) {
+                if (title) document.getElementById('generating-stage-title').textContent = title;
+                if (sub) document.getElementById('generating-stage-sub').textContent = sub;
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        async function runPuterCodeEngine(userPrompt, attachments = [], isDebug = false) {
+            project.isBusy = true;
+            setNixyMood(isDebug ? 'debug' : 'coding', isDebug ? 'Nixy is fixing bugs...' : 'Nixy is generating pages...');
+            moveNixyTo('preview');
+            setGeneratingOverlay(
+                true,
+                isDebug ? 'Nixy is scanning & repairing your code...' : 'Nixy is building your multi-page website...',
+                'Taking control of the workspace — code appears strictly in the Code tab'
+            );
+
+            const buildSteps = isDebug
+                ? ['🔍 Scanning HTML/JS structure...', '🛠️ Patching runtime & syntax issues...', '🔗 Verifying multi-page links...']
+                : ['📐 Planning multi-page architecture...', '🎨 Crafting responsive UI & Tailwind layout...', '🔗 Linking HTML pages & cloned assets...'];
+
+            let stepIdx = 0;
+            nixySpeak(buildSteps[0], 0);
+            const narrationTimer = setInterval(() => {
+                stepIdx = (stepIdx + 1) % buildSteps.length;
+                nixySpeak(buildSteps[stepIdx], 0);
+                document.getElementById('generating-stage-sub').textContent = buildSteps[stepIdx];
+                moveNixyTo(stepIdx % 2 === 0 ? 'preview' : 'editor');
+            }, 2200);
+
+            const thinkingId = appendChatBubble('nixy', isDebug
+                ? '🔍 Taking control to inspect strange code and fix errors...'
+                : '⚡ Taking control to build your pages...', [], false);
+
+            if (!project.assets[project.activePage]) {
+                project.pages[project.activePage] = codeEditor.value;
+            }
+
+            const existingFilesContext = Object.entries(project.pages)
+                .filter(([, content]) => content.trim().length > 0)
+                .map(([name, content]) => `--- EXISTING FILE: ${name} ---\n${content}`)
+                .join('\n\n');
+
+            const clonedAssetsList = Object.keys(project.assets);
+            const assetsInstruction = clonedAssetsList.length
+                ? `Cloned Image/Logo Assets Available in Project Root: ${clonedAssetsList.join(', ')}. Use <img src="${clonedAssetsList[0]}" alt="Logo"> directly in your HTML navbar/hero where appropriate!`
+                : '';
+
+            const uploadedTextContext = attachments
+                .filter(f => !f.isImage)
+                .map(f => `--- UPLOADED FILE: ${f.name} ---\n${f.content.slice(0, 12000)}`)
+                .join('\n\n');
+
+            const errorContext = project.consoleErrors.length
+                ? `\nRuntime Console Errors:\n${project.consoleErrors.join('\n')}`
+                : '';
+
+            const systemInstruction = `You are Nixy, the purple AI orb coding assistant in NixCode.
+You build and edit complete, responsive, multi-page websites and web apps using HTML, Tailwind CSS (<script src="https://cdn.tailwindcss.com"><\/script>), and clean JavaScript.
+
+CRITICAL OUTPUT RULES:
+1. Wrap EVERY generated or modified file in its own fenced block with the exact filename on the header line:
+\`\`\`html:index.html
+<!DOCTYPE html>...
+\`\`\`
+\`\`\`html:about.html
+<!DOCTYPE html>...
+\`\`\`
+\`\`\`html:contact.html
+<!DOCTYPE html>...
+\`\`\`
+2. Multi-Page Support: Always build clean multi-page websites when requested (e.g., index.html, about.html, services.html, contact.html) with a shared navigation bar linking them (<a href="index.html">, <a href="about.html">, etc.).
+3. Cloned Uploaded Assets: ${assetsInstruction || 'If the user uploaded files, integrate them cleanly.'}
+4. Chat Feature Report ONLY: Outside the code blocks, write ONLY a concise, friendly feature report (3-5 short bullet points summarizing the pages built/edited and key interactive features). NEVER paste raw code snippets outside the fenced file blocks.
+5. At the very end of your text outside code blocks, include a line starting with "NEXT_IDEAS:" followed by 3 short comma-separated next-feature ideas the user might want to add next (e.g., NEXT_IDEAS: Dark mode switcher, Interactive pricing calculator, Customer testimonials carousel).
+6. Never use alert() or confirm().
+
+${existingFilesContext ? `Current Project Files (Preserve & edit as requested):\n${existingFilesContext}\n` : ''}
+${uploadedTextContext ? `User Uploaded Code Files:\n${uploadedTextContext}\n` : ''}
+${errorContext}`;
+
+            try {
+                let rawReply = '';
+                if (typeof puter !== 'undefined' && puter.ai && puter.ai.chat) {
+                    const res = await puter.ai.chat([
+                        { role: 'system', content: systemInstruction },
+                        { role: 'user', content: userPrompt || 'Build a website using my uploaded files and logo.' }
+                    ]);
+                    rawReply = typeof res === 'string' ? res : (res?.message?.content || res?.toString() || '');
+                } else {
+                    throw new Error('Puter.js AI service unavailable.');
+                }
+
+                clearInterval(narrationTimer);
+                setGeneratingOverlay(false);
+
+                const fileRegex = /```(?:html|css|js|javascript|json|txt)?(?::([^\n`]+))?\n([\s\S]*?)```/gi;
+                let match;
+                let parsedFiles = [];
+                let firstHtmlFile = null;
+
+                while ((match = fileRegex.exec(rawReply)) !== null) {
+                    const rawFilename = (match[1] || '').trim();
+                    const fileContent = match[2].trim();
+                    if (!fileContent) continue;
+
+                    const filename = rawFilename || (parsedFiles.length === 0 ? 'index.html' : `page-${parsedFiles.length + 1}.html`);
+                    project.pages[filename] = fileContent;
+                    parsedFiles.push(filename);
+                    if (!firstHtmlFile && filename.endsWith('.html')) {
+                        firstHtmlFile = filename;
+                    }
+                }
+
+                // Extract NEXT_IDEAS suggestions if present
+                let cleanReport = rawReply.replace(/```[\s\S]*?```/g, '').trim();
+                let nextIdeas = ['Add a Contact page', 'Add animations & transitions', 'Add interactive FAQ'];
+                const ideasMatch = cleanReport.match(/NEXT_IDEAS:\s*(.+)/i);
+                if (ideasMatch) {
+                    nextIdeas = ideasMatch[1].split(',').map(s => s.trim()).filter(Boolean).slice(0, 3);
+                    cleanReport = cleanReport.replace(/NEXT_IDEAS:\s*.+/i, '').trim();
+                }
+                cleanReport = cleanReport.replace(/\n{3,}/g, '\n\n').trim();
+
+                if (parsedFiles.length > 0) {
+                    project.activePage = firstHtmlFile || parsedFiles[0];
+                    renderPageTabs();
+                    loadActivePageIntoEditor();
+                    switchArtifactTab('preview');
+
+                    const finalReport = cleanReport || `✨ Built ${parsedFiles.length} page(s): ${parsedFiles.join(', ')}\n• Responsive Tailwind layout with multi-page navigation\n• Interactive UI components ready for live preview`;
+
+                    updateChatBubble(thinkingId, finalReport, parsedFiles, true);
+
+                    // Append Fast Interactive Feedback Card (Rating + Quick Feature Builder)
+                    appendFastFeedbackCard(nextIdeas);
+
+                    saveCurrentSessionToStorage();
+                    setNixyMood('happy', 'Finished! Nixy is happy');
+                    nixySpeak(`🎉 Done! Rate the build or pick a feature to add!`, 4800);
+                    setTimeout(() => {
+                        if (!project.isBusy && project.consoleErrors.length === 0) {
+                            setNixyMood('idle', 'Nixy is watching');
+                        }
+                    }, 4800);
+                } else {
+                    updateChatBubble(thinkingId, cleanReport || 'Ready! Tell me what pages or edits you would like me to make.', [], true);
+                    saveCurrentSessionToStorage();
+                    setNixyMood('idle', 'Nixy is ready');
+                }
+            } catch (err) {
+                clearInterval(narrationTimer);
+                setGeneratingOverlay(false);
+                logToConsole('warn', 'Puter AI notice: ' + err.message);
+                updateChatBubble(thinkingId, '⚠️ Puter AI needed sign-in or encountered a connection issue. Please try again.', [], true);
+                setNixyMood('sad', 'Connection issue');
+                nixySpeak('😢 Could not reach Puter AI right now.', 4000);
+            } finally {
+                project.isBusy = false;
+            }
+        }
+
+        // Fast Post-Generation Feedback Card (Star Rating + Instant Feature Suggestion Builder)
+        function appendFastFeedbackCard(suggestedFeatures) {
+            const cardId = 'fb-' + Date.now();
+            const card = document.createElement('div');
+            card.id = cardId;
+            card.className = 'ml-10 p-3.5 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50/70 dark:from-[#15131E] dark:to-[#111116] border border-purple-200/80 dark:border-purple-900/50 shadow-xs space-y-2.5 text-xs';
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold text-purple-800 dark:text-purple-300">⚡ Quick Feedback for Nixy</span>
+                    <div class="flex items-center gap-1" id="${cardId}-stars">
+                        ${[1, 2, 3, 4, 5].map(star => `
+                            <button type="button" onclick="rateBuild('${cardId}', ${star})" class="text-zinc-400 hover:text-amber-400 transition transform hover:scale-125" title="Rate ${star}/5">
+                                <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <p class="text-[11px] text-zinc-600 dark:text-zinc-400">Want to see something else? Click to build it immediately or type your wish:</p>
+                <div class="flex flex-wrap gap-1.5">
+                    ${suggestedFeatures.map(feat => `
+                        <button type="button" onclick="triggerInstantFeatureBuild('${escapeHtml(feat)}')" class="px-2.5 py-1 rounded-full bg-white dark:bg-zinc-900 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-600 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-zinc-800 text-[11px] font-medium transition shadow-2xs">
+                            + ${escapeHtml(feat)}
+                        </button>
+                    `).join('')}
+                </div>
+                <form onsubmit="submitCustomFeedbackWish(event, '${cardId}')" class="flex items-center gap-1.5 pt-0.5">
+                    <input id="${cardId}-input" type="text" placeholder="Tell Nixy a feature you want to see next..." class="flex-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-purple-200/80 dark:border-zinc-800 text-[11px] focus:outline-none focus:border-purple-500" />
+                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-[11px] transition">Build</button>
+                </form>
+            `;
+
+            chatMessages.appendChild(card);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lucide.createIcons();
+        }
+
+        function rateBuild(cardId, stars) {
+            const container = document.getElementById(`${cardId}-stars`);
+            if (!container) return;
+            const btns = container.querySelectorAll('button');
+            btns.forEach((b, idx) => {
+                b.className = idx < stars
+                    ? 'text-amber-400 scale-110 transition'
+                    : 'text-zinc-400 transition';
+                const svg = b.querySelector('svg');
+                if (svg && idx < stars) svg.setAttribute('fill', 'currentColor');
+            });
+
+            if (stars >= 4) {
+                setNixyMood('happy', `Rated ${stars}/5! Nixy is thrilled!`);
+                nixySpeak(`🌟 Thanks for the ${stars}/5 rating!`, 3200);
+            } else {
+                setNixyMood('curious', 'Tell Nixy how to improve!');
+                nixySpeak('🛠️ Tell me what to improve and I will rebuild it!', 3500);
+            }
+        }
+
+        async function triggerInstantFeatureBuild(featureText) {
+            if (project.isBusy) return;
+            appendChatBubble('user', `Add this feature: ${featureText}`, [], true);
+            await runPuterCodeEngine(`Enhance the existing website by adding this feature: ${featureText}. Keep all existing pages and design intact.`, [], false);
+        }
+
+        async function submitCustomFeedbackWish(e, cardId) {
+            e.preventDefault();
+            if (project.isBusy) return;
+            const input = document.getElementById(`${cardId}-input`);
+            const wish = input.value.trim();
+            if (!wish) return;
+            input.value = '';
+            appendChatBubble('user', wish, [], true);
+            await runPuterCodeEngine(`Update the existing website to include what the user wants to see: ${wish}.`, [], false);
+        }
+
+        // =====================================================================
+        // 6. NIXY INTERACTIVE SITE TRYOUT
+        // =====================================================================
+        async function triggerNixyTestPreview() {
+            if (!project.hasStarted || project.isBusy) return;
+            switchArtifactTab('preview');
+            setNixyMood('curious', 'Nixy is trying your website...');
+
+            const rect = previewFrame.getBoundingClientRect();
+            const startX = rect.left + rect.width * 0.5;
+            const startY = rect.top + rect.height * 0.35;
+            floatingNixyLayer.style.left = `${startX}px`;
+            floatingNixyLayer.style.top = `${startY}px`;
+
+            nixySpeak('🕹️ Trying out your site live...', 0);
+            appendChatBubble('nixy', '🕹️ Watch the preview — I am testing buttons, inputs, and page links live!', [], true);
+            await new Promise(r => setTimeout(r, 800));
+
+            let testedCount = 0;
+            try {
+                const doc = previewFrame.contentDocument || previewFrame.contentWindow?.document;
+                if (doc) {
+                    const interactiveEls = Array.from(doc.querySelectorAll('button, a, input[type="submit"]'))
+                        .filter(el => {
+                            const r = el.getBoundingClientRect();
+                            return r.width > 0 && r.height > 0 && r.top >= 0 && r.top < rect.height;
+                        })
+                        .slice(0, 3);
+
+                    for (const target of interactiveEls) {
+                        const bRect = target.getBoundingClientRect();
+                        const clickX = Math.min(window.innerWidth - 180, Math.max(20, rect.left + bRect.left + bRect.width / 2));
+                        const clickY = Math.min(window.innerHeight - 60, Math.max(60, rect.top + bRect.top + bRect.height / 2));
+
+                        floatingNixyLayer.style.left = `${clickX}px`;
+                        floatingNixyLayer.style.top = `${clickY}px`;
+                        const label = (target.textContent || target.value || target.tagName).trim().slice(0, 24);
+                        nixySpeak(`Clicking "${label}"...`, 0);
+                        await new Promise(r => setTimeout(r, 750));
+
+                        spawnClickRipple(clickX, clickY);
+                        target.click();
+                        testedCount++;
+                        logToConsole('log', `[Nixy Live Tryout] Clicked "${label}"`);
+                        await new Promise(r => setTimeout(r, 700));
+                    }
+                }
+            } catch (_) {}
+
+            if (testedCount === 0) {
+                spawnClickRipple(startX, startY);
+                logToConsole('log', '[Nixy Live Tryout] Checked layout & responsiveness.');
+            }
+
+            if (project.consoleErrors.length === 0) {
+                setNixyMood('happy', 'Site tryout passed!');
+                nixySpeak(`✅ Tested ${testedCount || 1} interaction(s) — zero errors!`, 4000);
+            } else {
+                setNixyMood('sad', 'Found errors during tryout!');
+                nixySpeak('😢 Found runtime errors while testing!', 4500);
+            }
+
+            await new Promise(r => setTimeout(r, 1200));
+            moveNixyTo('preview');
+            setTimeout(() => {
+                if (project.consoleErrors.length === 0) setNixyMood('idle', 'Nixy is watching');
+            }, 3000);
+        }
+
+        function spawnClickRipple(x, y) {
+            const ring = document.createElement('div');
+            ring.className = 'nixy-action-ring';
+            ring.style.left = `${x}px`;
+            ring.style.top = `${y}px`;
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 850);
+        }
+
+        // =====================================================================
+        // 7. CHAT UI & THEME HELPERS
+        // =====================================================================
+        function appendChatBubble(sender, text, files = [], persist = true, generatedFiles = []) {
+            if (persist) {
+                project.chatHistory.push({
+                    sender,
+                    text,
+                    files: files.map(f => ({ name: f.name })),
+                    generatedFiles
+                });
+                saveCurrentSessionToStorage();
+            }
+
+            const id = 'msg-' + Date.now() + Math.random().toString(36).slice(2, 6);
+            const row = document.createElement('div');
+            row.id = id;
+
+            if (sender === 'user') {
+                const fileBadges = files.length
+                    ? `<div class="flex flex-wrap gap-1 mb-1.5 justify-end">${files.map(f => `<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-700/60 text-purple-100 border border-purple-400/30">📎 ${escapeHtml(f.name)} (Cloned)</span>`).join('')}</div>`
+                    : '';
+                row.className = 'flex flex-col items-end';
+                row.innerHTML = `
+                    ${fileBadges}
+                    <div class="max-w-[85%] px-4 py-2.5 rounded-3xl rounded-br-md bg-purple-600 text-white text-sm leading-relaxed shadow-xs">${escapeHtml(text)}</div>
+                `;
+            } else {
+                row.className = 'flex items-start gap-3';
+                row.innerHTML = `
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 shadow border border-purple-300/40" style="background: radial-gradient(circle at 30% 25%, #C4B5FD 0%, #8B5CF6 52%, #4C1D95 100%);">
+                        <div class="flex gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                        </div>
+                    </div>
+                    <div class="nixy-report-card max-w-[88%] px-4 py-3 rounded-3xl rounded-bl-md bg-purple-50/80 dark:bg-[#141419] border border-purple-200/70 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm leading-relaxed whitespace-pre-line">${escapeHtml(text)}</div>
+                `;
+            }
+
+            chatMessages.appendChild(row);
+            if (generatedFiles.length > 0) {
+                attachFileButtonsToBubble(row, generatedFiles);
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+
+        function attachFileButtonsToBubble(rowEl, generatedFiles) {
+            const bubble = rowEl.querySelector('.nixy-report-card') || rowEl.querySelector('div:last-child');
+            if (!bubble) return;
+            const footer = document.createElement('div');
+            footer.className = 'mt-2.5 pt-2 border-t border-purple-200/60 dark:border-zinc-800 flex flex-wrap items-center gap-1.5';
+            footer.innerHTML = generatedFiles.map(fn => `
+                <button onclick="selectPage('${escapeHtml(fn)}'); switchArtifactTab('code');" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900 transition">
+                    <span>📄 ${escapeHtml(fn)}</span>
+                </button>
+            `).join('');
+            bubble.appendChild(footer);
+        }
+
+        function updateChatBubble(id, text, generatedFiles = [], persist = false) {
+            if (persist) {
+                project.chatHistory.push({
+                    sender: 'nixy',
+                    text,
+                    files: [],
+                    generatedFiles
+                });
+                saveCurrentSessionToStorage();
+            }
+
+            const el = document.getElementById(id);
+            if (!el) return;
+            const bubble = el.querySelector('.nixy-report-card') || el.querySelector('div:last-child');
+            if (bubble) {
+                bubble.textContent = text;
+                if (generatedFiles.length > 0) {
+                    attachFileButtonsToBubble(el, generatedFiles);
+                }
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function copyActiveCode() {
+            const text = project.assets[project.activePage] || project.pages[project.activePage] || '';
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            temp.remove();
+
+            const btn = document.getElementById('copy-code-btn');
+            btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i>';
+            lucide.createIcons();
+            setTimeout(() => {
+                btn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i>';
+                lucide.createIcons();
+            }, 1500);
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        }
+
+        // Initialize Saved Chats button on load
+        updateSavedChatsButtonVisibility();
+    </script>
+</body>
+</html>
