@@ -598,17 +598,18 @@
             <div class="p-3 border-t border-slate-200 dark:border-nix-borderdark/60 bg-slate-50 dark:bg-nix-bgdark/40 space-y-2">
                 <a href="/Start" onclick="navigateToStartPage(event)" id="startRedirectPill" class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs hover:border-nix-500/50 transition-colors">
                     <div class="flex items-center space-x-2">
-                        <a href="/Start" onclick="navigateToStartPage(event)" id="headerStartBtn" class="px-3 py-1.5 bg-nix-600 hover:bg-nix-700 text-white rounded-lg text-xs font-medium transition-all shadow-sm inline-flex items-center space-x-1">
-                            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
-                            <span>/Start</span>
-                        </a>
+                        <div class="w-2 h-2 rounded-full bg-nix-500 animate-pulse" id="authIndicator"></div>
+                        <span id="accountLabel" class="text-slate-700 dark:text-zinc-300 truncate max-w-[145px] font-medium">Guest • Sign in on /Start</span>
+                    </div>
+                    <span class="text-nix-600 dark:text-nix-400 font-semibold inline-flex items-center space-x-1">
+                        <span>/Start</span>
+                        <i data-lucide="arrow-up-right" id="authActionIcon" class="w-3.5 h-3.5"></i>
+                    </span>
+                </a>
 
-                        <a href="/Nix-4.5/" id="nix45RedirectLink" onclick="navigateToNix45Page(event)" class="hidden sm:inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-nix-700 dark:text-nix-300 text-xs font-medium hover:border-nix-500/50 transition-all">
-                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                            <span>Nix-4.5</span>
-                        </a>
-
-                        <button onclick="openMemoryModal()" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-nix-600/10 border border-nix-500/20 text-nix-700 dark:text-nix-300 text-xs hover:bg-nix-600/20 transition-all">
+                <!-- Footer Quick Actions -->
+                <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 px-1 pt-1">
+                    <button onclick="openMemoryModal()" class="flex items-center space-x-1.5 hover:text-nix-600 dark:hover:text-nix-300 transition-colors py-1">
                         <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-nix-600 dark:text-nix-400"></i>
                         <span>Memory (<span id="memoryCountBadge">0</span>)</span>
                     </button>
@@ -947,13 +948,41 @@
     </div>
 
     <script>
+        // Guard against any script attempting to set restricted headers such as "Origin"
+        (function guardUnsafeRequestHeaders() {
+            const forbiddenHeaders = new Set(['origin', 'referer', 'host', 'cookie', 'user-agent']);
+            const origFetch = window.fetch;
+            if (typeof origFetch === 'function') {
+                window.fetch = function(input, init) {
+                    if (init && init.headers) {
+                        if (init.headers instanceof Headers) {
+                            forbiddenHeaders.forEach((h) => {
+                                try { init.headers.delete(h); } catch (_) {}
+                            });
+                        } else if (Array.isArray(init.headers)) {
+                            init.headers = init.headers.filter(([k]) => !forbiddenHeaders.has(String(k || '').toLowerCase()));
+                        } else if (typeof init.headers === 'object') {
+                            const cleaned = {};
+                            Object.entries(init.headers).forEach(([k, v]) => {
+                                if (!forbiddenHeaders.has(String(k || '').toLowerCase())) {
+                                    cleaned[k] = v;
+                                }
+                            });
+                            init = { ...init, headers: cleaned };
+                        }
+                    }
+                    return origFetch.call(this, input, init);
+                };
+            }
+        })();
+
         // CONFIGURATION & SUPABASE INITIALIZATION
         const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
         const LOCAL_STORAGE_KEY = 'nix_45_app_state_v2';
 
         let supabaseClient = null;
-        if (window.supabase) {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             } catch (e) {
@@ -961,58 +990,8 @@
             }
         }
 
-        // Handle /Start sign-in page redirect to /Nix-4.5/ when requested
-        function handleStartAndNix45Routes() {
-            try {
-                const path = (window.location.pathname || '').toLowerCase();
-                if (path === '/start' || path.endsWith('/start')) {
-                    const targetUrl = new URL('/Nix-4.5/', window.location.origin);
-                    window.location.replace(targetUrl.toString());
-                }
-            } catch (_) {}
-        }
-
-        function navigateToStartPage(event) {
-            try {
-                const targetUrl = new URL('/Start', window.location.origin);
-                targetUrl.searchParams.set('redirect', '/Nix-4.5/');
-                if (event) event.preventDefault();
-                window.location.href = targetUrl.toString();
-            } catch (_) {}
-        }
-
-        function navigateToNix45Page(event) {
-            try {
-                const targetUrl = new URL('/Nix-4.5/', window.location.origin);
-                if (event) event.preventDefault();
-                window.location.href = targetUrl.toString();
-            } catch (_) {}
-        }
-
-        function openGuestSignInGate() {
-            const notice = document.getElementById('guestGateNotice');
-            if (notice) notice.classList.remove('hidden');
-            detectClientIp();
-            const modal = document.getElementById('authModal');
-            if (modal) modal.classList.remove('hidden');
-            setNixyMood('thinking');
-            showNixyBubble('1 free guest message used! Visit /Start -> /Nix-4.5/', 3800);
-        }
-
-        function updateGuestQuotaUi() {
-            const hintEl = document.getElementById('guestQuotaHint');
-            if (!hintEl) return;
-            if (supabaseUser) {
-                hintEl.textContent = 'Nix 4.5 • Authenticated session with Supabase sync.';
-            } else {
-                const used = getGuestMessageCount();
-                hintEl.textContent = `Nix 4.5 • Guest mode (${Math.min(used, GUEST_MESSAGE_LIMIT)}/${GUEST_MESSAGE_LIMIT} message) -> /Start (redirects to /Nix-4.5/).`;
-            }
-        }
-
-        // Utility to generate valid RFC4122 UUID v4 strings for PostgreSQL compatibility
         function generateUUID() {
-            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
                 return crypto.randomUUID();
             }
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -1022,320 +1001,25 @@
             });
         }
 
-        // APP STATE
         let appState = {
             theme: 'dark',
-            selectedModel: 'nix-4.5',
+            selectedModel: 'gpt-4o-mini',
             activeConversationId: null,
             conversations: [],
             memories: [
                 { id: 'm1', category: 'Coding', content: 'Prefer modern TypeScript, Python, and clean modular code with clear comments.', createdAt: Date.now() }
-            ]
+            ],
+            guestMessageCount: 0,
+            guestIp: null,
+            nixyVisible: true
         };
 
         let supabaseUser = null;
-        let isAuthSignUpMode = false;
         let currentAttachedFileText = null;
         let isGenerating = false;
         let dictationRecognition = null;
         let isDictating = false;
-        let clientIpAddress = null;
-        const GUEST_MESSAGE_LIMIT = 1;
 
-        // Detect visitor IP address for Supabase guest tracking
-        async function detectClientIp() {
-            if (clientIpAddress) return clientIpAddress;
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data?.ip) {
-                        clientIpAddress = String(data.ip).trim();
-                        const ipEl = document.getElementById('guestIpDisplay');
-                        if (ipEl) ipEl.textContent = clientIpAddress;
-                        return clientIpAddress;
-                    }
-                }
-            } catch (_) {}
-            clientIpAddress = 'guest-browser-session';
-            const ipEl = document.getElementById('guestIpDisplay');
-            if (ipEl) ipEl.textContent = clientIpAddress;
-            return clientIpAddress;
-        }
-
-        // Count total user messages sent in guest mode
-        function getGuestMessageCount() {
-            return appState.conversations.reduce((sum, conv) => {
-                const userCount = (conv.messages || []).filter(m => m.role === 'user').length;
-                return sum + userCount;
-            }, 0);
-        }
-
-        // Record guest message & IP into Supabase (with safe fallback)
-        async function recordGuestMessageWithIp(userPromptText) {
-            const ip = await detectClientIp();
-            const payload = {
-                ip_address: ip,
-                message_preview: (userPromptText || '').slice(0, 240),
-                user_agent: navigator.userAgent || 'unknown',
-                redirect_target: '/Nix-4.5/',
-                created_at: new Date().toISOString()
-            };
-
-            try {
-                localStorage.setItem('nix_45_guest_ip_log', JSON.stringify(payload));
-            } catch (_) {}
-
-            if (!supabaseClient) return;
-            try {
-                const { error } = await supabaseClient.from('nix_guest_sessions').insert(payload);
-                if (error && appState.activeConversationId) {
-                    await supabaseClient.from('nix_messages').insert({
-                        conversation_id: appState.activeConversationId,
-                        user_id: null,
-                        role: 'user',
-                        content: `[GUEST IP: ${ip}] ${userPromptText}`
-                    });
-                }
-            } catch (err) {
-                console.warn('Guest IP Supabase log fallback:', err);
-            }
-        }
-
-        // NIXY BOT INTERACTIVE STATE
-        const nixyState = {
-            visible: true,
-            mood: 'idle', // 'idle' | 'thinking' | 'happy' | 'error' | 'listening'
-            isDragging: false,
-            wasDragged: false,
-            dragOffsetX: 0,
-            dragOffsetY: 0,
-            bubbleTimer: null,
-            typingTimer: null,
-            roamTimer: null
-        };
-
-        function getActiveConversation() {
-            return appState.conversations.find(c => c.id === appState.activeConversationId) || null;
-        }
-
-        function isHeroStateActive() {
-            const activeConv = getActiveConversation();
-            return !activeConv || activeConv.messages.length === 0;
-        }
-
-        function setNixyMood(mood) {
-            nixyState.mood = mood || 'idle';
-            const orb = document.getElementById('nixyOrb');
-            if (!orb) return;
-            orb.classList.remove('mood-idle', 'mood-thinking', 'mood-happy', 'mood-error', 'mood-listening');
-            orb.classList.add(`mood-${nixyState.mood}`);
-        }
-
-        function showNixyBubble(text, durationMs = 3200) {
-            if (!nixyState.visible || !text) return;
-            clearTimeout(nixyState.bubbleTimer);
-
-            if (isHeroStateActive()) {
-                const heroBubble = document.getElementById('heroNixyBubble');
-                if (heroBubble) {
-                    heroBubble.innerHTML = escapeHtml(text);
-                }
-                return;
-            }
-
-            const floatBubble = document.getElementById('floatingNixyBubble');
-            if (!floatBubble) return;
-            floatBubble.textContent = text;
-            floatBubble.classList.remove('hidden');
-
-            if (durationMs > 0) {
-                nixyState.bubbleTimer = setTimeout(() => {
-                    floatBubble.classList.add('hidden');
-                }, durationMs);
-            }
-        }
-
-        function syncNixyPlacement() {
-            const orb = document.getElementById('nixyOrb');
-            const eyes = document.querySelectorAll('.nixy-eye-ball');
-            const eyesBox = document.getElementById('nixyEyesContainer');
-            const heroMount = document.getElementById('heroNixyMount');
-            const floatingWrapper = document.getElementById('floatingNixyCompanion');
-            const floatingMount = document.getElementById('floatingNixyMount');
-            const toggleLabel = document.getElementById('nixyToggleLabel');
-
-            if (!orb) return;
-
-            if (!nixyState.visible) {
-                floatingWrapper.classList.add('hidden');
-                if (orb.parentElement === floatingMount) {
-                    floatingMount.removeChild(orb);
-                }
-                if (toggleLabel) toggleLabel.textContent = 'Summon Nixy';
-                return;
-            }
-
-            if (toggleLabel) toggleLabel.textContent = 'Nixy';
-
-            if (isHeroStateActive()) {
-                floatingWrapper.classList.add('hidden');
-                if (orb.parentElement !== heroMount && heroMount) {
-                    heroMount.appendChild(orb);
-                }
-                orb.classList.remove('w-12', 'h-12');
-                orb.classList.add('w-20', 'h-20');
-                if (eyesBox) {
-                    eyesBox.classList.remove('gap-2');
-                    eyesBox.classList.add('gap-3');
-                }
-                eyes.forEach(eye => {
-                    eye.classList.remove('w-2', 'h-2');
-                    eye.classList.add('w-3.5', 'h-3.5');
-                });
-            } else {
-                floatingWrapper.classList.remove('hidden');
-                if (orb.parentElement !== floatingMount && floatingMount) {
-                    floatingMount.appendChild(orb);
-                }
-                orb.classList.remove('w-20', 'h-20');
-                orb.classList.add('w-12', 'h-12');
-                if (eyesBox) {
-                    eyesBox.classList.remove('gap-3');
-                    eyesBox.classList.add('gap-2');
-                }
-                eyes.forEach(eye => {
-                    eye.classList.remove('w-3.5', 'h-3.5');
-                    eye.classList.add('w-2', 'h-2');
-                });
-            }
-        }
-
-        function toggleNixyVisibility() {
-            nixyState.visible = !nixyState.visible;
-            syncNixyPlacement();
-            if (nixyState.visible) {
-                setNixyMood('happy');
-                showNixyBubble('Nixy is back!', 2400);
-                setTimeout(() => {
-                    if (!isGenerating && !isDictating) setNixyMood('idle');
-                }, 2400);
-            }
-        }
-
-        function nudgeFloatingNixy() {
-            if (!nixyState.visible || isHeroStateActive() || nixyState.isDragging) return;
-            const wrapper = document.getElementById('floatingNixyCompanion');
-            if (!wrapper) return;
-            const maxX = Math.max(24, window.innerWidth - 120);
-            const maxY = Math.max(80, window.innerHeight - 170);
-            const nextLeft = Math.floor(24 + Math.random() * (maxX - 24));
-            const nextTop = Math.floor(80 + Math.random() * (maxY - 80));
-            wrapper.style.transition = 'left 0.9s cubic-bezier(0.22, 1, 0.36, 1), top 0.9s cubic-bezier(0.22, 1, 0.36, 1)';
-            wrapper.style.right = 'auto';
-            wrapper.style.bottom = 'auto';
-            wrapper.style.left = `${nextLeft}px`;
-            wrapper.style.top = `${nextTop}px`;
-        }
-
-        function handleComposerInput(el) {
-            autoResizeTextarea(el);
-            if (!nixyState.visible || isGenerating) return;
-            if (el.value.trim().length > 0 && !isHeroStateActive()) {
-                showNixyBubble('Typing something cool?', 1600);
-            }
-            clearTimeout(nixyState.typingTimer);
-            nixyState.typingTimer = setTimeout(() => {
-                if (!isGenerating && !isDictating && nixyState.mood !== 'error') {
-                    setNixyMood('idle');
-                }
-            }, 1200);
-        }
-
-        function initNixyInteractions() {
-            const orb = document.getElementById('nixyOrb');
-            const eyesContainer = document.getElementById('nixyEyesContainer');
-            const wrapper = document.getElementById('floatingNixyCompanion');
-            if (!orb || !eyesContainer) return;
-
-            // Track mouse cursor with Nixy's two white smaller-ball eyes
-            window.addEventListener('mousemove', (e) => {
-                if (!nixyState.visible) return;
-                const rect = orb.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                const cy = rect.top + rect.height / 2;
-                const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
-                const maxOffset = isHeroStateActive() ? 5 : 2.5;
-                const dx = Math.cos(angle) * maxOffset;
-                const dy = Math.sin(angle) * maxOffset;
-                eyesContainer.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
-            });
-
-            // Pointer drag support for floating Nixy bot
-            orb.addEventListener('pointerdown', (e) => {
-                if (isHeroStateActive() || !wrapper) return;
-                nixyState.isDragging = true;
-                nixyState.wasDragged = false;
-                const rect = wrapper.getBoundingClientRect();
-                nixyState.dragOffsetX = e.clientX - rect.left;
-                nixyState.dragOffsetY = e.clientY - rect.top;
-                wrapper.style.transition = 'none';
-                wrapper.style.right = 'auto';
-                wrapper.style.bottom = 'auto';
-                wrapper.style.left = `${rect.left}px`;
-                wrapper.style.top = `${rect.top}px`;
-                orb.setPointerCapture(e.pointerId);
-            });
-
-            orb.addEventListener('pointermove', (e) => {
-                if (!nixyState.isDragging || !wrapper) return;
-                nixyState.wasDragged = true;
-                const clampedX = Math.min(window.innerWidth - 76, Math.max(12, e.clientX - nixyState.dragOffsetX));
-                const clampedY = Math.min(window.innerHeight - 76, Math.max(64, e.clientY - nixyState.dragOffsetY));
-                wrapper.style.left = `${clampedX}px`;
-                wrapper.style.top = `${clampedY}px`;
-            });
-
-            orb.addEventListener('pointerup', (e) => {
-                if (!nixyState.isDragging) return;
-                nixyState.isDragging = false;
-                try { orb.releasePointerCapture(e.pointerId); } catch (_) {}
-                if (nixyState.wasDragged) {
-                    showNixyBubble('Whoa, new spot! 💜', 2200);
-                }
-            });
-
-            // Click reaction when not dragged
-            orb.addEventListener('click', () => {
-                if (nixyState.wasDragged) {
-                    nixyState.wasDragged = false;
-                    return;
-                }
-                const greetings = [
-                    'Hey! Nix 4.5 is ready whenever you are',
-                    'Need help debugging code or brainstorming?',
-                    'Tip: Use Memory to save your favorite style!'
-                ];
-                const pick = greetings[Math.floor(Math.random() * greetings.length)];
-                setNixyMood('happy');
-                showNixyBubble(pick, 3200);
-                if (!isHeroStateActive() && !isGenerating) {
-                    nudgeFloatingNixy();
-                }
-                setTimeout(() => {
-                    if (!isGenerating && !isDictating) setNixyMood('idle');
-                }, 2600);
-            });
-
-            // Occasional gentle roam when chatting
-            nixyState.roamTimer = setInterval(() => {
-                if (!isHeroStateActive() && !isGenerating && !nixyState.isDragging && Math.random() > 0.45) {
-                    nudgeFloatingNixy();
-                }
-            }, 14000);
-        }
-
-        // Load application state from localStorage cache
         function loadLocalState() {
             try {
                 const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -1350,7 +1034,6 @@
             }
         }
 
-        // Persist current state to localStorage
         function saveLocalState() {
             try {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
@@ -1359,7 +1042,6 @@
             }
         }
 
-        // Apply dark or light theme class to HTML root element
         function applyTheme(theme) {
             appState.theme = theme || 'dark';
             if (appState.theme === 'dark') {
@@ -1369,325 +1051,135 @@
             }
         }
 
-        // Toggle between dark and light themes
         function toggleTheme() {
             const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
             applyTheme(newTheme);
             saveLocalState();
             showToast(`Theme switched to ${newTheme} mode`);
-            setNixyMood('happy');
-            showNixyBubble(`Switched to ${newTheme} mode!`, 2400);
-            setTimeout(() => { if (!isGenerating) setNixyMood('idle'); }, 2200);
         }
 
-        // Synchronize conversations and memories with Supabase cloud database
-        async function syncFromSupabase() {
-            if (!supabaseUser || !supabaseClient) return;
-
+        function navigateToStartPage(event) {
+            if (event) event.preventDefault();
             try {
-                const syncBadge = document.getElementById('syncText');
-                if (syncBadge) syncBadge.innerText = 'Syncing...';
-
-                const { data: convs, error: convErr } = await supabaseClient
-                    .from('nix_conversations')
-                    .select('*')
-                    .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
-                    .order('updated_at', { ascending: false });
-
-                if (!convErr && convs && convs.length > 0) {
-                    const updatedConvs = await Promise.all(convs.map(async (c) => {
-                        const { data: msgs } = await supabaseClient
-                            .from('nix_messages')
-                            .select('*')
-                            .eq('conversation_id', c.id)
-                            .order('created_at', { ascending: true });
-
-                        return {
-                            id: c.id,
-                            title: c.title,
-                            model: c.model || 'nix-4.5',
-                            createdAt: new Date(c.created_at).getTime(),
-                            updatedAt: new Date(c.updated_at).getTime(),
-                            messages: (msgs || []).map(m => ({
-                                id: m.id,
-                                role: m.role,
-                                content: m.content,
-                                timestamp: new Date(m.created_at).getTime()
-                            }))
-                        };
-                    }));
-
-                    appState.conversations = updatedConvs;
-                    if (!appState.activeConversationId || !appState.conversations.some(c => c.id === appState.activeConversationId)) {
-                        appState.activeConversationId = appState.conversations[0]?.id || null;
-                    }
-                }
-
-                const { data: mems, error: memErr } = await supabaseClient
-                    .from('nix_memories')
-                    .select('*')
-                    .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
-                    .order('created_at', { ascending: false });
-
-                if (!memErr && mems) {
-                    appState.memories = mems.map(m => ({
-                        id: m.id,
-                        category: m.category,
-                        content: m.content,
-                        createdAt: new Date(m.created_at).getTime()
-                    }));
-                }
-
-                saveLocalState();
-                renderConversationsList();
-                renderActiveConversationMessages();
-                updateMemoryBadge();
-
-                if (syncBadge) syncBadge.innerText = 'Supabase Sync';
-            } catch (err) {
-                console.warn('Error syncing with Supabase:', err);
-                const syncBadge = document.getElementById('syncText');
-                if (syncBadge) syncBadge.innerText = 'Sync Offline';
+                window.location.assign('/Start?redirect=/Nix-4.5/');
+            } catch (_) {
+                window.location.href = '/Start?redirect=/Nix-4.5/';
             }
         }
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            lucide.createIcons();
-            loadLocalState();
-
-            marked.setOptions({
-                highlight: function(code, lang) {
-                    if (lang && hljs.getLanguage(lang)) {
-                        return hljs.highlight(code, { language: lang }).value;
-                    }
-                    return hljs.highlightAuto(code).value;
-                },
-                breaks: true
-            });
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const targetChatId = urlParams.get('chat') || urlParams.get('id');
-
-            if (supabaseClient) {
-                try {
-                    const { data: { session } } = await supabaseClient.auth.getSession();
-                    if (session) {
-                        supabaseUser = session.user;
-                        updateAuthUI(true);
-                        await syncFromSupabase();
-                    } else {
-                        updateAuthUI(false);
-                    }
-
-                    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                        if (session) {
-                            supabaseUser = session.user;
-                            updateAuthUI(true);
-                            await syncFromSupabase();
-                            if (targetChatId) await loadAndVerifyUrlChat(targetChatId);
-                        } else {
-                            supabaseUser = null;
-                            updateAuthUI(false);
-                        }
-                    });
-                } catch (e) {
-                    console.warn('Supabase Auth error:', e);
-                }
-            }
-
-            if (targetChatId) {
-                await loadAndVerifyUrlChat(targetChatId);
-            } else {
-                if (appState.conversations.length === 0) {
-                    createNewConversation(false);
-                } else if (!appState.activeConversationId) {
-                    appState.activeConversationId = appState.conversations[0].id;
-                }
-                updateUrlChatId(appState.activeConversationId);
-            }
-
-            applyTheme(appState.theme);
-            handleStartAndNix45Routes();
-            detectClientIp();
-            updateGuestQuotaUi();
-            renderConversationsList();
-            renderActiveConversationMessages();
-            updateMemoryBadge();
-            initNixyInteractions();
-            syncNixyPlacement();
-        });
-
-        // Updates browser address bar query param without triggering full reload
-        function updateUrlChatId(chatId) {
-            if (!chatId) return;
+        function navigateToNix45Page(event) {
+            if (event) event.preventDefault();
             try {
-                const loc = window.location;
-                if (!loc || !loc.protocol || loc.protocol === 'blob:' || loc.protocol === 'file:' || loc.href.startsWith('blob:')) {
-                    return;
-                }
-                const url = new URL(loc.href);
-                if (url.origin !== loc.origin) {
-                    return;
-                }
-                if (url.searchParams.get('chat') !== chatId) {
-                    url.searchParams.set('chat', chatId);
-                    window.history.pushState({ chatId }, '', url.toString());
-                }
-            } catch (err) {
-                console.warn('Skipping history pushState due to restricted/blob origin:', err);
+                window.location.assign('/Nix-4.5/');
+            } catch (_) {
+                window.location.href = '/Nix-4.5/';
             }
         }
 
-        async function loadAndVerifyUrlChat(chatId) {
-            let found = appState.conversations.find(c => c.id === chatId);
+        function handleComposerInput(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+            const counter = document.getElementById('charCounter');
+            if (counter) counter.innerText = `${el.value.length} chars`;
+        }
 
-            if (!found && supabaseUser && supabaseClient) {
-                try {
-                    const { data: conv } = await supabaseClient
-                        .from('nix_conversations')
-                        .select('*')
-                        .eq('id', chatId)
-                        .or(`user_id.eq.${supabaseUser.id},user_id.is.null`)
-                        .maybeSingle();
+        function toggleNixyVisibility() {
+            appState.nixyVisible = !appState.nixyVisible;
+            saveLocalState();
+            syncNixyCompanionVisibility();
+            showToast(appState.nixyVisible ? 'Nixy companion shown' : 'Nixy companion hidden');
+        }
 
-                    if (conv) {
-                        const { data: msgs } = await supabaseClient
-                            .from('nix_messages')
-                            .select('*')
-                            .eq('conversation_id', chatId)
-                            .order('created_at', { ascending: true });
-
-                        found = {
-                            id: conv.id,
-                            title: conv.title,
-                            model: conv.model || 'nix-4.5',
-                            createdAt: new Date(conv.created_at).getTime(),
-                            updatedAt: new Date(conv.updated_at).getTime(),
-                            messages: (msgs || []).map(m => ({
-                                id: m.id,
-                                role: m.role,
-                                content: m.content,
-                                timestamp: new Date(m.created_at).getTime()
-                            }))
-                        };
-
-                        appState.conversations.unshift(found);
-                        saveLocalState();
-                    }
-                } catch (err) {
-                    console.warn('Error verifying conversation URL:', err);
-                }
-            }
-
-            if (found) {
-                appState.activeConversationId = found.id;
-                updateUrlChatId(found.id);
-                showToast('Loaded conversation #' + chatId.slice(0, 8));
+        function syncNixyCompanionVisibility() {
+            const floating = document.getElementById('floatingNixyCompanion');
+            const label = document.getElementById('nixyToggleLabel');
+            if (label) label.innerText = appState.nixyVisible ? 'Nixy' : 'Show Nixy';
+            if (!floating) return;
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            const hasMessages = Boolean(activeConv && activeConv.messages && activeConv.messages.length > 0);
+            if (appState.nixyVisible && hasMessages) {
+                floating.classList.remove('hidden');
             } else {
-                showToast('Conversation not found or access denied.');
-                if (appState.conversations.length > 0) {
-                    appState.activeConversationId = appState.conversations[0].id;
-                } else {
-                    await createNewConversation(false);
-                }
-                updateUrlChatId(appState.activeConversationId);
+                floating.classList.add('hidden');
             }
-
-            renderConversationsList();
-            renderActiveConversationMessages();
         }
 
-        window.addEventListener('popstate', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const chatId = urlParams.get('chat') || urlParams.get('id');
-            if (chatId && chatId !== appState.activeConversationId) {
-                loadAndVerifyUrlChat(chatId);
+        function mountNixyOrb() {
+            const orb = document.getElementById('nixyOrb');
+            const heroMount = document.getElementById('heroNixyMount');
+            const floatingMount = document.getElementById('floatingNixyMount');
+            if (!orb) return;
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
+            const hasMessages = Boolean(activeConv && activeConv.messages && activeConv.messages.length > 0);
+            const target = hasMessages ? floatingMount : heroMount;
+            if (target && orb.parentElement !== target) {
+                target.appendChild(orb);
             }
-        });
+            orb.classList.toggle('w-20', !hasMessages);
+            orb.classList.toggle('h-20', !hasMessages);
+            orb.classList.toggle('w-12', hasMessages);
+            orb.classList.toggle('h-12', hasMessages);
+            syncNixyCompanionVisibility();
+        }
 
-        async function createNewConversation(autoSwitch = true) {
+        function setNixyMood(mood, speechText) {
+            const orb = document.getElementById('nixyOrb');
+            const bubble = document.getElementById('floatingNixyBubble');
+            if (orb) {
+                orb.classList.remove('mood-thinking', 'mood-happy', 'mood-error', 'mood-listening');
+                if (mood && mood !== 'idle') {
+                    orb.classList.add(`mood-${mood}`);
+                }
+            }
+            if (bubble && speechText) {
+                bubble.innerText = speechText;
+                bubble.classList.remove('hidden');
+            }
+        }
+
+        function createNewConversation(autoSwitch = true) {
             const newConv = {
                 id: generateUUID(),
                 title: 'New Conversation',
-                model: 'nix-4.5',
+                model: 'gpt-4o-mini',
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
                 messages: []
             };
-
             appState.conversations.unshift(newConv);
             if (autoSwitch) {
                 appState.activeConversationId = newConv.id;
-                updateUrlChatId(newConv.id);
             }
-
             saveLocalState();
             renderConversationsList();
             renderActiveConversationMessages();
-
-            if (supabaseUser && supabaseClient) {
-                try {
-                    const { error } = await supabaseClient.from('nix_conversations').insert({
-                        id: newConv.id,
-                        user_id: supabaseUser.id,
-                        title: newConv.title,
-                        model: newConv.model
-                    });
-                    if (error) console.warn('Conversation insert warning:', error.message);
-                } catch (e) {
-                    console.warn('Failed to insert conversation to Supabase:', e);
-                }
-            }
         }
 
         function switchConversation(convId) {
             appState.activeConversationId = convId;
-            updateUrlChatId(convId);
             saveLocalState();
             renderConversationsList();
             renderActiveConversationMessages();
-            syncNixyPlacement();
-            setNixyMood('happy');
-            showNixyBubble('Switched chat!', 2000);
-            setTimeout(() => { if (!isGenerating) setNixyMood('idle'); }, 2000);
-            
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.add('-translate-x-full');
-            document.getElementById('mobileBackdrop').classList.add('hidden');
         }
 
-        async function deleteConversation(convId, event) {
-            event.stopPropagation();
+        function deleteConversation(convId, event) {
+            if (event) event.stopPropagation();
             appState.conversations = appState.conversations.filter(c => c.id !== convId);
-
             if (appState.activeConversationId === convId) {
                 appState.activeConversationId = appState.conversations[0]?.id || null;
-                if (appState.activeConversationId) {
-                    updateUrlChatId(appState.activeConversationId);
-                }
             }
-
             if (appState.conversations.length === 0) {
                 createNewConversation(false);
             }
-
             saveLocalState();
             renderConversationsList();
             renderActiveConversationMessages();
-            syncNixyPlacement();
-
-            if (supabaseUser && supabaseClient) {
-                try {
-                    await supabaseClient.from('nix_conversations').delete().eq('id', convId);
-                } catch (e) {
-                    console.warn('Failed to delete conversation from Supabase:', e);
-                }
-            }
         }
 
         function renderConversationsList() {
             const container = document.getElementById('conversationsList');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            if (!container) return;
+            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
             container.innerHTML = '';
 
             const filtered = appState.conversations.filter(c =>
@@ -1705,11 +1197,10 @@
                 const el = document.createElement('div');
                 el.className = `group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs transition-all ${
                     isActive
-                    ? 'bg-nix-600/15 dark:bg-nix-600/25 border border-nix-500/40 text-nix-700 dark:text-white font-medium shadow-sm'
-                    : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60 hover:text-slate-900 dark:hover:text-zinc-200'
+                        ? 'bg-nix-600/15 dark:bg-nix-600/25 border border-nix-500/40 text-nix-700 dark:text-white font-medium shadow-sm'
+                        : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60 hover:text-slate-900 dark:hover:text-zinc-200'
                 }`;
                 el.onclick = () => switchConversation(conv.id);
-
                 el.innerHTML = `
                     <div class="flex items-center space-x-2.5 truncate flex-1 pr-2">
                         <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0 ${isActive ? 'text-nix-600 dark:text-nix-400' : 'text-slate-400 dark:text-zinc-500'}"></i>
@@ -1722,7 +1213,9 @@
                 container.appendChild(el);
             });
 
-            lucide.createIcons();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
         }
 
         function filterConversations() {
@@ -1730,7 +1223,7 @@
         }
 
         function buildSystemPrompt() {
-            let sys = "You are Nix 4.5, an elite AI assistant with a purple visual identity. Provide articulate, accurate, clean, and structured responses with Markdown formatting. Whenever you write HTML or visual cards that include images or illustrations, use real Wikimedia/Wikipedia image URLs or set data-wiki-query=\"Topic Name\" on <img> elements so they load authentic Wikipedia images cleanly.";
+            let sys = "You are Nix 4.5, an elite AI assistant with a purple visual identity. Provide clear, structured responses with Markdown formatting.";
             if (appState.memories.length > 0) {
                 sys += "\n\n[USER PERSONALIZATION MEMORIES]:\n";
                 appState.memories.forEach(m => {
@@ -1740,253 +1233,75 @@
             return sys;
         }
 
-        // Fetch a real image URL from Wikipedia for a topic query
-        async function fetchWikipediaImageUrl(query) {
-            const cleanQuery = (query || '').trim();
-            if (!cleanQuery) return null;
+        async function detectGuestIp() {
+            if (appState.guestIp) return appState.guestIp;
             try {
-                const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQuery.replace(/\s+/g, '_'))}`;
-                const res = await fetch(summaryUrl);
+                const res = await fetch('https://api.ipify.org?format=json');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data?.thumbnail?.source) return data.thumbnail.source;
-                    if (data?.originalimage?.source) return data.originalimage.source;
-                }
-            } catch (_) {}
-
-            try {
-                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=800&generator=search&gsrsearch=${encodeURIComponent(cleanQuery)}&gsrlimit=1`;
-                const res = await fetch(searchUrl);
-                if (res.ok) {
-                    const data = await res.json();
-                    const pages = data?.query?.pages ? Object.values(data.query.pages) : [];
-                    const first = pages[0];
-                    if (first?.thumbnail?.source) return first.thumbnail.source;
-                }
-            } catch (_) {}
-
-            return null;
-        }
-
-        // Inject real Wikipedia images into HTML preview strings for <img> tags with data-wiki-query or placeholder sources
-        async function hydrateHtmlWithWikipediaImages(htmlSource) {
-            if (!htmlSource || typeof document === 'undefined') return htmlSource;
-            try {
-                const doc = new DOMParser().parseFromString(htmlSource, 'text/html');
-                const imgs = Array.from(doc.querySelectorAll('img'));
-                if (imgs.length === 0) return htmlSource;
-
-                let changed = false;
-                for (const img of imgs) {
-                    const src = (img.getAttribute('src') || '').trim();
-                    const wikiQuery = (img.getAttribute('data-wiki-query') || img.getAttribute('alt') || '').trim();
-                    const isPlaceholder = !src || src.startsWith('data:') || src.includes('placehold.co') || src.includes('example.com') || img.hasAttribute('data-wiki-query');
-                    if (isPlaceholder && wikiQuery) {
-                        const wikiUrl = await fetchWikipediaImageUrl(wikiQuery);
-                        if (wikiUrl) {
-                            img.setAttribute('src', wikiUrl);
-                            if (!img.getAttribute('referrerpolicy')) {
-                                img.setAttribute('referrerpolicy', 'no-referrer');
-                            }
-                            changed = true;
-                        }
-                    }
-                    // Hide image automatically if it fails to load in the rendered preview
-                    img.setAttribute('onerror', "this.style.display='none';if(this.parentElement&&this.parentElement.classList&&this.parentElement.classList.contains('nix-smart-figure')){this.parentElement.style.display='none';}");
-                }
-
-                changed = true;
-                if (!changed) return htmlSource;
-                if (/^\s*<!DOCTYPE\s+html/i.test(htmlSource)) {
-                    return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-                }
-                return doc.body ? doc.body.innerHTML : htmlSource;
-            } catch (_) {
-                return htmlSource;
-            }
-        }
-
-        // Build a clean SVG flowchart from flowchart/mermaid-style fenced blocks
-        function buildFlowchartSvgFromText(sourceText) {
-            const rawLines = (sourceText || '')
-                .split(/\r?\n/)
-                .map(line => line.trim())
-                .filter(line => line && !/^flowchart\b|^graph\b/i.test(line));
-
-            const steps = [];
-            rawLines.forEach((line) => {
-                const parts = line.split(/\s*(?:-->|->|=>|→)\s*/).filter(Boolean);
-                if (parts.length > 1) {
-                    parts.forEach((p) => {
-                        const cleaned = p.replace(/^\[(.*)\]$|^\((.*)\)$|^\{(.*)\}$/, '$1$2$3').trim();
-                        if (cleaned && !steps.includes(cleaned)) steps.push(cleaned);
-                    });
-                } else {
-                    const cleaned = line.replace(/^[-*•\d.)]+\s*/, '').replace(/^\[(.*)\]$|^\((.*)\)$/, '$1$2').trim();
-                    if (cleaned && !steps.includes(cleaned)) steps.push(cleaned);
-                }
-            });
-
-            if (steps.length === 0) return '';
-
-            const boxW = 240;
-            const boxH = 44;
-            const gapY = 26;
-            const padTop = 16;
-            const width = 320;
-            const height = padTop * 2 + steps.length * boxH + (steps.length - 1) * gapY;
-
-            const nodesSvg = steps.map((label, idx) => {
-                const x = (width - boxW) / 2;
-                const y = padTop + idx * (boxH + gapY);
-                const shortLabel = label.length > 34 ? label.slice(0, 32) + '…' : label;
-                const arrowSvg = idx < steps.length - 1
-                    ? `<line x1="${width / 2}" y1="${y + boxH}" x2="${width / 2}" y2="${y + boxH + gapY - 6}" stroke="#8b5cf6" stroke-width="2" />
-                       <polygon points="${width / 2 - 5},${y + boxH + gapY - 9} ${width / 2 + 5},${y + boxH + gapY - 9} ${width / 2},${y + boxH + gapY - 2}" fill="#8b5cf6" />`
-                    : '';
-
-                return `
-                    <rect x="${x}" y="${y}" width="${boxW}" height="${boxH}" rx="10" fill="#7c3aed" fill-opacity="0.16" stroke="#8b5cf6" stroke-width="1.5" />
-                    <text x="${width / 2}" y="${y + boxH / 2 + 4}" text-anchor="middle" fill="#ede9fe" font-family="Inter, sans-serif" font-size="12" font-weight="600">${escapeHtml(shortLabel)}</text>
-                    ${arrowSvg}
-                `;
-            }).join('');
-
-            return `<svg viewBox="0 0 ${width} ${height}" class="w-full max-w-md mx-auto block" role="img" aria-label="Flowchart diagram">${nodesSvg}</svg>`;
-        }
-
-        // Convert fenced flowchart blocks into SVG diagrams and ensure images hide cleanly on error
-        function decorateSmartMediaAndDiagrams(proseBody) {
-            if (!proseBody) return;
-            proseBody.querySelectorAll('img').forEach((img) => {
-                if (!img.getAttribute('referrerpolicy')) {
-                    img.setAttribute('referrerpolicy', 'no-referrer');
-                }
-                img.onerror = function() {
-                    this.style.display = 'none';
-                    const parentFigure = this.closest('.nix-smart-figure, .nix-side-media-card, .nix-msg-hero-banner');
-                    if (parentFigure) parentFigure.style.display = 'none';
-                };
-            });
-
-            proseBody.querySelectorAll('pre').forEach((preEl) => {
-                if (preEl.dataset.flowchartRendered === '1') return;
-                const codeEl = preEl.querySelector('code');
-                const langClass = codeEl ? Array.from(codeEl.classList).find(c => c.startsWith('language-')) : null;
-                const lang = langClass ? langClass.replace('language-', '').toLowerCase() : '';
-                const raw = codeEl ? codeEl.textContent : preEl.textContent;
-                if (['flowchart', 'mermaid', 'diagram'].includes(lang) || /\bflowchart\b|\bgraph\s+(td|lr|tb|rl)\b/i.test(raw)) {
-                    const svg = buildFlowchartSvgFromText(raw);
-                    if (svg) {
-                        preEl.dataset.flowchartRendered = '1';
-                        const card = document.createElement('div');
-                        card.className = 'nix-flowchart-card';
-                        card.innerHTML = `<div class="nix-flowchart-title">Flowchart Diagram</div>${svg}`;
-                        preEl.parentNode.insertBefore(card, preEl);
-                        preEl.classList.add('hidden');
+                    if (data && data.ip) {
+                        appState.guestIp = String(data.ip);
+                        saveLocalState();
+                        return appState.guestIp;
                     }
                 }
-            });
+            } catch (_) {}
+            appState.guestIp = 'unknown-ip';
+            return appState.guestIp;
         }
 
-        // Decorate assistant message card with titles, inline icons next to text, and side-by-side Wikipedia image cards
-        async function decorateRichMessageLayout(bubbleEl, msg) {
-            if (!bubbleEl || !msg || msg.role !== 'assistant' || !msg.content) return;
-            const cardContainer = bubbleEl.querySelector('.bg-white, .dark\\:bg-nix-carddark');
-            const proseBody = bubbleEl.querySelector('.prose-body');
-            if (!cardContainer || !proseBody || cardContainer.querySelector('.nix-msg-rich-header')) return;
-
-            const meta = inferMessageVisualMeta(msg.content);
-            const firstHeadingMatch = msg.content.match(/^#{1,3}\s+(.+)$/m);
-            const sectionTitle = firstHeadingMatch ? firstHeadingMatch[1].trim() : meta.label;
-
-            proseBody.querySelectorAll('h1, h2, h3, li').forEach((el, idx) => {
-                if (el.dataset.nixIconAdded === '1') return;
-                el.dataset.nixIconAdded = '1';
-                const iconName = el.tagName.startsWith('H')
-                    ? meta.icon
-                    : (idx % 2 === 0 ? 'sparkles' : 'check');
-                const iconSpan = document.createElement('span');
-                iconSpan.className = 'nix-inline-icon';
-                iconSpan.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5"></i>`;
-                el.insertBefore(iconSpan, el.firstChild);
-            });
-
-            const richHeader = document.createElement('div');
-            richHeader.className = 'nix-msg-rich-header';
-            richHeader.innerHTML = `
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="nix-msg-icon-pill">
-                        <i data-lucide="${meta.icon}" class="w-3.5 h-3.5"></i>
-                        <span>${escapeHtml(sectionTitle)}</span>
-                    </span>
-                </div>
-                <span class="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1">
-                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-nix-600 dark:text-nix-400"></i>
-                    <span>${escapeHtml(meta.topic)}</span>
-                </span>
-            `;
-            proseBody.parentNode.insertBefore(richHeader, proseBody);
-
-            const wikiImgUrl = await fetchWikipediaImageUrl(meta.topic);
-            if (wikiImgUrl && !cardContainer.querySelector('.nix-side-media-row')) {
-                const firstParagraph = proseBody.querySelector('p, ul, ol');
-                if (firstParagraph && firstParagraph.parentNode) {
-                    const sideRow = document.createElement('div');
-                    sideRow.className = 'nix-side-media-row';
-
-                    const textSide = document.createElement('div');
-                    textSide.className = 'space-y-2 min-w-0';
-
-                    const mediaCard = document.createElement('div');
-                    mediaCard.className = 'nix-side-media-card';
-                    mediaCard.innerHTML = `
-                        <img src="${escapeHtml(wikiImgUrl)}" alt="${escapeHtml(meta.topic)}" referrerpolicy="no-referrer" onerror="this.style.display='none';if(this.parentElement){this.parentElement.style.display='none';}" />
-                        <div class="mt-2 flex items-center justify-between gap-2 text-[11px] text-nix-700 dark:text-nix-300 font-medium">
-                            <span class="inline-flex items-center gap-1 truncate">
-                                <i data-lucide="image" class="w-3.5 h-3.5 shrink-0"></i>
-                                <span class="truncate">${escapeHtml(meta.topic)}</span>
-                            </span>
-                            <span class="text-[10px] opacity-80 shrink-0">Wiki</span>
-                        </div>
-                    `;
-
-                    firstParagraph.parentNode.insertBefore(sideRow, firstParagraph);
-                    textSide.appendChild(firstParagraph);
-                    sideRow.appendChild(textSide);
-                    sideRow.appendChild(mediaCard);
-                }
-            }
-
-            lucide.createIcons();
-        }
-
-        // Request Nix 4.5 completion via Puter.js with clean error handling
-        async function requestNix45Completion(activeConv, promptText) {
+        async function logGuestSessionToSupabase(promptText, replyText) {
+            const ip = await detectGuestIp();
+            const ipLabel = document.getElementById('guestIpDisplay');
+            if (ipLabel) ipLabel.innerText = ip;
+            if (!supabaseClient) return;
             try {
-                if (window.puter && puter.ai) {
-                    const response = await puter.ai.chat(promptText, { model: 'gpt-4o-mini' });
-                    if (typeof response === 'string') return response;
-                    return response?.message?.content || response?.text || String(response);
-                }
-                return "I am Nix 4.5. Puter.js SDK is initializing or offline. Please check connection.";
-            } catch (err) {
-                console.error('Puter AI error:', err);
-                throw err;
+                await supabaseClient.from('nix_guest_sessions').insert({
+                    ip_address: ip,
+                    message_count: appState.guestMessageCount,
+                    last_prompt: promptText.slice(0, 500),
+                    last_reply: (replyText || '').slice(0, 500)
+                });
+            } catch (_) {}
+        }
+
+        function openAuthModal() {
+            const ipLabel = document.getElementById('guestIpDisplay');
+            if (ipLabel) ipLabel.innerText = appState.guestIp || 'Detecting...';
+            detectGuestIp().then(ip => {
+                if (ipLabel) ipLabel.innerText = ip;
+            });
+            const modal = document.getElementById('authModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('authModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function updateGuestQuotaUi() {
+            const hint = document.getElementById('guestQuotaHint');
+            if (!hint) return;
+            if (!supabaseUser) {
+                const remaining = Math.max(0, 1 - (appState.guestMessageCount || 0));
+                hint.innerText = `Nix 4.5 • Guest mode: ${remaining} free message left before /Start (redirects to /Nix-4.5/).`;
+            } else {
+                hint.innerText = 'Nix 4.5 • Signed in with Supabase Cloud Sync.';
             }
         }
 
         async function sendMessage() {
             if (isGenerating) return;
 
-            if (!supabaseUser && getGuestMessageCount() >= GUEST_MESSAGE_LIMIT) {
-                openGuestSignInGate();
+            if (!supabaseUser && (appState.guestMessageCount || 0) >= 1) {
+                setNixyMood('error', 'Guest limit reached! Sign in on /Start.');
+                openAuthModal();
                 return;
             }
 
             const inputEl = document.getElementById('userInput');
-            let content = inputEl.value.trim();
-
+            let content = (inputEl?.value || '').trim();
             if (!content && !currentAttachedFileText) return;
 
             if (currentAttachedFileText) {
@@ -1994,53 +1309,40 @@
                 clearAttachedFile();
             }
 
-            let activeConv = getActiveConversation();
+            let activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
             if (!activeConv) {
                 createNewConversation(true);
-                activeConv = getActiveConversation();
+                activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
             }
 
             const userMsg = { role: 'user', content: content, timestamp: Date.now() };
             activeConv.messages.push(userMsg);
-
             if (activeConv.messages.length === 1) {
                 activeConv.title = content.slice(0, 32) + (content.length > 32 ? '...' : '');
             }
-
             activeConv.updatedAt = Date.now();
+
+            if (!supabaseUser) {
+                appState.guestMessageCount = (appState.guestMessageCount || 0) + 1;
+            }
+
             saveLocalState();
             updateGuestQuotaUi();
 
-            if (!supabaseUser) {
-                recordGuestMessageWithIp(content);
+            if (inputEl) {
+                inputEl.value = '';
+                handleComposerInput(inputEl);
             }
-
-            inputEl.value = '';
-            handleComposerInput(inputEl);
-            document.getElementById('charCounter').innerText = '0 chars';
 
             renderConversationsList();
             renderActiveConversationMessages();
-            syncNixyPlacement();
-
-            if (supabaseUser && supabaseClient) {
-                supabaseClient.from('nix_messages').insert({
-                    conversation_id: activeConv.id,
-                    user_id: supabaseUser.id,
-                    role: 'user',
-                    content: userMsg.content
-                }).then(({ error }) => {
-                    if (error) console.warn('User message insert warning:', error.message);
-                }).catch(() => {});
-            }
 
             const aiMsg = { role: 'assistant', content: '', timestamp: Date.now() };
             activeConv.messages.push(aiMsg);
 
             isGenerating = true;
             updateSendButtonState(true);
-            setNixyMood('thinking');
-            showNixyBubble('Nix 4.5 is thinking...', 0);
+            setNixyMood('thinking', 'Nix 4.5 is thinking...');
 
             const msgListEl = document.getElementById('messagesList');
             const aiBubbleEl = renderSingleMessage(aiMsg, activeConv.messages.length - 1);
@@ -2051,479 +1353,74 @@
 
             try {
                 const systemPrompt = buildSystemPrompt();
-                const historyPayload = activeConv.messages.slice(0, -1).map(m => ({
-                    role: m.role,
-                    content: m.content
-                }));
+                const historyPayload = activeConv.messages.slice(0, -1).map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+                const promptText = `${systemPrompt}\n\n${historyPayload}`;
 
-                const promptText = `${systemPrompt}\n\n${historyPayload.map(h => `${h.role.toUpperCase()}: ${h.content}`).join('\n\n')}`;
-                const finalResponseText = await requestNix45Completion(activeConv, promptText);
-
-                aiMsg.content = '';
-                await streamAssistantText(textContainer, aiMsg, finalResponseText);
-                enhanceAssistantAnswerUI(aiBubbleEl, aiMsg, activeConv.messages.length - 1);
-                decorateSmartMediaAndDiagrams(textContainer);
-
-                if (!supabaseUser && getGuestMessageCount() >= GUEST_MESSAGE_LIMIT) {
-                    appendGuestSignInCard(aiBubbleEl);
-                }
-
-                setNixyMood('happy');
-                showNixyBubble('Done! How does that look?', 3200);
-                setTimeout(() => { if (!isGenerating && !isDictating) setNixyMood('idle'); }, 3200);
-
-                // Save AI response to Supabase
-                if (supabaseUser && supabaseClient) {
-                    supabaseClient.from('nix_messages').insert({
-                        conversation_id: activeConv.id,
-                        user_id: supabaseUser.id,
-                        role: 'assistant',
-                        content: finalResponseText
-                    }).then(({ error }) => {
-                        if (error) console.warn('AI message insert warning:', error.message);
-                    }).catch(() => {});
-
-                    supabaseClient.from('nix_conversations').update({
-                        title: activeConv.title,
-                        updated_at: new Date().toISOString()
-                    }).eq('id', activeConv.id).then(({ error }) => {
-                        if (error) console.warn('Conversation update warning:', error.message);
-                    }).catch(() => {});
+                if (window.puter && window.puter.ai && typeof window.puter.ai.chat === 'function') {
+                    const response = await window.puter.ai.chat(promptText, { model: 'gpt-4o-mini' });
+                    const finalResponseText = typeof response === 'string'
+                        ? response
+                        : (response?.message?.content || response?.text || String(response));
+                    aiMsg.content = finalResponseText;
+                    if (textContainer) {
+                        textContainer.innerHTML = window.marked ? window.marked.parse(finalResponseText) : escapeHtml(finalResponseText);
+                        textContainer.classList.remove('typing-cursor');
+                    }
+                    setNixyMood('happy', 'Response ready!');
+                    if (!supabaseUser) {
+                        await logGuestSessionToSupabase(content, finalResponseText);
+                    }
+                } else {
+                    aiMsg.content = "I am Nix 4.5. Puter.js SDK is initializing or offline.";
+                    if (textContainer) textContainer.innerHTML = escapeHtml(aiMsg.content);
+                    setNixyMood('error', 'Puter AI unavailable');
                 }
             } catch (err) {
                 console.error('Puter AI error:', err);
                 aiMsg.content = `**Generation Error:** ${err.message || 'Failed to connect to Puter.js AI.'}`;
-                if (textContainer) {
-                    textContainer.innerHTML = marked.parse(aiMsg.content);
-                    textContainer.classList.remove('typing-cursor');
-                }
-                setNixyMood('error');
-                showNixyBubble('Oops! Something went wrong.', 3500);
+                if (textContainer) textContainer.innerHTML = window.marked ? window.marked.parse(aiMsg.content) : escapeHtml(aiMsg.content);
+                setNixyMood('error', 'Hit a snag!');
             } finally {
                 isGenerating = false;
                 updateSendButtonState(false);
                 saveLocalState();
                 highlightCodeBlocks();
                 scrollToBottom();
+                if (!supabaseUser && (appState.guestMessageCount || 0) >= 1) {
+                    setTimeout(() => openAuthModal(), 900);
+                }
             }
         }
 
         function renderActiveConversationMessages() {
             const container = document.getElementById('messagesList');
             const emptyHero = document.getElementById('emptyHero');
+            if (!container || !emptyHero) return;
             container.innerHTML = '';
 
-            const activeConv = getActiveConversation();
-
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
             if (!activeConv || activeConv.messages.length === 0) {
                 emptyHero.classList.remove('hidden');
                 container.classList.add('hidden');
-                syncNixyPlacement();
+                mountNixyOrb();
                 return;
             }
 
             emptyHero.classList.add('hidden');
             container.classList.remove('hidden');
+            mountNixyOrb();
 
             activeConv.messages.forEach((msg, idx) => {
-                const msgEl = renderSingleMessage(msg, idx);
-                container.appendChild(msgEl);
+                container.appendChild(renderSingleMessage(msg, idx));
             });
 
             highlightCodeBlocks();
             scrollToBottom();
         }
 
-        // Smoothly stream assistant response text into markdown and code blocks
-        async function streamAssistantText(textContainer, aiMsg, fullText) {
-            if (!textContainer || !aiMsg) return;
-            const source = fullText || '';
-            textContainer.classList.add('typing-cursor');
-
-            const chunkSize = Math.max(8, Math.ceil(source.length / 45));
-            for (let i = 0; i < source.length; i += chunkSize) {
-                aiMsg.content = source.slice(0, i + chunkSize);
-                textContainer.innerHTML = marked.parse(aiMsg.content);
-                if (i % (chunkSize * 4) === 0) {
-                    scrollToBottom();
-                }
-                await new Promise((resolve) => setTimeout(resolve, 14));
-            }
-
-            aiMsg.content = source;
-            textContainer.innerHTML = marked.parse(source);
-            textContainer.classList.remove('typing-cursor');
-        }
-
-        // Detect dominant content type for the ChatGPT-style smart badge
-        function detectSmartContentType(text) {
-            const raw = (text || '').trim();
-            if (!raw) return 'TEXT';
-            if (/^\s*[\[{][\s\S]*[\]}]\s*$/.test(raw)) {
-                try {
-                    JSON.parse(raw);
-                    return 'STRUCTURED JSON';
-                } catch (_) {}
-            }
-            if (/```[\s\S]*?```/.test(raw)) return 'CODE & SMART UI';
-            if (/^\|.+\|\s*\n\|[\s:-]+\|/m.test(raw)) return 'TABLE';
-            if (/^\s*([-*+]|\d+\.)\s+/m.test(raw)) return 'LIST & GUIDE';
-            return 'MARKDOWN';
-        }
-
-        // Render clean key-value cards when an assistant response contains a JSON payload
-        function renderStructuredJsonCards(proseBody, rawText) {
-            if (!proseBody || !rawText || proseBody.querySelector('.nix-structured-card')) return;
-            const match = rawText.match(/```json\s*([\s\S]*?)```/i) || (/^\s*[\[{][\s\S]*[\]}]\s*$/.test(rawText.trim()) ? [null, rawText.trim()] : null);
-            if (!match || !match[1]) return;
-
-            try {
-                const parsed = JSON.parse(match[1].trim());
-                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-                    const card = document.createElement('div');
-                    card.className = 'nix-structured-card';
-                    const title = document.createElement('div');
-                    title.className = 'text-[11px] font-bold uppercase tracking-wider text-nix-700 dark:text-nix-300 mb-2';
-                    title.textContent = 'Structured Data Summary';
-
-                    const grid = document.createElement('div');
-                    grid.className = 'nix-structured-kv';
-
-                    Object.entries(parsed).slice(0, 12).forEach(([k, v]) => {
-                        const keyEl = document.createElement('div');
-                        keyEl.className = 'font-semibold text-slate-700 dark:text-zinc-300';
-                        keyEl.textContent = k;
-
-                        const valEl = document.createElement('div');
-                        valEl.className = 'font-mono text-slate-600 dark:text-zinc-400 break-words';
-                        valEl.textContent = typeof v === 'object' ? JSON.stringify(v) : String(v);
-
-                        grid.appendChild(keyEl);
-                        grid.appendChild(valEl);
-                    });
-
-                    card.appendChild(title);
-                    card.appendChild(grid);
-                    proseBody.insertBefore(card, proseBody.firstChild);
-                }
-            } catch (_) {}
-        }
-
-        // Wrap HTML/SVG snippets into a clean standalone document for iframe or popout preview
-        function buildPreviewHtml(codeSource) {
-            const raw = codeSource || '';
-            if (/^\s*<!DOCTYPE\s+html/i.test(raw) || /<html[\s>]/i.test(raw)) {
-                return raw;
-            }
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<style>
-  body {
-    margin: 0;
-    padding: 16px;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
-    background: #ffffff;
-    color: #0f172a;
-  }
-  img {
-    max-width: 100%;
-    border-radius: 10px;
-  }
-</style>
-</head>
-<body>
-${raw}
-</body>
-</html>`;
-        }
-
-        // Append an inline Guest 1-Message Gate card with Sign In and /Nix-4.5/ redirect link
-        function appendGuestSignInCard(bubbleEl) {
-            if (!bubbleEl || supabaseUser) return;
-            const cardContainer = bubbleEl.querySelector('.bg-white, .dark\\:bg-nix-carddark');
-            if (!cardContainer || cardContainer.querySelector('.nix-guest-limit-banner')) return;
-
-            detectClientIp();
-            const gateCard = document.createElement('div');
-            gateCard.className = 'nix-guest-limit-banner flex flex-col sm:flex-row sm:items-center justify-between gap-3';
-            gateCard.innerHTML = `
-                <div class="space-y-1">
-                    <div class="flex items-center space-x-1.5 text-xs font-bold text-nix-700 dark:text-nix-200">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-nix-600 dark:text-nix-400"></i>
-                        <span>Guest Mode Limit Reached (1/1 Message)</span>
-                    </div>
-                    <p class="text-[11px] text-slate-600 dark:text-zinc-300">
-                        Sign in to continue chatting, or open the <code class="font-mono">/Nix-4.5/</code> page in your domain.
-                    </p>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                    <button type="button" onclick="openGuestSignInGate()" class="px-3 py-1.5 rounded-lg bg-nix-600 hover:bg-nix-700 text-white text-xs font-semibold transition-colors">
-                        Sign In
-                    </button>
-                    <a href="/Nix-4.5/" onclick="navigateToNix45Page(event)" class="px-3 py-1.5 rounded-lg bg-white dark:bg-nix-bgdark border border-nix-500/40 text-nix-700 dark:text-nix-300 text-xs font-semibold hover:bg-nix-600/10 transition-colors">
-                        /Nix-4.5/
-                    </a>
-                </div>
-            `;
-            cardContainer.appendChild(gateCard);
-            lucide.createIcons();
-        }
-
-        // Pick a contextual icon and Wikipedia topic for each assistant answer
-        function inferMessageVisualMeta(text) {
-            const lower = (text || '').toLowerCase();
-            if (/garden|plant|yard|soil|herb|vegetable/.test(lower)) {
-                return { icon: 'sprout', label: 'Garden & Setup Guide', topic: 'Container garden' };
-            }
-            if (/code|script|api|python|javascript|html|sql|bug|debug/.test(lower)) {
-                return { icon: 'code-2', label: 'Code & Engineering', topic: 'Computer programming' };
-            }
-            if (/calculate|budget|cost|price|math|formula|chart/.test(lower)) {
-                return { icon: 'calculator', label: 'Calculation & Breakdown', topic: 'Mathematics' };
-            }
-            if (/sport|football|soccer|rule|game|team/.test(lower)) {
-                return { icon: 'trophy', label: 'Visual Guide & Rules', topic: 'Association football' };
-            }
-            if (/science|quantum|space|physics|ai|neural/.test(lower)) {
-                return { icon: 'atom', label: 'Deep Concept Breakdown', topic: 'Artificial intelligence' };
-            }
-            return { icon: 'sparkles', label: 'Nix 4.5 Smart Answer', topic: 'Knowledge' };
-        }
-
-        function enhanceAssistantAnswerUI(bubbleEl, msg, msgIndex) {
-            if (!bubbleEl || !msg || msg.role !== 'assistant') return;
-            const proseBody = bubbleEl.querySelector('.prose-body');
-            if (!proseBody) return;
-
-            decorateRichMessageLayout(bubbleEl, msg);
-
-            const headerLeft = bubbleEl.querySelector('.flex.items-center.justify-between.border-b > span');
-            if (headerLeft && msg.content && !headerLeft.parentElement.querySelector('.nix-smart-badge')) {
-                const badge = document.createElement('span');
-                badge.className = 'nix-smart-badge ml-2';
-                badge.textContent = detectSmartContentType(msg.content);
-                headerLeft.insertAdjacentElement('afterend', badge);
-            }
-
-            if (msg.content) {
-                renderStructuredJsonCards(proseBody, msg.content);
-            }
-
-            proseBody.querySelectorAll('pre').forEach((preEl) => {
-                if (preEl.closest('.nix-code-card')) return;
-                const codeEl = preEl.querySelector('code');
-                const rawCode = codeEl ? codeEl.textContent : preEl.textContent;
-                const lineCount = (rawCode || '').split(/\r?\n/).length;
-                const langMatch = codeEl ? Array.from(codeEl.classList).find(c => c.startsWith('language-')) : null;
-                const langLabel = (langMatch ? langMatch.replace('language-', '') : 'code').toUpperCase();
-                const isPreviewable = ['HTML', 'SVG', 'HTM'].includes(langLabel) || /<\s*(svg|canvas|div|section|html)\b/i.test(rawCode);
-
-                const card = document.createElement('div');
-                card.className = 'nix-code-card';
-                card.dataset.codeContent = rawCode;
-
-                const header = document.createElement('div');
-                header.className = 'nix-code-header';
-
-                const metaGroup = document.createElement('div');
-                metaGroup.className = 'nix-code-meta';
-
-                const langSpan = document.createElement('span');
-                langSpan.textContent = langLabel;
-
-                const linesSpan = document.createElement('span');
-                linesSpan.className = 'nix-code-lines';
-                linesSpan.textContent = `${lineCount} ${lineCount === 1 ? 'line' : 'lines'}`;
-
-                metaGroup.appendChild(langSpan);
-                metaGroup.appendChild(linesSpan);
-
-                const actions = document.createElement('div');
-                actions.className = 'nix-code-actions';
-
-                const codeBtn = document.createElement('button');
-                codeBtn.type = 'button';
-                codeBtn.className = 'nix-code-btn is-active';
-                codeBtn.textContent = 'Code';
-
-                const previewBox = document.createElement('div');
-                previewBox.className = 'hidden bg-white';
-                const iframeEl = document.createElement('iframe');
-                iframeEl.className = 'nix-smart-preview-frame';
-                iframeEl.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-                previewBox.appendChild(iframeEl);
-
-                codeBtn.onclick = () => {
-                    codeBtn.classList.add('is-active');
-                    previewBtn.classList.remove('is-active');
-                    previewBox.classList.add('hidden');
-                    preEl.classList.remove('hidden');
-                };
-
-                const previewBtn = document.createElement('button');
-                previewBtn.type = 'button';
-                previewBtn.className = 'nix-code-btn';
-                previewBtn.textContent = 'Preview';
-                if (!isPreviewable) {
-                    previewBtn.classList.add('hidden');
-                }
-                previewBtn.onclick = async () => {
-                    previewBtn.classList.add('is-active');
-                    codeBtn.classList.remove('is-active');
-                    preEl.classList.add('hidden');
-                    previewBox.classList.remove('hidden');
-                    const hydrated = await hydrateHtmlWithWikipediaImages(card.dataset.codeContent || '');
-                    card.dataset.codeContent = hydrated;
-                    iframeEl.srcdoc = buildPreviewHtml(hydrated);
-                };
-
-                const popoutBtn = document.createElement('button');
-                popoutBtn.type = 'button';
-                popoutBtn.className = 'nix-code-btn';
-                popoutBtn.textContent = 'Popout';
-                if (!isPreviewable) {
-                    popoutBtn.classList.add('hidden');
-                }
-                popoutBtn.onclick = async () => {
-                    const hydrated = await hydrateHtmlWithWikipediaImages(card.dataset.codeContent || '');
-                    const win = window.open('', '_blank');
-                    if (win) {
-                        win.document.open();
-                        win.document.write(buildPreviewHtml(hydrated));
-                        win.document.close();
-                    }
-                };
-
-                const wrapBtn = document.createElement('button');
-                wrapBtn.type = 'button';
-                wrapBtn.className = 'nix-code-btn';
-                wrapBtn.textContent = 'Wrap';
-                wrapBtn.onclick = () => {
-                    card.classList.toggle('is-wrapped');
-                    wrapBtn.classList.toggle('is-active');
-                };
-
-                const collapseBtn = document.createElement('button');
-                collapseBtn.type = 'button';
-                collapseBtn.className = 'nix-code-btn';
-                collapseBtn.textContent = 'Collapse';
-                collapseBtn.onclick = () => {
-                    const collapsed = card.classList.toggle('is-collapsed');
-                    collapseBtn.textContent = collapsed ? 'Expand' : 'Collapse';
-                };
-
-                const copyBtn = document.createElement('button');
-                copyBtn.type = 'button';
-                copyBtn.className = 'nix-code-btn';
-                copyBtn.textContent = 'Copy';
-                copyBtn.onclick = () => copyToClipboard(card.dataset.codeContent || '');
-
-                actions.appendChild(codeBtn);
-                actions.appendChild(previewBtn);
-                actions.appendChild(popoutBtn);
-                actions.appendChild(wrapBtn);
-                actions.appendChild(collapseBtn);
-                actions.appendChild(copyBtn);
-
-                header.appendChild(langSpan);
-                header.appendChild(actions);
-
-                preEl.parentNode.insertBefore(card, preEl);
-                card.appendChild(header);
-                card.appendChild(preEl);
-                card.appendChild(previewBox);
-            });
-
-            if (msg.content && !bubbleEl.querySelector('.nix-smart-footer')) {
-                const footer = document.createElement('div');
-                footer.className = 'nix-smart-footer flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-200/80 dark:border-nix-borderdark/60';
-
-                const chips = document.createElement('div');
-                chips.className = 'flex flex-wrap items-center gap-1.5';
-
-                const suggestions = [
-                    { label: 'Simplify', prompt: 'Explain this more simply and concisely.' },
-                    { label: 'More Examples', prompt: 'Give concrete code or visual examples for this.' },
-                    { label: 'Next Steps', prompt: 'What are the best next steps or improvements here?' }
-                ];
-
-                suggestions.forEach((s) => {
-                    const chip = document.createElement('button');
-                    chip.type = 'button';
-                    chip.className = 'nix-smart-chip';
-                    chip.textContent = s.label;
-                    chip.onclick = () => sendQuickPrompt(s.prompt);
-                    chips.appendChild(chip);
-                });
-
-                const regenBtn = document.createElement('button');
-                regenBtn.type = 'button';
-                regenBtn.className = 'nix-smart-chip';
-                regenBtn.textContent = 'Regenerate';
-                regenBtn.onclick = () => regenerateAssistantMessage(msgIndex);
-
-                footer.appendChild(chips);
-                footer.appendChild(regenBtn);
-                bubbleEl.querySelector('.bg-white, .dark\\:bg-nix-carddark').appendChild(footer);
-            }
-        }
-
-        async function regenerateAssistantMessage(assistantIdx) {
-            if (isGenerating) return;
-            const activeConv = getActiveConversation();
-            if (!activeConv || assistantIdx <= 0) return;
-
-            const precedingUser = [...activeConv.messages.slice(0, assistantIdx)].reverse().find(m => m.role === 'user');
-            if (!precedingUser) return;
-
-            activeConv.messages.splice(assistantIdx);
-            saveLocalState();
-            renderActiveConversationMessages();
-
-            const aiMsg = { role: 'assistant', content: '', timestamp: Date.now() };
-            activeConv.messages.push(aiMsg);
-            isGenerating = true;
-            updateSendButtonState(true);
-            setNixyMood('thinking');
-            showNixyBubble('Regenerating response...', 0);
-
-            const msgListEl = document.getElementById('messagesList');
-            const aiBubbleEl = renderSingleMessage(aiMsg, activeConv.messages.length - 1);
-            msgListEl.appendChild(aiBubbleEl);
-            scrollToBottom();
-
-            try {
-                const promptText = `${buildSystemPrompt()}\n\nUSER: ${precedingUser.content}`;
-                const finalText = await requestNix45Completion(activeConv, promptText);
-                aiMsg.content = finalText;
-                const textContainer = aiBubbleEl.querySelector('.prose-body');
-                if (textContainer) {
-                    textContainer.innerHTML = marked.parse(finalText);
-                    textContainer.classList.remove('typing-cursor');
-                }
-                enhanceAssistantAnswerUI(aiBubbleEl, aiMsg, activeConv.messages.length - 1);
-                decorateSmartMediaAndDiagrams(textContainer);
-                setNixyMood('happy');
-                showNixyBubble('Fresh answer ready!', 2600);
-            } catch (err) {
-                aiMsg.content = `**Generation Error:** ${err.message || 'Failed to regenerate.'}`;
-                setNixyMood('error');
-            } finally {
-                isGenerating = false;
-                updateSendButtonState(false);
-                saveLocalState();
-                highlightCodeBlocks();
-                setTimeout(() => { if (!isGenerating) setNixyMood('idle'); }, 2400);
-            }
-        }
-
-        function renderSingleMessage(msg, index) {
+        function renderSingleMessage(msg) {
             const wrapper = document.createElement('div');
             const isUser = msg.role === 'user';
-
             wrapper.className = `flex gap-3 sm:gap-4 ${isUser ? 'justify-end' : 'justify-start'} text-sm leading-relaxed`;
 
             if (isUser) {
@@ -2536,8 +1433,9 @@ ${raw}
                     </div>
                 `;
             } else {
-                const parsedContent = msg.content ? marked.parse(msg.content) : '<span class="typing-cursor text-slate-400 dark:text-zinc-400">Nix 4.5 is thinking...</span>';
-
+                const parsedContent = msg.content
+                    ? (window.marked ? window.marked.parse(msg.content) : escapeHtml(msg.content))
+                    : '<span class="typing-cursor text-slate-400 dark:text-zinc-400">Nix 4.5 is thinking...</span>';
                 wrapper.innerHTML = `
                     <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nix-700 to-nix-500 flex items-center justify-center shrink-0 nix-glow-sm">
                         <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
@@ -2550,105 +1448,46 @@ ${raw}
                                 <button onclick="speakText(\`${escapeJsString(msg.content)}\`)" class="hover:text-nix-600 dark:hover:text-nix-300 p-1" title="Read Aloud"><i data-lucide="volume-2" class="w-3.5 h-3.5"></i></button>
                             </div>
                         </div>
-                        <div class="prose max-w-none prose-body text-xs sm:text-sm">
-                            ${parsedContent}
-                        </div>
+                        <div class="prose max-w-none prose-body text-xs sm:text-sm">${parsedContent}</div>
                     </div>
                 `;
-                enhanceAssistantAnswerUI(wrapper, msg, index);
-                decorateSmartMediaAndDiagrams(wrapper.querySelector('.prose-body'));
             }
 
-            setTimeout(() => lucide.createIcons(), 0);
+            setTimeout(() => {
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }, 0);
             return wrapper;
-        }
-
-        function openAuthModal() {
-            openGuestSignInGate ? document.getElementById('authModal').classList.remove('hidden') : null;
-            detectClientIp();
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').classList.add('hidden');
-        }
-
-        function toggleAuthMode() {
-            navigateToStartPage();
-        }
-
-        async function handleAuthSubmit(e) {
-            if (e) e.preventDefault();
-            navigateToStartPage();
-        }
-
-        async function handleSignOut() {
-            navigateToStartPage();
-        }
-
-        function updateAuthUI(isLoggedIn) {
-            const label = document.getElementById('accountLabel');
-            const badge = document.getElementById('supabaseSyncBadge');
-            const headerStartBtn = document.getElementById('headerStartBtn');
-
-            if (isLoggedIn && supabaseUser) {
-                if (label) label.innerText = supabaseUser.email || 'Cloud Account';
-                if (badge) badge.classList.remove('hidden');
-                if (headerStartBtn) headerStartBtn.classList.add('hidden');
-                const guestNotice = document.getElementById('guestGateNotice');
-                if (guestNotice) guestNotice.classList.add('hidden');
-            } else {
-                if (label) label.innerText = 'Guest • /Start Sign In';
-                if (badge) badge.classList.add('hidden');
-                if (headerStartBtn) headerStartBtn.classList.remove('hidden');
-            }
-            updateGuestQuotaUi();
-            lucide.createIcons();
         }
 
         function openMemoryModal() {
             renderMemoriesList();
-            document.getElementById('memoryModal').classList.remove('hidden');
+            document.getElementById('memoryModal')?.classList.remove('hidden');
         }
 
         function closeMemoryModal() {
-            document.getElementById('memoryModal').classList.add('hidden');
+            document.getElementById('memoryModal')?.classList.add('hidden');
         }
 
-        async function addMemory() {
+        function addMemory() {
             const input = document.getElementById('newMemoryInput');
-            const category = document.getElementById('memoryCategory').value;
-            const content = input.value.trim();
-
+            const category = document.getElementById('memoryCategory')?.value || 'Preference';
+            const content = (input?.value || '').trim();
             if (!content) return;
-
-            const mem = { id: 'mem_' + Date.now(), category, content, createdAt: Date.now() };
-            appState.memories.push(mem);
-
+            appState.memories.push({ id: 'mem_' + Date.now(), category, content, createdAt: Date.now() });
             input.value = '';
             saveLocalState();
             renderMemoriesList();
             updateMemoryBadge();
-
-            if (supabaseUser && supabaseClient) {
-                supabaseClient.from('nix_memories').insert({
-                    user_id: supabaseUser.id,
-                    category,
-                    content
-                }).then(() => {}).catch(() => {});
-            }
-
             showToast('Memory saved.');
         }
 
-        async function deleteMemory(id) {
+        function deleteMemory(id) {
             appState.memories = appState.memories.filter(m => m.id !== id);
             saveLocalState();
             renderMemoriesList();
             updateMemoryBadge();
-
-            if (supabaseUser && supabaseClient) {
-                supabaseClient.from('nix_memories').delete().eq('id', id).then(() => {}).catch(() => {});
-            }
         }
 
         function clearAllMemories() {
@@ -2661,40 +1500,41 @@ ${raw}
 
         function renderMemoriesList() {
             const container = document.getElementById('memoriesListContainer');
+            if (!container) return;
             container.innerHTML = '';
-
             if (appState.memories.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-400 dark:text-zinc-500 italic text-center py-2">No active memories stored.</p>`;
                 return;
             }
-
             appState.memories.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs';
                 item.innerHTML = `
                     <div class="space-y-0.5 truncate pr-2">
-                        <span class="text-[10px] font-bold px-1.5 py-0.2 bg-nix-600/20 text-nix-600 dark:text-nix-300 rounded">${m.category}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.2 bg-nix-600/20 text-nix-600 dark:text-nix-300 rounded">${escapeHtml(m.category)}</span>
                         <p class="text-slate-800 dark:text-zinc-200 truncate mt-0.5">${escapeHtml(m.content)}</p>
                     </div>
                     <button onclick="deleteMemory('${m.id}')" class="text-slate-400 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 `;
                 container.appendChild(item);
             });
-
-            lucide.createIcons();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
         }
 
         function updateMemoryBadge() {
-            document.getElementById('memoryCountBadge').innerText = appState.memories.length;
+            const badge = document.getElementById('memoryCountBadge');
+            if (badge) badge.innerText = appState.memories.length;
         }
 
         function openSettingsModal(defaultTab = 'general') {
             switchSettingsTab(defaultTab);
-            document.getElementById('settingsModal').classList.remove('hidden');
+            document.getElementById('settingsModal')?.classList.remove('hidden');
         }
 
         function closeSettingsModal() {
-            document.getElementById('settingsModal').classList.add('hidden');
+            document.getElementById('settingsModal')?.classList.add('hidden');
         }
 
         function switchSettingsTab(tabId) {
@@ -2702,12 +1542,9 @@ ${raw}
                 btn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50';
             });
             document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-
             const activeBtn = document.getElementById(`tabBtn-${tabId}`);
             if (activeBtn) activeBtn.className = 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-600 dark:text-nix-300 bg-nix-600/10 dark:bg-nix-600/20';
-
-            const activeContent = document.getElementById(`tabContent-${tabId}`);
-            if (activeContent) activeContent.classList.remove('hidden');
+            document.getElementById(`tabContent-${tabId}`)?.classList.remove('hidden');
         }
 
         function exportAllData() {
@@ -2721,13 +1558,13 @@ ${raw}
         }
 
         function clearAllLocalData() {
-            showToast('Clearing local cache...');
             localStorage.removeItem(LOCAL_STORAGE_KEY);
-            setTimeout(() => location.reload(), 400);
+            window.location.reload();
         }
 
         function sendQuickPrompt(text) {
             const input = document.getElementById('userInput');
+            if (!input) return;
             input.value = text;
             handleComposerInput(input);
             sendMessage();
@@ -2740,25 +1577,19 @@ ${raw}
             }
         }
 
-        function autoResizeTextarea(el) {
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
-            document.getElementById('charCounter').innerText = `${el.value.length} chars`;
-        }
-
         function triggerFileInput() {
-            document.getElementById('fileInput').click();
+            document.getElementById('fileInput')?.click();
         }
 
         function handleFileSelect(event) {
-            const file = event.target.files[0];
+            const file = event.target.files?.[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentAttachedFileText = e.target.result;
-                document.getElementById('fileName').innerText = file.name;
-                document.getElementById('filePreview').classList.remove('hidden');
+                const fileNameEl = document.getElementById('fileName');
+                if (fileNameEl) fileNameEl.innerText = file.name;
+                document.getElementById('filePreview')?.classList.remove('hidden');
                 showToast(`Attached ${file.name}`);
             };
             reader.readAsText(file);
@@ -2766,46 +1597,43 @@ ${raw}
 
         function clearAttachedFile() {
             currentAttachedFileText = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('filePreview').classList.add('hidden');
+            const input = document.getElementById('fileInput');
+            if (input) input.value = '';
+            document.getElementById('filePreview')?.classList.add('hidden');
         }
 
         function toggleDictation() {
             const btn = document.getElementById('dictationBtn');
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
             if (!SpeechRecognition) {
                 showToast('Voice dictation not supported.');
                 return;
             }
-
             if (!dictationRecognition) {
                 dictationRecognition = new SpeechRecognition();
                 dictationRecognition.continuous = false;
                 dictationRecognition.interimResults = false;
-
                 dictationRecognition.onresult = (e) => {
                     const transcript = e.results[0][0].transcript;
                     const input = document.getElementById('userInput');
-                    input.value += (input.value ? ' ' : '') + transcript;
-                    handleComposerInput(input);
+                    if (input) {
+                        input.value += (input.value ? ' ' : '') + transcript;
+                        handleComposerInput(input);
+                    }
                 };
-
                 dictationRecognition.onend = () => {
                     isDictating = false;
-                    btn.classList.remove('text-rose-500', 'animate-pulse');
-                    if (!isGenerating) setNixyMood('idle');
+                    btn?.classList.remove('text-rose-500', 'animate-pulse');
+                    setNixyMood('idle');
                 };
             }
-
             if (isDictating) {
                 dictationRecognition.stop();
             } else {
                 dictationRecognition.start();
                 isDictating = true;
-                btn.classList.add('text-rose-500', 'animate-pulse');
-                setNixyMood('listening');
-                showNixyBubble('Listening to you...', 0);
+                btn?.classList.add('text-rose-500', 'animate-pulse');
+                setNixyMood('listening', 'Listening...');
                 showToast('Listening...');
             }
         }
@@ -2829,13 +1657,10 @@ ${raw}
             document.execCommand('copy');
             document.body.removeChild(el);
             showToast('Copied to clipboard!');
-            setNixyMood('happy');
-            showNixyBubble('Copied!', 1800);
-            setTimeout(() => { if (!isGenerating && !isDictating) setNixyMood('idle'); }, 1800);
         }
 
         function exportCurrentChat() {
-            const activeConv = getActiveConversation();
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
             if (!activeConv || activeConv.messages.length === 0) {
                 showToast('No active messages to export.');
                 return;
@@ -2850,7 +1675,7 @@ ${raw}
         }
 
         function clearCurrentChat() {
-            const activeConv = getActiveConversation();
+            const activeConv = appState.conversations.find(c => c.id === appState.activeConversationId);
             if (activeConv) {
                 activeConv.messages = [];
                 saveLocalState();
@@ -2860,10 +1685,8 @@ ${raw}
         }
 
         function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('mobileBackdrop');
-            sidebar.classList.toggle('-translate-x-full');
-            backdrop.classList.toggle('hidden');
+            document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
+            document.getElementById('mobileBackdrop')?.classList.toggle('hidden');
         }
 
         function updateSendButtonState(generating) {
@@ -2876,20 +1699,21 @@ ${raw}
                 btn.innerHTML = `<i data-lucide="arrow-up" class="w-4 h-4"></i>`;
                 btn.disabled = false;
             }
-            lucide.createIcons();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
         }
 
         function highlightCodeBlocks() {
+            if (!window.hljs) return;
             document.querySelectorAll('pre code').forEach((block) => {
-                try {
-                    hljs.highlightElement(block);
-                } catch (_) {}
+                try { window.hljs.highlightElement(block); } catch (_) {}
             });
         }
 
         function scrollToBottom() {
             const container = document.getElementById('messagesContainer');
-            container.scrollTop = container.scrollHeight;
+            if (container) container.scrollTop = container.scrollHeight;
         }
 
         function showToast(message) {
@@ -2897,11 +1721,7 @@ ${raw}
             toast.className = 'fixed bottom-20 right-6 bg-slate-900 text-white dark:bg-nix-carddark border border-nix-500/50 px-4 py-2.5 rounded-xl text-xs shadow-2xl z-50 transition-all duration-300 transform translate-y-2 opacity-0';
             toast.innerText = message;
             document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
@@ -2915,6 +1735,42 @@ ${raw}
         function escapeJsString(str) {
             return (str || '').replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
         }
+
+        document.addEventListener('mousemove', (e) => {
+            const eyes = document.querySelectorAll('#nixyOrb .nixy-eye-ball');
+            if (!eyes.length) return;
+            const orb = document.getElementById('nixyOrb');
+            if (!orb) return;
+            const rect = orb.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+            const dist = Math.min(3.5, Math.hypot(e.clientX - cx, e.clientY - cy) / 60);
+            const dx = Math.cos(angle) * dist;
+            const dy = Math.sin(angle) * dist;
+            eyes.forEach((eye) => {
+                eye.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalState();
+            applyTheme(appState.theme);
+            if (appState.conversations.length === 0) {
+                createNewConversation(false);
+            } else if (!appState.activeConversationId) {
+                appState.activeConversationId = appState.conversations[0].id;
+            }
+            renderConversationsList();
+            renderActiveConversationMessages();
+            updateMemoryBadge();
+            updateGuestQuotaUi();
+            mountNixyOrb();
+            detectGuestIp();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        });
     </script>
 </body>
 </html>
