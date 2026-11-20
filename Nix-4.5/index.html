@@ -1274,6 +1274,480 @@
             } catch (_) {}
         }
 
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-nix-700 text-white text-xs font-medium shadow-xl';
+            toast.innerText = String(msg || '');
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.25s ease';
+                setTimeout(() => toast.remove(), 260);
+            }, 2200);
+        }
+
+        function setNixyMood(mood, bubbleText) {
+            const orb = document.getElementById('nixyOrb');
+            if (orb) {
+                orb.classList.remove('mood-thinking', 'mood-happy', 'mood-error', 'mood-listening');
+                if (mood && mood !== 'idle') {
+                    orb.classList.add(`mood-${mood}`);
+                }
+            }
+            const floatingBubble = document.getElementById('floatingNixyBubble');
+            const heroBubble = document.getElementById('heroNixyBubble');
+            if (bubbleText) {
+                if (floatingBubble) {
+                    floatingBubble.innerText = bubbleText;
+                    floatingBubble.classList.remove('hidden');
+                }
+                if (heroBubble) {
+                    heroBubble.innerText = bubbleText;
+                }
+            } else if (floatingBubble) {
+                floatingBubble.classList.add('hidden');
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobileBackdrop');
+            if (!sidebar || !backdrop) return;
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const nextTheme = appState.theme === 'dark' ? 'light' : 'dark';
+            appState.theme = nextTheme;
+            if (nextTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            saveLocalState();
+            setNixyMood('happy', nextTheme === 'dark' ? 'Dark purple mode active!' : 'Light mode active!');
+        }
+
+        function toggleNixyVisibility() {
+            appState.nixyVisible = !appState.nixyVisible;
+            const label = document.getElementById('nixyToggleLabel');
+            if (label) label.innerText = appState.nixyVisible ? 'Nixy' : 'Show Nixy';
+            saveLocalState();
+            mountNixyOrb();
+        }
+
+        function navigateToStartPage(event) {
+            if (event) event.preventDefault();
+            try {
+                const targetUrl = new URL('/Start', window.location.origin);
+                targetUrl.searchParams.set('redirect', '/Nix-4.5/');
+                window.location.href = targetUrl.toString();
+            } catch (_) {
+                window.location.href = '/Start';
+            }
+        }
+
+        function navigateToNix45Page(event) {
+            if (event) event.preventDefault();
+            try {
+                const targetUrl = new URL('/Nix-4.5/', window.location.origin);
+                if (appState.activeConversationId) {
+                    targetUrl.searchParams.set('chat', appState.activeConversationId);
+                }
+                window.location.href = targetUrl.toString();
+            } catch (_) {
+                window.location.href = '/Nix-4.5/';
+            }
+        }
+
+        function openAuthModal() {
+            const modal = document.getElementById('authModal');
+            if (modal) modal.classList.remove('hidden');
+            updateGuestQuotaUi();
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('authModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openMemoryModal() {
+            const modal = document.getElementById('memoryModal');
+            if (modal) modal.classList.remove('hidden');
+            renderMemoriesList();
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
+        function closeMemoryModal() {
+            const modal = document.getElementById('memoryModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function renderMemoriesList() {
+            const container = document.getElementById('memoriesListContainer');
+            if (!container) return;
+            const memories = appState.memories || [];
+            if (!memories.length) {
+                container.innerHTML = '<div class="text-xs text-slate-400 dark:text-zinc-500 py-3 text-center">No saved memories yet.</div>';
+                return;
+            }
+            container.innerHTML = memories.map(m => `
+                <div class="flex items-start justify-between gap-2 p-2.5 rounded-xl bg-slate-100 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs">
+                    <div>
+                        <span class="font-semibold text-nix-600 dark:text-nix-400">[${String(m.category || 'Note').replace(/</g, '&lt;')}]</span>
+                        <span class="text-slate-700 dark:text-zinc-200 ml-1">${String(m.content || '').replace(/</g, '&lt;')}</span>
+                    </div>
+                    <button onclick="deleteMemory('${m.id}')" class="text-rose-500 hover:text-rose-400 text-[11px] shrink-0">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function addMemory() {
+            const input = document.getElementById('newMemoryInput');
+            const category = document.getElementById('memoryCategory')?.value || 'Preference';
+            const content = (input?.value || '').trim();
+            if (!content) return;
+            if (!Array.isArray(appState.memories)) appState.memories = [];
+            appState.memories.unshift({
+                id: 'm_' + Date.now(),
+                category,
+                content,
+                createdAt: Date.now()
+            });
+            input.value = '';
+            saveLocalState();
+            updateMemoryBadge();
+            renderMemoriesList();
+            showToast('Memory saved for Nix 4.5');
+        }
+
+        function deleteMemory(id) {
+            appState.memories = (appState.memories || []).filter(m => m.id !== id);
+            saveLocalState();
+            updateMemoryBadge();
+            renderMemoriesList();
+        }
+
+        function clearAllMemories() {
+            appState.memories = [];
+            saveLocalState();
+            updateMemoryBadge();
+            renderMemoriesList();
+        }
+
+        function openSettingsModal(tabName = 'general') {
+            const modal = document.getElementById('settingsModal');
+            if (modal) modal.classList.remove('hidden');
+            switchSettingsTab(tabName);
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function switchSettingsTab(tabName) {
+            ['general', 'data'].forEach(t => {
+                const btn = document.getElementById(`tabBtn-${t}`);
+                const content = document.getElementById(`tabContent-${t}`);
+                const active = t === tabName;
+                if (btn) {
+                    btn.className = active
+                        ? 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-nix-600 dark:text-nix-300 bg-nix-600/10 dark:bg-nix-600/20'
+                        : 'tab-btn w-full flex items-center space-x-2 px-3 py-2 text-xs font-medium rounded-lg text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-nix-borderdark/50';
+                }
+                if (content) {
+                    if (active) content.classList.remove('hidden');
+                    else content.classList.add('hidden');
+                }
+            });
+        }
+
+        function exportAllData() {
+            try {
+                const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'nix-4.5-backup.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Backup exported');
+            } catch (_) {
+                showToast('Could not export backup');
+            }
+        }
+
+        function clearAllLocalData() {
+            try { localStorage.removeItem(LOCAL_STORAGE_KEY); } catch (_) {}
+            appState.conversations = [];
+            appState.activeConversationId = null;
+            appState.guestMessageCount = 0;
+            renderConversationsList();
+            renderActiveConversationMessages();
+            updateGuestQuotaUi();
+            mountNixyOrb();
+            showToast('Local cache cleared');
+        }
+
+        function selectConversation(id) {
+            appState.activeConversationId = id;
+            saveLocalState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+            mountNixyOrb();
+        }
+
+        function createNewConversation() {
+            const conv = {
+                id: generateUUID(),
+                title: 'New Conversation',
+                createdAt: Date.now(),
+                messages: []
+            };
+            if (!Array.isArray(appState.conversations)) appState.conversations = [];
+            appState.conversations.unshift(conv);
+            appState.activeConversationId = conv.id;
+            saveLocalState();
+            renderConversationsList();
+            renderActiveConversationMessages();
+            mountNixyOrb();
+        }
+
+        function filterConversations() {
+            renderConversationsList();
+        }
+
+        function clearCurrentChat() {
+            const conv = (appState.conversations || []).find(c => c.id === appState.activeConversationId);
+            if (conv) {
+                conv.messages = [];
+                conv.title = 'New Conversation';
+                saveLocalState();
+                renderConversationsList();
+                renderActiveConversationMessages();
+                mountNixyOrb();
+                showToast('Conversation cleared');
+            }
+        }
+
+        function exportCurrentChat() {
+            const conv = (appState.conversations || []).find(c => c.id === appState.activeConversationId);
+            if (!conv || !(conv.messages || []).length) {
+                showToast('No messages to export');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(conv, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(conv.title || 'nix-chat').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Conversation exported');
+        }
+
+        function triggerFileInput() {
+            document.getElementById('fileInput')?.click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event?.target?.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                currentAttachedFileText = String(reader.result || '').slice(0, 12000);
+                const preview = document.getElementById('filePreview');
+                const nameEl = document.getElementById('fileName');
+                if (nameEl) nameEl.innerText = file.name;
+                if (preview) preview.classList.remove('hidden');
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAttachedFile() {
+            currentAttachedFileText = null;
+            const input = document.getElementById('fileInput');
+            const preview = document.getElementById('filePreview');
+            if (input) input.value = '';
+            if (preview) preview.classList.add('hidden');
+        }
+
+        function toggleDictation() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast('Speech recognition is not supported in this browser');
+                return;
+            }
+            const btn = document.getElementById('dictationBtn');
+            if (isDictating && dictationRecognition) {
+                dictationRecognition.stop();
+                return;
+            }
+            dictationRecognition = new SpeechRecognition();
+            dictationRecognition.lang = 'en-US';
+            dictationRecognition.interimResults = false;
+            dictationRecognition.onstart = () => {
+                isDictating = true;
+                if (btn) btn.classList.add('text-rose-500');
+                setNixyMood('listening', 'Listening...');
+            };
+            dictationRecognition.onresult = (e) => {
+                const transcript = e?.results?.[0]?.[0]?.transcript || '';
+                const input = document.getElementById('userInput');
+                if (input && transcript) {
+                    input.value = input.value ? `${input.value} ${transcript}` : transcript;
+                    handleComposerInput(input);
+                }
+            };
+            dictationRecognition.onend = () => {
+                isDictating = false;
+                if (btn) btn.classList.remove('text-rose-500');
+                setNixyMood('idle');
+            };
+            dictationRecognition.onerror = () => {
+                isDictating = false;
+                if (btn) btn.classList.remove('text-rose-500');
+                setNixyMood('error', 'Mic error');
+            };
+            dictationRecognition.start();
+        }
+
+        function handleComposerInput(textarea) {
+            if (!textarea) return;
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 144) + 'px';
+            const counter = document.getElementById('charCounter');
+            if (counter) counter.innerText = `${textarea.value.length} chars`;
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            const input = document.getElementById('userInput');
+            if (!input) return;
+            input.value = promptText;
+            handleComposerInput(input);
+            sendMessage();
+        }
+
+        async function logGuestActivityToSupabase(promptText, ipAddress) {
+            if (!supabaseClient) return;
+            try {
+                await supabaseClient.from('nix_guest_sessions').insert({
+                    ip_address: ipAddress || appState.guestIp || 'unknown',
+                    prompt_preview: String(promptText || '').slice(0, 300),
+                    user_agent: navigator.userAgent || 'unknown'
+                });
+            } catch (_) {}
+        }
+
+        async function sendMessage() {
+            if (isGenerating) return;
+            const input = document.getElementById('userInput');
+            const rawText = (input?.value || '').trim();
+            if (!rawText && !currentAttachedFileText) return;
+
+            if (!supabaseUser && Number(appState.guestMessageCount || 0) >= 1) {
+                openAuthModal();
+                setNixyMood('error', 'Guest limit reached — sign in on /Start');
+                return;
+            }
+
+            let conv = (appState.conversations || []).find(c => c.id === appState.activeConversationId);
+            if (!conv) {
+                conv = { id: generateUUID(), title: 'New Conversation', createdAt: Date.now(), messages: [] };
+                if (!Array.isArray(appState.conversations)) appState.conversations = [];
+                appState.conversations.unshift(conv);
+                appState.activeConversationId = conv.id;
+            }
+
+            const combinedUserMessage = currentAttachedFileText
+                ? `${rawText || 'Analyze attached file:'}\n\n--- Attached File ---\n${currentAttachedFileText}`
+                : rawText;
+
+            conv.messages.push({ role: 'user', content: combinedUserMessage, timestamp: Date.now() });
+            if (conv.title === 'New Conversation') {
+                conv.title = (rawText || 'File Analysis').slice(0, 42);
+            }
+
+            if (!supabaseUser) {
+                appState.guestMessageCount = Number(appState.guestMessageCount || 0) + 1;
+                await logGuestActivityToSupabase(combinedUserMessage, appState.guestIp);
+            }
+
+            if (input) {
+                input.value = '';
+                handleComposerInput(input);
+            }
+            clearAttachedFile();
+            saveLocalState();
+            updateGuestQuotaUi();
+            renderConversationsList();
+            renderActiveConversationMessages();
+            mountNixyOrb();
+
+            isGenerating = true;
+            const sendBtn = document.getElementById('sendBtn');
+            if (sendBtn) sendBtn.disabled = true;
+            setNixyMood('thinking', 'Nix 4.5 is thinking...');
+
+            try {
+                const memoryNotes = (appState.memories || [])
+                    .map(m => `- [${m.category}] ${m.content}`)
+                    .join('\n');
+                const systemInstruction = `You are Nix 4.5, an intelligent AI assistant working alongside Nixy. Format responses clearly using Markdown.${memoryNotes ? `\n\nUser Memory:\n${memoryNotes}` : ''}`;
+
+                let replyText = '';
+                if (window.puter?.ai?.chat) {
+                    const messagesPayload = [
+                        { role: 'system', content: systemInstruction },
+                        ...conv.messages.map(m => ({ role: m.role, content: m.content }))
+                    ];
+                    const res = await window.puter.ai.chat(messagesPayload, { model: appState.selectedModel || 'gpt-4o-mini' });
+                    replyText = typeof res === 'string'
+                        ? res
+                        : (res?.message?.content || res?.text || res?.choices?.[0]?.message?.content || '');
+                }
+                if (!replyText) {
+                    replyText = 'I received your message in **Nix 4.5**. Please verify your Puter.js connection if live model output did not return.';
+                }
+
+                conv.messages.push({ role: 'assistant', content: replyText, timestamp: Date.now() });
+                saveLocalState();
+                renderActiveConversationMessages();
+                setNixyMood('happy', 'Here is your Nix 4.5 response!');
+            } catch (err) {
+                conv.messages.push({
+                    role: 'assistant',
+                    content: `Unable to complete request: ${err?.message || 'Unknown error'}`,
+                    timestamp: Date.now()
+                });
+                saveLocalState();
+                renderActiveConversationMessages();
+                setNixyMood('error', 'Something went wrong');
+            } finally {
+                isGenerating = false;
+                if (sendBtn) sendBtn.disabled = false;
+                const container = document.getElementById('messagesContainer');
+                if (container) container.scrollTop = container.scrollHeight;
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             renderConversationsList();
             renderActiveConversationMessages();
