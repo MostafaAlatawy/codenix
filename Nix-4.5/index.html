@@ -1200,21 +1200,323 @@
             }
             if (hero) hero.classList.add('hidden');
             if (!msgList) return;
-            msgList.innerHTML = messages.map(m => {
+            msgList.innerHTML = messages.map((m, idx) => {
                 const isUser = m.role === 'user';
-                const bodyHtml = isUser
-                    ? `<div class="whitespace-pre-wrap text-sm">${(m.content || '').replace(/</g, '&lt;')}</div>`
-                    : `<div class="prose prose-sm dark:prose-invert max-w-none">${window.marked ? window.marked.parse(m.content || '') : (m.content || '').replace(/</g, '&lt;')}</div>`;
+                if (isUser) {
+                    return `
+                        <div class="flex justify-end">
+                            <div class="max-w-[82%] bg-nix-600 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md">
+                                <div class="whitespace-pre-wrap text-sm">${(m.content || '').replace(/</g, '&lt;')}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                const smartType = detectSmartContentType(m.content || '');
+                const structuredHtml = smartType === 'JSON Card' ? renderStructuredJsonCards(m.content || '') : '';
+                const bodyHtml = window.marked ? window.marked.parse(m.content || '') : (m.content || '').replace(/</g, '&lt;');
                 return `
-                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-                        <div class="${isUser ? 'max-w-[82%] bg-nix-600 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md' : 'w-full bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-sm'}">
-                            ${bodyHtml}
+                    <div class="flex justify-start">
+                        <div class="w-full bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-sm space-y-3" data-smart-msg="${idx}">
+                            <div class="nix-msg-rich-header">
+                                <span class="nix-msg-icon-pill">
+                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                    <span>Nix 4.5 Smart Answer</span>
+                                </span>
+                                <span class="nix-smart-badge">${smartType}</span>
+                            </div>
+                            ${structuredHtml}
+                            <div class="prose prose-sm dark:prose-invert max-w-none nix-smart-body">${bodyHtml}</div>
                         </div>
                     </div>
                 `;
             }).join('');
-            if (window.hljs) {
-                msgList.querySelectorAll('pre code').forEach(el => window.hljs.highlightElement(el));
+
+            msgList.querySelectorAll('[data-smart-msg]').forEach(card => {
+                enhanceSmartAnswerCard(card);
+            });
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+
+        function detectSmartContentType(text) {
+            const raw = String(text || '').trim();
+            if (!raw) return 'Markdown';
+            if (/```(html|svg|xml)\b/i.test(raw) || /<(svg|canvas|table|section|div|figure)\b/i.test(raw)) {
+                return 'HTML / UI';
+            }
+            if (/```[a-zA-Z0-9_-]*\n[\s\S]*?```/.test(raw)) {
+                return 'Code';
+            }
+            try {
+                const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+                const parsed = JSON.parse(cleaned);
+                if (parsed && typeof parsed === 'object') return 'JSON Card';
+            } catch (_) {}
+            return 'Markdown';
+        }
+
+        function renderStructuredJsonCards(text) {
+            try {
+                const cleaned = String(text || '').trim().replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+                const parsed = JSON.parse(cleaned);
+                if (!parsed || typeof parsed !== 'object') return '';
+                const entries = Array.isArray(parsed)
+                    ? parsed.map((item, i) => [`Item ${i + 1}`, typeof item === 'object' ? JSON.stringify(item) : String(item)])
+                    : Object.entries(parsed);
+                if (!entries.length) return '';
+                const rows = entries.slice(0, 16).map(([k, v]) => `
+                    <div class="font-semibold text-nix-700 dark:text-nix-300 break-all">${String(k).replace(/</g, '&lt;')}</div>
+                    <div class="text-slate-700 dark:text-zinc-200 break-words font-mono text-[11px]">${(typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v)).replace(/</g, '&lt;')}</div>
+                `).join('');
+                return `<div class="nix-structured-card"><div class="nix-structured-kv">${rows}</div></div>`;
+            } catch (_) {
+                return '';
+            }
+        }
+
+        function buildPreviewHtml(codeText, isSvg) {
+            const safeBody = isSvg
+                ? `<div style="display:flex;align-items:center;justify-content:center;min-height:180px;">${codeText}</div>`
+                : codeText;
+            return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:14px;font-family:Inter,system-ui,sans-serif;color:#111827;background:#ffffff;}img{max-width:100%;height:auto;border-radius:10px;}</style></head><body>${safeBody}<script>document.querySelectorAll('img').forEach(img=>{img.addEventListener('error',()=>{img.style.display='none';});});<\/script></body></html>`;
+        }
+
+        function buildFallbackSvgAvatarOrDiagram(queryText) {
+            const label = String(queryText || 'Nix 4.5').replace(/[<>&"]/g, '').slice(0, 28) || 'Nix 4.5';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#2e1065"/></linearGradient></defs><rect width="480" height="240" rx="18" fill="url(#g)"/><circle cx="88" cy="120" r="34" fill="rgba(255,255,255,0.16)"/><text x="140" y="114" fill="#ffffff" font-family="Inter,system-ui,sans-serif" font-size="18" font-weight="700">Nix 4.5 Visual</text><text x="140" y="142" fill="#ddd6fe" font-family="Inter,system-ui,sans-serif" font-size="13">${label}</text></svg>`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+        }
+
+        async function fetchWikipediaMedia(queryText) {
+            const cleanQuery = String(queryText || '').replace(/[^a-zA-Z0-9\s-]/g, ' ').trim();
+            if (!cleanQuery) return null;
+            try {
+                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQuery)}&utf8=&format=json&origin=*`;
+                const searchRes = await fetch(searchUrl);
+                if (!searchRes.ok) return null;
+                const searchData = await searchRes.json();
+                const topTitle = searchData?.query?.search?.[0]?.title;
+                if (!topTitle) return null;
+                const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topTitle)}`;
+                const summaryRes = await fetch(summaryUrl);
+                if (!summaryRes.ok) return null;
+                const summaryData = await summaryRes.json();
+                const url = summaryData?.thumbnail?.source || summaryData?.originalimage?.source || null;
+                return url ? { url, source: 'Wikipedia', caption: `${topTitle} • Wikipedia` } : null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function fetchWikimediaCommonsMedia(queryText) {
+            const cleanQuery = String(queryText || '').replace(/[^a-zA-Z0-9\s-]/g, ' ').trim();
+            if (!cleanQuery) return null;
+            try {
+                const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(cleanQuery)}&gsrlimit=1&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=640&format=json&origin=*`;
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                const data = await res.json();
+                const pages = data?.query?.pages ? Object.values(data.query.pages) : [];
+                const info = pages[0]?.imageinfo?.[0];
+                const imgUrl = info?.thumburl || info?.url || null;
+                if (!imgUrl || /\.(svg|tiff|tif|pdf|ogg|ogv|webm)$/i.test(imgUrl)) return null;
+                return { url: imgUrl, source: 'Wikimedia Commons', caption: `${cleanQuery} • Wikimedia Commons` };
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function fetchOpenverseMedia(queryText) {
+            const cleanQuery = String(queryText || '').replace(/[^a-zA-Z0-9\s-]/g, ' ').trim();
+            if (!cleanQuery) return null;
+            try {
+                const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(cleanQuery)}&page_size=1`;
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                const data = await res.json();
+                const item = data?.results?.[0];
+                const imgUrl = item?.url || item?.thumbnail || null;
+                if (!imgUrl) return null;
+                return { url: imgUrl, source: 'Openverse', caption: `${item?.title || cleanQuery} • Openverse` };
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function resolveFreeImageApi(queryText) {
+            const providers = [
+                () => fetchWikipediaMedia(queryText),
+                () => fetchWikimediaCommonsMedia(queryText),
+                () => fetchOpenverseMedia(queryText)
+            ];
+            for (const getMedia of providers) {
+                try {
+                    const result = await getMedia();
+                    if (result && result.url) return result;
+                } catch (_) {}
+            }
+            return {
+                url: buildFallbackSvgAvatarOrDiagram(queryText),
+                source: 'Nix SVG Fallback',
+                caption: `${String(queryText || 'Reference').slice(0, 48)} • Generated Visual`
+            };
+        }
+
+        function enhanceSmartAnswerCard(card) {
+            const body = card.querySelector('.nix-smart-body');
+            if (!body) return;
+
+            // Hide broken images automatically if they fail to load
+            body.querySelectorAll('img').forEach(img => {
+                img.addEventListener('error', () => {
+                    const fig = img.closest('figure, .nix-smart-figure, .nix-side-media-card');
+                    if (fig) fig.style.display = 'none';
+                    else img.style.display = 'none';
+                });
+            });
+
+            // Upgrade <pre><code> blocks with collapsible, line-counted, copyable & previewable UI
+            body.querySelectorAll('pre').forEach(pre => {
+                if (pre.closest('.nix-code-card')) return;
+                const codeEl = pre.querySelector('code');
+                const rawCode = codeEl ? codeEl.textContent : pre.textContent;
+                const langMatch = codeEl ? Array.from(codeEl.classList).find(c => c.startsWith('language-')) : null;
+                const langLabel = langMatch ? langMatch.replace(/^language-/i, '').toUpperCase() : 'CODE';
+                const lineCount = String(rawCode || '').split('\n').length;
+                const isHtmlOrSvg = /^(HTML|SVG|XML)$/i.test(langLabel) || /<(html|svg|div|canvas|table)\b/i.test(rawCode || '');
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'nix-code-card' + (lineCount > 14 ? ' is-collapsed' : '');
+
+                const header = document.createElement('div');
+                header.className = 'nix-code-header';
+
+                const meta = document.createElement('div');
+                meta.className = 'nix-code-meta';
+                meta.innerHTML = `<span>${langLabel}</span><span class="nix-code-lines">${lineCount} lines</span>`;
+
+                const actions = document.createElement('div');
+                actions.className = 'nix-code-actions';
+
+                let previewWrap = null;
+                let previewIframe = null;
+                if (isHtmlOrSvg) {
+                    const previewBtn = document.createElement('button');
+                    previewBtn.type = 'button';
+                    previewBtn.className = 'nix-code-btn';
+                    previewBtn.innerText = 'Preview';
+                    previewBtn.onclick = () => {
+                        if (!previewWrap) {
+                            previewWrap = document.createElement('div');
+                            previewWrap.className = 'hidden border-t border-[#26203b] bg-white';
+                            previewIframe = document.createElement('iframe');
+                            previewIframe.className = 'nix-smart-preview-frame';
+                            previewIframe.setAttribute('sandbox', 'allow-scripts');
+                            previewIframe.srcdoc = buildPreviewHtml(rawCode || '', /^SVG$/i.test(langLabel));
+                            previewWrap.appendChild(previewIframe);
+                            wrapper.appendChild(previewWrap);
+                        }
+                        const willShow = previewWrap.classList.contains('hidden');
+                        previewWrap.classList.toggle('hidden', !willShow);
+                        previewBtn.classList.toggle('is-active', willShow);
+                    };
+                    actions.appendChild(previewBtn);
+
+                    const popoutBtn = document.createElement('button');
+                    popoutBtn.type = 'button';
+                    popoutBtn.className = 'nix-code-btn';
+                    popoutBtn.innerText = 'Popout';
+                    popoutBtn.onclick = () => {
+                        const win = window.open('', '_blank');
+                        if (win) {
+                            win.document.open();
+                            win.document.write(buildPreviewHtml(rawCode || '', /^SVG$/i.test(langLabel)));
+                            win.document.close();
+                        }
+                    };
+                    actions.appendChild(popoutBtn);
+                }
+
+                if (lineCount > 6) {
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.type = 'button';
+                    toggleBtn.className = 'nix-code-btn';
+                    toggleBtn.innerText = wrapper.classList.contains('is-collapsed') ? 'Expand' : 'Collapse';
+                    toggleBtn.onclick = () => {
+                        const collapsed = wrapper.classList.toggle('is-collapsed');
+                        toggleBtn.innerText = collapsed ? 'Expand' : 'Collapse';
+                    };
+                    actions.appendChild(toggleBtn);
+                }
+
+                const wrapBtn = document.createElement('button');
+                wrapBtn.type = 'button';
+                wrapBtn.className = 'nix-code-btn';
+                wrapBtn.innerText = 'Wrap';
+                wrapBtn.onclick = () => {
+                    const wrapped = wrapper.classList.toggle('is-wrapped');
+                    wrapBtn.classList.toggle('is-active', wrapped);
+                };
+                actions.appendChild(wrapBtn);
+
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'nix-code-btn';
+                copyBtn.innerText = 'Copy';
+                copyBtn.onclick = () => {
+                    const temp = document.createElement('textarea');
+                    temp.value = rawCode || '';
+                    document.body.appendChild(temp);
+                    temp.select();
+                    try { document.execCommand('copy'); } catch (_) {}
+                    temp.remove();
+                    copyBtn.innerText = 'Copied';
+                    setTimeout(() => { copyBtn.innerText = 'Copy'; }, 1400);
+                };
+                actions.appendChild(copyBtn);
+
+                header.appendChild(meta);
+                header.appendChild(actions);
+                wrapper.appendChild(header);
+
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+                if (codeEl && window.hljs) {
+                    window.hljs.highlightElement(codeEl);
+                }
+            });
+
+            // Attach a free-API reference visual (Wikipedia -> Wikimedia Commons -> Openverse -> SVG fallback) next to the first paragraph
+            const firstPara = body.querySelector('p');
+            if (firstPara && !body.querySelector('.nix-side-media-row')) {
+                const sampleTopic = String(firstPara.textContent || '').split(/[.!?\n]/)[0].slice(0, 64);
+                if (sampleTopic.length > 6) {
+                    resolveFreeImageApi(sampleTopic).then(media => {
+                        if (!media?.url || !firstPara.parentNode || body.querySelector('.nix-side-media-row')) return;
+                        const row = document.createElement('div');
+                        row.className = 'nix-side-media-row';
+                        const textSlot = document.createElement('div');
+                        const mediaCard = document.createElement('div');
+                        mediaCard.className = 'nix-side-media-card';
+                        mediaCard.innerHTML = `
+                            <img src="${media.url}" alt="${sampleTopic.replace(/"/g, '&quot;')}" loading="lazy">
+                            <div class="nix-smart-figcaption">
+                                <span>${String(media.caption || media.source || 'Media').replace(/</g, '&lt;')}</span>
+                            </div>
+                        `;
+                        const img = mediaCard.querySelector('img');
+                        if (img) {
+                            img.addEventListener('error', () => {
+                                mediaCard.style.display = 'none';
+                            });
+                        }
+                        firstPara.parentNode.insertBefore(row, firstPara);
+                        row.appendChild(textSlot);
+                        row.appendChild(mediaCard);
+                        textSlot.appendChild(firstPara);
+                    });
+                }
             }
         }
 
