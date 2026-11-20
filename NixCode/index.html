@@ -1553,9 +1553,17 @@
             nixySpeak('🚀 Publishing your site to HostNix...', 3500);
 
             try {
-                const { error } = await window.supabase
+                let { error } = await window.supabase
                     .from('apps')
                     .upsert([{ slug, files }], { onConflict: 'slug' });
+
+                // If upsert fails due to RLS USING policy on existing rows, try plain insert
+                if (error && /row-level security/i.test(error.message || '')) {
+                    const insertRes = await window.supabase
+                        .from('apps')
+                        .insert([{ slug, files }]);
+                    error = insertRes.error;
+                }
 
                 if (error) throw error;
 
@@ -1570,9 +1578,12 @@
                 logToConsole('log', `[HostNix] Deployed successfully: ${liveUrl}`);
                 appendChatBubble('nixy', `🚀 Deployed your site with HostNix!\nLive URL: ${liveUrl}`, [], true);
             } catch (err) {
-                errBox.textContent = 'Deployment failed: ' + (err.message || 'Unknown error');
+                const isRlsError = /row-level security/i.test(err.message || '');
+                errBox.textContent = isRlsError
+                    ? 'Deployment blocked by Supabase RLS on table "apps". In Supabase SQL Editor, run a policy allowing public SELECT/INSERT/UPDATE on public.apps (or try a brand-new slug).'
+                    : ('Deployment failed: ' + (err.message || 'Unknown error'));
                 errBox.classList.remove('hidden');
-                setNixyMood('sad', 'HostNix deploy error');
+                setNixyMood('sad', 'HostNix RLS blocked');
                 logToConsole('error', `[HostNix] Failed: ${err.message}`);
             } finally {
                 btn.disabled = false;
