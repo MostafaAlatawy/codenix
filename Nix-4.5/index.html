@@ -994,6 +994,40 @@
                     return origFetch.call(this, input, init);
                 };
             }
+
+            if (window.XMLHttpRequest && XMLHttpRequest.prototype && typeof XMLHttpRequest.prototype.setRequestHeader === 'function') {
+                const origSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+                XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+                    if (forbiddenHeaders.has(String(header || '').toLowerCase())) {
+                        return;
+                    }
+                    return origSetRequestHeader.call(this, header, value);
+                };
+            }
+        })();
+
+        // Filter noisy third-party console messages while keeping real app errors visible
+        (function filterNoisyConsoleLogs() {
+            const noisyPatterns = [
+                'cdn.tailwindcss.com should not be used in production',
+                'Submit this app to the Puter App Store',
+                'To disable this message: puter.quiet = true',
+                'kaspersky-labs.com',
+                'cloudflareinsights.com'
+            ];
+            const isNoisy = (args) => {
+                const text = Array.from(args || []).map(a => String(a || '')).join(' ');
+                return noisyPatterns.some(pat => text.includes(pat));
+            };
+            ['log', 'warn', 'info'].forEach((method) => {
+                const orig = console[method];
+                if (typeof orig === 'function') {
+                    console[method] = function(...args) {
+                        if (isNoisy(args)) return;
+                        return orig.apply(this, args);
+                    };
+                }
+            });
         })();
 
         // CONFIGURATION & SUPABASE INITIALIZATION
