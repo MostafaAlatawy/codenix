@@ -534,10 +534,12 @@
                             <div id="nixcodeTabs" class="flex items-center gap-1.5 overflow-x-auto"></div>
                             <div class="flex items-center gap-1.5">
                                 <button onclick="addNixCodePage()" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">+ Page</button>
+                                <button onclick="runNixCodeSandboxTest()" class="px-2.5 py-1 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-xs font-semibold">Run & Test</button>
                                 <button onclick="exportNixCodeZip()" class="px-2.5 py-1 rounded-lg bg-slate-800 text-white text-xs font-semibold">ZIP</button>
                                 <button onclick="document.getElementById('hostnixModal').classList.remove('hidden')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Deploy</button>
                             </div>
                         </div>
+                        <div id="nixcodeSandboxReport" class="hidden px-3 py-2 rounded-xl bg-purple-950/50 border border-purple-500/30 text-[11px] font-mono text-purple-200"></div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
                             <textarea id="nixcodeEditor" oninput="syncNixCodeEdit()" class="w-full h-full rounded-xl p-3 bg-slate-950 text-purple-100 border border-slate-800 font-mono text-xs resize-none focus:outline-none focus:border-nix-500"></textarea>
                             <iframe id="nixcodePreviewFrame" sandbox="allow-scripts" class="w-full h-full rounded-xl bg-white border border-slate-200 dark:border-nix-borderdark"></iframe>
@@ -730,7 +732,7 @@
 
                     <!-- TOOL 9: JSON FORMATTER & REGEX TESTER -->
                     <div id="tool-formatter" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-4">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="braces" class="w-4 h-4 text-sky-400"></i> JSON Formatter & Regex Tester</h3>
+                        <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="braces" class="w-4 h-4 text-sky-400"></i> JSON Formatter, Regex & Coding Utilities</h3>
                         <div class="space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-semibold">JSON Payload</span>
@@ -747,6 +749,18 @@
                             </div>
                             <button onclick="runRegexTester()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-semibold">Test Match</button>
                             <div id="regexMatchResult" class="text-xs font-mono text-purple-300"></div>
+                        </div>
+                        <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-nix-borderdark">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold">Base64 & Slug Generator</span>
+                                <div class="flex gap-1.5">
+                                    <button onclick="encodeCodingBase64()" class="px-2.5 py-1 rounded-lg bg-purple-600/25 text-purple-200 text-xs font-semibold">Encode B64</button>
+                                    <button onclick="decodeCodingBase64()" class="px-2.5 py-1 rounded-lg bg-slate-800 text-white text-xs font-semibold">Decode B64</button>
+                                    <button onclick="generateCodingSlug()" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Make Slug</button>
+                                </div>
+                            </div>
+                            <input id="codingUtilityInput" type="text" value="Nixy Coding Studio & WebRTC Room" placeholder="Enter text or Base64 string..." class="w-full rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark font-mono text-xs">
+                            <div id="codingUtilityOutput" class="p-2.5 rounded-xl bg-slate-950 text-purple-200 border border-slate-800 font-mono text-xs break-all">Ready for encoding, decoding, or slug generation.</div>
                         </div>
                     </div>
 
@@ -1766,168 +1780,247 @@ ${memories.map(m => '- ' + m).join('\n')}`;
         // --- Video Canvas Loop, Blob Renderer & Exporter ---
         let vidyAnimFrame = null;
         let vidyPaused = false;
-        let vidyPhase = 0;
 
-        function drawVideoFrame(ctx, canvas, phase, labelText) {
-            ctx.fillStyle = '#09080e';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function generateVidySceneFromInput() {
+            const inp = document.getElementById('vidyPromptInput');
+            const statusEl = document.getElementById('vidyVideoStatus');
+            if (inp && inp.value.trim()) {
+                currentVidyPrompt = inp.value.trim();
+            }
+            vidyPaused = false;
+            const playBtn = document.getElementById('vidyPlayBtn');
+            if (playBtn) playBtn.textContent = 'Pause';
+            if (statusEl) statusEl.textContent = `Rendering scene: "${currentVidyPrompt}" at 60fps`;
+            startVidyLoop();
+        }
 
-            // Animated wave bands
-            for (let w = 0; w < 3; w++) {
+        function toggleVidyPlayback() {
+            vidyPaused = !vidyPaused;
+            const playBtn = document.getElementById('vidyPlayBtn');
+            if (playBtn) playBtn.textContent = vidyPaused ? 'Play' : 'Pause';
+            if (!vidyPaused) startVidyLoop();
+        }
+
+        function drawVidyFrame(canvas, timeSec) {
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+            bgGrad.addColorStop(0, '#09080e');
+            bgGrad.addColorStop(0.5, '#1e1038');
+            bgGrad.addColorStop(1, '#0c1326');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = 'rgba(167, 139, 250, 0.14)';
+            ctx.lineWidth = 1;
+            const gridStep = 48;
+            const offset = (timeSec * 36) % gridStep;
+            for (let x = -gridStep + offset; x < w + gridStep; x += gridStep) {
                 ctx.beginPath();
-                for (let x = 0; x <= canvas.width; x += 24) {
-                    const y = canvas.height * 0.5 + Math.sin(x * 0.012 + phase + w * 0.9) * (36 + w * 14);
-                    if (x === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.strokeStyle = w === 0 ? 'rgba(167, 139, 250, 0.55)' : w === 1 ? 'rgba(124, 58, 237, 0.45)' : 'rgba(56, 189, 248, 0.35)';
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+
+            const cx = w / 2 + Math.cos(timeSec * 1.1) * 70;
+            const cy = h / 2 + Math.sin(timeSec * 1.4) * 35;
+
+            for (let ring = 1; ring <= 4; ring++) {
+                const radius = ring * 44 + Math.sin(timeSec * 2 + ring) * 10;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `hsla(${265 + ring * 18}, 88%, 70%, ${0.65 - ring * 0.11})`;
                 ctx.lineWidth = 3;
                 ctx.stroke();
             }
 
-            const cx = canvas.width / 2 + Math.cos(phase * 0.8) * 60;
-            const cy = canvas.height / 2 + Math.sin(phase * 1.2) * 24;
-            const radius = 84 + Math.sin(phase * 2) * 14;
-
-            ctx.strokeStyle = 'rgba(196, 181, 253, 0.65)';
-            ctx.lineWidth = 3.5;
             ctx.beginPath();
-            ctx.arc(cx, cy, radius + 36, phase, phase + Math.PI * 1.5);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#c4b5fd';
+            for (let x = 0; x <= w; x += 12) {
+                const y = h * 0.72 + Math.sin(x * 0.012 + timeSec * 3.2) * 28 + Math.cos(x * 0.025 - timeSec * 2.1) * 14;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
             ctx.stroke();
 
-            const grad = ctx.createRadialGradient(cx - 20, cy - 20, 10, cx, cy, radius);
-            grad.addColorStop(0, '#ddd6fe');
-            grad.addColorStop(0.55, '#8b5cf6');
-            grad.addColorStop(1, '#4c1d95');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            ctx.font = 'bold 22px Inter, sans-serif';
+            ctx.fillText(String(currentVidyPrompt || 'Motion Canvas').slice(0, 64), 28, 42);
 
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.ellipse(cx - 22, cy - 6, 9, 13, 0, 0, Math.PI * 2);
-            ctx.ellipse(cx + 22, cy - 6, 9, 13, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (labelText) {
-                ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                ctx.font = '600 20px Inter, sans-serif';
-                ctx.fillText(String(labelText).slice(0, 64), 36, 46);
-            }
+            ctx.fillStyle = 'rgba(196, 181, 253, 0.75)';
+            ctx.font = '13px JetBrains Mono, monospace';
+            ctx.fillText(`60FPS LIVE CANVAS  •  t=${timeSec.toFixed(1)}s`, 28, h - 22);
         }
 
         function startVidyLoop() {
             const canvas = document.getElementById('vidyCanvas');
             if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (vidyAnimFrame) cancelAnimationFrame(vidyAnimFrame);
-
-            const renderFrame = () => {
-                if (!vidyPaused) {
-                    vidyPhase += 0.04;
-                    drawVideoFrame(ctx, canvas, vidyPhase, currentVidyPrompt);
-                }
-                vidyAnimFrame = requestAnimationFrame(renderFrame);
-            };
-            renderFrame();
-        }
-
-        function toggleVidyPlayback() {
-            vidyPaused = !vidyPaused;
-            const btn = document.getElementById('vidyPlayBtn');
-            if (btn) btn.textContent = vidyPaused ? 'Resume' : 'Pause';
-            if (!vidyPaused) startVidyLoop();
-        }
-
-        function generateVidySceneFromInput() {
-            vidyPaused = false;
-            const playBtn = document.getElementById('vidyPlayBtn');
-            if (playBtn) playBtn.textContent = 'Pause';
-            currentVidyPrompt = document.getElementById('vidyPromptInput')?.value.trim() || 'Animated motion scene';
-            vidyPhase += 0.9;
-            startVidyLoop();
-            const statusEl = document.getElementById('vidyVideoStatus');
-            if (statusEl) {
-                statusEl.textContent = `Animated video scene active: "${currentVidyPrompt}"`;
+            if (vidyAnimFrame) {
+                cancelAnimationFrame(vidyAnimFrame);
+                vidyAnimFrame = null;
             }
+            const startTime = performance.now();
+            const step = now => {
+                drawVidyFrame(canvas, (now - startTime) / 1000);
+                if (!vidyPaused) {
+                    vidyAnimFrame = requestAnimationFrame(step);
+                }
+            };
+            vidyAnimFrame = requestAnimationFrame(step);
         }
 
-        async function renderVideoBlobUrl(promptText, durationMs = 2400) {
-            startVidyLoop();
+        async function renderVideoBlobUrl(promptText = '', durationMs = 2000) {
+            if (promptText) currentVidyPrompt = promptText;
             const canvas = document.getElementById('vidyCanvas');
-            const player = document.getElementById('vidyGeneratedPlayer');
-            const dlLink = document.getElementById('vidyDownloadLink');
-            const statusEl = document.getElementById('vidyVideoStatus');
-
-            if (!canvas || !canvas.captureStream || typeof MediaRecorder === 'undefined') {
-                if (statusEl) statusEl.textContent = 'Live canvas video is playing.';
+            if (!canvas || typeof canvas.captureStream !== 'function' || typeof MediaRecorder === 'undefined') {
                 return '';
             }
-
             try {
                 const stream = canvas.captureStream(30);
-                const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
-                const mimeType = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || '';
+                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+                    ? 'video/webm;codecs=vp9'
+                    : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '');
                 const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
                 const chunks = [];
-
-                return await new Promise(resolve => {
-                    recorder.ondataavailable = e => {
-                        if (e.data && e.data.size > 0) chunks.push(e.data);
-                    };
-                    recorder.onstop = () => {
-                        if (!chunks.length) {
-                            resolve('');
-                            return;
-                        }
-                        const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
-                        const url = URL.createObjectURL(blob);
-                        if (player) {
-                            player.src = url;
-                            player.classList.remove('hidden');
-                            player.play().catch(() => {});
-                        }
-                        if (dlLink) {
-                            dlLink.href = url;
-                            dlLink.classList.remove('hidden');
-                        }
-                        if (statusEl) {
-                            statusEl.textContent = `Video rendered & ready (${Math.round(blob.size / 1024)} KB).`;
-                        }
-                        resolve(url);
-                    };
-                    recorder.onerror = () => resolve('');
-                    recorder.start(100);
-                    setTimeout(() => {
-                        if (recorder.state !== 'inactive') recorder.stop();
-                    }, durationMs);
+                recorder.ondataavailable = ev => {
+                    if (ev.data && ev.data.size > 0) chunks.push(ev.data);
+                };
+                const stoppedPromise = new Promise(resolve => {
+                    recorder.onstop = () => resolve();
                 });
+                recorder.start();
+                await new Promise(resolve => setTimeout(resolve, durationMs));
+                recorder.stop();
+                await stoppedPromise;
+                stream.getTracks().forEach(t => t.stop());
+                if (!chunks.length) return '';
+                const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const player = document.getElementById('vidyGeneratedPlayer');
+                const dlLink = document.getElementById('vidyDownloadLink');
+                if (player) {
+                    player.src = url;
+                    player.classList.remove('hidden');
+                }
+                if (dlLink) {
+                    dlLink.href = url;
+                    dlLink.classList.remove('hidden');
+                }
+                return url;
             } catch (_) {
                 return '';
             }
         }
 
         async function exportVidyVideoClip() {
-            const pText = document.getElementById('vidyPromptInput')?.value.trim() || currentVidyPrompt || 'Motion clip';
+            const btn = document.getElementById('vidyExportBtn');
             const statusEl = document.getElementById('vidyVideoStatus');
-            if (statusEl) statusEl.textContent = 'Rendering video clip...';
-            const url = await renderVideoBlobUrl(pText, 2600);
-            if (url) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'generated-video.webm';
-                a.click();
-            } else if (statusEl) {
-                statusEl.textContent = 'Live video canvas is running.';
+            if (btn) btn.disabled = true;
+            if (statusEl) statusEl.textContent = 'Recording 2.4s animated video clip...';
+            const url = await renderVideoBlobUrl(document.getElementById('vidyPromptInput')?.value || currentVidyPrompt, 2400);
+            if (statusEl) {
+                statusEl.textContent = url
+                    ? 'Video clip rendered! Preview below or click Download Video File.'
+                    : 'MediaRecorder not available in this browser; live canvas continues running.';
             }
+            if (btn) btn.disabled = false;
         }
 
-        // --- Screen Sharing & Room Code Display ---
+        // --- Screen Sharing & Room Code Display (ShareNix WebRTC Signaling) ---
         let shareStream = null;
+        let shareChannel = null;
+        let sharePeerConnections = {};
+        let sharePendingIce = {};
+        let shareViewerPc = null;
+        let shareViewerIceQueue = [];
+        let shareLastHeartbeat = 0;
+        let shareHeartbeatTimer = null;
+        const shareClientId = Math.random().toString(36).slice(2, 8);
+        const SHARE_ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
+
         function generateRoomCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        }
+
+        function openShareSignalChannel(roomCode, onSignal) {
+            return new Promise((resolve, reject) => {
+                if (!supabaseClient || typeof supabaseClient.channel !== 'function') {
+                    resolve(false);
+                    return;
+                }
+                try {
+                    if (shareChannel) {
+                        supabaseClient.removeChannel(shareChannel);
+                        shareChannel = null;
+                    }
+                    shareChannel = supabaseClient.channel(`sharenix-${roomCode}`, {
+                        config: { broadcast: { self: false } }
+                    });
+                    shareChannel
+                        .on('broadcast', { event: '*' }, msg => {
+                            if (typeof onSignal === 'function') onSignal(msg.event, msg.payload || {});
+                        })
+                        .subscribe(status => {
+                            if (status === 'SUBSCRIBED') resolve(true);
+                            else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') resolve(false);
+                        });
+                } catch (_) {
+                    resolve(false);
+                }
+            });
+        }
+
+        function sendShareSignal(eventName, payload) {
+            if (!shareChannel) return;
+            try {
+                shareChannel.send({ type: 'broadcast', event: eventName, payload });
+            } catch (_) {}
+        }
+
+        async function handleShareHostSignal(eventName, data) {
+            if (!shareStream) return;
+            if (eventName === 'join' && data.id) {
+                const viewerId = data.id;
+                if (sharePeerConnections[viewerId]) {
+                    try { sharePeerConnections[viewerId].close(); } catch (_) {}
+                }
+                const pc = new RTCPeerConnection(SHARE_ICE);
+                sharePeerConnections[viewerId] = pc;
+                sharePendingIce[viewerId] = [];
+                shareStream.getTracks().forEach(track => pc.addTrack(track, shareStream));
+                pc.onicecandidate = ev => {
+                    if (ev.candidate) sendShareSignal('ice', { to: viewerId, from: shareClientId, c: ev.candidate });
+                };
+                try {
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+                    sendShareSignal('offer', { to: viewerId, from: shareClientId, sdp: pc.localDescription });
+                } catch (_) {}
+            } else if (eventName === 'answer' && data.to === shareClientId && sharePeerConnections[data.from]) {
+                const pc = sharePeerConnections[data.from];
+                try {
+                    await pc.setRemoteDescription(data.sdp);
+                    while (sharePendingIce[data.from]?.length) {
+                        await pc.addIceCandidate(sharePendingIce[data.from].shift());
+                    }
+                } catch (_) {}
+            } else if (eventName === 'ice' && data.to === shareClientId && sharePeerConnections[data.from]) {
+                const pc = sharePeerConnections[data.from];
+                if (pc.remoteDescription) {
+                    try { await pc.addIceCandidate(data.c); } catch (_) {}
+                } else {
+                    (sharePendingIce[data.from] = sharePendingIce[data.from] || []).push(data.c);
+                }
+            } else if (eventName === 'bye' && data.id && sharePeerConnections[data.id]) {
+                try { sharePeerConnections[data.id].close(); } catch (_) {}
+                delete sharePeerConnections[data.id];
+            }
         }
 
         async function startShareNixHost() {
@@ -1941,14 +2034,20 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                     if (statusEl) statusEl.textContent = `Room ${code} created. Display capture is not supported in this browser frame.`;
                     return code;
                 }
-                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true });
                 const code = generateRoomCode();
+                await openShareSignalChannel(code, handleShareHostSignal);
                 document.getElementById('shareMenu').classList.add('hidden');
                 document.getElementById('shareActiveRoom').classList.remove('hidden');
                 document.getElementById('shareRoomCodeLabel').textContent = code;
                 const videoEl = document.getElementById('shareVideoEl');
+                videoEl.muted = true;
                 videoEl.srcObject = shareStream;
-                if (statusEl) statusEl.textContent = `Sharing live — Room Code: ${code}`;
+                videoEl.play().catch(() => {});
+                shareStream.getVideoTracks()[0].onended = () => stopShareNix();
+                clearInterval(shareHeartbeatTimer);
+                shareHeartbeatTimer = setInterval(() => sendShareSignal('hb', { host: shareClientId }), 1200);
+                if (statusEl) statusEl.textContent = `Sharing live via WebRTC — Room Code: ${code}`;
                 return code;
             } catch (err) {
                 if (statusEl) statusEl.textContent = err?.message || 'Screen share permission was declined or unavailable.';
@@ -1969,23 +2068,90 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             if (statusEl) statusEl.textContent = `Copied room code ${code}!`;
         }
 
-        function joinShareNixRoom() {
+        async function handleShareViewerSignal(eventName, data) {
+            const statusEl = document.getElementById('shareStatusMsg');
+            const videoEl = document.getElementById('shareVideoEl');
+            if (eventName === 'hb') {
+                shareLastHeartbeat = Date.now();
+            } else if (eventName === 'offer' && data.to === shareClientId) {
+                if (shareViewerPc) {
+                    try { shareViewerPc.close(); } catch (_) {}
+                }
+                const pc = new RTCPeerConnection(SHARE_ICE);
+                shareViewerPc = pc;
+                shareViewerIceQueue = [];
+                pc.ontrack = ev => {
+                    if (videoEl && ev.streams?.[0]) {
+                        videoEl.muted = false;
+                        videoEl.srcObject = ev.streams[0];
+                        videoEl.play().catch(() => {});
+                        if (statusEl) statusEl.textContent = 'Connected to host stream!';
+                    }
+                };
+                pc.onicecandidate = ev => {
+                    if (ev.candidate) sendShareSignal('ice', { to: data.from, from: shareClientId, c: ev.candidate });
+                };
+                try {
+                    await pc.setRemoteDescription(data.sdp);
+                    while (shareViewerIceQueue.length) {
+                        await pc.addIceCandidate(shareViewerIceQueue.shift());
+                    }
+                    const ans = await pc.createAnswer();
+                    await pc.setLocalDescription(ans);
+                    sendShareSignal('answer', { to: data.from, from: shareClientId, sdp: pc.localDescription });
+                } catch (_) {}
+            } else if (eventName === 'ice' && data.to === shareClientId && shareViewerPc) {
+                if (shareViewerPc.remoteDescription) {
+                    try { await shareViewerPc.addIceCandidate(data.c); } catch (_) {}
+                } else {
+                    shareViewerIceQueue.push(data.c);
+                }
+            } else if (eventName === 'end') {
+                if (statusEl) statusEl.textContent = 'Host stopped sharing.';
+            }
+        }
+
+        async function joinShareNixRoom() {
             const code = (document.getElementById('shareJoinCode')?.value || '').trim().toUpperCase();
             const statusEl = document.getElementById('shareStatusMsg');
             if (!code) {
                 if (statusEl) statusEl.textContent = 'Please enter a 5-letter room code.';
                 return;
             }
+            shareLastHeartbeat = 0;
+            await openShareSignalChannel(code, handleShareViewerSignal);
             document.getElementById('shareMenu').classList.add('hidden');
             document.getElementById('shareActiveRoom').classList.remove('hidden');
             document.getElementById('shareRoomCodeLabel').textContent = code;
-            if (statusEl) statusEl.textContent = `Connected to room ${code}.`;
+            sendShareSignal('join', { id: shareClientId });
+            if (statusEl) statusEl.textContent = `Joined room ${code} — waiting for host stream...`;
+            setTimeout(() => {
+                if (statusEl && !shareLastHeartbeat) {
+                    statusEl.textContent = `Connected to room ${code} (no active host heartbeat yet).`;
+                }
+            }, 2500);
         }
 
         function stopShareNix() {
+            clearInterval(shareHeartbeatTimer);
+            shareHeartbeatTimer = null;
+            sendShareSignal('bye', { id: shareClientId });
             if (shareStream) {
                 shareStream.getTracks().forEach(t => t.stop());
                 shareStream = null;
+            }
+            Object.values(sharePeerConnections).forEach(pc => {
+                try { pc.close(); } catch (_) {}
+            });
+            sharePeerConnections = {};
+            sharePendingIce = {};
+            if (shareViewerPc) {
+                try { shareViewerPc.close(); } catch (_) {}
+                shareViewerPc = null;
+            }
+            if (shareChannel && supabaseClient?.removeChannel) {
+                try { supabaseClient.removeChannel(shareChannel); } catch (_) {}
+                shareChannel = null;
             }
             const videoEl = document.getElementById('shareVideoEl');
             if (videoEl) videoEl.srcObject = null;
@@ -2174,48 +2340,42 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             const docHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{font-family:Inter,sans-serif;max-width:760px;margin:40px auto;padding:20px;line-height:1.7;color:#111827}</style></head><body><h1>${escapeHtml(title)}</h1>${content}</body></html>`;
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([docHtml], { type: 'text/html' }));
-            a.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.html`;
+            a.download = `${title.toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'document'}.html`;
             a.click();
         }
 
-        // --- Color Palette, JSON & Regex, Scratchpad Notes ---
+        // --- Color Palette Maker ---
         function generateColorPalette() {
             const grid = document.getElementById('paletteSwatchesGrid');
             if (!grid) return;
-            const hues = [262, 245, 280, 195, 320].map(h => (h + Math.floor(Math.random() * 45)) % 360);
-            const hexes = hues.map((h, i) => hslToHex(h, 78, 28 + i * 11));
-            grid.innerHTML = hexes.map(hex => `
-                <button onclick="copyHexValue('${hex}', this)" class="rounded-2xl overflow-hidden border border-slate-200 dark:border-nix-borderdark text-left shadow-xs transition hover:scale-[1.02]">
-                    <div class="h-20 w-full" style="background-color:${hex}"></div>
-                    <div class="p-2 bg-white dark:bg-nix-carddark text-xs font-mono font-semibold flex items-center justify-between">
-                        <span>${hex}</span>
-                        <span class="text-[10px] text-purple-400">Copy</span>
-                    </div>
-                </button>
-            `).join('');
+            const baseHue = Math.floor(Math.random() * 360);
+            const colors = [0, 28, 56, 185, 220].map((shift, idx) => {
+                const h = (baseHue + shift) % 360;
+                const s = 72;
+                const l = 42 + idx * 9;
+                return { h, s, l };
+            });
+            grid.innerHTML = colors.map(({ h, s, l }) => {
+                const hsl = `hsl(${h}, ${s}%, ${l}%)`;
+                return `
+                    <button onclick="copyTextToClipboard('${hsl}')" class="rounded-2xl overflow-hidden border border-slate-200 dark:border-nix-borderdark text-left shadow-xs hover:scale-[1.02] transition">
+                        <div class="h-20 w-full" style="background:${hsl}"></div>
+                        <div class="p-2.5 bg-white dark:bg-nix-carddark font-mono text-[11px]">${hsl}</div>
+                    </button>
+                `;
+            }).join('');
         }
 
-        function hslToHex(h, s, l) {
-            s /= 100; l /= 100;
-            const k = n => (n + h / 30) % 12;
-            const a = s * Math.min(l, 1 - l);
-            const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
-            return '#' + [f(0), f(8), f(4)].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
-        }
-
-        function copyHexValue(hex, el) {
+        function copyTextToClipboard(txt) {
             const ta = document.createElement('textarea');
-            ta.value = hex;
+            ta.value = txt;
             document.body.appendChild(ta);
             ta.select();
             document.execCommand('copy');
             ta.remove();
-            if (el) {
-                const tag = el.querySelector('span:last-child');
-                if (tag) { tag.textContent = 'Copied!'; setTimeout(() => { tag.textContent = 'Copy'; }, 1000); }
-            }
         }
 
+        // --- JSON Formatter, Regex Tester & Coding Utilities ---
         function formatJsonTool() {
             const inp = document.getElementById('jsonFormatterInput');
             const status = document.getElementById('jsonFormatterStatus');
@@ -2223,12 +2383,69 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             try {
                 const parsed = JSON.parse(inp.value);
                 inp.value = JSON.stringify(parsed, null, 2);
-                status.className = 'text-xs text-emerald-400';
                 status.textContent = 'Valid JSON formatted.';
+                status.className = 'text-xs text-emerald-400';
             } catch (err) {
-                status.className = 'text-xs text-rose-400';
                 status.textContent = 'Invalid JSON: ' + err.message;
+                status.className = 'text-xs text-rose-400';
             }
+        }
+
+        function runNixCodeSandboxTest() {
+            const reportEl = document.getElementById('nixcodeSandboxReport');
+            const code = nixcodePages[activeNixCodePage] || '';
+            const frame = document.getElementById('nixcodePreviewFrame');
+            if (frame) frame.srcdoc = code;
+            const hasDoctype = /<!doctype\s+html>/i.test(code);
+            const hasScript = /<script[\s>]/i.test(code);
+            const hasStyleOrTailwind = /<style[\s>]|tailwindcss/i.test(code);
+            const lineCount = code.split('\n').length;
+            if (reportEl) {
+                reportEl.classList.remove('hidden');
+                reportEl.textContent = `Sandbox Check (${activeNixCodePage}): ${lineCount} lines • DOCTYPE: ${hasDoctype ? 'OK' : 'Optional'} • Styles: ${hasStyleOrTailwind ? 'OK' : 'None'} • Scripts: ${hasScript ? 'OK' : 'None'}`;
+            }
+            setNixyMood('happy', 'Code sandbox verified!');
+        }
+
+        function encodeCodingBase64() {
+            const raw = document.getElementById('codingUtilityInput')?.value || '';
+            const out = document.getElementById('codingUtilityOutput');
+            if (!out) return;
+            try {
+                const bytes = new TextEncoder().encode(raw);
+                let bin = '';
+                bytes.forEach(b => { bin += String.fromCharCode(b); });
+                out.textContent = btoa(bin);
+            } catch (err) {
+                out.textContent = 'Encode error: ' + err.message;
+            }
+        }
+
+        function decodeCodingBase64() {
+            const raw = (document.getElementById('codingUtilityInput')?.value || '').trim();
+            const out = document.getElementById('codingUtilityOutput');
+            if (!out) return;
+            try {
+                const bin = atob(raw);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                out.textContent = new TextDecoder().decode(bytes);
+            } catch (err) {
+                out.textContent = 'Decode error: ' + err.message;
+            }
+        }
+
+        function generateCodingSlug() {
+            const raw = document.getElementById('codingUtilityInput')?.value || '';
+            const out = document.getElementById('codingUtilityOutput');
+            if (!out) return;
+            const slug = raw
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            out.textContent = slug || 'project-slug';
         }
 
         function runRegexTester() {
