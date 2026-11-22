@@ -446,11 +446,39 @@
 
                             <!-- Quick Capability Action Pills -->
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-2xl text-left">
-                                <button onclick="sendQuickPrompt('Generate an image of a futuristic glass greenhouse on Mars using GPT Images 2')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                                    <div class="flex items-center gap-1.5 text-xs font-bold text-purple-500 mb-1">
-                                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                        <span>GPT Images 2</span>
-                                    </div>
+                        <button onclick="sendQuickPrompt('Generate an image of a futuristic glass greenhouse on Mars using GPT Images 2')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-purple-500 mb-1">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                <span>GPT Images 2</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Generate image & show right in chat</p>
+                        </button>
+
+                        <button onclick="openToolStudio('publish')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition shadow-xs">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mb-1">
+                                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                                <span>Auto Publish HTML</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Upload HTML & auto-publish live</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Create a comparison table of top cloud databases with columns for Name, Engine, Pricing, and Best Use Case')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-sky-400 mb-1">
+                                <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                <span>Tables Maker</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Structured tables & CSV export</p>
+                        </button>
+
+                        <button onclick="sendQuickPrompt('Write a professional product launch document in Docs Maker and generate a QR code for https://hostnix.vercel.app')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-1">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                <span>Docs & QR</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Rich documents, LinkNix & QR codes</p>
+                        </button>
+                    </div>
+                </div>
                                     <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Generate image & show right in chat</p>
                                 </button>
 
@@ -795,106 +823,51 @@
                 <span class="px-3 py-2 text-xs font-mono text-slate-400">https://hostnix.vercel.app/#</span>
                 <input id="hostnixSlugInput" type="text" value="nixy-site" class="flex-1 bg-transparent px-2 py-2 text-xs font-mono focus:outline-none">
             </div>
-            <div id="hostnixResultBox" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
-                Live URL: <a id="hostnixLiveUrl" href="#" target="_blank" class="font-mono text-emerald-400 underline"></a>
+            <div id="hostnixResultBox" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1">
+                <div id="hostnixDeployStatus" class="font-semibold text-emerald-400">Published!</div>
+                Live URL: <a id="hostnixLiveUrl" href="#" target="_blank" class="font-mono text-emerald-300 underline break-all"></a>
             </div>
-            <button onclick="deployNixCodeToHostNix()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Publish Live</button>
+            <button id="hostnixDeployBtn" onclick="deployNixCodeToHostNix()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Publish Live</button>
         </div>
     </div>
 
     <script>
         // =========================================================================
-        // 1. SUPABASE CONFIGURATION & AUTHENTICATION CHECK (/Start?redirect=/Nixy)
+        // 2. SUPABASE CONVERSATIONS & MESSAGES TABLES (NIX 4.5 + DOMAIN CHAT ID)
         // =========================================================================
-        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
-        const HOSTNIX_URL = 'https://zncztttvefahofdeacxf.supabase.co';
-        const HOSTNIX_KEY = 'sb_publishable_GhwVsgutWW4EpK9Fc_3DQQ_pW_R48LM';
-
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const hostnixClient = window.supabase.createClient(HOSTNIX_URL, HOSTNIX_KEY);
-
-        let currentUser = null;
-        let activeConversationId = null;
-        let conversations = [];
-        let allPastMessages = [];
-        let messages = [];
-        let memories = ['Prefer clean, modern purple and dark aesthetics with responsive layouts.'];
-        let attachedFileContext = null;
-        let isGenerating = false;
-        let isNixySleeping = false;
-        let sleepInactivityTimer = null;
-        let activeSpeechUtterance = null;
-
-        // Multi-tool workspace state
-        let nixcodePages = {
-            'index.html': '<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center p-6"><div class="text-center space-y-3"><h1 class="text-3xl font-bold text-purple-400">Nixy Web Studio</h1><p class="text-zinc-400 text-sm">Ask Nixy in chat to build any multi-page site here.</p></div></body></html>'
-        };
-        let activeNixCodePage = 'index.html';
-        let tableData = [
-            ['Feature', 'Nixy Agent', 'Status'],
-            ['AI Chat & Memory', 'Nix 4.5 Engine', 'Active'],
-            ['Multi-Page Web & Deploy', 'NixCode + HostNix', 'Active'],
-            ['Image & Motion Studio', 'SubeAI + Vidy', 'Active']
-        ];
-
-        async function checkSupabaseSessionAndGuard() {
-            const overlay = document.getElementById('auth-gate-overlay');
+        function syncChatIdToDomain(convId) {
             try {
-                // Support tokens passed back from /Start redirect
-                const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-                const queryParams = new URLSearchParams(window.location.search || '');
-                const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
-                const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
-
-                if (accessToken && refreshToken) {
-                    await supabaseClient.auth.setSession({
-                        access_token: accessToken,
-                        refresh_token: refreshToken
-                    });
+                const url = new URL(window.location.href);
+                if (convId) {
+                    url.searchParams.set('chat', convId);
+                } else {
+                    url.searchParams.delete('chat');
                 }
+                window.history.replaceState({}, '', url.toString());
+            } catch (_) {}
+        }
 
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error || !session || !session.user) {
-                    // Not signed in -> redirect to /Start with redirect link to /Nixy
-                    const redirectTarget = encodeURIComponent('/Nixy');
-                    window.location.replace(`/Start?redirect=${redirectTarget}`);
-                    return false;
-                }
-
-                currentUser = session.user;
-                const displayName = currentUser.user_metadata?.full_name || currentUser.email || 'Nixy Creator';
-                document.getElementById('accountLabel').textContent = displayName;
-                document.getElementById('supabaseSyncBadge').classList.remove('hidden');
-
-                if (overlay) {
-                    overlay.classList.add('opacity-0', 'pointer-events-none');
-                    setTimeout(() => overlay.remove(), 300);
-                }
-                return true;
-            } catch (err) {
-                const redirectTarget = encodeURIComponent('/Nixy');
-                window.location.replace(`/Start?redirect=${redirectTarget}`);
-                return false;
+        function getChatIdFromDomain() {
+            try {
+                const url = new URL(window.location.href);
+                return url.searchParams.get('chat') || null;
+            } catch (_) {
+                return null;
             }
         }
 
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT' || !session) {
-                window.location.replace(`/Start?redirect=${encodeURIComponent('/Nixy')}`);
-            }
-        });
-
-        async function handleSignOut() {
-            try { await supabaseClient.auth.signOut(); } catch (_) {}
-            window.location.replace(`/Start?redirect=${encodeURIComponent('/Nixy')}`);
-        }
-
-        // =========================================================================
-        // 2. SUPABASE CONVERSATIONS & MESSAGES TABLES (FROM NIX 4.5)
-        // =========================================================================
         async function loadConversationsFromSupabase() {
             if (!currentUser) return;
+            const localCacheKey = `nixy_convs_${currentUser.id}`;
+            const localMsgKey = `nixy_msgs_${currentUser.id}`;
+
+            try {
+                const cachedConvs = JSON.parse(localStorage.getItem(localCacheKey) || '[]');
+                const cachedMsgs = JSON.parse(localStorage.getItem(localMsgKey) || '[]');
+                if (Array.isArray(cachedConvs) && cachedConvs.length) conversations = cachedConvs;
+                if (Array.isArray(cachedMsgs) && cachedMsgs.length) allPastMessages = cachedMsgs;
+            } catch (_) {}
+
             try {
                 const { data, error } = await supabaseClient
                     .from('conversations')
@@ -904,19 +877,26 @@
 
                 if (!error && Array.isArray(data)) {
                     conversations = data;
-                    renderConversationsList();
-                    await loadAllUserMessagesHistory();
-                    if (conversations.length > 0 && !activeConversationId) {
-                        await selectConversation(conversations[0].id);
-                    }
+                    localStorage.setItem(localCacheKey, JSON.stringify(conversations));
                 }
             } catch (e) {
                 console.warn('Supabase conversations load fallback:', e);
+            }
+
+            renderConversationsList();
+            await loadAllUserMessagesHistory();
+
+            const urlChatId = getChatIdFromDomain();
+            if (urlChatId) {
+                await selectConversation(urlChatId);
+            } else if (conversations.length > 0 && !activeConversationId) {
+                await selectConversation(conversations[0].id);
             }
         }
 
         async function loadAllUserMessagesHistory() {
             if (!currentUser) return;
+            const localMsgKey = `nixy_msgs_${currentUser.id}`;
             try {
                 const { data, error } = await supabaseClient
                     .from('messages')
@@ -925,6 +905,7 @@
                     .order('created_at', { ascending: true });
                 if (!error && Array.isArray(data)) {
                     allPastMessages = data;
+                    localStorage.setItem(localMsgKey, JSON.stringify(allPastMessages));
                 }
             } catch (_) {}
         }
@@ -946,6 +927,7 @@
 
         async function selectConversation(convId) {
             activeConversationId = convId;
+            syncChatIdToDomain(convId);
             renderConversationsList();
             messages = allPastMessages.filter(m => m.conversation_id === convId);
             if (currentUser) {
@@ -976,13 +958,79 @@
 
             conversations.unshift(newConv);
             activeConversationId = newId;
+            syncChatIdToDomain(newId);
             messages = [];
             renderConversationsList();
             renderMessages();
 
             if (currentUser) {
                 try {
-                    await supabaseClient.from('conversations').insert([newConv]);
+                    localStorage.setItem(`nixy_convs_${currentUser.id}`, JSON.stringify(conversations));
+                    const { error } = await supabaseClient.from('conversations').upsert([newConv], { onConflict: 'id' });
+                    if (error) {
+                        await supabaseClient.from('conversations').insert([{
+                            id: newId,
+                            user_id: currentUser.id,
+                            title: initialTitle
+                        }]);
+                    }
+                } catch (_) {}
+            }
+            return newConv;
+        }
+
+        async function ensureActiveConversation(firstPrompt = '') {
+            if (activeConversationId) {
+                syncChatIdToDomain(activeConversationId);
+                return activeConversationId;
+            }
+            const cleanTitle = (firstPrompt || 'New Conversation').replace(/\s+/g, ' ').trim().slice(0, 48) || 'New Conversation';
+            const created = await createNewConversation(cleanTitle);
+            return created.id;
+        }
+
+        async function saveMessageToSupabase(role, content) {
+            const convId = await ensureActiveConversation(role === 'user' ? content : 'New Conversation');
+            const msgObj = {
+                id: crypto.randomUUID ? crypto.randomUUID() : 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                conversation_id: convId,
+                user_id: currentUser?.id,
+                role,
+                content,
+                created_at: new Date().toISOString()
+            };
+            messages.push(msgObj);
+            allPastMessages.push(msgObj);
+            renderMessages();
+
+            if (currentUser && convId) {
+                try {
+                    localStorage.setItem(`nixy_msgs_${currentUser.id}`, JSON.stringify(allPastMessages));
+                    const { error } = await supabaseClient.from('messages').insert([msgObj]);
+                    if (error) {
+                        await supabaseClient.from('messages').insert([{
+                            conversation_id: convId,
+                            user_id: currentUser.id,
+                            role,
+                            content
+                        }]);
+                    }
+                    const convIdx = conversations.findIndex(c => c.id === convId);
+                    if (convIdx > -1) {
+                        if (role === 'user' && (!conversations[convIdx].title || conversations[convIdx].title === 'New Conversation')) {
+                            conversations[convIdx].title = String(content || '').replace(/\s+/g, ' ').trim().slice(0, 48) || 'New Conversation';
+                        }
+                        conversations[convIdx].updated_at = msgObj.created_at;
+                        localStorage.setItem(`nixy_convs_${currentUser.id}`, JSON.stringify(conversations));
+                        renderConversationsList();
+                    }
+                    await supabaseClient
+                        .from('conversations')
+                        .update({
+                            updated_at: msgObj.created_at,
+                            ...(convIdx > -1 ? { title: conversations[convIdx].title } : {})
+                        })
+                        .eq('id', convId);
                 } catch (_) {}
             }
         }
@@ -1396,11 +1444,11 @@
                 }
 
                 // 1. Direct Image Generation Trigger (GPT Images 2) -> shows generation progress, displays image in chat, hides tool canvas
-                if (/\b(generate|draw|create|make)\b.*\b(image|picture|photo|illustration|artwork|logo|gpt\s*images?\s*2|subeai)\b/i.test(lower)) {
+                if (/\b(generate|draw|create|make|render|paint|design)\b.*\b(image|picture|photo|illustration|artwork|logo|portrait|wallpaper|gpt\s*images?\s*2|subeai)\b/i.test(lower)) {
                     setActiveToolBadge('GPT Images 2');
                     toggleStudioDrawer(false);
                     showThinkingSteps('GPT Images 2', 'Generating image with GPT Images 2...', [
-                        'Parsing visual prompt and style details',
+                        'Using GPT Images 2 tool (image generation is enabled)',
                         'Calling GPT Images 2 generator...'
                     ]);
                     document.getElementById('subePromptInput').value = rawText;
@@ -1455,8 +1503,19 @@
                     'Routing request with Nix Agent'
                 ]);
                 const memoryBundle = buildCrossChatMemoryContext(userPrompt);
-                const agentSystemPrompt = `You are Nixy, a purple orb AI agent with white eyes. Note that you do NOT understand video files, while Vidy generates motion videos. Always remember and use details from both the current conversation and previous conversations when relevant. You support:
-- General AI Chat & Reasoning
+                const agentSystemPrompt = `You are Nixy (Nix 4.5 AI Agent), a purple orb AI agent with white eyes.
+CRITICAL TOOL AWARENESS: You DO have built-in image generation via **GPT Images 2** (never say you cannot generate images). You also have:
+- **GPT Images 2**: Generates images directly from prompts and renders them in chat.
+- **Vidy**: Generates animated motion videos and clips (does NOT understand video files).
+- **NixCode + HostNix**: Builds multi-page HTML/Tailwind websites and publishes them live to HostNix.
+- **Auto Publish**: Uploads and publishes HTML files automatically.
+- **ShareNix**: Live WebRTC screen sharing.
+- **Tables Maker**: Interactive tables with CSV & Markdown export.
+- **QR Code Maker & LinkNix**: Instant QR codes and bio hubs.
+- **Docs Maker**: Rich documents & HTML export.
+- **Color Palette Maker**, **JSON Formatter & Regex Tester**, and **Scratchpad Notes**.
+
+Always remember and use details from both the current conversation and previous conversations when relevant.
 - Multi-Page Web Builder (NixCode): Output complete HTML files using fenced blocks like \`\`\`html:index.html ... \`\`\`.
 - Tables Maker: Output a Markdown table AND a JSON block \`\`\`json:table
 [["Col1","Col2"],["Val1","Val2"]]
@@ -1658,19 +1717,16 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             document.getElementById('autoPublishSlugInput').value = finalSlug;
 
             appendThinkingStep(`Publishing under slug "${finalSlug}"...`);
-            try {
-                await hostnixClient.from('apps').upsert([{
-                    slug: finalSlug,
-                    files: [{ name: 'index.html', content: polishedHtml }]
-                }], { onConflict: 'slug' });
-            } catch (_) {}
+            const publishResult = await publishFilesToHostNix(finalSlug, [{ name: 'index.html', content: polishedHtml }]);
 
-            const liveUrl = `https://hostnix.vercel.app/#${finalSlug}`;
+            const liveUrl = publishResult.liveUrl;
             const box = document.getElementById('autoPublishStatusBox');
             const statusEl = document.getElementById('autoPublishStatusText');
             const linkEl = document.getElementById('autoPublishLiveLink');
             box.classList.remove('hidden');
-            statusEl.textContent = `Published "${file.name}" automatically!`;
+            statusEl.textContent = publishResult.persisted
+                ? `Published "${file.name}" automatically to HostNix!`
+                : `Published "${file.name}" with instant live URL (saved locally & attempted HostNix sync).`;
             linkEl.href = liveUrl;
             linkEl.textContent = liveUrl;
             appendThinkingStep(`Live URL ready: ${liveUrl}`);
@@ -1679,57 +1735,61 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             await saveMessageToSupabase('assistant', `🌐 Automatically published **${escapeHtml(file.name)}** to [${liveUrl}](${liveUrl}).`);
             setTimeout(() => hideThinkingSteps(), 2000);
         }
+        async function publishFilesToHostNix(slug, files) {
+            const cleanSlug = (slug || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-|-$/g, '') || 'nixy-site';
+            const liveUrl = `https://hostnix.vercel.app/#${cleanSlug}`;
+            try {
+                localStorage.setItem(`hostnix_site_${cleanSlug}`, JSON.stringify({ slug: cleanSlug, files, updated_at: new Date().toISOString() }));
+            } catch (_) {}
 
-        // --- GPT Images 2 Generator (avoids unsupported gpt-image-1.5 errors) ---
-        async function generateWithGptImages2(prompt, provider = 'openai-image-generation', testMode = false) {
-            const safeProvider = provider === 'gpt-image-1.5' ? 'openai-image-generation' : (provider || 'openai-image-generation');
-            if (window.puter?.ai?.txt2img) {
-                try {
-                    const imgEl = await window.puter.ai.txt2img(prompt, {
-                        provider: safeProvider,
-                        test_mode: !!testMode
-                    });
-                    if (imgEl?.src) return imgEl.src;
-                } catch (_) {
-                    try {
-                        const fallbackEl = await window.puter.ai.txt2img(prompt, { test_mode: true });
-                        if (fallbackEl?.src) return fallbackEl.src;
-                    } catch (_) {}
+            let persisted = false;
+            try {
+                const { error } = await hostnixClient
+                    .from('apps')
+                    .upsert([{ slug: cleanSlug, files }], { onConflict: 'slug' });
+                if (!error) {
+                    persisted = true;
+                } else {
+                    const { error: insErr } = await hostnixClient
+                        .from('apps')
+                        .insert([{ slug: cleanSlug, files }]);
+                    if (!insErr) persisted = true;
                 }
+            } catch (_) {
+                persisted = false;
             }
-            return `https://placehold.co/960x640/6d28d9/ffffff?text=${encodeURIComponent('GPT Images 2: ' + prompt.slice(0, 28))}`;
+            return { slug: cleanSlug, liveUrl, persisted };
         }
 
-        async function runSubeImageStudio() {
-            const prompt = document.getElementById('subePromptInput').value.trim();
-            if (!prompt) return;
-            setActiveToolBadge('GPT Images 2');
-            const provider = document.getElementById('subeProvider').value;
-            const testMode = document.getElementById('subeTestMode').checked;
-            const btn = document.getElementById('subeGenBtn');
-            btn.disabled = true;
-            btn.textContent = 'Generating with GPT Images 2...';
-            showThinkingSteps('GPT Images 2', 'Generating image while you watch...', [
-                'Sending prompt to GPT Images 2...',
-                'Rendering high-detail artwork...'
-            ]);
+        async function deployNixCodeToHostNix() {
+            const slugInput = document.getElementById('hostnixSlugInput');
+            const btn = document.getElementById('hostnixDeployBtn');
+            const slug = (slugInput?.value || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-') || 'nixy-site';
+            if (slugInput) slugInput.value = slug;
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Publishing to HostNix...';
+            }
 
-            try {
-                const imgSrc = await generateWithGptImages2(prompt, provider, testMode);
-                const outImg = document.getElementById('subeOutputImg');
-                const dlBtn = document.getElementById('subeDownloadBtn');
-                outImg.src = imgSrc;
-                outImg.classList.remove('hidden');
-                dlBtn.href = imgSrc;
-                dlBtn.classList.remove('hidden');
-                document.getElementById('subePlaceholder').classList.add('hidden');
-                appendThinkingStep('Image generated and displayed.');
-            } catch (e) {
-                document.getElementById('subePlaceholder').textContent = 'Generation error: ' + (e.message || 'Try enabling Test Mode');
-            } finally {
+            const files = Object.entries(nixcodePages).map(([name, content]) => ({ name, content }));
+            const result = await publishFilesToHostNix(slug, files);
+
+            const box = document.getElementById('hostnixResultBox');
+            const link = document.getElementById('hostnixLiveUrl');
+            const statusEl = document.getElementById('hostnixDeployStatus');
+            if (box && link) {
+                link.href = result.liveUrl;
+                link.textContent = result.liveUrl;
+                if (statusEl) {
+                    statusEl.textContent = result.persisted
+                        ? 'Published live to HostNix!'
+                        : 'Live URL generated & saved locally (HostNix endpoint fallback active).';
+                }
+                box.classList.remove('hidden');
+            }
+            if (btn) {
                 btn.disabled = false;
-                btn.textContent = 'Generate with GPT Images 2';
-                setTimeout(() => hideThinkingSteps(), 2000);
+                btn.textContent = 'Publish Live';
             }
         }
 
@@ -2131,6 +2191,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
         // =========================================================================
         function resetToNixCodeHero() {
             activeConversationId = null;
+            syncChatIdToDomain(null);
             messages = [];
             renderConversationsList();
             renderMessages();
