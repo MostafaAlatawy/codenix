@@ -929,6 +929,40 @@
             } catch (_) {}
         }
 
+        function renderConversationsList() {
+            const list = document.getElementById('conversationsList');
+            if (!list) return;
+            const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+            const filtered = conversations.filter(c => !q || String(c.title || '').toLowerCase().includes(q));
+            list.innerHTML = filtered.map(c => {
+                const isActive = c.id === activeConversationId;
+                return `
+                    <button onclick="selectConversation('${c.id}')" class="w-full text-left px-3 py-2 rounded-xl text-xs transition flex items-center justify-between gap-2 ${isActive ? 'bg-nix-600/20 text-nix-300 font-semibold border border-nix-500/30' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60'}">
+                        <span class="truncate">${escapeHtml(c.title || 'New Conversation')}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        async function selectConversation(convId) {
+            activeConversationId = convId;
+            renderConversationsList();
+            messages = allPastMessages.filter(m => m.conversation_id === convId);
+            if (currentUser) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('messages')
+                        .select('*')
+                        .eq('conversation_id', convId)
+                        .order('created_at', { ascending: true });
+                    if (!error && Array.isArray(data)) {
+                        messages = data;
+                    }
+                } catch (_) {}
+            }
+            renderMessages();
+        }
+
         async function createNewConversation(initialTitle = 'New Conversation') {
             const newId = crypto.randomUUID ? crypto.randomUUID() : 'conv-' + Date.now();
             const nowIso = new Date().toISOString();
@@ -951,45 +985,38 @@
                     await supabaseClient.from('conversations').insert([newConv]);
                 } catch (_) {}
             }
-            return newId;
-        }
-
-        async function selectConversation(convId) {
-            activeConversationId = convId;
-            renderConversationsList();
-            if (!currentUser) return;
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from('messages')
-                    .select('*')
-                    .eq('conversation_id', convId)
-                    .order('created_at', { ascending: true });
-
-                if (!error && Array.isArray(data)) {
-                    messages = data;
-                    renderMessages();
-                }
-            } catch (_) {}
         }
 
         async function saveMessageToSupabase(role, content) {
-            if (!activeConversationId) {
-                await createNewConversation(content.slice(0, 40) || 'New Conversation');
-            }
             const msgObj = {
-                id: crypto.randomUUID ? crypto.randomUUID() : 'msg-' + Date.now(),
+                id: crypto.randomUUID ? crypto.randomUUID() : 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
                 conversation_id: activeConversationId,
                 user_id: currentUser?.id,
-                role: role,
-                content: content,
+                role,
+                content,
                 created_at: new Date().toISOString()
             };
             messages.push(msgObj);
             allPastMessages.push(msgObj);
             renderMessages();
 
-            if (currentUser) {
+            if (currentUser && activeConversationId) {
+                try {
+                    await supabaseClient.from('messages').insert([msgObj]);
+                    await supabaseClient
+                        .from('conversations')
+                        .update({ updated_at: msgObj.created_at })
+                        .eq('id', activeConversationId);
+                } catch (_) {}
+            }
+        }
+
+        function renderMessages() {
+            const emptyHero = document.getElementById('emptyHero');
+            if (emptyHero) {
+                emptyHero.classList.toggle('hidden', messages.length > 0);
+            }
+            const list = document.getElementById('messagesList');
             list.innerHTML = messages.map((m, idx) => {
                 if (m.role === 'user') {
                     return `
@@ -1424,6 +1451,9 @@
                 // 4. Unified AI Agent Prompt via Puter.js (Handles Websites, Auto Publish, Tables, Docs, and General Chat)
                 setActiveToolBadge('Nix Agent');
                 showThinkingSteps('Nix Agent', 'Planning steps & reasoning...', [
+                    'Checking memory and previous chats',
+                    'Routing request with Nix Agent'
+                ]);
                 const memoryBundle = buildCrossChatMemoryContext(userPrompt);
                 const agentSystemPrompt = `You are Nixy, a purple orb AI agent with white eyes. Note that you do NOT understand video files, while Vidy generates motion videos. Always remember and use details from both the current conversation and previous conversations when relevant. You support:
 - General AI Chat & Reasoning
@@ -1643,6 +1673,13 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             statusEl.textContent = `Published "${file.name}" automatically!`;
             linkEl.href = liveUrl;
             linkEl.textContent = liveUrl;
+            appendThinkingStep(`Live URL ready: ${liveUrl}`);
+            walkOrbInPortal(0.9, 'Site published!');
+            setNixyMood('happy', 'Site published');
+            await saveMessageToSupabase('assistant', `🌐 Automatically published **${escapeHtml(file.name)}** to [${liveUrl}](${liveUrl}).`);
+            setTimeout(() => hideThinkingSteps(), 2000);
+        }
+
         // --- GPT Images 2 Generator (avoids unsupported gpt-image-1.5 errors) ---
         async function generateWithGptImages2(prompt, provider = 'openai-image-generation', testMode = false) {
             const safeProvider = provider === 'gpt-image-1.5' ? 'openai-image-generation' : (provider || 'openai-image-generation');
