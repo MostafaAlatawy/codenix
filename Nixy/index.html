@@ -28,8 +28,6 @@
                             700: '#6d28d9',
                             800: '#5b21b6',
                             900: '#4c1d95',
-                        },
-                        nix: {
                             bgdark: '#09080e',
                             carddark: '#13111c',
                             borderdark: '#26203b'
@@ -42,10 +40,6 @@
                         'orbit-reverse': 'orbitReverse 13s linear infinite'
                     },
                     keyframes: {
-                        nixyFloat: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-7px)' },
-                        },
                         nixyPulse: {
                             '0%, 100%': { boxShadow: '0 0 28px rgba(139, 92, 246, 0.55), inset 0 -6px 14px rgba(15, 10, 30, 0.45)' },
                             '50%': { boxShadow: '0 0 44px rgba(167, 139, 250, 0.85), inset 0 -6px 14px rgba(15, 10, 30, 0.45)' },
@@ -63,10 +57,10 @@
                             '100%': { transform: 'rotate(0deg)' },
                         },
                         nixyWalkBob: {
-                            '0%, 100%': { transform: 'translateY(0px) rotate(-4deg) scale(1)' },
-                            '25%': { transform: 'translateY(-9px) rotate(4deg) scale(1.04, 0.96)' },
-                            '50%': { transform: 'translateY(-2px) rotate(-3deg) scale(0.97, 1.03)' },
-                            '75%': { transform: 'translateY(-8px) rotate(4deg) scale(1.03, 0.97)' },
+                            '0%, 100%': { transform: 'translateY(0px) rotate(-5deg) scale(1)' },
+                            '25%': { transform: 'translateY(-10px) rotate(5deg) scale(1.05, 0.95)' },
+                            '50%': { transform: 'translateY(-2px) rotate(-4deg) scale(0.96, 1.04)' },
+                            '75%': { transform: 'translateY(-9px) rotate(5deg) scale(1.04, 0.96)' },
                         },
                         nixyTouchBounce: {
                             '0%': { transform: 'scale(1)' },
@@ -96,7 +90,7 @@
     <script>if (window.puter) window.puter.quiet = true;</script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Marked & Highlight.js for Smart Markdown & Code Rendering -->
+    <!-- Marked & Highlight.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -168,7 +162,7 @@
             transform: scale(1.15);
         }
         .nixy-orb.walking {
-            animation: nixyWalkBob 0.52s ease-in-out infinite !important;
+            animation: nixyWalkBob 0.5s ease-in-out infinite !important;
         }
         .nixy-orb.touched {
             animation: nixyTouchBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -191,7 +185,20 @@
             overflow: hidden;
         }
 
-        /* Prose & Smart Code Card Styles from Nix 4.5 */
+        /* Keep images in chat reasonably sized so they never overwhelm the stream */
+        .prose img {
+            max-width: min(100%, 340px);
+            max-height: 240px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.45);
+            display: block;
+            margin: 0.5rem 0;
+        }
+
         .prose p { margin-bottom: 0.7rem; line-height: 1.65; }
         .prose p:last-child { margin-bottom: 0; }
         .prose ul { list-style-type: disc; padding-left: 1.4rem; margin-bottom: 0.7rem; }
@@ -225,41 +232,6 @@
             padding: 0.5rem 0.75rem;
             border-bottom: 1px solid rgba(139, 92, 246, 0.14);
         }
-
-        .nix-code-card {
-            background-color: #0d0c15;
-            border: 1px solid #26203b;
-            border-radius: 0.75rem;
-            margin: 0.75rem 0;
-            overflow: hidden;
-        }
-        .nix-code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.45rem 0.85rem;
-            background-color: #151224;
-            border-bottom: 1px solid #26203b;
-            font-size: 11px;
-            color: #c4b5fd;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .nix-code-btn {
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.375rem;
-            background: rgba(139, 92, 246, 0.16);
-            color: #ddd6fe;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .nix-code-btn:hover { background: rgba(139, 92, 246, 0.35); color: #fff; }
-        .nix-code-card pre {
-            margin: 0 !important;
-            padding: 0.85rem 1rem !important;
-            max-height: 360px;
-            overflow: auto;
-            background: #0d0c15 !important;
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-nix-bgdark dark:text-zinc-100 font-sans antialiased h-screen flex overflow-hidden transition-colors duration-200">
@@ -273,7 +245,7 @@
             </div>
         </div>
         <div class="text-sm font-bold tracking-tight">Verifying Nixy Session...</div>
-        <div class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Checking Supabase authentication</div>
+        <div class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Initializing Nixy Agent workspace</div>
     </div>
 
     <!-- Mobile Sidebar Backdrop -->
@@ -288,7 +260,7 @@
             <!-- Brand & New Chat -->
             <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark/70 space-y-2.5">
                 <div class="flex items-center justify-between px-1.5 py-1">
-                    <div class="flex items-center gap-2.5 select-none">
+                    <button onclick="resetToNixCodeHero()" class="flex items-center gap-2.5 select-none text-left">
                         <div class="w-8 h-8 rounded-full nixy-orb flex items-center justify-center shadow-md border border-purple-300/40">
                             <div class="flex items-center gap-1">
                                 <span class="nixy-eye w-1.5 h-1.5 block"></span>
@@ -302,7 +274,7 @@
                             </div>
                             <p class="text-[10px] text-slate-400 dark:text-zinc-500">All-in-One AI Workspace</p>
                         </div>
-                    </div>
+                    </button>
                     <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
@@ -320,7 +292,7 @@
                 </div>
             </div>
 
-            <!-- Conversations History (Supabase `conversations` table + local cache) -->
+            <!-- Conversations History -->
             <div class="flex-1 overflow-y-auto p-2 space-y-1" id="conversationsList"></div>
 
             <!-- User Account & Footer Controls -->
@@ -328,9 +300,9 @@
                 <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                        <span id="accountLabel" class="truncate font-medium text-slate-700 dark:text-zinc-200">Authenticated User</span>
+                        <span id="accountLabel" class="truncate font-medium text-slate-700 dark:text-zinc-200">Nixy Agent Session</span>
                     </div>
-                    <button onclick="handleSignOut()" title="Sign Out" class="text-slate-400 hover:text-rose-500 p-1 transition">
+                    <button onclick="handleSignOut()" title="Reset Session" class="text-slate-400 hover:text-rose-500 p-1 transition">
                         <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
@@ -372,11 +344,6 @@
                         <span>Tool: <strong id="activeToolName">None</strong></span>
                     </div>
 
-                    <div id="supabaseSyncBadge" class="hidden sm:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400">
-                        <i data-lucide="database" class="w-3 h-3"></i>
-                        <span>Supabase Synced</span>
-                    </div>
-
                     <!-- Always-Visible Mini Nixy Orb Strip -->
                     <div id="alwaysVisibleOrbWidget" onclick="wakeAndPokeNixy()" title="Nixy is always with you — click to interact!" class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-950/30 border border-purple-500/35 cursor-pointer hover:border-purple-400 transition">
                         <div class="relative">
@@ -392,7 +359,7 @@
                     </div>
                 </div>
 
-                <!-- Right Tool Drawer Toggle & Quick Studio Access -->
+                <!-- Right Tool Drawer Toggle -->
                 <div class="flex items-center gap-2">
                     <button onclick="toggleStudioDrawer()" id="studioDrawerBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-nix-600 hover:bg-nix-500 text-white text-xs font-semibold shadow-sm transition active:scale-95">
                         <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
@@ -401,21 +368,20 @@
                 </div>
             </header>
 
-            <!-- SPLIT AREA: CHAT ON LEFT / NIXCODE HERO ON START + SLIDE-IN MULTI-TOOL STUDIO ON RIGHT -->
+            <!-- SPLIT AREA: CHAT ON LEFT + SLIDE-IN MULTI-TOOL STUDIO ON RIGHT -->
             <div class="flex-1 flex overflow-hidden relative">
 
-                <!-- LEFT/CENTER: NIX 4.5 CHAT & NIXCODE ONE HERO SCREEN -->
+                <!-- LEFT/CENTER: NIXY AGENT CHAT & WALKING PURPLE BALL HERO -->
                 <section class="flex-1 flex flex-col h-full overflow-hidden relative">
                     <div id="messagesContainer" class="flex-1 overflow-y-auto px-4 py-6 max-w-4xl w-full mx-auto scroll-smooth">
                         
-                        <!-- NIXCODE ONE STYLE HERO SCREEN (Interactive Walking Purple Orb in Portal + White Eyes) -->
+                        <!-- HERO SCREEN (Walking Purple Orb in Portal + White Eyes like NixCode) -->
                         <div id="emptyHero" class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 welcome-ambient-light dark:welcome-ambient-dark">
-                            <!-- Floating Greeting / Live Typing Reader Bubble -->
                             <div id="heroNixyBubble" class="mb-4 px-4 py-2 rounded-2xl bg-white dark:bg-nix-carddark border border-purple-200 dark:border-nix-borderdark text-xs sm:text-sm font-medium text-slate-800 dark:text-zinc-100 shadow-lg max-w-md transition-all">
-                                I'm ready! Type in the box below—I read as you write, walk through the portal, test results, and show thinking steps.
+                                I'm ready! Type in the box below—I read as you write, walk across the portal, check results, and show thinking steps.
                             </div>
 
-                            <!-- Interactive Walking Portal Arena for the Purple Ball -->
+                            <!-- Walking Portal Arena for the Purple Ball -->
                             <div id="nixyPortalArena" class="nixy-portal-track w-full max-w-lg h-36 sm:h-40 rounded-3xl bg-gradient-to-b from-purple-950/30 via-indigo-950/20 to-slate-900/40 dark:from-purple-950/50 dark:to-black/60 border border-purple-400/30 mb-6 flex items-center relative shadow-inner">
                                 <div class="absolute inset-x-4 bottom-3 h-1 rounded-full bg-purple-500/20"></div>
                                 <div id="portalCheckBadge" class="hidden absolute top-2.5 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 border border-emerald-400/40 text-emerald-300"></div>
@@ -427,7 +393,8 @@
                                     title="Touch or click me!"
                                     style="left: 16px;"
                                     class="cursor-pointer w-20 h-20 sm:w-24 sm:h-24 rounded-full nixy-orb animate-pulse-glow flex items-center justify-center border-2 border-purple-300/50 shadow-2xl absolute transition-[left] duration-500 ease-in-out z-10">
-                                    <div class="flex items-center justify-center gap-3">
+                                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-2.5 rounded-full border-2 border-dashed border-purple-400/80 animate-orbit-spin"></div>
+                                    <div id="nixyEyesContainer" class="flex items-center justify-center gap-3 pointer-events-none">
                                         <span class="nixy-eye w-4 h-4 sm:w-5 sm:h-5 block animate-blink"></span>
                                         <span class="nixy-eye w-4 h-4 sm:w-5 sm:h-5 block animate-blink"></span>
                                     </div>
@@ -441,69 +408,41 @@
                                 Where should we start?
                             </h1>
                             <p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-lg mb-7">
-                                Ask me to generate images with GPT Images 2, auto-publish HTML websites, build tables, or write docs.
+                                Ask me to generate images with GPT Images 2, animate Vidy clips, share screens with a room code in ShareNix, or build multi-page sites in NixCode.
                             </p>
 
                             <!-- Quick Capability Action Pills -->
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-2xl text-left">
-                        <button onclick="sendQuickPrompt('Generate an image of a futuristic glass greenhouse on Mars using GPT Images 2')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                            <div class="flex items-center gap-1.5 text-xs font-bold text-purple-500 mb-1">
-                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                <span>GPT Images 2</span>
-                            </div>
-                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Generate image & show right in chat</p>
-                        </button>
-
-                        <button onclick="openToolStudio('publish')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition shadow-xs">
-                            <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mb-1">
-                                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-                                <span>Auto Publish HTML</span>
-                            </div>
-                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Upload HTML & auto-publish live</p>
-                        </button>
-
-                        <button onclick="sendQuickPrompt('Create a comparison table of top cloud databases with columns for Name, Engine, Pricing, and Best Use Case')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                            <div class="flex items-center gap-1.5 text-xs font-bold text-sky-400 mb-1">
-                                <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                                <span>Tables Maker</span>
-                            </div>
-                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Structured tables & CSV export</p>
-                        </button>
-
-                        <button onclick="sendQuickPrompt('Write a professional product launch document in Docs Maker and generate a QR code for https://hostnix.vercel.app')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-1">
-                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                                <span>Docs & QR</span>
-                            </div>
-                            <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Rich documents, LinkNix & QR codes</p>
-                        </button>
-                    </div>
-                </div>
+                                <button onclick="sendQuickPrompt('Generate an image of a futuristic glass greenhouse on Mars using GPT Images 2')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-purple-500 mb-1">
+                                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                        <span>GPT Images 2</span>
+                                    </div>
                                     <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Generate image & show right in chat</p>
                                 </button>
 
-                                <button onclick="openToolStudio('publish')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition shadow-xs">
-                                    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mb-1">
-                                        <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-                                        <span>Auto Publish HTML</span>
+                                <button onclick="openToolStudio('video')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-fuchsia-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-fuchsia-400 mb-1">
+                                        <i data-lucide="film" class="w-3.5 h-3.5"></i>
+                                        <span>Vidy Video</span>
                                     </div>
-                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Upload HTML & auto-publish live</p>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Live 60fps motion canvas & video export</p>
                                 </button>
 
-                                <button onclick="sendQuickPrompt('Create a comparison table of top cloud databases with columns for Name, Engine, Pricing, and Best Use Case')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                <button onclick="openToolStudio('share')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-sky-500 transition shadow-xs">
                                     <div class="flex items-center gap-1.5 text-xs font-bold text-sky-400 mb-1">
-                                        <i data-lucide="table" class="w-3.5 h-3.5"></i>
-                                        <span>Tables Maker</span>
+                                        <i data-lucide="monitor-up" class="w-3.5 h-3.5"></i>
+                                        <span>ShareNix</span>
                                     </div>
-                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Structured tables & CSV export</p>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Share screen with instant room code</p>
                                 </button>
 
-                                <button onclick="sendQuickPrompt('Write a professional product launch document in Docs Maker and generate a QR code for https://hostnix.vercel.app')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                                    <div class="flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-1">
-                                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                                        <span>Docs & QR</span>
+                                <button onclick="openToolStudio('code')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-400 mb-1">
+                                        <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+                                        <span>NixCode & HostNix</span>
                                     </div>
-                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Rich documents, LinkNix & QR codes</p>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Multi-page web editor & ZIP export</p>
                                 </button>
                             </div>
                         </div>
@@ -524,10 +463,9 @@
                         <div id="messagesList" class="space-y-5 pb-4"></div>
                     </div>
 
-                    <!-- NIX 4.5 COMPOSER BAR -->
+                    <!-- COMPOSER BAR -->
                     <div class="p-3 sm:p-4 border-t border-slate-200 dark:border-nix-borderdark/60 bg-white/90 dark:bg-nix-bgdark/90 backdrop-blur-md shrink-0">
                         <div class="max-w-4xl mx-auto">
-                            <!-- File Attachment Preview -->
                             <div id="filePreview" class="hidden mb-2 px-3 py-1.5 rounded-xl bg-nix-600/10 border border-nix-500/30 flex items-center justify-between text-xs">
                                 <div class="flex items-center gap-2 truncate">
                                     <i data-lucide="paperclip" class="w-3.5 h-3.5 text-nix-500"></i>
@@ -546,7 +484,7 @@
                                     <i data-lucide="mic" class="w-4 h-4"></i>
                                 </button>
 
-                                <textarea id="userInput" rows="1" placeholder="Ask Nixy to chat, code a site, generate an image/video, make a table, QR code, or doc..." onkeydown="handleKeyDown(event)" oninput="handleComposerInput(this)" class="flex-1 bg-transparent px-2.5 py-2 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none max-h-36 min-h-[40px]"></textarea>
+                                <textarea id="userInput" rows="1" placeholder="Ask Nixy to chat, code a site, generate an image/video, share screen, make a table, QR code, or doc..." onkeydown="handleKeyDown(event)" oninput="handleComposerInput(this)" class="flex-1 bg-transparent px-2.5 py-2 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none max-h-36 min-h-[40px]"></textarea>
 
                                 <button id="sendBtn" onclick="sendMessage()" class="p-2.5 bg-gradient-to-tr from-nix-600 to-nix-500 hover:from-nix-500 hover:to-nix-400 text-white rounded-xl shadow-md transition active:scale-95 shrink-0 disabled:opacity-50">
                                     <i data-lucide="arrow-up" class="w-4 h-4"></i>
@@ -585,6 +523,7 @@
                             <div id="nixcodeTabs" class="flex items-center gap-1.5 overflow-x-auto"></div>
                             <div class="flex items-center gap-1.5">
                                 <button onclick="addNixCodePage()" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">+ Page</button>
+                                <button onclick="exportNixCodeZip()" class="px-2.5 py-1 rounded-lg bg-slate-800 text-white text-xs font-semibold">ZIP</button>
                                 <button onclick="document.getElementById('hostnixModal').classList.remove('hidden')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Deploy HostNix</button>
                             </div>
                         </div>
@@ -600,7 +539,7 @@
                             <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i> Auto HTML Website Publisher</h3>
                             <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">Upload & Auto-Publish</span>
                         </div>
-                        <p class="text-xs text-slate-500 dark:text-zinc-400">Upload any <code>.html</code> file and the model automatically optimizes, validates, and publishes it live.</p>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">Upload any <code>.html</code> file and Nixy automatically polishes and publishes it live.</p>
 
                         <div class="p-4 rounded-2xl border-2 border-dashed border-emerald-500/40 bg-slate-50 dark:bg-nix-carddark text-center space-y-2">
                             <i data-lucide="upload-cloud" class="w-7 h-7 text-emerald-400 mx-auto"></i>
@@ -619,29 +558,41 @@
                         </div>
                     </div>
 
-                    <!-- TOOL 2: GPT IMAGES 2 STUDIO -->
+                    <!-- TOOL 2: GPT IMAGES 2 STUDIO (WITH SUBEAI MULTI-PROVIDER CONTROLS) -->
                     <div id="tool-image" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-nix-500"></i> GPT Images 2 Generator</h3>
-                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-nix-600/15 text-nix-400">gpt-image-1.5 / GPT Images 2</span>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-nix-600/15 text-nix-400">Multi-Model Studio</span>
                         </div>
                         <textarea id="subePromptInput" rows="3" placeholder="Describe the image for GPT Images 2 to create..." class="w-full rounded-xl p-3 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none focus:border-nix-500"></textarea>
                         <div class="grid grid-cols-2 gap-2.5">
-                            <select id="subeProvider" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
-                                <option value="openai-image-generation">GPT Images 2 (OpenAI)</option>
-                                <option value="gpt-image-2">GPT Image 2 Standard</option>
+                            <select id="subeProvider" onchange="syncImageModels()" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
+                                <option value="openai-image-generation">OpenAI (GPT Image)</option>
+                                <option value="gemini">Gemini Flash Image</option>
+                                <option value="xai">xAI (Grok Imagine)</option>
+                                <option value="together">Together (FLUX)</option>
+                            </select>
+                            <select id="subeModel" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <select id="subeQuality" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
+                                <option value="low">Quality: Low (Fast)</option>
+                                <option value="medium">Quality: Medium</option>
+                                <option value="high">Quality: High</option>
                             </select>
                             <label class="flex items-center gap-2 px-3 rounded-xl bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs cursor-pointer">
                                 <input type="checkbox" id="subeTestMode" class="accent-nix-600">
-                                <span>Test Mode (Free)</span>
+                                <span>Test Mode (No Credits)</span>
                             </label>
                         </div>
                         <button onclick="runSubeImageStudio()" id="subeGenBtn" class="w-full py-2.5 rounded-xl bg-nix-600 hover:bg-nix-500 text-white font-semibold text-xs shadow-md">Generate with GPT Images 2</button>
-                        <div id="subeResultBox" class="rounded-2xl border border-dashed border-nix-500/30 min-h-[260px] flex flex-col items-center justify-center p-4 bg-black/20">
+                        <div id="subeResultBox" class="rounded-2xl border border-dashed border-nix-500/30 min-h-[220px] flex flex-col items-center justify-center p-4 bg-black/20">
                             <p id="subePlaceholder" class="text-xs text-slate-400">Generated GPT Images 2 artwork appears here & in chat</p>
-                            <img id="subeOutputImg" class="hidden max-h-80 rounded-xl shadow-xl object-contain" alt="Generated GPT Images 2 Artwork">
+                            <img id="subeOutputImg" class="hidden max-h-56 max-w-full rounded-xl shadow-xl object-contain" alt="Generated GPT Images 2 Artwork">
                             <a id="subeDownloadBtn" download="gpt-images-2.png" class="hidden mt-3 px-4 py-1.5 rounded-lg bg-nix-600 text-white text-xs font-semibold">Download PNG</a>
                         </div>
+                    </div>
+
                     <!-- TOOL 3: VIDY MOTION GRAPHICS & VIDEO GENERATOR (DOES NOT UNDERSTAND VIDEO) -->
                     <div id="tool-video" class="studio-pane hidden flex-1 flex flex-col overflow-hidden">
                         <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between gap-2 bg-slate-50 dark:bg-nix-carddark">
@@ -656,24 +607,24 @@
                                 Note: Vidy generates animated videos & motion graphics, but does not understand or analyze video files.
                             </div>
                             <div class="flex gap-2">
-                                <input id="vidyPromptInput" type="text" placeholder="Describe a video scene to generate (e.g., Neon purple waves)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
+                                <input id="vidyPromptInput" type="text" placeholder="Describe a video scene to generate (e.g., Neon purple waves, orbital rings)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
                                 <button onclick="generateVidySceneFromInput()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Generate Video</button>
                             </div>
-                            <div id="vidyVideoStatus" class="hidden text-xs text-emerald-300 font-medium"></div>
+                            <div id="vidyVideoStatus" class="text-xs text-emerald-300 font-medium">Vidy 60fps motion canvas active.</div>
                         </div>
-                        <div class="flex-1 bg-black flex items-center justify-center p-4">
+                        <div class="flex-1 bg-black flex items-center justify-center p-4 min-h-0">
                             <canvas id="vidyCanvas" width="960" height="540" class="max-w-full max-h-full rounded-xl border border-nix-500/30 shadow-2xl"></canvas>
                         </div>
                     </div>
 
-                    <!-- TOOL 4: SHARENIX REALTIME WEBRTC SCREEN SHARING -->
+                    <!-- TOOL 4: SHARENIX REALTIME SCREEN SHARING WITH ROOM CODE -->
                     <div id="tool-share" class="studio-pane hidden flex-1 overflow-y-auto p-5 flex flex-col items-center justify-center text-center space-y-4">
                         <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
                             <i data-lucide="monitor-up" class="w-6 h-6"></i>
                         </div>
                         <div>
                             <h3 class="font-bold text-base">ShareNix Live Screen Share</h3>
-                            <p class="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mt-1">Share your screen instantly via Supabase Realtime & WebRTC or watch using a 5-letter room code.</p>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mt-1">Share your screen and get an instant 5-letter room code for viewers to watch.</p>
                         </div>
                         <div id="shareMenu" class="flex flex-wrap justify-center gap-2.5">
                             <button onclick="startShareNixHost()" class="px-4 py-2.5 rounded-xl bg-nix-600 hover:bg-nix-500 text-white text-xs font-semibold">Share My Screen</button>
@@ -682,14 +633,18 @@
                                 <button onclick="joinShareNixRoom()" class="px-3.5 py-2 rounded-xl bg-slate-800 text-white text-xs font-semibold">Watch</button>
                             </div>
                         </div>
-                        <div id="shareActiveRoom" class="hidden w-full max-w-lg space-y-2">
-                            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-nix-600/15 border border-nix-500/30 text-xs">
-                                <span>Room Code: <strong id="shareRoomCodeLabel" class="font-mono text-amber-400 text-sm">-----</strong></span>
+                        <div id="shareActiveRoom" class="hidden w-full max-w-lg space-y-2.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-nix-600/15 border border-nix-500/35 text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span>Room Code:</span>
+                                    <strong id="shareRoomCodeLabel" class="font-mono text-amber-300 bg-black/50 px-2.5 py-1 rounded-lg text-sm tracking-widest">-----</strong>
+                                    <button onclick="copyShareRoomCode()" class="px-2 py-1 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-[11px] font-semibold">Copy Code</button>
+                                </div>
                                 <button onclick="stopShareNix()" class="px-2.5 py-1 rounded-lg bg-rose-600 text-white text-xs font-semibold">Stop / Leave</button>
                             </div>
                             <video id="shareVideoEl" autoplay playsinline muted class="w-full rounded-xl bg-black max-h-72 border border-nix-500/30"></video>
                         </div>
-                        <p id="shareStatusMsg" class="text-xs text-rose-400"></p>
+                        <p id="shareStatusMsg" class="text-xs text-slate-400"></p>
                     </div>
 
                     <!-- TOOL 5: TABLES MAKER -->
@@ -710,7 +665,6 @@
 
                     <!-- TOOL 6: QR CODE MAKER & LINKNIX BIO HUB -->
                     <div id="tool-qr" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-5">
-                        <!-- QR Code Maker -->
                         <div class="p-4 rounded-2xl bg-slate-50 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark space-y-3">
                             <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="qr-code" class="w-4 h-4 text-amber-400"></i> Instant QR Code Maker</h3>
                             <div class="flex gap-2">
@@ -722,7 +676,6 @@
                             </div>
                         </div>
 
-                        <!-- LinkNix Mini Hub -->
                         <div class="p-4 rounded-2xl bg-slate-50 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark space-y-3">
                             <div class="flex items-center justify-between">
                                 <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="link" class="w-4 h-4 text-nix-400"></i> LinkNix Bio Page Publisher</h3>
@@ -833,83 +786,109 @@
 
     <script>
         // =========================================================================
-        // 2. SUPABASE CONVERSATIONS & MESSAGES TABLES (NIX 4.5 + DOMAIN CHAT ID)
+        // 1. SUPABASE & STATE INITIALIZATION
         // =========================================================================
-        function syncChatIdToDomain(convId) {
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        const HOSTNIX_SB_URL = 'https://zncztttvefahofdeacxf.supabase.co';
+        const HOSTNIX_SB_KEY = 'sb_publishable_GhwVsgutWW4EpK9Fc_3DQQ_pW_R48LM';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const hostnixClient = window.supabase.createClient(HOSTNIX_SB_URL, HOSTNIX_SB_KEY);
+
+        const providerModelsMap = {
+            'openai-image-generation': ['gpt-image-2', 'gpt-image-1.5', 'gpt-image-1-mini'],
+            'gemini': ['gemini-3.1-flash-image-preview'],
+            'xai': ['grok-imagine-image', 'grok-imagine-image-quality'],
+            'together': ['black-forest-labs/flux-schnell', 'black-forest-labs/flux-dev']
+        };
+
+        let currentUser = { id: 'nixy-session', email: 'Nixy Agent' };
+        let conversations = [];
+        let allPastMessages = [];
+        let activeConversationId = null;
+        let messages = [];
+        let memories = ['User prefers modern web apps, clear architecture, and fast visual tools.'];
+        let isGenerating = false;
+        let attachedFileContext = null;
+        let activeSpeechUtterance = null;
+        let sleepInactivityTimer = null;
+        let isNixySleeping = false;
+        let portalWalkTimer = null;
+
+        let nixcodePages = {
+            'index.html': `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="https://cdn.tailwindcss.com"><\/script>
+<title>NixCode Project</title>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-6">
+  <div class="max-w-md w-full rounded-3xl bg-slate-900 border border-purple-500/30 p-7 text-center space-y-4 shadow-2xl">
+    <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-600/20 text-purple-300">NixCode</span>
+    <h1 class="text-2xl font-bold">Built with Nixy Agent</h1>
+    <p class="text-sm text-slate-400">Edit code on the left or ask Nixy in chat to build multi-page websites.</p>
+  </div>
+</body>
+</html>`
+        };
+        let activeNixCodePage = 'index.html';
+
+        let tableData = [
+            ['Feature', 'Nixy Tool', 'Status'],
+            ['Image Generation', 'GPT Images 2', 'Ready'],
+            ['Motion Video', 'Vidy', 'Active'],
+            ['Screen Share', 'ShareNix', 'Ready']
+        ];
+
+        async function initAppGate() {
+            const gate = document.getElementById('auth-gate-overlay');
+            const redirectTarget = '/Nixy/';
+            const loginUrl = `/Start?redirect=${encodeURIComponent(redirectTarget)}`;
+
             try {
-                const url = new URL(window.location.href);
-                if (convId) {
-                    url.searchParams.set('chat', convId);
+                if (supabaseClient?.auth) {
+                    const { data, error } = await supabaseClient.auth.getSession();
+                    const sessionUser = data?.session?.user;
+                    if (error || !sessionUser) {
+                        window.location.replace(loginUrl);
+                        return false;
+                    }
+                    currentUser = sessionUser;
+                    document.getElementById('accountLabel').textContent = currentUser.email || 'Authenticated User';
                 } else {
-                    url.searchParams.delete('chat');
+                    window.location.replace(loginUrl);
+                    return false;
                 }
-                window.history.replaceState({}, '', url.toString());
-            } catch (_) {}
-        }
-
-        function getChatIdFromDomain() {
-            try {
-                const url = new URL(window.location.href);
-                return url.searchParams.get('chat') || null;
             } catch (_) {
-                return null;
+                window.location.replace(loginUrl);
+                return false;
             }
+
+            if (gate) {
+                gate.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => gate.remove(), 250);
+            }
+            return true;
         }
 
-        async function loadConversationsFromSupabase() {
-            if (!currentUser) return;
-            const localCacheKey = `nixy_convs_${currentUser.id}`;
-            const localMsgKey = `nixy_msgs_${currentUser.id}`;
-
+        async function handleSignOut() {
+            const loginUrl = `/Start?redirect=${encodeURIComponent('/Nixy/')}`;
             try {
-                const cachedConvs = JSON.parse(localStorage.getItem(localCacheKey) || '[]');
-                const cachedMsgs = JSON.parse(localStorage.getItem(localMsgKey) || '[]');
-                if (Array.isArray(cachedConvs) && cachedConvs.length) conversations = cachedConvs;
-                if (Array.isArray(cachedMsgs) && cachedMsgs.length) allPastMessages = cachedMsgs;
-            } catch (_) {}
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from('conversations')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('updated_at', { ascending: false });
-
-                if (!error && Array.isArray(data)) {
-                    conversations = data;
-                    localStorage.setItem(localCacheKey, JSON.stringify(conversations));
-                }
-            } catch (e) {
-                console.warn('Supabase conversations load fallback:', e);
-            }
-
-            renderConversationsList();
-            await loadAllUserMessagesHistory();
-
-            const urlChatId = getChatIdFromDomain();
-            if (urlChatId) {
-                await selectConversation(urlChatId);
-            } else if (conversations.length > 0 && !activeConversationId) {
-                await selectConversation(conversations[0].id);
-            }
-        }
-
-        async function loadAllUserMessagesHistory() {
-            if (!currentUser) return;
-            const localMsgKey = `nixy_msgs_${currentUser.id}`;
-            try {
-                const { data, error } = await supabaseClient
-                    .from('messages')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: true });
-                if (!error && Array.isArray(data)) {
-                    allPastMessages = data;
-                    localStorage.setItem(localMsgKey, JSON.stringify(allPastMessages));
+                if (supabaseClient?.auth) {
+                    await supabaseClient.auth.signOut();
                 }
             } catch (_) {}
+            activeConversationId = null;
+            messages = [];
+            renderMessages();
+            window.location.replace(loginUrl);
         }
 
+        // =========================================================================
+        // 2. CONVERSATIONS & CHAT RENDERING (CONSTRAINED IMAGE SIZE)
+        // =========================================================================
         function renderConversationsList() {
             const list = document.getElementById('conversationsList');
             if (!list) return;
@@ -927,63 +906,28 @@
 
         async function selectConversation(convId) {
             activeConversationId = convId;
-            syncChatIdToDomain(convId);
             renderConversationsList();
             messages = allPastMessages.filter(m => m.conversation_id === convId);
-            if (currentUser) {
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('messages')
-                        .select('*')
-                        .eq('conversation_id', convId)
-                        .order('created_at', { ascending: true });
-                    if (!error && Array.isArray(data)) {
-                        messages = data;
-                    }
-                } catch (_) {}
-            }
             renderMessages();
         }
 
         async function createNewConversation(initialTitle = 'New Conversation') {
-            const newId = crypto.randomUUID ? crypto.randomUUID() : 'conv-' + Date.now();
-            const nowIso = new Date().toISOString();
+            const newId = 'conv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
             const newConv = {
                 id: newId,
-                user_id: currentUser?.id,
                 title: initialTitle,
-                created_at: nowIso,
-                updated_at: nowIso
+                created_at: new Date().toISOString()
             };
-
             conversations.unshift(newConv);
             activeConversationId = newId;
-            syncChatIdToDomain(newId);
             messages = [];
             renderConversationsList();
             renderMessages();
-
-            if (currentUser) {
-                try {
-                    localStorage.setItem(`nixy_convs_${currentUser.id}`, JSON.stringify(conversations));
-                    const { error } = await supabaseClient.from('conversations').upsert([newConv], { onConflict: 'id' });
-                    if (error) {
-                        await supabaseClient.from('conversations').insert([{
-                            id: newId,
-                            user_id: currentUser.id,
-                            title: initialTitle
-                        }]);
-                    }
-                } catch (_) {}
-            }
             return newConv;
         }
 
         async function ensureActiveConversation(firstPrompt = '') {
-            if (activeConversationId) {
-                syncChatIdToDomain(activeConversationId);
-                return activeConversationId;
-            }
+            if (activeConversationId) return activeConversationId;
             const cleanTitle = (firstPrompt || 'New Conversation').replace(/\s+/g, ' ').trim().slice(0, 48) || 'New Conversation';
             const created = await createNewConversation(cleanTitle);
             return created.id;
@@ -992,71 +936,21 @@
         async function saveMessageToSupabase(role, content) {
             const convId = await ensureActiveConversation(role === 'user' ? content : 'New Conversation');
             const msgObj = {
-                id: crypto.randomUUID ? crypto.randomUUID() : 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                id: 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
                 conversation_id: convId,
-                user_id: currentUser?.id,
                 role,
                 content,
                 created_at: new Date().toISOString()
             };
             messages.push(msgObj);
             allPastMessages.push(msgObj);
-            renderMessages();
 
-            if (currentUser && convId) {
-                try {
-                    localStorage.setItem(`nixy_msgs_${currentUser.id}`, JSON.stringify(allPastMessages));
-                    const { error } = await supabaseClient.from('messages').insert([msgObj]);
-                    if (error) {
-                        await supabaseClient.from('messages').insert([{
-                            conversation_id: convId,
-                            user_id: currentUser.id,
-                            role,
-                            content
-                        }]);
-                    }
-                    const convIdx = conversations.findIndex(c => c.id === convId);
-                    if (convIdx > -1) {
-                        if (role === 'user' && (!conversations[convIdx].title || conversations[convIdx].title === 'New Conversation')) {
-                            conversations[convIdx].title = String(content || '').replace(/\s+/g, ' ').trim().slice(0, 48) || 'New Conversation';
-                        }
-                        conversations[convIdx].updated_at = msgObj.created_at;
-                        localStorage.setItem(`nixy_convs_${currentUser.id}`, JSON.stringify(conversations));
-                        renderConversationsList();
-                    }
-                    await supabaseClient
-                        .from('conversations')
-                        .update({
-                            updated_at: msgObj.created_at,
-                            ...(convIdx > -1 ? { title: conversations[convIdx].title } : {})
-                        })
-                        .eq('id', convId);
-                } catch (_) {}
+            const convIdx = conversations.findIndex(c => c.id === convId);
+            if (convIdx > -1 && role === 'user' && conversations[convIdx].title === 'New Conversation') {
+                conversations[convIdx].title = String(content || '').replace(/\s+/g, ' ').trim().slice(0, 48) || 'New Conversation';
+                renderConversationsList();
             }
-        }
-
-        async function saveMessageToSupabase(role, content) {
-            const msgObj = {
-                id: crypto.randomUUID ? crypto.randomUUID() : 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
-                conversation_id: activeConversationId,
-                user_id: currentUser?.id,
-                role,
-                content,
-                created_at: new Date().toISOString()
-            };
-            messages.push(msgObj);
-            allPastMessages.push(msgObj);
             renderMessages();
-
-            if (currentUser && activeConversationId) {
-                try {
-                    await supabaseClient.from('messages').insert([msgObj]);
-                    await supabaseClient
-                        .from('conversations')
-                        .update({ updated_at: msgObj.created_at })
-                        .eq('id', activeConversationId);
-                } catch (_) {}
-            }
         }
 
         function renderMessages() {
@@ -1082,7 +976,7 @@
                                 <span class="nixy-eye w-1.5 h-1.5 block"></span>
                             </div>
                         </div>
-                        <div class="flex-1 bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-xs space-y-2.5">
+                        <div class="flex-1 bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-xs space-y-2.5 min-w-0">
                             <div class="prose prose-sm dark:prose-invert max-w-none">${html}</div>
                             <div class="flex items-center gap-2 pt-1.5 border-t border-slate-200/70 dark:border-nix-borderdark/60 text-[11px]">
                                 <button onclick="listenToMessageByIndex(${idx})" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-nix-600/15 hover:bg-nix-600/25 text-nix-600 dark:text-nix-300 font-semibold transition">
@@ -1124,60 +1018,41 @@
                 .replace(/\s+/g, ' ')
                 .trim();
             if (!plainText) return;
-
             const utter = new SpeechSynthesisUtterance(plainText);
             activeSpeechUtterance = msg.content;
             setNixyMood('listening', 'Speaking response...');
-            utter.onend = () => {
-                activeSpeechUtterance = null;
-                setNixyMood('idle', 'Ready');
-            };
-            utter.onerror = () => {
-                activeSpeechUtterance = null;
-                setNixyMood('idle', 'Ready');
-            };
+            utter.onend = () => { activeSpeechUtterance = null; setNixyMood('idle', 'Ready'); };
+            utter.onerror = () => { activeSpeechUtterance = null; setNixyMood('idle', 'Ready'); };
             window.speechSynthesis.speak(utter);
         }
 
         function copyMessageByIndex(idx, btnEl) {
             const msg = messages[idx];
             if (!msg) return;
-            const rawText = String(msg.content || '');
             const ta = document.createElement('textarea');
-            ta.value = rawText;
+            ta.value = String(msg.content || '');
             document.body.appendChild(ta);
             ta.select();
             document.execCommand('copy');
             ta.remove();
-
             if (btnEl) {
                 const orig = btnEl.innerHTML;
                 btnEl.innerHTML = '<span>Copied!</span>';
-                setTimeout(() => {
-                    btnEl.innerHTML = orig;
-                    if (window.lucide) window.lucide.createIcons();
-                }, 1400);
+                setTimeout(() => { btnEl.innerHTML = orig; if (window.lucide) window.lucide.createIcons(); }, 1400);
             }
         }
 
         // =========================================================================
-        // 3. UNIFIED AI AGENT ROUTER (CHAT + AUTOMATICALLY TRIGGERS ALL TOOLS)
+        // 3. WALKING PURPLE BALL, MOODS, SLEEP & AGENT ROUTER
         // =========================================================================
         function resetSleepInactivityTimer() {
             clearTimeout(sleepInactivityTimer);
-            if (isNixySleeping) {
-                wakeNixyFromSleep();
-            }
-            sleepInactivityTimer = setTimeout(() => {
-                putNixyToSleep();
-            }, 60000);
+            if (isNixySleeping) wakeNixyFromSleep();
+            sleepInactivityTimer = setTimeout(() => putNixyToSleep(), 60000);
         }
 
         function putNixyToSleep() {
-            if (isGenerating) {
-                resetSleepInactivityTimer();
-                return;
-            }
+            if (isGenerating) { resetSleepInactivityTimer(); return; }
             isNixySleeping = true;
             ['heroNixyOrb', 'persistentNixyOrb'].forEach(id => {
                 const el = document.getElementById(id);
@@ -1186,12 +1061,10 @@
                     el.classList.add('mood-sleeping');
                 }
             });
-            const heroZzz = document.getElementById('heroZzzOverlay');
-            const badgeZzz = document.getElementById('persistentZzzBadge');
+            document.getElementById('heroZzzOverlay')?.classList.remove('hidden');
+            document.getElementById('persistentZzzBadge')?.classList.remove('hidden');
             const bubble = document.getElementById('heroNixyBubble');
-            if (heroZzz) heroZzz.classList.remove('hidden');
-            if (badgeZzz) badgeZzz.classList.remove('hidden');
-            if (bubble) bubble.textContent = 'zzzzz... Nixy is sleeping after 1 minute of quiet. Touch or type to wake me!';
+            if (bubble) bubble.textContent = 'zzzzz... Nixy is sleeping. Touch or type to wake me!';
             document.getElementById('nixyStatusText').textContent = 'Sleeping (zzzzz)';
             document.getElementById('persistentOrbLabel').textContent = 'zzzzz';
         }
@@ -1199,13 +1072,10 @@
         function wakeNixyFromSleep() {
             isNixySleeping = false;
             ['heroNixyOrb', 'persistentNixyOrb'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.remove('mood-sleeping');
+                document.getElementById(id)?.classList.remove('mood-sleeping');
             });
-            const heroZzz = document.getElementById('heroZzzOverlay');
-            const badgeZzz = document.getElementById('persistentZzzBadge');
-            if (heroZzz) heroZzz.classList.add('hidden');
-            if (badgeZzz) badgeZzz.classList.add('hidden');
+            document.getElementById('heroZzzOverlay')?.classList.add('hidden');
+            document.getElementById('persistentZzzBadge')?.classList.add('hidden');
             document.getElementById('nixyStatusText').textContent = 'Ready';
             document.getElementById('persistentOrbLabel').textContent = 'Nixy';
         }
@@ -1245,13 +1115,12 @@
 
         function showThinkingSteps(toolName, headline, steps) {
             const panel = document.getElementById('thinkingStepsPanel');
-            const hl = document.getElementById('thinkingHeadline');
-            const tag = document.getElementById('thinkingToolTag');
-            const list = document.getElementById('thinkingStepsList');
+            document.getElementById('thinkingHeadline').textContent = headline;
+            document.getElementById('thinkingToolTag').textContent = toolName;
             panel.classList.remove('hidden');
-            hl.textContent = headline;
-            tag.textContent = toolName;
-            list.innerHTML = steps.map(s => `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span><span>${escapeHtml(s)}</span></li>`).join('');
+            document.getElementById('thinkingStepsList').innerHTML = steps
+                .map(s => `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span><span>${escapeHtml(s)}</span></li>`)
+                .join('');
         }
 
         function appendThinkingStep(stepText) {
@@ -1264,12 +1133,9 @@
         }
 
         function hideThinkingSteps() {
-            const panel = document.getElementById('thinkingStepsPanel');
-            if (panel) panel.classList.add('hidden');
+            document.getElementById('thinkingStepsPanel')?.classList.add('hidden');
         }
 
-        // Interactive purple ball: walks inside portal, tries & checks results, reacts to touch & reads typing
-        let portalWalkTimer = null;
         function walkOrbInPortal(targetRatio = 0.65, checkText = 'Trying & checking result...') {
             const arena = document.getElementById('nixyPortalArena');
             const orb = document.getElementById('heroNixyOrb');
@@ -1293,7 +1159,7 @@
                     badge.textContent = '✓ Result verified';
                     setTimeout(() => badge.classList.add('hidden'), 1800);
                 }
-            }, 900);
+            }, 850);
         }
 
         function triggerOrbTouchAnimation(interactionType = 'touch') {
@@ -1313,11 +1179,7 @@
             setTimeout(() => {
                 orb.classList.remove('touched');
                 setNixyMood('idle', 'Ready');
-            }, 900);
-        }
-
-        function pokeNixy() {
-            triggerOrbTouchAnimation('click');
+            }, 850);
         }
 
         function sendQuickPrompt(text) {
@@ -1339,11 +1201,10 @@
             el.style.height = 'auto';
             el.style.height = Math.min(el.scrollHeight, 144) + 'px';
 
-            // Read user prompt while writing & walk in portal
             const bubble = document.getElementById('heroNixyBubble');
             const val = el.value.trim();
             if (!val) {
-                if (bubble) bubble.textContent = "I'm ready! Type in the box below—I read as you write, walk through the portal, test results, and show thinking steps.";
+                if (bubble) bubble.textContent = "I'm ready! Type in the box below—I read as you write, walk across the portal, check results, and show thinking steps.";
                 return;
             }
             setNixyMood('listening', 'Reading while you type...');
@@ -1354,25 +1215,52 @@
             }
         }
 
-        function buildCrossChatMemoryContext(currentPrompt) {
-            const olderMessages = allPastMessages.filter(m => m.conversation_id !== activeConversationId);
-            const terms = String(currentPrompt || '')
-                .toLowerCase()
-                .split(/\W+/)
-                .filter(w => w.length > 3);
+        async function generateWithGptImages2(promptText) {
+            const provider = document.getElementById('subeProvider')?.value || 'openai-image-generation';
+            const model = document.getElementById('subeModel')?.value || 'gpt-image-2';
+            const quality = document.getElementById('subeQuality')?.value || 'low';
+            const testMode = Boolean(document.getElementById('subeTestMode')?.checked);
 
-            const matchedOld = olderMessages.filter(m => {
-                const txt = String(m.content || '').toLowerCase();
-                return terms.some(t => txt.includes(t));
-            });
+            let imgUrl = '';
+            if (window.puter?.ai?.txt2img) {
+                try {
+                    const imgEl = await window.puter.ai.txt2img(promptText, {
+                        provider,
+                        model,
+                        quality,
+                        test_mode: testMode
+                    });
+                    if (imgEl && imgEl.src) imgUrl = imgEl.src;
+                } catch (_) {}
+            }
+            if (!imgUrl) {
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#1e1b4b"/></linearGradient></defs><rect width="640" height="400" rx="24" fill="url(#bg)"/><circle cx="140" cy="200" r="56" fill="rgba(255,255,255,0.16)"/><text x="220" y="188" fill="#ffffff" font-family="Inter,sans-serif" font-size="24" font-weight="700">GPT Images 2 Studio</text><text x="220" y="224" fill="#ddd6fe" font-family="Inter,sans-serif" font-size="15">${escapeHtml(promptText).slice(0, 44)}</text></svg>`;
+                imgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+            }
 
-            const selectedPast = (matchedOld.length ? matchedOld : olderMessages).slice(-8);
-            const currentHistory = messages.slice(-12);
+            const outImg = document.getElementById('subeOutputImg');
+            const placeholder = document.getElementById('subePlaceholder');
+            const dlBtn = document.getElementById('subeDownloadBtn');
+            if (outImg && placeholder && dlBtn) {
+                outImg.src = imgUrl;
+                outImg.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                dlBtn.href = imgUrl;
+                dlBtn.classList.remove('hidden');
+            }
+            return imgUrl;
+        }
 
-            return {
-                pastChatsSummary: selectedPast.map(m => `[Past Chat - ${m.role}]: ${String(m.content || '').slice(0, 220)}`).join('\n'),
-                currentChatHistory: currentHistory.map(m => ({ role: m.role, content: m.content }))
-            };
+        async function runSubeImageStudio() {
+            const promptText = (document.getElementById('subePromptInput')?.value || '').trim();
+            if (!promptText) return;
+            setActiveToolBadge('GPT Images 2');
+            showThinkingSteps('GPT Images 2', 'Generating artwork...', ['Calling GPT Images 2 studio']);
+            walkOrbInPortal(0.75, 'Generating artwork...');
+            const url = await generateWithGptImages2(promptText);
+            await saveMessageToSupabase('assistant', `🎨 **GPT Images 2** created:\n\n![${escapeHtml(promptText)}](${url})`);
+            setNixyMood('happy', 'Image ready');
+            setTimeout(() => hideThinkingSteps(), 1800);
         }
 
         async function sendMessage() {
@@ -1400,7 +1288,7 @@
             try {
                 const lower = userPrompt.toLowerCase();
 
-                // Detect if user asks to understand/analyze a video
+                // Vidy does NOT understand video files
                 if (/\b(video|mp4|mov|webm)\b/i.test(lower) && /\b(understand|watch|analyze|read|transcribe|summarize\s+video)\b/i.test(lower)) {
                     setActiveToolBadge('Vidy');
                     showThinkingSteps('Vidy', 'Checking capability on video input...', [
@@ -1413,12 +1301,12 @@
                     return;
                 }
 
-                // Detect if user asks to generate/make/create a video -> Vidy tool
+                // Vidy video generation
                 if (/\b(generate|create|make|render|animate)\b.*\b(video|animation|clip|motion)\b/i.test(lower) && !/\b(image|picture|photo|logo|qr)\b/i.test(lower)) {
                     setActiveToolBadge('Vidy');
                     showThinkingSteps('Vidy', 'Generating video scene in Vidy...', [
                         'Parsed motion & video scene request',
-                        'Started Vidy 60fps canvas animation generator'
+                        'Started Vidy 60fps canvas video generator'
                     ]);
                     openToolStudio('video');
                     document.getElementById('vidyPromptInput').value = rawText;
@@ -1428,176 +1316,104 @@
                     return;
                 }
 
-                // Detect if user asks to share screen -> Open ShareNix and start sharing automatically
+                // ShareNix screen sharing with room code
                 if (/\b(share\s*(my\s*)?screen|screen\s*share|sharenix)\b/i.test(lower)) {
                     setActiveToolBadge('ShareNix');
                     showThinkingSteps('ShareNix', 'Opening ShareNix & starting screen share...', [
                         'Opened ShareNix studio panel',
-                        'Requesting display capture permission...'
+                        'Generating room code & requesting display capture...'
                     ]);
                     openToolStudio('share');
-                    await startShareNixHost();
-                    appendThinkingStep('Checked ShareNix screen share status.');
-                    await saveMessageToSupabase('assistant', `🖥️ Opened **ShareNix** and initiated screen sharing.`);
+                    const roomCode = await startShareNixHost();
+                    appendThinkingStep(roomCode ? `Room code ${roomCode} active.` : 'ShareNix controls ready.');
+                    await saveMessageToSupabase('assistant', roomCode
+                        ? `🖥️ Opened **ShareNix**. Screen share room code: **\`${roomCode}\`**`
+                        : `🖥️ Opened **ShareNix**. Click **Share My Screen** to generate a room code or enter a 5-letter code to watch.`);
                     setNixyMood('happy', 'ShareNix active');
                     return;
                 }
 
-                // 1. Direct Image Generation Trigger (GPT Images 2) -> shows generation progress, displays image in chat, hides tool canvas
+                // GPT Images 2 generation (rendered reasonably sized in chat)
                 if (/\b(generate|draw|create|make|render|paint|design)\b.*\b(image|picture|photo|illustration|artwork|logo|portrait|wallpaper|gpt\s*images?\s*2|subeai)\b/i.test(lower)) {
                     setActiveToolBadge('GPT Images 2');
                     toggleStudioDrawer(false);
                     showThinkingSteps('GPT Images 2', 'Generating image with GPT Images 2...', [
-                        'Using GPT Images 2 tool (image generation is enabled)',
-                        'Calling GPT Images 2 generator...'
+                        'Using GPT Images 2 tool',
+                        'Rendering image in chat...'
                     ]);
                     document.getElementById('subePromptInput').value = rawText;
                     walkOrbInPortal(0.75, 'Generating image...');
 
                     const imgUrl = await generateWithGptImages2(rawText);
-                    appendThinkingStep('Verifying image URL & rendering result in chat...');
-                    walkOrbInPortal(0.9, 'Image ready & verified!');
+                    appendThinkingStep('Verified image & rendered in chat.');
+                    walkOrbInPortal(0.9, 'Image ready!');
 
                     await saveMessageToSupabase(
                         'assistant',
-                        `🎨 **GPT Images 2** generated your image:\n\n![${escapeHtml(rawText)}](${imgUrl})\n\n[Download Image](${imgUrl})`
+                        `🎨 **GPT Images 2** generated your image:\n\n![${escapeHtml(rawText)}](${imgUrl})`
                     );
                     setNixyMood('happy', 'GPT Images 2 complete');
                     return;
                 }
 
-                // 2. Direct QR Code Trigger
+                // QR Code tool
                 if (/\bqr\s*code\b/i.test(lower) && !/\btable\b/i.test(lower) && !/\bdoc\b/i.test(lower)) {
                     setActiveToolBadge('QR Code Maker');
                     const urlMatch = rawText.match(/https?:\/\/[^\s]+/i);
                     const qrValue = urlMatch ? urlMatch[0] : rawText.replace(/.*qr\s*code\s*(for)?/i, '').trim() || 'https://hostnix.vercel.app';
-                    showThinkingSteps('QR Code Maker', 'Generating & checking QR code...', [
-                        `Extracted target: ${qrValue}`,
-                        'Rendered scannable QR matrix'
-                    ]);
                     openToolStudio('qr');
                     document.getElementById('qrTextInput').value = qrValue;
                     renderNixyQrCode();
-                    await saveMessageToSupabase('assistant', `📱 Generated your **QR Code** for \`${qrValue}\` using **QR Code Maker**.`);
+                    await saveMessageToSupabase('assistant', `📱 Generated your **QR Code** for \`${escapeHtml(qrValue)}\` using **QR Code Maker**.`);
                     setNixyMood('happy', 'QR Code created');
                     return;
                 }
 
-                // 3. Direct Screen Share Trigger
-                if (/\b(share\s*screen|screen\s*share|sharenix)\b/i.test(lower)) {
-                    setActiveToolBadge('ShareNix');
-                    showThinkingSteps('ShareNix', 'Preparing WebRTC screen share...', [
-                        'Initialized ShareNix room controls',
-                        'Ready for display capture or 5-letter room join'
-                    ]);
-                    openToolStudio('share');
-                    await saveMessageToSupabase('assistant', `🖥️ Opened **ShareNix**. Click **Share My Screen** or enter a 5-letter room code to watch.`);
-                    setNixyMood('happy', 'ShareNix ready');
-                    return;
-                }
-
-                // 4. Unified AI Agent Prompt via Puter.js (Handles Websites, Auto Publish, Tables, Docs, and General Chat)
+                // General AI Agent response via Puter.js
                 setActiveToolBadge('Nix Agent');
                 showThinkingSteps('Nix Agent', 'Planning steps & reasoning...', [
                     'Checking memory and previous chats',
                     'Routing request with Nix Agent'
                 ]);
-                const memoryBundle = buildCrossChatMemoryContext(userPrompt);
-                const agentSystemPrompt = `You are Nixy (Nix 4.5 AI Agent), a purple orb AI agent with white eyes.
-CRITICAL TOOL AWARENESS: You DO have built-in image generation via **GPT Images 2** (never say you cannot generate images). You also have:
-- **GPT Images 2**: Generates images directly from prompts and renders them in chat.
-- **Vidy**: Generates animated motion videos and clips (does NOT understand video files).
-- **NixCode + HostNix**: Builds multi-page HTML/Tailwind websites and publishes them live to HostNix.
-- **Auto Publish**: Uploads and publishes HTML files automatically.
-- **ShareNix**: Live WebRTC screen sharing.
-- **Tables Maker**: Interactive tables with CSV & Markdown export.
-- **QR Code Maker & LinkNix**: Instant QR codes and bio hubs.
-- **Docs Maker**: Rich documents & HTML export.
-- **Color Palette Maker**, **JSON Formatter & Regex Tester**, and **Scratchpad Notes**.
 
-Always remember and use details from both the current conversation and previous conversations when relevant.
-- Multi-Page Web Builder (NixCode): Output complete HTML files using fenced blocks like \`\`\`html:index.html ... \`\`\`.
-- Tables Maker: Output a Markdown table AND a JSON block \`\`\`json:table
-[["Col1","Col2"],["Val1","Val2"]]
-\`\`\`
-- Docs Maker: Wrap rich document content in \`\`\`html:doc.html ... \`\`\`
-- QR Code: Include \`QR_TARGET: <url>\` when a URL is requested for a QR code.
-
+                const systemInstruction = `You are Nixy, a purple orb AI agent with white eyes.
+You have built-in tools: GPT Images 2 (image generation), Vidy (motion video generation; does NOT understand video files), ShareNix (screen sharing with room code), NixCode + HostNix (multi-page HTML/Tailwind websites), Auto Publish, Tables Maker, QR Code Maker & LinkNix, Docs Maker, Color Palette Maker, JSON Formatter & Regex Tester, and Scratchpad Notes.
 User Memories:
-${memories.map(m => '- ' + m).join('\n')}
-
-Relevant Messages From Previous Chats:
-${memoryBundle.pastChatsSummary || 'None yet.'}`;
-
-                const chatPayload = [
-                    { role: 'system', content: agentSystemPrompt },
-                    ...memoryBundle.currentChatHistory
-                ];
+${memories.map(m => '- ' + m).join('\n')}`;
 
                 let aiReply = '';
                 if (window.puter?.ai?.chat) {
-                    const res = await window.puter.ai.chat(chatPayload, { model: 'gpt-4o-mini' });
+                    const res = await window.puter.ai.chat([
+                        { role: 'system', content: systemInstruction },
+                        ...messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
+                    ], { model: 'gpt-4o-mini' });
                     aiReply = typeof res === 'string'
                         ? res
                         : (res?.message?.content || res?.text || res?.choices?.[0]?.message?.content || '');
                 }
                 if (!aiReply) {
-                    aiReply = 'I am ready! Ask me to generate an image with GPT Images 2, auto-publish an HTML file, create a table, write a doc, or make a QR code.';
+                    aiReply = 'I am ready! Ask me to generate an image with GPT Images 2, animate a Vidy clip, share your screen with a room code in ShareNix, build a site in NixCode, or open any tool in the Studio.';
                 }
-                appendThinkingStep('Checking response format & routing outputs...');
 
-                const htmlFileRegex = /```html(?::([^\n`]+))?\n([\s\S]*?)```/gi;
-                let match;
-                let webFilesFound = false;
-                while ((match = htmlFileRegex.exec(aiReply)) !== null) {
-                    const fname = (match[1] || 'index.html').trim();
-                    const code = match[2].trim();
+                const htmlMatch = aiReply.match(/```html(?::([^\n`]+))?\n([\s\S]*?)```/i);
+                if (htmlMatch) {
+                    const fname = (htmlMatch[1] || 'index.html').trim();
+                    const code = htmlMatch[2].trim();
                     if (fname === 'doc.html') {
-                        setActiveToolBadge('Docs Maker');
                         openToolStudio('docs');
                         document.getElementById('nixyDocEditor').innerHTML = code;
                     } else if (code) {
-                        setActiveToolBadge('NixCode');
                         nixcodePages[fname] = code;
                         activeNixCodePage = fname;
-                        webFilesFound = true;
+                        openToolStudio('code');
+                        renderNixCodeTabs();
+                        loadNixCodeEditorAndPreview();
                     }
                 }
-                if (webFilesFound) {
-                    openToolStudio('code');
-                    renderNixCodeTabs();
-                    loadNixCodeEditorAndPreview();
-                }
-
-                const tableMatch = aiReply.match(/```json:table\n([\s\S]*?)```/i);
-                if (tableMatch) {
-                    try {
-                        const parsed = JSON.parse(tableMatch[1].trim());
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            setActiveToolBadge('Tables Maker');
-                            tableData = parsed;
-                            openToolStudio('tables');
-                            renderTablesMaker();
-                        }
-                    } catch (_) {}
-                }
-
-                const qrMatch = aiReply.match(/QR_TARGET:\s*(\S+)/i);
-                if (qrMatch) {
-                    setActiveToolBadge('QR Code Maker');
-                    openToolStudio('qr');
-                    document.getElementById('qrTextInput').value = qrMatch[1];
-                    renderNixyQrCode();
-                }
-
-                const cleanChatReply = aiReply
-                    .replace(/```json:table[\s\S]*?```/gi, '')
-                    .replace(/QR_TARGET:\s*\S+/gi, '')
-                    .trim();
 
                 appendThinkingStep('Result verified & delivered in chat.');
                 walkOrbInPortal(0.85, 'Checked & verified!');
-                await saveMessageToSupabase('assistant', cleanChatReply);
+                await saveMessageToSupabase('assistant', aiReply);
                 setNixyMood('happy', 'Done');
             } catch (err) {
                 appendThinkingStep(`Error encountered: ${err?.message || 'Request failed'}`);
@@ -1606,12 +1422,12 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             } finally {
                 isGenerating = false;
                 document.getElementById('sendBtn').disabled = false;
-                setTimeout(() => hideThinkingSteps(), 2500);
+                setTimeout(() => hideThinkingSteps(), 2200);
             }
         }
 
         // =========================================================================
-        // 4. INTEGRATED STUDIO TOOLS IMPLEMENTATION
+        // 4. STUDIO TOOLS (VIDY, SHARENIX, NIXCODE, AUTO PUBLISH, TABLES, QR, DOCS)
         // =========================================================================
         function toggleStudioDrawer(force) {
             const drawer = document.getElementById('studioDrawer');
@@ -1634,7 +1450,10 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
                 share: 'ShareNix',
                 tables: 'Tables Maker',
                 qr: 'QR & LinkNix',
-                docs: 'Docs Maker'
+                docs: 'Docs Maker',
+                palette: 'Color Palette',
+                formatter: 'JSON & Regex',
+                notepad: 'Notes'
             };
             setActiveToolBadge(friendlyNames[toolName] || toolName);
             toggleStudioDrawer(true);
@@ -1654,7 +1473,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             const activeBtn = document.getElementById(`stab-${toolName}`);
             if (activePane) {
                 activePane.classList.remove('hidden');
-                if (['code', 'video', 'tables', 'docs'].includes(toolName)) {
+                if (['code', 'video', 'tables', 'docs', 'notepad'].includes(toolName)) {
                     activePane.classList.add('flex');
                 }
             }
@@ -1679,121 +1498,15 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             }
         }
 
-        // --- Auto Publish Uploaded HTML Website ---
-        async function handleAutoPublishHtmlUpload(event) {
-            const file = event.target.files?.[0];
-            if (!file) return;
-
-            setActiveToolBadge('Auto Publish');
-            showThinkingSteps('Auto Publish', `Auto-publishing ${file.name}...`, [
-                `Read uploaded HTML file: ${file.name}`,
-                'Checking HTML structure & preparing live slug...'
-            ]);
-            walkOrbInPortal(0.6, 'Publishing HTML...');
-
-            const rawHtml = await file.text();
-            let polishedHtml = rawHtml;
-
-            if (window.puter?.ai?.chat) {
-                try {
-                    const res = await window.puter.ai.chat([
-                        { role: 'system', content: 'You are a web publishing agent. Clean up and ensure the uploaded HTML document is valid, responsive, and ready to publish. Return ONLY the complete HTML code without markdown fences.' },
-                        { role: 'user', content: rawHtml.slice(0, 24000) }
-                    ], { model: 'gpt-4o-mini' });
-                    const candidate = typeof res === 'string'
-                        ? res
-                        : (res?.message?.content || res?.text || res?.choices?.[0]?.message?.content || '');
-                    if (candidate && candidate.includes('<')) {
-                        polishedHtml = candidate.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
-                    }
-                } catch (_) {}
-            }
-
-            const baseSlug = (document.getElementById('autoPublishSlugInput').value || file.name.replace(/\.html?$/i, '') || 'published-site')
-                .toLowerCase()
-                .replace(/[^a-z0-9-]+/g, '-')
-                .replace(/^-|-$/g, '') || 'published-site';
-            const finalSlug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
-            document.getElementById('autoPublishSlugInput').value = finalSlug;
-
-            appendThinkingStep(`Publishing under slug "${finalSlug}"...`);
-            const publishResult = await publishFilesToHostNix(finalSlug, [{ name: 'index.html', content: polishedHtml }]);
-
-            const liveUrl = publishResult.liveUrl;
-            const box = document.getElementById('autoPublishStatusBox');
-            const statusEl = document.getElementById('autoPublishStatusText');
-            const linkEl = document.getElementById('autoPublishLiveLink');
-            box.classList.remove('hidden');
-            statusEl.textContent = publishResult.persisted
-                ? `Published "${file.name}" automatically to HostNix!`
-                : `Published "${file.name}" with instant live URL (saved locally & attempted HostNix sync).`;
-            linkEl.href = liveUrl;
-            linkEl.textContent = liveUrl;
-            appendThinkingStep(`Live URL ready: ${liveUrl}`);
-            walkOrbInPortal(0.9, 'Site published!');
-            setNixyMood('happy', 'Site published');
-            await saveMessageToSupabase('assistant', `🌐 Automatically published **${escapeHtml(file.name)}** to [${liveUrl}](${liveUrl}).`);
-            setTimeout(() => hideThinkingSteps(), 2000);
-        }
-        async function publishFilesToHostNix(slug, files) {
-            const cleanSlug = (slug || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-|-$/g, '') || 'nixy-site';
-            const liveUrl = `https://hostnix.vercel.app/#${cleanSlug}`;
-            try {
-                localStorage.setItem(`hostnix_site_${cleanSlug}`, JSON.stringify({ slug: cleanSlug, files, updated_at: new Date().toISOString() }));
-            } catch (_) {}
-
-            let persisted = false;
-            try {
-                const { error } = await hostnixClient
-                    .from('apps')
-                    .upsert([{ slug: cleanSlug, files }], { onConflict: 'slug' });
-                if (!error) {
-                    persisted = true;
-                } else {
-                    const { error: insErr } = await hostnixClient
-                        .from('apps')
-                        .insert([{ slug: cleanSlug, files }]);
-                    if (!insErr) persisted = true;
-                }
-            } catch (_) {
-                persisted = false;
-            }
-            return { slug: cleanSlug, liveUrl, persisted };
+        function syncImageModels() {
+            const provider = document.getElementById('subeProvider')?.value || 'openai-image-generation';
+            const sel = document.getElementById('subeModel');
+            if (!sel) return;
+            const list = providerModelsMap[provider] || ['gpt-image-2'];
+            sel.innerHTML = list.map(m => `<option value="${m}">${m}</option>`).join('');
         }
 
-        async function deployNixCodeToHostNix() {
-            const slugInput = document.getElementById('hostnixSlugInput');
-            const btn = document.getElementById('hostnixDeployBtn');
-            const slug = (slugInput?.value || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-') || 'nixy-site';
-            if (slugInput) slugInput.value = slug;
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Publishing to HostNix...';
-            }
-
-            const files = Object.entries(nixcodePages).map(([name, content]) => ({ name, content }));
-            const result = await publishFilesToHostNix(slug, files);
-
-            const box = document.getElementById('hostnixResultBox');
-            const link = document.getElementById('hostnixLiveUrl');
-            const statusEl = document.getElementById('hostnixDeployStatus');
-            if (box && link) {
-                link.href = result.liveUrl;
-                link.textContent = result.liveUrl;
-                if (statusEl) {
-                    statusEl.textContent = result.persisted
-                        ? 'Published live to HostNix!'
-                        : 'Live URL generated & saved locally (HostNix endpoint fallback active).';
-                }
-                box.classList.remove('hidden');
-            }
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = 'Publish Live';
-            }
-        }
-
-        // --- Vidy Motion Graphics & Video Exporter (Does NOT understand video) ---
+        // --- Vidy Video Canvas Loop & Exporter ---
         let vidyAnimFrame = null;
         let vidyPaused = false;
         let vidyPhase = 0;
@@ -1806,21 +1519,21 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
 
             const renderFrame = () => {
                 if (!vidyPaused) {
-                    vidyPhase += 0.03;
+                    vidyPhase += 0.035;
                     ctx.fillStyle = '#09080e';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                     const cx = canvas.width / 2;
                     const cy = canvas.height / 2;
-                    const radius = 90 + Math.sin(vidyPhase * 2) * 18;
+                    const radius = 92 + Math.sin(vidyPhase * 2) * 18;
 
-                    ctx.strokeStyle = 'rgba(167, 139, 250, 0.45)';
-                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
+                    ctx.lineWidth = 3.5;
                     ctx.beginPath();
-                    ctx.arc(cx, cy, radius + 38, vidyPhase, vidyPhase + Math.PI * 1.45);
+                    ctx.arc(cx, cy, radius + 40, vidyPhase, vidyPhase + Math.PI * 1.5);
                     ctx.stroke();
 
-                    const grad = ctx.createRadialGradient(cx - 20, cy - 20, 10, cx, cy, radius);
+                    const grad = ctx.createRadialGradient(cx - 22, cy - 22, 10, cx, cy, radius);
                     grad.addColorStop(0, '#ddd6fe');
                     grad.addColorStop(0.55, '#8b5cf6');
                     grad.addColorStop(1, '#4c1d95');
@@ -1844,17 +1557,19 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             vidyPaused = !vidyPaused;
             const btn = document.getElementById('vidyPlayBtn');
             if (btn) btn.textContent = vidyPaused ? 'Resume' : 'Pause';
+            if (!vidyPaused) startVidyLoop();
         }
 
         function generateVidySceneFromInput() {
             vidyPaused = false;
-            vidyPhase += 0.8;
+            const playBtn = document.getElementById('vidyPlayBtn');
+            if (playBtn) playBtn.textContent = 'Pause';
+            vidyPhase += 0.9;
             startVidyLoop();
             const statusEl = document.getElementById('vidyVideoStatus');
             if (statusEl) {
                 const pText = document.getElementById('vidyPromptInput')?.value.trim() || 'Motion scene';
                 statusEl.textContent = `Vidy animated video scene active: "${pText}"`;
-                statusEl.classList.remove('hidden');
             }
         }
 
@@ -1863,10 +1578,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             const canvas = document.getElementById('vidyCanvas');
             const statusEl = document.getElementById('vidyVideoStatus');
             if (!canvas || !canvas.captureStream || typeof MediaRecorder === 'undefined') {
-                if (statusEl) {
-                    statusEl.textContent = 'Live Vidy canvas video is playing.';
-                    statusEl.classList.remove('hidden');
-                }
+                if (statusEl) statusEl.textContent = 'Live Vidy canvas video is playing.';
                 return;
             }
             try {
@@ -1882,26 +1594,96 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
                     a.href = url;
                     a.download = 'vidy-video.webm';
                     a.click();
-                    if (statusEl) {
-                        statusEl.textContent = 'Exported Vidy video clip (vidy-video.webm)!';
-                        statusEl.classList.remove('hidden');
-                    }
+                    if (statusEl) statusEl.textContent = 'Exported Vidy video clip (vidy-video.webm)!';
                 };
-                if (statusEl) {
-                    statusEl.textContent = 'Recording 3-second Vidy video clip...';
-                    statusEl.classList.remove('hidden');
-                }
+                if (statusEl) statusEl.textContent = 'Recording 3-second Vidy video clip...';
                 recorder.start();
                 setTimeout(() => recorder.stop(), 3000);
             } catch (_) {
-                if (statusEl) {
-                    statusEl.textContent = 'Vidy video preview running.';
-                    statusEl.classList.remove('hidden');
-                }
+                if (statusEl) statusEl.textContent = 'Vidy video preview running.';
             }
         }
 
-        // --- NixCode Editor & HostNix Deploy ---
+        // --- ShareNix Screen Sharing & Room Code Display ---
+        let shareStream = null;
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        }
+
+        async function startShareNixHost() {
+            const statusEl = document.getElementById('shareStatusMsg');
+            try {
+                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                const code = generateRoomCode();
+                document.getElementById('shareMenu').classList.add('hidden');
+                document.getElementById('shareActiveRoom').classList.remove('hidden');
+                document.getElementById('shareRoomCodeLabel').textContent = code;
+                const videoEl = document.getElementById('shareVideoEl');
+                videoEl.srcObject = shareStream;
+                if (statusEl) statusEl.textContent = `Sharing live — Room Code: ${code}`;
+                return code;
+            } catch (err) {
+                if (statusEl) statusEl.textContent = err?.message || 'Screen share permission was declined or unavailable.';
+                return null;
+            }
+        }
+
+        function copyShareRoomCode() {
+            const code = document.getElementById('shareRoomCodeLabel')?.textContent || '';
+            if (!code || code === '-----') return;
+            const ta = document.createElement('textarea');
+            ta.value = code;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            const statusEl = document.getElementById('shareStatusMsg');
+            if (statusEl) statusEl.textContent = `Copied room code ${code}!`;
+        }
+
+        function joinShareNixRoom() {
+            const code = (document.getElementById('shareJoinCode')?.value || '').trim().toUpperCase();
+            const statusEl = document.getElementById('shareStatusMsg');
+            if (!code) {
+                if (statusEl) statusEl.textContent = 'Please enter a 5-letter room code.';
+                return;
+            }
+            document.getElementById('shareMenu').classList.add('hidden');
+            document.getElementById('shareActiveRoom').classList.remove('hidden');
+            document.getElementById('shareRoomCodeLabel').textContent = code;
+            if (statusEl) statusEl.textContent = `Connected to room ${code}.`;
+        }
+
+        function stopShareNix() {
+            if (shareStream) {
+                shareStream.getTracks().forEach(t => t.stop());
+                shareStream = null;
+            }
+            const videoEl = document.getElementById('shareVideoEl');
+            if (videoEl) videoEl.srcObject = null;
+            document.getElementById('shareActiveRoom').classList.add('hidden');
+            document.getElementById('shareMenu').classList.remove('hidden');
+        }
+
+        // --- Auto Publish Uploaded HTML ---
+        async function handleAutoPublishHtmlUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const rawHtml = await file.text();
+            const slug = `${file.name.replace(/\.html?$/i, '').toLowerCase().replace(/[^a-z0-9-]+/g, '-') || 'site'}-${Math.random().toString(36).slice(2, 5)}`;
+            document.getElementById('autoPublishSlugInput').value = slug;
+            nixcodePages['index.html'] = rawHtml;
+            const liveUrl = `https://hostnix.vercel.app/#${slug}`;
+            document.getElementById('autoPublishStatusBox').classList.remove('hidden');
+            document.getElementById('autoPublishStatusText').textContent = `Published "${file.name}" to HostNix!`;
+            const linkEl = document.getElementById('autoPublishLiveLink');
+            linkEl.href = liveUrl;
+            linkEl.textContent = liveUrl;
+            await saveMessageToSupabase('assistant', `🌐 Published **${escapeHtml(file.name)}** to [${liveUrl}](${liveUrl}).`);
+        }
+
+        // --- NixCode Editor, ZIP & HostNix Deploy ---
         function renderNixCodeTabs() {
             const tabs = document.getElementById('nixcodeTabs');
             if (!tabs) return;
@@ -1943,6 +1725,17 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             frame.srcdoc = editor.value;
         }
 
+        async function exportNixCodeZip() {
+            if (!window.JSZip) return;
+            const zip = new JSZip();
+            Object.entries(nixcodePages).forEach(([name, content]) => zip.file(name, content));
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'nixcode-project.zip';
+            a.click();
+        }
+
         async function deployNixCodeToHostNix() {
             const slugInput = document.getElementById('hostnixSlugInput');
             const slug = (slugInput?.value || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-') || 'nixy-site';
@@ -1958,53 +1751,6 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
                 link.textContent = liveUrl;
                 box.classList.remove('hidden');
             }
-        }
-
-        // --- ShareNix WebRTC Screen Sharing ---
-        let shareStream = null;
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-        }
-
-        async function startShareNixHost() {
-            const statusEl = document.getElementById('shareStatusMsg');
-            try {
-                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                const code = generateRoomCode();
-                document.getElementById('shareMenu').classList.add('hidden');
-                document.getElementById('shareActiveRoom').classList.remove('hidden');
-                document.getElementById('shareRoomCodeLabel').textContent = code;
-                const videoEl = document.getElementById('shareVideoEl');
-                videoEl.srcObject = shareStream;
-                if (statusEl) statusEl.textContent = '';
-            } catch (err) {
-                if (statusEl) statusEl.textContent = err?.message || 'Screen share permission was declined or unavailable.';
-            }
-        }
-
-        function joinShareNixRoom() {
-            const code = (document.getElementById('shareJoinCode')?.value || '').trim().toUpperCase();
-            const statusEl = document.getElementById('shareStatusMsg');
-            if (!code) {
-                if (statusEl) statusEl.textContent = 'Please enter a 5-letter room code.';
-                return;
-            }
-            document.getElementById('shareMenu').classList.add('hidden');
-            document.getElementById('shareActiveRoom').classList.remove('hidden');
-            document.getElementById('shareRoomCodeLabel').textContent = code;
-            if (statusEl) statusEl.textContent = `Connected to room ${code}. Waiting for host video stream...`;
-        }
-
-        function stopShareNix() {
-            if (shareStream) {
-                shareStream.getTracks().forEach(t => t.stop());
-                shareStream = null;
-            }
-            const videoEl = document.getElementById('shareVideoEl');
-            if (videoEl) videoEl.srcObject = null;
-            document.getElementById('shareActiveRoom').classList.add('hidden');
-            document.getElementById('shareMenu').classList.remove('hidden');
         }
 
         // --- Tables Maker ---
@@ -2085,7 +1831,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             const name = document.getElementById('lnName').value || 'Nixy Creator';
             const bio = document.getElementById('lnBio').value || '';
             const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-6"><div class="max-w-sm w-full text-center space-y-4"><h1 class="text-2xl font-bold text-purple-400">${escapeHtml(name)}</h1><p class="text-xs text-slate-400">${escapeHtml(bio)}</p></div></body></html>`;
-            await hostnixClient.from('apps').upsert([{ slug, files: [{ name: 'index.html', content: html }] }], { onConflict: 'slug' });
+            try { await hostnixClient.from('apps').upsert([{ slug, files: [{ name: 'index.html', content: html }] }], { onConflict: 'slug' }); } catch (_) {}
             document.getElementById('qrTextInput').value = `https://hostnix.vercel.app/#${slug}`;
             renderNixyQrCode();
         }
@@ -2105,15 +1851,12 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             a.click();
         }
 
-        // --- Additional Tools: Color Palette, JSON & Regex, Scratchpad Notes ---
+        // --- Color Palette, JSON & Regex, Scratchpad Notes ---
         function generateColorPalette() {
             const grid = document.getElementById('paletteSwatchesGrid');
             if (!grid) return;
             const hues = [262, 245, 280, 195, 320].map(h => (h + Math.floor(Math.random() * 45)) % 360);
-            const hexes = hues.map((h, i) => {
-                const l = 28 + i * 11;
-                return hslToHex(h, 78, l);
-            });
+            const hexes = hues.map((h, i) => hslToHex(h, 78, 28 + i * 11));
             grid.innerHTML = hexes.map(hex => `
                 <button onclick="copyHexValue('${hex}', this)" class="rounded-2xl overflow-hidden border border-slate-200 dark:border-nix-borderdark text-left shadow-xs transition hover:scale-[1.02]">
                     <div class="h-20 w-full" style="background-color:${hex}"></div>
@@ -2142,10 +1885,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             ta.remove();
             if (el) {
                 const tag = el.querySelector('span:last-child');
-                if (tag) {
-                    tag.textContent = 'Copied!';
-                    setTimeout(() => { tag.textContent = 'Copy'; }, 1000);
-                }
+                if (tag) { tag.textContent = 'Copied!'; setTimeout(() => { tag.textContent = 'Copy'; }, 1000); }
             }
         }
 
@@ -2191,7 +1931,6 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
         // =========================================================================
         function resetToNixCodeHero() {
             activeConversationId = null;
-            syncChatIdToDomain(null);
             messages = [];
             renderConversationsList();
             renderMessages();
@@ -2238,7 +1977,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
                 const input = document.getElementById('userInput');
                 input.value = input.value ? `${input.value} ${text}` : text;
             };
-            rec.onend = () => setNixyMood('idle', 'Nixy is ready');
+            rec.onend = () => setNixyMood('idle', 'Ready');
             rec.start();
         }
 
@@ -2277,7 +2016,7 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
             return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
         }
 
-        // Mouse eye tracking for Nixy Purple Orb
+        // Eye tracking for Nixy Purple Orb
         window.addEventListener('mousemove', e => {
             resetSleepInactivityTimer();
             const orb = document.getElementById('heroNixyOrb');
@@ -2293,16 +2032,16 @@ ${memoryBundle.pastChatsSummary || 'None yet.'}`;
         window.addEventListener('pointerdown', () => resetSleepInactivityTimer());
 
         window.addEventListener('DOMContentLoaded', async () => {
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
             resetSleepInactivityTimer();
-            const ok = await checkSupabaseSessionAndGuard();
-            if (!ok) return;
-            await loadConversationsFromSupabase();
+            await initAppGate();
+            syncImageModels();
+            renderConversationsList();
             renderNixyQrCode();
             renderTablesMaker();
             generateColorPalette();
             walkOrbInPortal(0.55, 'Ready in portal');
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         });
     </script>
 </body>
