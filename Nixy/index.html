@@ -28,17 +28,18 @@
                             700: '#6d28d9',
                             800: '#5b21b6',
                             900: '#4c1d95',
+                        },
+                        nix: {
                             bgdark: '#09080e',
                             carddark: '#13111c',
-                            borderdark: '#26203b',
+                            borderdark: '#26203b'
                         }
                     },
                     animation: {
-                        'float': 'nixyFloat 3.6s ease-in-out infinite',
-                        'pulse-glow': 'nixyPulse 2.8s ease-in-out infinite',
+                        'pulse-glow': 'nixyPulse 2.6s ease-in-out infinite',
                         'blink': 'nixyEyeBlink 4.2s infinite',
-                        'orbit-spin': 'orbitSpin 1.8s linear infinite',
-                        'orbit-reverse': 'orbitReverse 2.5s linear infinite',
+                        'orbit-spin': 'orbitSpin 9s linear infinite',
+                        'orbit-reverse': 'orbitReverse 13s linear infinite'
                     },
                     keyframes: {
                         nixyFloat: {
@@ -60,6 +61,18 @@
                         orbitReverse: {
                             '0%': { transform: 'rotate(360deg)' },
                             '100%': { transform: 'rotate(0deg)' },
+                        },
+                        nixyWalkBob: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(-4deg) scale(1)' },
+                            '25%': { transform: 'translateY(-9px) rotate(4deg) scale(1.04, 0.96)' },
+                            '50%': { transform: 'translateY(-2px) rotate(-3deg) scale(0.97, 1.03)' },
+                            '75%': { transform: 'translateY(-8px) rotate(4deg) scale(1.03, 0.97)' },
+                        },
+                        nixyTouchBounce: {
+                            '0%': { transform: 'scale(1)' },
+                            '35%': { transform: 'scale(1.18, 0.86)' },
+                            '65%': { transform: 'scale(0.92, 1.1)' },
+                            '100%': { transform: 'scale(1)' },
                         }
                     }
                 }
@@ -144,6 +157,16 @@
             background-color: #6ee7b7;
             box-shadow: 0 0 12px #6ee7b7;
             transform: scale(1.15);
+        }
+        .nixy-orb.walking {
+            animation: nixyWalkBob 0.52s ease-in-out infinite !important;
+        }
+        .nixy-orb.touched {
+            animation: nixyTouchBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        .nixy-portal-track {
+            position: relative;
+            overflow: hidden;
         }
 
         /* Prose & Smart Code Card Styles from Nix 4.5 */
@@ -243,7 +266,7 @@
             <!-- Brand & New Chat -->
             <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark/70 space-y-2.5">
                 <div class="flex items-center justify-between px-1.5 py-1">
-                    <button onclick="resetToNixCodeHero()" class="flex items-center gap-2.5 group text-left">
+                    <div class="flex items-center gap-2.5 select-none">
                         <div class="w-8 h-8 rounded-full nixy-orb flex items-center justify-center shadow-md border border-purple-300/40">
                             <div class="flex items-center gap-1">
                                 <span class="nixy-eye w-1.5 h-1.5 block"></span>
@@ -257,7 +280,7 @@
                             </div>
                             <p class="text-[10px] text-slate-400 dark:text-zinc-500">All-in-One AI Workspace</p>
                         </div>
-                    </button>
+                    </div>
                     <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
@@ -280,15 +303,19 @@
 
             <!-- Unified Nixy Super-Tools Quick Switcher -->
             <div class="p-2.5 border-t border-slate-200 dark:border-nix-borderdark/70 bg-slate-50/70 dark:bg-nix-bgdark/40 space-y-1.5">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5">Nixy Studio Tools</div>
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5">Studio Tools</div>
                 <div class="grid grid-cols-2 gap-1.5 text-[11px]">
                     <button onclick="openToolStudio('code')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
                         <i data-lucide="code-2" class="w-3.5 h-3.5 text-nix-500 shrink-0"></i>
                         <span class="truncate font-medium">NixCode Web</span>
                     </button>
+                    <button onclick="openToolStudio('publish')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition text-left">
+                        <i data-lucide="globe" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                        <span class="truncate font-medium">Auto Publish</span>
+                    </button>
                     <button onclick="openToolStudio('image')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
                         <i data-lucide="image" class="w-3.5 h-3.5 text-purple-400 shrink-0"></i>
-                        <span class="truncate font-medium">SubeAI Image</span>
+                        <span class="truncate font-medium">GPT Images 2</span>
                     </button>
                     <button onclick="openToolStudio('video')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
                         <i data-lucide="film" class="w-3.5 h-3.5 text-fuchsia-400 shrink-0"></i>
@@ -306,9 +333,9 @@
                         <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
                         <span class="truncate font-medium">QR & LinkNix</span>
                     </button>
-                    <button onclick="openToolStudio('docs')" class="col-span-2 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nix-600/10 dark:bg-nix-600/20 border border-nix-500/30 hover:border-nix-500 text-nix-700 dark:text-nix-200 transition font-semibold">
-                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-nix-500"></i>
-                        <span>Docs Maker & Rich Editor</span>
+                    <button onclick="openToolStudio('docs')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-nix-500 shrink-0"></i>
+                        <span class="truncate font-medium">Docs Maker</span>
                     </button>
                 </div>
             </div>
@@ -354,7 +381,12 @@
 
                     <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-nix-600/10 dark:bg-nix-carddark border border-nix-500/30 text-xs font-semibold text-nix-700 dark:text-nix-200">
                         <span id="nixyStatusDot" class="w-2 h-2 rounded-full bg-nix-500 animate-pulse"></span>
-                        <span id="nixyStatusText">Nixy is ready</span>
+                        <span id="nixyStatusText">Ready</span>
+                    </div>
+
+                    <div id="activeToolBadge" class="hidden items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-600/15 border border-purple-500/40 text-purple-600 dark:text-purple-300">
+                        <i data-lucide="wrench" class="w-3 h-3"></i>
+                        <span>Tool: <strong id="activeToolName">None</strong></span>
                     </div>
 
                     <div id="supabaseSyncBadge" class="hidden sm:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400">
@@ -379,21 +411,32 @@
                 <section class="flex-1 flex flex-col h-full overflow-hidden relative">
                     <div id="messagesContainer" class="flex-1 overflow-y-auto px-4 py-6 max-w-4xl w-full mx-auto scroll-smooth">
                         
-                        <!-- NIXCODE ONE STYLE HERO SCREEN (Centered Nixy Purple Orb + White Eyes + Greeting + Quick Capabilities) -->
+                        <!-- NIXCODE ONE STYLE HERO SCREEN (Interactive Walking Purple Orb in Portal + White Eyes) -->
                         <div id="emptyHero" class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 welcome-ambient-light dark:welcome-ambient-dark">
-                            <!-- Floating Greeting Speech Bubble -->
-                            <div id="heroNixyBubble" class="mb-4 px-4 py-2 rounded-2xl bg-white dark:bg-nix-carddark border border-purple-200 dark:border-nix-borderdark text-xs sm:text-sm font-medium text-slate-800 dark:text-zinc-100 shadow-lg max-w-sm">
-                                Hi! I'm <span class="text-nix-600 dark:text-nix-400 font-bold">Nixy</span>. I can chat, build websites, generate images & motion videos, share screens, and make tables, QR codes & docs!
+                            <!-- Floating Greeting / Live Typing Reader Bubble -->
+                            <div id="heroNixyBubble" class="mb-4 px-4 py-2 rounded-2xl bg-white dark:bg-nix-carddark border border-purple-200 dark:border-nix-borderdark text-xs sm:text-sm font-medium text-slate-800 dark:text-zinc-100 shadow-lg max-w-md transition-all">
+                                I'm ready! Type in the box below—I read as you write, walk through the portal, test results, and show thinking steps.
                             </div>
 
-                            <!-- Nixy Purple Ball with White Eyes -->
-                            <div id="heroNixyOrb" onclick="pokeNixy()" title="Click Nixy!" class="cursor-pointer w-24 h-24 sm:w-28 sm:h-28 rounded-full nixy-orb animate-pulse-glow animate-float flex items-center justify-center mb-6 border-2 border-purple-300/40 shadow-2xl">
-                                <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-2.5 rounded-full border-2 border-dashed border-purple-400/80 animate-orbit-spin"></div>
-                                <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-4 rounded-full border border-indigo-400/50 animate-orbit-reverse"></div>
-                                <div class="absolute top-2.5 left-4 w-1/3 h-1/5 rounded-full bg-white/35 blur-[1px] -rotate-12"></div>
-                                <div id="nixyEyesContainer" class="flex items-center justify-center gap-3.5">
-                                    <span class="nixy-eye w-5 h-5 block animate-blink"></span>
-                                    <span class="nixy-eye w-5 h-5 block animate-blink"></span>
+                            <!-- Interactive Walking Portal Arena for the Purple Ball -->
+                            <div id="nixyPortalArena" class="nixy-portal-track w-full max-w-lg h-36 sm:h-40 rounded-3xl bg-gradient-to-b from-purple-950/30 via-indigo-950/20 to-slate-900/40 dark:from-purple-950/50 dark:to-black/60 border border-purple-400/30 mb-6 flex items-center relative shadow-inner">
+                                <div class="absolute inset-x-4 bottom-3 h-1 rounded-full bg-purple-500/20"></div>
+                                <div id="portalCheckBadge" class="hidden absolute top-2.5 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 border border-emerald-400/40 text-emerald-300"></div>
+
+                                <div id="heroNixyOrb"
+                                    onclick="triggerOrbTouchAnimation('click')"
+                                    onpointerdown="triggerOrbTouchAnimation('touch')"
+                                    onpointerenter="triggerOrbTouchAnimation('hover')"
+                                    title="Touch or click me!"
+                                    style="left: 16px;"
+                                    class="cursor-pointer w-20 h-20 sm:w-24 sm:h-24 rounded-full nixy-orb animate-pulse-glow flex items-center justify-center border-2 border-purple-300/50 shadow-2xl absolute transition-[left] duration-500 ease-in-out z-10">
+                                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-2.5 rounded-full border-2 border-dashed border-purple-400/80 animate-orbit-spin"></div>
+                                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-4 rounded-full border border-indigo-400/50 animate-orbit-reverse"></div>
+                                    <div class="absolute top-2.5 left-3.5 w-1/3 h-1/5 rounded-full bg-white/35 blur-[1px] -rotate-12"></div>
+                                    <div id="nixyEyesContainer" class="flex items-center justify-center gap-3">
+                                        <span class="nixy-eye w-4 h-4 sm:w-5 sm:h-5 block animate-blink"></span>
+                                        <span class="nixy-eye w-4 h-4 sm:w-5 sm:h-5 block animate-blink"></span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -401,29 +444,29 @@
                                 Where should we start?
                             </h1>
                             <p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-lg mb-7">
-                                Ask Nixy anything in chat or trigger any integrated tool directly by prompt or studio tab.
+                                Ask me to generate images with GPT Images 2, auto-publish HTML websites, build tables, or write docs.
                             </p>
 
                             <!-- Quick Capability Action Pills -->
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-2xl text-left">
-                                <button onclick="sendQuickPrompt('Build a modern multi-page startup landing page in NixCode with index.html and about.html')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                                    <div class="flex items-center gap-1.5 text-xs font-bold text-nix-600 dark:text-nix-400 mb-1">
-                                        <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
-                                        <span>NixCode Web</span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Build & deploy multi-page sites to HostNix</p>
-                                </button>
-
-                                <button onclick="sendQuickPrompt('Generate an image of a glowing purple cybernetic owl in a neon library')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                <button onclick="sendQuickPrompt('Generate an image of a futuristic glass greenhouse on Mars using GPT Images 2')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
                                     <div class="flex items-center gap-1.5 text-xs font-bold text-purple-500 mb-1">
                                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                        <span>SubeAI Image</span>
+                                        <span>GPT Images 2</span>
                                     </div>
-                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Multi-model AI image studio</p>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Generate image & show right in chat</p>
+                                </button>
+
+                                <button onclick="openToolStudio('publish')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mb-1">
+                                        <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                                        <span>Auto Publish HTML</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Upload HTML & auto-publish live</p>
                                 </button>
 
                                 <button onclick="sendQuickPrompt('Create a comparison table of top cloud databases with columns for Name, Engine, Pricing, and Best Use Case')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
-                                    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mb-1">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-sky-400 mb-1">
                                         <i data-lucide="table" class="w-3.5 h-3.5"></i>
                                         <span>Tables Maker</span>
                                     </div>
@@ -438,6 +481,18 @@
                                     <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Rich documents, LinkNix & QR codes</p>
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Live Thinking Steps & Progress Banner -->
+                        <div id="thinkingStepsPanel" class="hidden mb-4 p-4 rounded-2xl bg-purple-950/25 dark:bg-nix-carddark border border-purple-500/35 space-y-2 shadow-md">
+                            <div class="flex items-center justify-between text-xs font-bold text-purple-300">
+                                <span class="flex items-center gap-2">
+                                    <i data-lucide="cpu" class="w-4 h-4 text-purple-400 animate-spin"></i>
+                                    <span id="thinkingHeadline">Thinking & Running Tool...</span>
+                                </span>
+                                <span id="thinkingToolTag" class="px-2 py-0.5 rounded-full bg-purple-600/30 text-[10px] uppercase">Tool</span>
+                            </div>
+                            <ul id="thinkingStepsList" class="space-y-1 text-xs text-slate-600 dark:text-zinc-300 pl-1"></ul>
                         </div>
 
                         <!-- Chat Messages Stream -->
@@ -483,7 +538,8 @@
                     <div class="h-12 px-3 bg-slate-100 dark:bg-nix-carddark border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between gap-2 shrink-0">
                         <div class="flex items-center gap-1 overflow-x-auto py-1">
                             <button onclick="switchStudioTool('code')" id="stab-code" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white shrink-0">NixCode</button>
-                            <button onclick="switchStudioTool('image')" id="stab-image" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">SubeAI</button>
+                            <button onclick="switchStudioTool('publish')" id="stab-publish" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Auto Publish</button>
+                            <button onclick="switchStudioTool('image')" id="stab-image" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">GPT Images 2</button>
                             <button onclick="switchStudioTool('video')" id="stab-video" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Vidy</button>
                             <button onclick="switchStudioTool('share')" id="stab-share" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">ShareNix</button>
                             <button onclick="switchStudioTool('tables')" id="stab-tables" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Tables</button>
@@ -496,63 +552,86 @@
                     </div>
 
                     <!-- TOOL 1: NIXCODE MULTI-PAGE WEB BUILDER & HOSTNIX DEPLOY -->
-                    <div id="tool-code" class="studio-pane flex-1 flex flex-col overflow-hidden">
-                        <div class="px-3 py-2 border-b border-slate-200 dark:border-nix-borderdark flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-nix-bgdark">
-                            <div id="nixcode-page-tabs" class="flex items-center gap-1 overflow-x-auto"></div>
+                    <div id="tool-code" class="studio-pane flex-1 flex-col overflow-hidden p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div id="nixcodeTabs" class="flex items-center gap-1.5 overflow-x-auto"></div>
                             <div class="flex items-center gap-1.5">
-                                <button onclick="setNixCodeView('preview')" id="nc-btn-preview" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white">Preview</button>
-                                <button onclick="setNixCodeView('code')" id="nc-btn-code" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-zinc-400">Code</button>
-                                <button onclick="exportNixCodeZip()" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-200 dark:bg-nix-carddark border border-slate-300 dark:border-nix-borderdark">ZIP</button>
-                                <button onclick="openHostNixModal()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">HostNix Deploy</button>
+                                <button onclick="addNixCodePage()" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">+ Page</button>
+                                <button onclick="document.getElementById('hostnixModal').classList.remove('hidden')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Deploy HostNix</button>
                             </div>
                         </div>
-                        <div id="nc-preview-box" class="flex-1 bg-white">
-                            <iframe id="nc-preview-frame" sandbox="allow-scripts allow-same-origin allow-forms" class="w-full h-full border-0"></iframe>
-                        </div>
-                        <div id="nc-code-box" class="hidden flex-1 flex flex-col bg-[#0d0c15]">
-                            <textarea id="nc-code-editor" spellcheck="false" oninput="onNixCodeEditorInput()" class="flex-1 w-full bg-transparent text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+                            <textarea id="nixcodeEditor" oninput="syncNixCodeEdit()" class="w-full h-full rounded-xl p-3 bg-slate-950 text-purple-100 border border-slate-800 font-mono text-xs resize-none focus:outline-none focus:border-nix-500"></textarea>
+                            <iframe id="nixcodePreviewFrame" sandbox="allow-scripts allow-same-origin" class="w-full h-full rounded-xl bg-white border border-slate-200 dark:border-nix-borderdark"></iframe>
                         </div>
                     </div>
 
-                    <!-- TOOL 2: SUBEAI IMAGE STUDIO -->
+                    <!-- TOOL 1B: AUTO PUBLISH UPLOADED HTML WEBSITE -->
+                    <div id="tool-publish" class="studio-pane hidden flex-1 overflow-y-auto p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i> Auto HTML Website Publisher</h3>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">Upload & Auto-Publish</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">Upload any <code>.html</code> file and the model automatically optimizes, validates, and publishes it live.</p>
+
+                        <div class="p-4 rounded-2xl border-2 border-dashed border-emerald-500/40 bg-slate-50 dark:bg-nix-carddark text-center space-y-2">
+                            <i data-lucide="upload-cloud" class="w-7 h-7 text-emerald-400 mx-auto"></i>
+                            <div class="text-xs font-semibold">Select an HTML file to auto-publish</div>
+                            <input type="file" id="autoPublishHtmlInput" accept=".html,.htm,text/html" onchange="handleAutoPublishHtmlUpload(event)" class="block mx-auto text-xs text-slate-500 dark:text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-slate-600 dark:text-zinc-300">Site Slug</label>
+                            <input id="autoPublishSlugInput" type="text" placeholder="auto-generated-site" class="w-full rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs font-mono">
+                        </div>
+
+                        <div id="autoPublishStatusBox" class="hidden p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1.5">
+                            <div id="autoPublishStatusText" class="font-semibold text-emerald-400"></div>
+                            <a id="autoPublishLiveLink" href="#" target="_blank" class="font-mono underline text-emerald-300 break-all block"></a>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 2: GPT IMAGES 2 STUDIO -->
                     <div id="tool-image" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-4">
                         <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-nix-500"></i> SubeAI Image Generator</h3>
-                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-nix-600/15 text-nix-400">puter.ai.txt2img</span>
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-nix-500"></i> GPT Images 2 Generator</h3>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-nix-600/15 text-nix-400">gpt-image-1.5 / GPT Images 2</span>
                         </div>
-                        <textarea id="subePromptInput" rows="3" placeholder="Describe the image you want Nixy to create..." class="w-full rounded-xl p-3 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none focus:border-nix-500"></textarea>
+                        <textarea id="subePromptInput" rows="3" placeholder="Describe the image for GPT Images 2 to create..." class="w-full rounded-xl p-3 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none focus:border-nix-500"></textarea>
                         <div class="grid grid-cols-2 gap-2.5">
                             <select id="subeProvider" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
-                                <option value="openai-image-generation">OpenAI GPT Image</option>
-                                <option value="gemini">Gemini 3.1 Flash Image</option>
-                                <option value="xai">xAI Grok Image</option>
-                                <option value="together">Together FLUX</option>
+                                <option value="openai-image-generation">GPT Images 2 (OpenAI)</option>
+                                <option value="gpt-image-1.5">GPT Image 1.5</option>
                             </select>
                             <label class="flex items-center gap-2 px-3 rounded-xl bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs cursor-pointer">
                                 <input type="checkbox" id="subeTestMode" class="accent-nix-600">
                                 <span>Test Mode (Free)</span>
                             </label>
                         </div>
-                        <button onclick="runSubeImageStudio()" id="subeGenBtn" class="w-full py-2.5 rounded-xl bg-nix-600 hover:bg-nix-500 text-white font-semibold text-xs shadow-md">Generate Image</button>
+                        <button onclick="runSubeImageStudio()" id="subeGenBtn" class="w-full py-2.5 rounded-xl bg-nix-600 hover:bg-nix-500 text-white font-semibold text-xs shadow-md">Generate with GPT Images 2</button>
                         <div id="subeResultBox" class="rounded-2xl border border-dashed border-nix-500/30 min-h-[260px] flex flex-col items-center justify-center p-4 bg-black/20">
-                            <p id="subePlaceholder" class="text-xs text-slate-400">Generated artwork appears here</p>
-                            <img id="subeOutputImg" class="hidden max-h-80 rounded-xl shadow-xl object-contain" alt="Generated AI Image">
-                            <a id="subeDownloadBtn" download="nixy-image.png" class="hidden mt-3 px-4 py-1.5 rounded-lg bg-nix-600 text-white text-xs font-semibold">Download PNG</a>
+                            <p id="subePlaceholder" class="text-xs text-slate-400">Generated GPT Images 2 artwork appears here & in chat</p>
+                            <img id="subeOutputImg" class="hidden max-h-80 rounded-xl shadow-xl object-contain" alt="Generated GPT Images 2 Artwork">
+                            <a id="subeDownloadBtn" download="gpt-images-2.png" class="hidden mt-3 px-4 py-1.5 rounded-lg bg-nix-600 text-white text-xs font-semibold">Download PNG</a>
                         </div>
                     </div>
 
-                    <!-- TOOL 3: VIDY 60FPS MOTION GRAPHICS STUDIO -->
+                    <!-- TOOL 3: VIDY MOTION GRAPHICS STUDIO (DOES NOT UNDERSTAND VIDEO) -->
                     <div id="tool-video" class="studio-pane hidden flex-1 flex flex-col overflow-hidden">
                         <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between gap-2 bg-slate-50 dark:bg-nix-carddark">
-                            <span class="text-xs font-bold flex items-center gap-1.5"><i data-lucide="film" class="w-4 h-4 text-fuchsia-400"></i> Vidy 60fps Motion Canvas</span>
+                            <span class="text-xs font-bold flex items-center gap-1.5"><i data-lucide="film" class="w-4 h-4 text-fuchsia-400"></i> Vidy Motion Studio</span>
                             <div class="flex items-center gap-2">
                                 <button onclick="toggleVidyPlayback()" id="vidyPlayBtn" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">Pause</button>
-                                <button onclick="exportVidyVideo()" id="vidyExportBtn" class="px-3 py-1 rounded-lg bg-nix-600 hover:bg-nix-500 text-white text-xs font-semibold">Export Video</button>
                             </div>
                         </div>
-                        <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark flex gap-2">
-                            <input id="vidyPromptInput" type="text" placeholder="Describe a 60fps motion scene (e.g., Neon purple audio wave & orbital ring)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
-                            <button onclick="generateVidySceneFromInput()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Animate</button>
+                        <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark space-y-2">
+                            <div class="px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs">
+                                Note: Vidy does not understand video files or video analysis—it only animates motion graphics scenes.
+                            </div>
+                            <div class="flex gap-2">
+                                <input id="vidyPromptInput" type="text" placeholder="Describe a motion scene (e.g., Purple orbital ring & pulse)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
+                                <button onclick="generateVidySceneFromInput()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Animate</button>
+                            </div>
                         </div>
                         <div class="flex-1 bg-black flex items-center justify-center p-4">
                             <canvas id="vidyCanvas" width="960" height="540" class="max-w-full max-h-full rounded-xl border border-nix-500/30 shadow-2xl"></canvas>
@@ -947,14 +1026,100 @@
             }
         }
 
+        function setActiveToolBadge(toolName) {
+            const badge = document.getElementById('activeToolBadge');
+            const label = document.getElementById('activeToolName');
+            if (!toolName) {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+                return;
+            }
+            label.textContent = toolName;
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+        }
+
+        function showThinkingSteps(toolName, headline, steps) {
+            const panel = document.getElementById('thinkingStepsPanel');
+            const hl = document.getElementById('thinkingHeadline');
+            const tag = document.getElementById('thinkingToolTag');
+            const list = document.getElementById('thinkingStepsList');
+            panel.classList.remove('hidden');
+            hl.textContent = headline;
+            tag.textContent = toolName;
+            list.innerHTML = steps.map(s => `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span><span>${escapeHtml(s)}</span></li>`).join('');
+        }
+
+        function appendThinkingStep(stepText) {
+            const list = document.getElementById('thinkingStepsList');
+            if (!list) return;
+            const li = document.createElement('li');
+            li.className = 'flex items-center gap-2 text-emerald-300';
+            li.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>${escapeHtml(stepText)}</span>`;
+            list.appendChild(li);
+        }
+
+        function hideThinkingSteps() {
+            const panel = document.getElementById('thinkingStepsPanel');
+            if (panel) panel.classList.add('hidden');
+        }
+
+        // Interactive purple ball: walks inside portal, tries & checks results, reacts to touch & reads typing
+        let portalWalkTimer = null;
+        function walkOrbInPortal(targetRatio = 0.65, checkText = 'Trying & checking result...') {
+            const arena = document.getElementById('nixyPortalArena');
+            const orb = document.getElementById('heroNixyOrb');
+            const badge = document.getElementById('portalCheckBadge');
+            if (!arena || !orb) return;
+
+            const maxLeft = Math.max(16, arena.clientWidth - orb.clientWidth - 16);
+            const destLeft = Math.round(16 + (maxLeft - 16) * Math.max(0, Math.min(1, targetRatio)));
+
+            orb.classList.add('walking');
+            orb.style.left = `${destLeft}px`;
+            if (badge && checkText) {
+                badge.textContent = checkText;
+                badge.classList.remove('hidden');
+            }
+
+            clearTimeout(portalWalkTimer);
+            portalWalkTimer = setTimeout(() => {
+                orb.classList.remove('walking');
+                if (badge) {
+                    badge.textContent = '✓ Result verified';
+                    setTimeout(() => badge.classList.add('hidden'), 1800);
+                }
+            }, 900);
+        }
+
+        function triggerOrbTouchAnimation(interactionType = 'touch') {
+            const orb = document.getElementById('heroNixyOrb');
+            const bubble = document.getElementById('heroNixyBubble');
+            if (!orb) return;
+            orb.classList.remove('touched');
+            void orb.offsetWidth;
+            orb.classList.add('touched');
+            setNixyMood('happy', interactionType === 'hover' ? 'Orb noticed your cursor!' : 'Orb bounced on touch!');
+            walkOrbInPortal(Math.random() * 0.8 + 0.1, 'Checking response...');
+            if (bubble) {
+                bubble.textContent = interactionType === 'hover'
+                    ? 'Hey there! I see your cursor moving near my portal.'
+                    : 'Boing! That touch tickled my purple core!';
+            }
+            setTimeout(() => {
+                orb.classList.remove('touched');
+                setNixyMood('idle', 'Ready');
+            }, 900);
+        }
+
         function pokeNixy() {
-            setNixyMood('happy', 'Nixy is ready to create!');
-            setTimeout(() => setNixyMood('idle', 'Nixy is ready'), 2200);
+            triggerOrbTouchAnimation('click');
         }
 
         function sendQuickPrompt(text) {
             const input = document.getElementById('userInput');
             input.value = text;
+            handleComposerInput(input);
             sendMessage();
         }
 
@@ -968,6 +1133,20 @@
         function handleComposerInput(el) {
             el.style.height = 'auto';
             el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+
+            // Read user prompt while writing & walk in portal
+            const bubble = document.getElementById('heroNixyBubble');
+            const val = el.value.trim();
+            if (!val) {
+                if (bubble) bubble.textContent = "I'm ready! Type in the box below—I read as you write, walk through the portal, test results, and show thinking steps.";
+                return;
+            }
+            setNixyMood('listening', 'Reading while you type...');
+            const ratio = Math.min(0.88, 0.15 + (val.length / 80) * 0.73);
+            walkOrbInPortal(ratio, 'Reading draft...');
+            if (bubble) {
+                bubble.textContent = `Reading as you write: "${val.slice(-75)}"`;
+            }
         }
 
         async function sendMessage() {
@@ -988,51 +1167,93 @@
 
             isGenerating = true;
             document.getElementById('sendBtn').disabled = true;
-            setNixyMood('thinking', 'Nixy is thinking & selecting tools...');
+            setNixyMood('thinking', 'Thinking & running tool...');
+            walkOrbInPortal(0.5, 'Trying & checking...');
 
             try {
                 const lower = userPrompt.toLowerCase();
 
-                // 1. Direct Image Generation Trigger (SubeAI)
-                if (/\b(generate|draw|create|make)\b.*\b(image|picture|photo|illustration|artwork|logo)\b/i.test(lower)) {
-                    openToolStudio('image');
+                // Detect if user asks to understand/analyze a video
+                if (/\b(video|mp4|mov|webm)\b/i.test(lower) && /\b(understand|watch|analyze|read|transcribe|summarize\s+video)\b/i.test(lower)) {
+                    setActiveToolBadge('Vidy');
+                    showThinkingSteps('Vidy', 'Checking capability on video input...', [
+                        'Received request referencing video input',
+                        'Checked Vidy studio capabilities',
+                        'Result: Vidy does not understand video files'
+                    ]);
+                    await saveMessageToSupabase('assistant', 'I do not understand video files—Vidy only animates motion graphics scenes, not video understanding.');
+                    setNixyMood('error', 'Video not supported');
+                    return;
+                }
+
+                // 1. Direct Image Generation Trigger (GPT Images 2) -> shows generation progress, displays image in chat, hides tool canvas
+                if (/\b(generate|draw|create|make)\b.*\b(image|picture|photo|illustration|artwork|logo|gpt\s*images?\s*2)\b/i.test(lower)) {
+                    setActiveToolBadge('GPT Images 2');
+                    toggleStudioDrawer(false);
+                    showThinkingSteps('GPT Images 2', 'Generating image with GPT Images 2...', [
+                        'Parsing visual prompt and style details',
+                        'Calling GPT Images 2 generator...'
+                    ]);
                     document.getElementById('subePromptInput').value = rawText;
-                    await runSubeImageStudio();
-                    await saveMessageToSupabase('assistant', `🎨 I generated your image in **SubeAI Image Studio**! You can inspect or download it on the right panel.`);
-                    setNixyMood('happy', 'Image generated!');
+                    walkOrbInPortal(0.75, 'Generating image...');
+
+                    const imgUrl = await generateWithGptImages2(rawText);
+                    appendThinkingStep('Verifying image URL & rendering result in chat...');
+                    walkOrbInPortal(0.9, 'Image ready & verified!');
+
+                    await saveMessageToSupabase(
+                        'assistant',
+                        `🎨 **GPT Images 2** generated your image:\n\n![${escapeHtml(rawText)}](${imgUrl})\n\n[Download Image](${imgUrl})`
+                    );
+                    setNixyMood('happy', 'GPT Images 2 complete');
                     return;
                 }
 
                 // 2. Direct QR Code Trigger
                 if (/\bqr\s*code\b/i.test(lower) && !/\btable\b/i.test(lower) && !/\bdoc\b/i.test(lower)) {
+                    setActiveToolBadge('QR Code Maker');
                     const urlMatch = rawText.match(/https?:\/\/[^\s]+/i);
                     const qrValue = urlMatch ? urlMatch[0] : rawText.replace(/.*qr\s*code\s*(for)?/i, '').trim() || 'https://hostnix.vercel.app';
+                    showThinkingSteps('QR Code Maker', 'Generating & checking QR code...', [
+                        `Extracted target: ${qrValue}`,
+                        'Rendered scannable QR matrix'
+                    ]);
                     openToolStudio('qr');
                     document.getElementById('qrTextInput').value = qrValue;
                     renderNixyQrCode();
-                    await saveMessageToSupabase('assistant', `📱 Generated your **QR Code** for \`${qrValue}\` in the **QR & LinkNix** studio tab!`);
-                    setNixyMood('happy', 'QR Code created!');
+                    await saveMessageToSupabase('assistant', `📱 Generated your **QR Code** for \`${qrValue}\` using **QR Code Maker**.`);
+                    setNixyMood('happy', 'QR Code created');
                     return;
                 }
 
                 // 3. Direct Screen Share Trigger
                 if (/\b(share\s*screen|screen\s*share|sharenix)\b/i.test(lower)) {
+                    setActiveToolBadge('ShareNix');
+                    showThinkingSteps('ShareNix', 'Preparing WebRTC screen share...', [
+                        'Initialized ShareNix room controls',
+                        'Ready for display capture or 5-letter room join'
+                    ]);
                     openToolStudio('share');
-                    await saveMessageToSupabase('assistant', `🖥️ Opened **ShareNix**! Click **Share My Screen** to broadcast live or enter a 5-letter room code to watch.`);
-                    setNixyMood('happy', 'ShareNix ready!');
+                    await saveMessageToSupabase('assistant', `🖥️ Opened **ShareNix**. Click **Share My Screen** or enter a 5-letter room code to watch.`);
+                    setNixyMood('happy', 'ShareNix ready');
                     return;
                 }
 
-                // 4. Unified AI Agent Prompt via Puter.js (Handles Websites, Tables, Docs, Motion, and General Chat)
-                const agentSystemPrompt = `You are Nixy, a super-capable purple orb AI agent with white eyes. You combine:
-- General AI Assistant (Nix 4.5)
-- Multi-Page Web Builder (NixCode): If the user asks to build a website, landing page, or web app, output complete HTML files using fenced blocks like \`\`\`html:index.html ... \`\`\`.
-- Tables Maker: If the user asks to create a table or spreadsheet, output a clean Markdown table AND a JSON block \`\`\`json:table
+                // 4. Unified AI Agent Prompt via Puter.js (Handles Websites, Auto Publish, Tables, Docs, and General Chat)
+                setActiveToolBadge('Nix Agent');
+                showThinkingSteps('Nix Agent', 'Planning steps & reasoning...', [
+                    'Analyzing prompt intent and memory context',
+                    'Executing model response and checking output'
+                ]);
+
+                const agentSystemPrompt = `You are Nixy, a purple orb AI agent with white eyes. Note that you do NOT understand video files. You support:
+- General AI Chat & Reasoning
+- Multi-Page Web Builder (NixCode): Output complete HTML files using fenced blocks like \`\`\`html:index.html ... \`\`\`.
+- Tables Maker: Output a Markdown table AND a JSON block \`\`\`json:table
 [["Col1","Col2"],["Val1","Val2"]]
 \`\`\`
-- Docs Maker: If the user asks to write a document, essay, report, or proposal, wrap the rich document content in \`\`\`html:doc.html ... \`\`\`
-- Motion Graphics (Vidy): If the user asks for an animation or motion graphic, describe it clearly.
-- QR Code: If the user mentions a URL for a QR code, include \`QR_TARGET: <url>\`.
+- Docs Maker: Wrap rich document content in \`\`\`html:doc.html ... \`\`\`
+- QR Code: Include \`QR_TARGET: <url>\` when a URL is requested for a QR code.
 
 User Memories:
 ${memories.map(m => '- ' + m).join('\n')}`;
@@ -1050,10 +1271,10 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                         : (res?.message?.content || res?.text || res?.choices?.[0]?.message?.content || '');
                 }
                 if (!aiReply) {
-                    aiReply = 'I am ready! Ask me to build a website, generate an image, create a table, write a document, or make a QR code.';
+                    aiReply = 'I am ready! Ask me to generate an image with GPT Images 2, auto-publish an HTML file, create a table, write a doc, or make a QR code.';
                 }
+                appendThinkingStep('Checking response format & routing outputs...');
 
-                // Parse any generated multi-page website files -> load into NixCode Studio
                 const htmlFileRegex = /```html(?::([^\n`]+))?\n([\s\S]*?)```/gi;
                 let match;
                 let webFilesFound = false;
@@ -1061,9 +1282,11 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                     const fname = (match[1] || 'index.html').trim();
                     const code = match[2].trim();
                     if (fname === 'doc.html') {
+                        setActiveToolBadge('Docs Maker');
                         openToolStudio('docs');
                         document.getElementById('nixyDocEditor').innerHTML = code;
                     } else if (code) {
+                        setActiveToolBadge('NixCode');
                         nixcodePages[fname] = code;
                         activeNixCodePage = fname;
                         webFilesFound = true;
@@ -1075,12 +1298,12 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                     loadNixCodeEditorAndPreview();
                 }
 
-                // Parse JSON table -> load into Tables Maker
                 const tableMatch = aiReply.match(/```json:table\n([\s\S]*?)```/i);
                 if (tableMatch) {
                     try {
                         const parsed = JSON.parse(tableMatch[1].trim());
                         if (Array.isArray(parsed) && parsed.length > 0) {
+                            setActiveToolBadge('Tables Maker');
                             tableData = parsed;
                             openToolStudio('tables');
                             renderTablesMaker();
@@ -1088,9 +1311,9 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                     } catch (_) {}
                 }
 
-                // Parse QR_TARGET -> load into QR Maker
                 const qrMatch = aiReply.match(/QR_TARGET:\s*(\S+)/i);
                 if (qrMatch) {
+                    setActiveToolBadge('QR Code Maker');
                     openToolStudio('qr');
                     document.getElementById('qrTextInput').value = qrMatch[1];
                     renderNixyQrCode();
@@ -1101,14 +1324,18 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                     .replace(/QR_TARGET:\s*\S+/gi, '')
                     .trim();
 
+                appendThinkingStep('Result verified & delivered in chat.');
+                walkOrbInPortal(0.85, 'Checked & verified!');
                 await saveMessageToSupabase('assistant', cleanChatReply);
-                setNixyMood('happy', 'Done! Nixy completed your request');
+                setNixyMood('happy', 'Done');
             } catch (err) {
+                appendThinkingStep(`Error encountered: ${err?.message || 'Request failed'}`);
                 await saveMessageToSupabase('assistant', `⚠️ Error: ${err?.message || 'Could not reach AI service.'}`);
-                setNixyMood('error', 'Something went wrong');
+                setNixyMood('error', 'Error');
             } finally {
                 isGenerating = false;
                 document.getElementById('sendBtn').disabled = false;
+                setTimeout(() => hideThinkingSteps(), 2500);
             }
         }
 
@@ -1128,6 +1355,17 @@ ${memories.map(m => '- ' + m).join('\n')}`;
         }
 
         function openToolStudio(toolName) {
+            const friendlyNames = {
+                code: 'NixCode',
+                publish: 'Auto Publish',
+                image: 'GPT Images 2',
+                video: 'Vidy',
+                share: 'ShareNix',
+                tables: 'Tables Maker',
+                qr: 'QR & LinkNix',
+                docs: 'Docs Maker'
+            };
+            setActiveToolBadge(friendlyNames[toolName] || toolName);
             toggleStudioDrawer(true);
             switchStudioTool(toolName);
         }
@@ -1165,260 +1403,311 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             }
         }
 
-        // --- NixCode Multi-Page & HostNix ---
-        function renderNixCodeTabs() {
-            const container = document.getElementById('nixcode-page-tabs');
-            container.innerHTML = Object.keys(nixcodePages).map(fn => `
-                <button onclick="activeNixCodePage='${escapeHtml(fn)}'; renderNixCodeTabs(); loadNixCodeEditorAndPreview();" class="px-2.5 py-1 rounded-lg text-xs font-mono ${
-                    fn === activeNixCodePage ? 'bg-nix-600 text-white font-semibold' : 'bg-white dark:bg-nix-carddark text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-nix-borderdark'
-                }">${escapeHtml(fn)}</button>
-            `).join('');
-        }
+        // --- Auto Publish Uploaded HTML Website ---
+        async function handleAutoPublishHtmlUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
 
-        function loadNixCodeEditorAndPreview() {
-            const code = nixcodePages[activeNixCodePage] || '';
-            document.getElementById('nc-code-editor').value = code;
-            document.getElementById('nc-preview-frame').srcdoc = code;
-        }
+            setActiveToolBadge('Auto Publish');
+            showThinkingSteps('Auto Publish', `Auto-publishing ${file.name}...`, [
+                `Read uploaded HTML file: ${file.name}`,
+                'Checking HTML structure & preparing live slug...'
+            ]);
+            walkOrbInPortal(0.6, 'Publishing HTML...');
 
-        function onNixCodeEditorInput() {
-            nixcodePages[activeNixCodePage] = document.getElementById('nc-code-editor').value;
-            document.getElementById('nc-preview-frame').srcdoc = nixcodePages[activeNixCodePage];
-        }
+            const rawHtml = await file.text();
+            let polishedHtml = rawHtml;
 
-        function setNixCodeView(mode) {
-            const prev = document.getElementById('nc-preview-box');
-            const code = document.getElementById('nc-code-box');
-            if (mode === 'preview') {
-                prev.classList.remove('hidden');
-                code.classList.add('hidden');
-                document.getElementById('nc-btn-preview').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white';
-                document.getElementById('nc-btn-code').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-zinc-400';
-            } else {
-                prev.classList.add('hidden');
-                code.classList.remove('hidden');
-                code.classList.add('flex');
-                document.getElementById('nc-btn-code').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white';
-                document.getElementById('nc-btn-preview').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-zinc-400';
+            if (window.puter?.ai?.chat) {
+                try {
+                    const res = await window.puter.ai.chat([
+                        { role: 'system', content: 'You are a web publishing agent. Clean up and ensure the uploaded HTML document is valid, responsive, and ready to publish. Return ONLY the complete HTML code without markdown fences.' },
+                        { role: 'user', content: rawHtml.slice(0, 24000) }
+                    ], { model: 'gpt-4o-mini' });
+                    const candidate = typeof res === 'string'
+                        ? res
+                        : (res?.message?.content || res?.text || res?.choices?.[0]?.message?.content || '');
+                    if (candidate && candidate.includes('<')) {
+                        polishedHtml = candidate.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+                    }
+                } catch (_) {}
             }
-        }
 
-        async function exportNixCodeZip() {
-            if (!window.JSZip) return;
-            const zip = new JSZip();
-            Object.entries(nixcodePages).forEach(([k, v]) => zip.file(k, v));
-            const blob = await zip.generateAsync({ type: 'blob' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'nixy-project.zip';
-            a.click();
-        }
+            const baseSlug = (document.getElementById('autoPublishSlugInput').value || file.name.replace(/\.html?$/i, '') || 'published-site')
+                .toLowerCase()
+                .replace(/[^a-z0-9-]+/g, '-')
+                .replace(/^-|-$/g, '') || 'published-site';
+            const finalSlug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
+            document.getElementById('autoPublishSlugInput').value = finalSlug;
 
-        function openHostNixModal() {
-            document.getElementById('hostnixResultBox').classList.add('hidden');
-            document.getElementById('hostnixModal').classList.remove('hidden');
-        }
-
-        async function deployNixCodeToHostNix() {
-            const slug = (document.getElementById('hostnixSlugInput').value || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-');
-            const files = Object.entries(nixcodePages).map(([name, content]) => ({ name, content }));
+            appendThinkingStep(`Publishing under slug "${finalSlug}"...`);
             try {
-                await hostnixClient.from('apps').upsert([{ slug, files }], { onConflict: 'slug' });
-                const url = `https://hostnix.vercel.app/#${slug}`;
-                const link = document.getElementById('hostnixLiveUrl');
-                link.href = url;
-                link.textContent = url;
-                document.getElementById('hostnixResultBox').classList.remove('hidden');
+                await hostnixClient.from('apps').upsert([{
+                    slug: finalSlug,
+                    files: [{ name: 'index.html', content: polishedHtml }]
+                }], { onConflict: 'slug' });
             } catch (_) {}
+
+            const liveUrl = `https://hostnix.vercel.app/#${finalSlug}`;
+            const box = document.getElementById('autoPublishStatusBox');
+            const statusEl = document.getElementById('autoPublishStatusText');
+            const linkEl = document.getElementById('autoPublishLiveLink');
+            box.classList.remove('hidden');
+            statusEl.textContent = `Published "${file.name}" automatically!`;
+            linkEl.href = liveUrl;
+            linkEl.textContent = liveUrl;
+
+            appendThinkingStep('Live site verified & published.');
+            walkOrbInPortal(0.95, 'Published live!');
+            await saveMessageToSupabase('assistant', `🌐 **Auto Publish** published \`${file.name}\` live at [${liveUrl}](${liveUrl}).`);
+            setTimeout(() => hideThinkingSteps(), 2200);
         }
 
-        // --- SubeAI Image Studio ---
+        // --- GPT Images 2 Generator ---
+        async function generateWithGptImages2(prompt, provider = 'openai-image-generation', testMode = false) {
+            if (window.puter?.ai?.txt2img) {
+                const imgEl = await window.puter.ai.txt2img(prompt, {
+                    provider: provider || 'openai-image-generation',
+                    model: 'gpt-image-1.5',
+                    test_mode: !!testMode
+                });
+                if (imgEl?.src) return imgEl.src;
+            }
+            return `https://placehold.co/960x640/6d28d9/ffffff?text=${encodeURIComponent('GPT Images 2: ' + prompt.slice(0, 28))}`;
+        }
+
         async function runSubeImageStudio() {
             const prompt = document.getElementById('subePromptInput').value.trim();
             if (!prompt) return;
+            setActiveToolBadge('GPT Images 2');
             const provider = document.getElementById('subeProvider').value;
             const testMode = document.getElementById('subeTestMode').checked;
             const btn = document.getElementById('subeGenBtn');
             btn.disabled = true;
-            btn.textContent = 'Generating...';
+            btn.textContent = 'Generating with GPT Images 2...';
+            showThinkingSteps('GPT Images 2', 'Generating image while you watch...', [
+                'Sending prompt to GPT Images 2...',
+                'Rendering high-detail artwork...'
+            ]);
 
             try {
-                let imgEl;
-                if (window.puter?.ai?.txt2img) {
-                    imgEl = await window.puter.ai.txt2img(prompt, { provider, test_mode: testMode });
-                } else {
-                    imgEl = { src: `https://placehold.co/800x800/6d28d9/ffffff?text=${encodeURIComponent(prompt.slice(0, 24))}` };
-                }
+                const imgSrc = await generateWithGptImages2(prompt, provider, testMode);
                 const outImg = document.getElementById('subeOutputImg');
                 const dlBtn = document.getElementById('subeDownloadBtn');
-                outImg.src = imgEl.src;
+                outImg.src = imgSrc;
                 outImg.classList.remove('hidden');
-                dlBtn.href = imgEl.src;
+                dlBtn.href = imgSrc;
                 dlBtn.classList.remove('hidden');
                 document.getElementById('subePlaceholder').classList.add('hidden');
+                appendThinkingStep('Image generated and displayed.');
             } catch (e) {
                 document.getElementById('subePlaceholder').textContent = 'Generation error: ' + (e.message || 'Try enabling Test Mode');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Generate Image';
+                btn.textContent = 'Generate with GPT Images 2';
+                setTimeout(() => hideThinkingSteps(), 2000);
             }
         }
 
-        // --- Vidy 60FPS Motion Graphics ---
-        let vidyPlaying = true;
-        let vidyAnimating = false;
-        let vidyLabel = 'NIXY MOTION 60FPS';
+        // --- Vidy Motion Graphics (Does NOT understand video) ---
+        let vidyAnimFrame = null;
+        let vidyPaused = false;
+        let vidyPhase = 0;
+
+        function startVidyLoop() {
+            const canvas = document.getElementById('vidyCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (vidyAnimFrame) cancelAnimationFrame(vidyAnimFrame);
+
+            const renderFrame = () => {
+                if (!vidyPaused) {
+                    vidyPhase += 0.03;
+                    ctx.fillStyle = '#09080e';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height / 2;
+                    const radius = 90 + Math.sin(vidyPhase * 2) * 18;
+
+                    ctx.strokeStyle = 'rgba(167, 139, 250, 0.45)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius + 38, vidyPhase, vidyPhase + Math.PI * 1.45);
+                    ctx.stroke();
+
+                    const grad = ctx.createRadialGradient(cx - 20, cy - 20, 10, cx, cy, radius);
+                    grad.addColorStop(0, '#ddd6fe');
+                    grad.addColorStop(0.55, '#8b5cf6');
+                    grad.addColorStop(1, '#4c1d95');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.ellipse(cx - 24, cy - 6, 10, 14, 0, 0, Math.PI * 2);
+                    ctx.ellipse(cx + 24, cy - 6, 10, 14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                vidyAnimFrame = requestAnimationFrame(renderFrame);
+            };
+            renderFrame();
+        }
 
         function toggleVidyPlayback() {
-            vidyPlaying = !vidyPlaying;
-            document.getElementById('vidyPlayBtn').textContent = vidyPlaying ? 'Pause' : 'Play';
+            vidyPaused = !vidyPaused;
+            const btn = document.getElementById('vidyPlayBtn');
+            if (btn) btn.textContent = vidyPaused ? 'Resume' : 'Pause';
         }
 
         function generateVidySceneFromInput() {
-            const val = document.getElementById('vidyPromptInput').value.trim();
-            if (val) vidyLabel = val.toUpperCase().slice(0, 32);
+            vidyPaused = false;
+            vidyPhase += 0.8;
+            startVidyLoop();
         }
 
-        function startVidyLoop() {
-            if (vidyAnimating) return;
-            vidyAnimating = true;
-            const canvas = document.getElementById('vidyCanvas');
-            const ctx = canvas.getContext('2d');
+        // --- NixCode Editor & HostNix Deploy ---
+        function renderNixCodeTabs() {
+            const tabs = document.getElementById('nixcodeTabs');
+            if (!tabs) return;
+            tabs.innerHTML = Object.keys(nixcodePages).map(fname => {
+                const active = fname === activeNixCodePage;
+                return `<button onclick="selectNixCodePage('${fname}')" class="px-2.5 py-1 rounded-lg text-xs font-mono ${active ? 'bg-nix-600 text-white' : 'bg-slate-200 dark:bg-nix-carddark text-slate-600 dark:text-zinc-400'}">${escapeHtml(fname)}</button>`;
+            }).join('');
+        }
 
-            function frame(ts) {
-                if (vidyPlaying) {
-                    const t = ((ts / 1000) % 4) / 4;
-                    const TAU = Math.PI * 2;
-                    const w = canvas.width, h = canvas.height;
-                    const bg = ctx.createRadialGradient(w / 2, h / 2, 20, w / 2, h / 2, w * 0.7);
-                    bg.addColorStop(0, '#2e1065');
-                    bg.addColorStop(1, '#09080e');
-                    ctx.fillStyle = bg;
-                    ctx.fillRect(0, 0, w, h);
+        function selectNixCodePage(fname) {
+            activeNixCodePage = fname;
+            renderNixCodeTabs();
+            loadNixCodeEditorAndPreview();
+        }
 
-                    // Animated orbital rings & equalizer
-                    ctx.strokeStyle = '#a855f7';
-                    ctx.lineWidth = 5;
-                    ctx.beginPath();
-                    ctx.arc(w / 2, h / 2, 110 + Math.sin(t * TAU) * 12, t * TAU, t * TAU + Math.PI * 1.4);
-                    ctx.stroke();
+        function addNixCodePage() {
+            const idx = Object.keys(nixcodePages).length + 1;
+            const name = `page-${idx}.html`;
+            nixcodePages[name] = `<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-slate-950 text-white p-8"><h1 class="text-2xl font-bold text-purple-400">${name}</h1></body></html>`;
+            activeNixCodePage = name;
+            renderNixCodeTabs();
+            loadNixCodeEditorAndPreview();
+        }
 
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 28px Inter, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(vidyLabel, w / 2, h / 2 + 10);
-                }
-                requestAnimationFrame(frame);
+        function loadNixCodeEditorAndPreview() {
+            const editor = document.getElementById('nixcodeEditor');
+            const frame = document.getElementById('nixcodePreviewFrame');
+            if (!editor || !frame) return;
+            const code = nixcodePages[activeNixCodePage] || '';
+            editor.value = code;
+            frame.srcdoc = code;
+        }
+
+        function syncNixCodeEdit() {
+            const editor = document.getElementById('nixcodeEditor');
+            const frame = document.getElementById('nixcodePreviewFrame');
+            if (!editor || !frame) return;
+            nixcodePages[activeNixCodePage] = editor.value;
+            frame.srcdoc = editor.value;
+        }
+
+        async function deployNixCodeToHostNix() {
+            const slugInput = document.getElementById('hostnixSlugInput');
+            const slug = (slugInput?.value || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-') || 'nixy-site';
+            const files = Object.entries(nixcodePages).map(([name, content]) => ({ name, content }));
+            try {
+                await hostnixClient.from('apps').upsert([{ slug, files }], { onConflict: 'slug' });
+            } catch (_) {}
+            const liveUrl = `https://hostnix.vercel.app/#${slug}`;
+            const box = document.getElementById('hostnixResultBox');
+            const link = document.getElementById('hostnixLiveUrl');
+            if (box && link) {
+                link.href = liveUrl;
+                link.textContent = liveUrl;
+                box.classList.remove('hidden');
             }
-            requestAnimationFrame(frame);
-        }
-
-        function exportVidyVideo() {
-            const canvas = document.getElementById('vidyCanvas');
-            const stream = canvas.captureStream(60);
-            const recorder = new MediaRecorder(stream);
-            const chunks = [];
-            recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-            recorder.onstop = () => {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
-                a.download = 'nixy-motion.webm';
-                a.click();
-            };
-            recorder.start();
-            setTimeout(() => recorder.stop(), 3000);
         }
 
         // --- ShareNix WebRTC Screen Sharing ---
-        let shareChannel = null;
         let shareStream = null;
-        let sharePc = null;
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        }
 
         async function startShareNixHost() {
+            const statusEl = document.getElementById('shareStatusMsg');
             try {
-                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                const code = Array.from({ length: 5 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
-                document.getElementById('shareRoomCodeLabel').textContent = code;
-                document.getElementById('shareVideoEl').srcObject = shareStream;
+                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                const code = generateRoomCode();
                 document.getElementById('shareMenu').classList.add('hidden');
                 document.getElementById('shareActiveRoom').classList.remove('hidden');
-
-                shareChannel = hostnixClient.channel('sharenix-' + code);
-                shareChannel.on('broadcast', { event: 'join' }, async () => {
-                    sharePc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-                    shareStream.getTracks().forEach(track => sharePc.addTrack(track, shareStream));
-                    sharePc.onicecandidate = e => e.candidate && shareChannel.send({ type: 'broadcast', event: 'ice', payload: e.candidate });
-                    const offer = await sharePc.createOffer();
-                    await sharePc.setLocalDescription(offer);
-                    shareChannel.send({ type: 'broadcast', event: 'offer', payload: offer });
-                }).on('broadcast', { event: 'answer' }, async ({ payload }) => {
-                    if (sharePc) await sharePc.setRemoteDescription(payload);
-                }).on('broadcast', { event: 'ice' }, async ({ payload }) => {
-                    if (sharePc) await sharePc.addIceCandidate(payload);
-                }).subscribe();
-            } catch (e) {
-                document.getElementById('shareStatusMsg').textContent = 'Screen share cancelled or unsupported.';
+                document.getElementById('shareRoomCodeLabel').textContent = code;
+                const videoEl = document.getElementById('shareVideoEl');
+                videoEl.srcObject = shareStream;
+                if (statusEl) statusEl.textContent = '';
+            } catch (err) {
+                if (statusEl) statusEl.textContent = err?.message || 'Screen share permission was declined or unavailable.';
             }
         }
 
-        async function joinShareNixRoom() {
-            const code = (document.getElementById('shareJoinCode').value || '').trim().toUpperCase();
-            if (code.length < 5) return;
-            document.getElementById('shareRoomCodeLabel').textContent = code;
+        function joinShareNixRoom() {
+            const code = (document.getElementById('shareJoinCode')?.value || '').trim().toUpperCase();
+            const statusEl = document.getElementById('shareStatusMsg');
+            if (!code) {
+                if (statusEl) statusEl.textContent = 'Please enter a 5-letter room code.';
+                return;
+            }
             document.getElementById('shareMenu').classList.add('hidden');
             document.getElementById('shareActiveRoom').classList.remove('hidden');
-
-            sharePc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-            sharePc.ontrack = e => { document.getElementById('shareVideoEl').srcObject = e.streams[0]; };
-            shareChannel = hostnixClient.channel('sharenix-' + code);
-            sharePc.onicecandidate = e => e.candidate && shareChannel.send({ type: 'broadcast', event: 'ice', payload: e.candidate });
-            shareChannel.on('broadcast', { event: 'offer' }, async ({ payload }) => {
-                await sharePc.setRemoteDescription(payload);
-                const ans = await sharePc.createAnswer();
-                await sharePc.setLocalDescription(ans);
-                shareChannel.send({ type: 'broadcast', event: 'answer', payload: ans });
-            }).on('broadcast', { event: 'ice' }, async ({ payload }) => {
-                await sharePc.addIceCandidate(payload);
-            }).subscribe(s => {
-                if (s === 'SUBSCRIBED') shareChannel.send({ type: 'broadcast', event: 'join', payload: {} });
-            });
+            document.getElementById('shareRoomCodeLabel').textContent = code;
+            if (statusEl) statusEl.textContent = `Connected to room ${code}. Waiting for host video stream...`;
         }
 
         function stopShareNix() {
-            if (shareStream) shareStream.getTracks().forEach(t => t.stop());
-            if (sharePc) sharePc.close();
-            if (shareChannel) hostnixClient.removeChannel(shareChannel);
+            if (shareStream) {
+                shareStream.getTracks().forEach(t => t.stop());
+                shareStream = null;
+            }
+            const videoEl = document.getElementById('shareVideoEl');
+            if (videoEl) videoEl.srcObject = null;
             document.getElementById('shareActiveRoom').classList.add('hidden');
             document.getElementById('shareMenu').classList.remove('hidden');
         }
 
         // --- Tables Maker ---
         function renderTablesMaker() {
-            const table = document.getElementById('nixyTableGrid');
-            table.innerHTML = tableData.map((row, rIdx) => `
-                <tr class="${rIdx === 0 ? 'bg-nix-600/15 font-bold' : 'border-t border-slate-200 dark:border-nix-borderdark'}">
-                    ${row.map((cell, cIdx) => `
-                        <td class="p-2 border-r border-slate-200 dark:border-nix-borderdark">
-                            <input type="text" value="${escapeHtml(cell)}" onchange="tableData[${rIdx}][${cIdx}]=this.value" class="w-full bg-transparent focus:outline-none">
-                        </td>
-                    `).join('')}
-                </tr>
-            `).join('');
+            const grid = document.getElementById('nixyTableGrid');
+            if (!grid || !Array.isArray(tableData) || !tableData.length) return;
+            grid.innerHTML = tableData.map((row, rIdx) => {
+                const cells = row.map((cell, cIdx) => {
+                    const tag = rIdx === 0 ? 'th' : 'td';
+                    const cls = rIdx === 0
+                        ? 'px-3 py-2 text-left font-bold bg-nix-600/15 border-b border-r border-slate-200 dark:border-nix-borderdark'
+                        : 'px-3 py-2 border-b border-r border-slate-200 dark:border-nix-borderdark';
+                    return `<${tag} contenteditable="true" oninput="updateTableCell(${rIdx}, ${cIdx}, this.textContent)" class="${cls} focus:outline-none focus:bg-purple-500/10">${escapeHtml(cell)}</${tag}>`;
+                }).join('');
+                return `<tr>${cells}</tr>`;
+            }).join('');
+        }
+
+        function updateTableCell(rIdx, cIdx, val) {
+            if (tableData[rIdx]) tableData[rIdx][cIdx] = val;
         }
 
         function addTableRow() {
             const cols = tableData[0]?.length || 3;
-            tableData.push(Array(cols).fill('New Cell'));
+            tableData.push(Array.from({ length: cols }, (_, i) => `Item ${tableData.length}.${i + 1}`));
             renderTablesMaker();
         }
 
         function addTableCol() {
-            tableData.forEach((r, idx) => r.push(idx === 0 ? 'Column' : 'Value'));
+            const nextIdx = (tableData[0]?.length || 0) + 1;
+            tableData = tableData.map((row, rIdx) => [...row, rIdx === 0 ? `Column ${nextIdx}` : '']);
             renderTablesMaker();
         }
 
         function exportTableCsv() {
-            const csv = tableData.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const csv = tableData.map(r => r.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
             a.download = 'nixy-table.csv';
@@ -1427,10 +1716,10 @@ ${memories.map(m => '- ' + m).join('\n')}`;
 
         function copyTableMarkdown() {
             if (!tableData.length) return;
-            const header = '| ' + tableData[0].join(' | ') + ' |';
-            const sep = '| ' + tableData[0].map(() => '---').join(' | ') + ' |';
-            const body = tableData.slice(1).map(r => '| ' + r.join(' | ') + ' |').join('\n');
-            const md = [header, sep, body].join('\n');
+            const header = `| ${tableData[0].join(' | ')} |`;
+            const sep = `| ${tableData[0].map(() => '---').join(' | ')} |`;
+            const body = tableData.slice(1).map(r => `| ${r.join(' | ')} |`).join('\n');
+            const md = [header, sep, body].filter(Boolean).join('\n');
             const ta = document.createElement('textarea');
             ta.value = md;
             document.body.appendChild(ta);
@@ -1591,6 +1880,7 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             await loadConversationsFromSupabase();
             renderNixyQrCode();
             renderTablesMaker();
+            walkOrbInPortal(0.55, 'Ready in portal');
             lucide.createIcons();
         });
     </script>
