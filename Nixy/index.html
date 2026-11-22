@@ -529,7 +529,7 @@
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
                             <textarea id="nixcodeEditor" oninput="syncNixCodeEdit()" class="w-full h-full rounded-xl p-3 bg-slate-950 text-purple-100 border border-slate-800 font-mono text-xs resize-none focus:outline-none focus:border-nix-500"></textarea>
-                            <iframe id="nixcodePreviewFrame" sandbox="allow-scripts allow-same-origin" class="w-full h-full rounded-xl bg-white border border-slate-200 dark:border-nix-borderdark"></iframe>
+                            <iframe id="nixcodePreviewFrame" sandbox="allow-scripts" class="w-full h-full rounded-xl bg-white border border-slate-200 dark:border-nix-borderdark"></iframe>
                         </div>
                     </div>
 
@@ -1046,9 +1046,14 @@
         // 3. WALKING PURPLE BALL, MOODS, SLEEP & AGENT ROUTER
         // =========================================================================
         function resetSleepInactivityTimer() {
-            clearTimeout(sleepInactivityTimer);
+            if (typeof sleepInactivityTimer === 'undefined') {
+                window.sleepInactivityTimer = null;
+            }
+            if (window.sleepInactivityTimer) {
+                clearTimeout(window.sleepInactivityTimer);
+            }
             if (isNixySleeping) wakeNixyFromSleep();
-            sleepInactivityTimer = setTimeout(() => putNixyToSleep(), 60000);
+            window.sleepInactivityTimer = setTimeout(() => putNixyToSleep(), 60000);
         }
 
         function putNixyToSleep() {
