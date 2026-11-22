@@ -73,6 +73,15 @@
                             '35%': { transform: 'scale(1.18, 0.86)' },
                             '65%': { transform: 'scale(0.92, 1.1)' },
                             '100%': { transform: 'scale(1)' },
+                        },
+                        nixySleepFloat: {
+                            '0%, 100%': { transform: 'translateY(0px) scale(0.96)' },
+                            '50%': { transform: 'translateY(4px) scale(0.94)' },
+                        },
+                        zzzRise: {
+                            '0%': { opacity: '0', transform: 'translate(0, 4px) scale(0.75)' },
+                            '35%': { opacity: '1' },
+                            '100%': { opacity: '0', transform: 'translate(10px, -22px) scale(1.15)' },
                         }
                     }
                 }
@@ -163,6 +172,19 @@
         }
         .nixy-orb.touched {
             animation: nixyTouchBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        .nixy-orb.mood-sleeping .nixy-eye {
+            height: 2px !important;
+            border-radius: 9999px !important;
+            background-color: #c4b5fd;
+            box-shadow: none;
+            transform: scaleX(1.15);
+        }
+        .nixy-orb.mood-sleeping {
+            animation: nixySleepFloat 3.4s ease-in-out infinite !important;
+        }
+        .nixy-zzz {
+            animation: zzzRise 2.2s ease-out infinite;
         }
         .nixy-portal-track {
             position: relative;
@@ -301,45 +323,6 @@
             <!-- Conversations History (Supabase `conversations` table + local cache) -->
             <div class="flex-1 overflow-y-auto p-2 space-y-1" id="conversationsList"></div>
 
-            <!-- Unified Nixy Super-Tools Quick Switcher -->
-            <div class="p-2.5 border-t border-slate-200 dark:border-nix-borderdark/70 bg-slate-50/70 dark:bg-nix-bgdark/40 space-y-1.5">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5">Studio Tools</div>
-                <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-                    <button onclick="openToolStudio('code')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="code-2" class="w-3.5 h-3.5 text-nix-500 shrink-0"></i>
-                        <span class="truncate font-medium">NixCode Web</span>
-                    </button>
-                    <button onclick="openToolStudio('publish')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-emerald-500 transition text-left">
-                        <i data-lucide="globe" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-                        <span class="truncate font-medium">Auto Publish</span>
-                    </button>
-                    <button onclick="openToolStudio('image')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="image" class="w-3.5 h-3.5 text-purple-400 shrink-0"></i>
-                        <span class="truncate font-medium">GPT Images 2</span>
-                    </button>
-                    <button onclick="openToolStudio('video')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="film" class="w-3.5 h-3.5 text-fuchsia-400 shrink-0"></i>
-                        <span class="truncate font-medium">Vidy Motion</span>
-                    </button>
-                    <button onclick="openToolStudio('share')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-sky-400 shrink-0"></i>
-                        <span class="truncate font-medium">ShareNix</span>
-                    </button>
-                    <button onclick="openToolStudio('tables')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="table" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-                        <span class="truncate font-medium">Tables Maker</span>
-                    </button>
-                    <button onclick="openToolStudio('qr')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
-                        <span class="truncate font-medium">QR & LinkNix</span>
-                    </button>
-                    <button onclick="openToolStudio('docs')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
-                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-nix-500 shrink-0"></i>
-                        <span class="truncate font-medium">Docs Maker</span>
-                    </button>
-                </div>
-            </div>
-
             <!-- User Account & Footer Controls -->
             <div class="p-3 border-t border-slate-200 dark:border-nix-borderdark/70 bg-slate-50 dark:bg-nix-bgdark/60 space-y-2">
                 <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
@@ -393,6 +376,20 @@
                         <i data-lucide="database" class="w-3 h-3"></i>
                         <span>Supabase Synced</span>
                     </div>
+
+                    <!-- Always-Visible Mini Nixy Orb Strip -->
+                    <div id="alwaysVisibleOrbWidget" onclick="wakeAndPokeNixy()" title="Nixy is always with you — click to interact!" class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-950/30 border border-purple-500/35 cursor-pointer hover:border-purple-400 transition">
+                        <div class="relative">
+                            <div id="persistentNixyOrb" class="w-6 h-6 rounded-full nixy-orb flex items-center justify-center border border-purple-300/50">
+                                <div class="flex gap-0.5">
+                                    <span class="nixy-eye w-1 h-1 block"></span>
+                                    <span class="nixy-eye w-1 h-1 block"></span>
+                                </div>
+                            </div>
+                            <span id="persistentZzzBadge" class="hidden nixy-zzz absolute -top-3.5 -right-2 text-[9px] font-extrabold text-purple-300 pointer-events-none select-none">zzzzz</span>
+                        </div>
+                        <span id="persistentOrbLabel" class="text-[11px] font-semibold text-purple-200">Nixy</span>
+                    </div>
                 </div>
 
                 <!-- Right Tool Drawer Toggle & Quick Studio Access -->
@@ -430,13 +427,13 @@
                                     title="Touch or click me!"
                                     style="left: 16px;"
                                     class="cursor-pointer w-20 h-20 sm:w-24 sm:h-24 rounded-full nixy-orb animate-pulse-glow flex items-center justify-center border-2 border-purple-300/50 shadow-2xl absolute transition-[left] duration-500 ease-in-out z-10">
-                                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-2.5 rounded-full border-2 border-dashed border-purple-400/80 animate-orbit-spin"></div>
-                                    <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-4 rounded-full border border-indigo-400/50 animate-orbit-reverse"></div>
-                                    <div class="absolute top-2.5 left-3.5 w-1/3 h-1/5 rounded-full bg-white/35 blur-[1px] -rotate-12"></div>
-                                    <div id="nixyEyesContainer" class="flex items-center justify-center gap-3">
+                                    <div class="flex items-center justify-center gap-3">
                                         <span class="nixy-eye w-4 h-4 sm:w-5 sm:h-5 block animate-blink"></span>
                                         <span class="nixy-eye w-4 h-4 sm:w-5 sm:h-5 block animate-blink"></span>
                                     </div>
+                                </div>
+                                <div id="heroZzzOverlay" class="hidden absolute top-3 right-6 pointer-events-none select-none flex flex-col items-end">
+                                    <span class="nixy-zzz text-sm font-extrabold tracking-widest text-purple-300 drop-shadow">zzzzz</span>
                                 </div>
                             </div>
 
@@ -545,6 +542,9 @@
                             <button onclick="switchStudioTool('tables')" id="stab-tables" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Tables</button>
                             <button onclick="switchStudioTool('qr')" id="stab-qr" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">QR & LinkNix</button>
                             <button onclick="switchStudioTool('docs')" id="stab-docs" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Docs</button>
+                            <button onclick="switchStudioTool('palette')" id="stab-palette" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Palette</button>
+                            <button onclick="switchStudioTool('formatter')" id="stab-formatter" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">JSON & Regex</button>
+                            <button onclick="switchStudioTool('notepad')" id="stab-notepad" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Notes</button>
                         </div>
                         <button onclick="toggleStudioDrawer(false)" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 shrink-0" title="Close Studio">
                             <i data-lucide="x" class="w-4 h-4"></i>
@@ -601,7 +601,7 @@
                         <div class="grid grid-cols-2 gap-2.5">
                             <select id="subeProvider" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
                                 <option value="openai-image-generation">GPT Images 2 (OpenAI)</option>
-                                <option value="gpt-image-1.5">GPT Image 1.5</option>
+                                <option value="gpt-image-2">GPT Image 2 Standard</option>
                             </select>
                             <label class="flex items-center gap-2 px-3 rounded-xl bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs cursor-pointer">
                                 <input type="checkbox" id="subeTestMode" class="accent-nix-600">
@@ -614,24 +614,24 @@
                             <img id="subeOutputImg" class="hidden max-h-80 rounded-xl shadow-xl object-contain" alt="Generated GPT Images 2 Artwork">
                             <a id="subeDownloadBtn" download="gpt-images-2.png" class="hidden mt-3 px-4 py-1.5 rounded-lg bg-nix-600 text-white text-xs font-semibold">Download PNG</a>
                         </div>
-                    </div>
-
-                    <!-- TOOL 3: VIDY MOTION GRAPHICS STUDIO (DOES NOT UNDERSTAND VIDEO) -->
+                    <!-- TOOL 3: VIDY MOTION GRAPHICS & VIDEO GENERATOR (DOES NOT UNDERSTAND VIDEO) -->
                     <div id="tool-video" class="studio-pane hidden flex-1 flex flex-col overflow-hidden">
                         <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between gap-2 bg-slate-50 dark:bg-nix-carddark">
-                            <span class="text-xs font-bold flex items-center gap-1.5"><i data-lucide="film" class="w-4 h-4 text-fuchsia-400"></i> Vidy Motion Studio</span>
+                            <span class="text-xs font-bold flex items-center gap-1.5"><i data-lucide="film" class="w-4 h-4 text-fuchsia-400"></i> Vidy Video & Motion Studio</span>
                             <div class="flex items-center gap-2">
                                 <button onclick="toggleVidyPlayback()" id="vidyPlayBtn" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">Pause</button>
+                                <button onclick="exportVidyVideoClip()" id="vidyExportBtn" class="px-2.5 py-1 rounded-lg bg-fuchsia-600 text-white text-xs font-semibold">Export Video</button>
                             </div>
                         </div>
                         <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark space-y-2">
                             <div class="px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs">
-                                Note: Vidy does not understand video files or video analysis—it only animates motion graphics scenes.
+                                Note: Vidy generates animated videos & motion graphics, but does not understand or analyze video files.
                             </div>
                             <div class="flex gap-2">
-                                <input id="vidyPromptInput" type="text" placeholder="Describe a motion scene (e.g., Purple orbital ring & pulse)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
-                                <button onclick="generateVidySceneFromInput()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Animate</button>
+                                <input id="vidyPromptInput" type="text" placeholder="Describe a video scene to generate (e.g., Neon purple waves)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
+                                <button onclick="generateVidySceneFromInput()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Generate Video</button>
                             </div>
+                            <div id="vidyVideoStatus" class="hidden text-xs text-emerald-300 font-medium"></div>
                         </div>
                         <div class="flex-1 bg-black flex items-center justify-center p-4">
                             <canvas id="vidyCanvas" width="960" height="540" class="max-w-full max-h-full rounded-xl border border-nix-500/30 shadow-2xl"></canvas>
@@ -724,6 +724,46 @@
                             <p>Ask Nixy in the chat to draft reports, proposals, or articles—and they will automatically populate right here for editing and export.</p>
                         </div>
                     </div>
+
+                    <!-- TOOL 8: COLOR PALETTE MAKER -->
+                    <div id="tool-palette" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4 text-purple-400"></i> Nixy Color Palette Maker</h3>
+                            <button onclick="generateColorPalette()" class="px-3 py-1.5 rounded-lg bg-nix-600 text-white text-xs font-semibold">New Palette</button>
+                        </div>
+                        <div id="paletteSwatchesGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5"></div>
+                    </div>
+
+                    <!-- TOOL 9: JSON FORMATTER & REGEX TESTER -->
+                    <div id="tool-formatter" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-4">
+                        <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="braces" class="w-4 h-4 text-sky-400"></i> JSON Formatter & Regex Tester</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold">JSON Payload</span>
+                                <button onclick="formatJsonTool()" class="px-2.5 py-1 rounded-lg bg-nix-600 text-white text-xs font-semibold">Format & Validate</button>
+                            </div>
+                            <textarea id="jsonFormatterInput" rows="5" class="w-full rounded-xl p-3 bg-slate-950 text-emerald-200 border border-slate-800 font-mono text-xs">{"tool":"Nixy","gptImages2":true,"vidyVideo":true}</textarea>
+                            <div id="jsonFormatterStatus" class="text-xs text-emerald-400"></div>
+                        </div>
+                        <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-nix-borderdark">
+                            <span class="text-xs font-semibold">Regex Tester</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <input id="regexPatternInput" type="text" value="[a-z0-9_-]+" placeholder="Regex pattern" class="rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark font-mono text-xs">
+                                <input id="regexSampleInput" type="text" value="nixy-agent-2026" placeholder="Test string" oninput="runRegexTester()" class="rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark font-mono text-xs">
+                            </div>
+                            <button onclick="runRegexTester()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-semibold">Test Match</button>
+                            <div id="regexMatchResult" class="text-xs font-mono text-purple-300"></div>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 10: QUICK SCRATCHPAD NOTES -->
+                    <div id="tool-notepad" class="studio-pane hidden flex-1 flex flex-col overflow-hidden p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="notebook-pen" class="w-4 h-4 text-amber-400"></i> Nixy Scratchpad Notes</h3>
+                            <button onclick="downloadScratchpadNote()" class="px-3 py-1 rounded-lg bg-nix-600 text-white text-xs font-semibold">Download .txt</button>
+                        </div>
+                        <textarea id="scratchpadTextarea" placeholder="Jot down prompts, ideas, or findings..." class="flex-1 w-full rounded-2xl p-4 bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs leading-relaxed resize-none focus:outline-none"></textarea>
+                    </div>
                 </section>
             </div>
         </main>
@@ -777,10 +817,14 @@
         let currentUser = null;
         let activeConversationId = null;
         let conversations = [];
+        let allPastMessages = [];
         let messages = [];
         let memories = ['Prefer clean, modern purple and dark aesthetics with responsive layouts.'];
         let attachedFileContext = null;
         let isGenerating = false;
+        let isNixySleeping = false;
+        let sleepInactivityTimer = null;
+        let activeSpeechUtterance = null;
 
         // Multi-tool workspace state
         let nixcodePages = {
@@ -861,6 +905,7 @@
                 if (!error && Array.isArray(data)) {
                     conversations = data;
                     renderConversationsList();
+                    await loadAllUserMessagesHistory();
                     if (conversations.length > 0 && !activeConversationId) {
                         await selectConversation(conversations[0].id);
                     }
@@ -868,6 +913,20 @@
             } catch (e) {
                 console.warn('Supabase conversations load fallback:', e);
             }
+        }
+
+        async function loadAllUserMessagesHistory() {
+            if (!currentUser) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('messages')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: true });
+                if (!error && Array.isArray(data)) {
+                    allPastMessages = data;
+                }
+            } catch (_) {}
         }
 
         async function createNewConversation(initialTitle = 'New Conversation') {
@@ -927,63 +986,11 @@
                 created_at: new Date().toISOString()
             };
             messages.push(msgObj);
+            allPastMessages.push(msgObj);
             renderMessages();
 
             if (currentUser) {
-                try {
-                    await supabaseClient.from('messages').insert([msgObj]);
-                    const activeConv = conversations.find(c => c.id === activeConversationId);
-                    if (activeConv && activeConv.title === 'New Conversation' && role === 'user') {
-                        const updatedTitle = content.slice(0, 42);
-                        activeConv.title = updatedTitle;
-                        renderConversationsList();
-                        await supabaseClient
-                            .from('conversations')
-                            .update({ title: updatedTitle, updated_at: new Date().toISOString() })
-                            .eq('id', activeConversationId);
-                    } else {
-                        await supabaseClient
-                            .from('conversations')
-                            .update({ updated_at: new Date().toISOString() })
-                            .eq('id', activeConversationId);
-                    }
-                } catch (_) {}
-            }
-        }
-
-        function renderConversationsList() {
-            const list = document.getElementById('conversationsList');
-            const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
-            const filtered = conversations.filter(c => !query || (c.title || '').toLowerCase().includes(query));
-
-            if (!filtered.length) {
-                list.innerHTML = '<div class="px-3 py-6 text-center text-xs text-slate-400 dark:text-zinc-500">No conversations yet. Ask Nixy anything!</div>';
-                return;
-            }
-            list.innerHTML = filtered.map(c => {
-                const active = c.id === activeConversationId;
-                return `
-                    <button onclick="selectConversation('${c.id}')" class="w-full text-left px-3 py-2 rounded-xl text-xs truncate transition ${
-                        active
-                            ? 'bg-nix-600/15 dark:bg-nix-600/25 text-nix-700 dark:text-nix-200 font-semibold border border-nix-500/30'
-                            : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60'
-                    }">
-                        ${escapeHtml(c.title || 'New Conversation')}
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function renderMessages() {
-            const hero = document.getElementById('emptyHero');
-            const list = document.getElementById('messagesList');
-            if (!messages.length) {
-                hero.classList.remove('hidden');
-                list.innerHTML = '';
-                return;
-            }
-            hero.classList.add('hidden');
-            list.innerHTML = messages.map(m => {
+            list.innerHTML = messages.map((m, idx) => {
                 if (m.role === 'user') {
                     return `
                         <div class="flex justify-end">
@@ -1000,7 +1007,19 @@
                                 <span class="nixy-eye w-1.5 h-1.5 block"></span>
                             </div>
                         </div>
-                        <div class="flex-1 bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-xs prose prose-sm dark:prose-invert max-w-none">${html}</div>
+                        <div class="flex-1 bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-xs space-y-2.5">
+                            <div class="prose prose-sm dark:prose-invert max-w-none">${html}</div>
+                            <div class="flex items-center gap-2 pt-1.5 border-t border-slate-200/70 dark:border-nix-borderdark/60 text-[11px]">
+                                <button onclick="listenToMessageByIndex(${idx})" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-nix-600/15 hover:bg-nix-600/25 text-nix-600 dark:text-nix-300 font-semibold transition">
+                                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                                    <span>Listen</span>
+                                </button>
+                                <button onclick="copyMessageByIndex(${idx}, this)" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-nix-bgdark hover:bg-slate-200 dark:hover:bg-nix-borderdark/60 text-slate-700 dark:text-zinc-300 font-semibold transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -1008,19 +1027,129 @@
             list.querySelectorAll('pre code').forEach(el => {
                 if (window.hljs) window.hljs.highlightElement(el);
             });
+            if (window.lucide) window.lucide.createIcons();
             const container = document.getElementById('messagesContainer');
             container.scrollTop = container.scrollHeight;
+        }
+
+        function listenToMessageByIndex(idx) {
+            const msg = messages[idx];
+            if (!msg || !('speechSynthesis' in window)) return;
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                if (activeSpeechUtterance === msg.content) {
+                    activeSpeechUtterance = null;
+                    setNixyMood('idle', 'Ready');
+                    return;
+                }
+            }
+            const plainText = String(msg.content || '')
+                .replace(/```[\s\S]*?```/g, ' Code block omitted. ')
+                .replace(/[#*`_\[\]()>!-]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            if (!plainText) return;
+
+            const utter = new SpeechSynthesisUtterance(plainText);
+            activeSpeechUtterance = msg.content;
+            setNixyMood('listening', 'Speaking response...');
+            utter.onend = () => {
+                activeSpeechUtterance = null;
+                setNixyMood('idle', 'Ready');
+            };
+            utter.onerror = () => {
+                activeSpeechUtterance = null;
+                setNixyMood('idle', 'Ready');
+            };
+            window.speechSynthesis.speak(utter);
+        }
+
+        function copyMessageByIndex(idx, btnEl) {
+            const msg = messages[idx];
+            if (!msg) return;
+            const rawText = String(msg.content || '');
+            const ta = document.createElement('textarea');
+            ta.value = rawText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+
+            if (btnEl) {
+                const orig = btnEl.innerHTML;
+                btnEl.innerHTML = '<span>Copied!</span>';
+                setTimeout(() => {
+                    btnEl.innerHTML = orig;
+                    if (window.lucide) window.lucide.createIcons();
+                }, 1400);
+            }
         }
 
         // =========================================================================
         // 3. UNIFIED AI AGENT ROUTER (CHAT + AUTOMATICALLY TRIGGERS ALL TOOLS)
         // =========================================================================
-        function setNixyMood(mood, statusLabel) {
-            const orb = document.getElementById('heroNixyOrb');
-            if (orb) {
-                orb.classList.remove('mood-thinking', 'mood-coding', 'mood-happy', 'mood-error', 'mood-listening');
-                if (mood && mood !== 'idle') orb.classList.add(`mood-${mood}`);
+        function resetSleepInactivityTimer() {
+            clearTimeout(sleepInactivityTimer);
+            if (isNixySleeping) {
+                wakeNixyFromSleep();
             }
+            sleepInactivityTimer = setTimeout(() => {
+                putNixyToSleep();
+            }, 60000);
+        }
+
+        function putNixyToSleep() {
+            if (isGenerating) {
+                resetSleepInactivityTimer();
+                return;
+            }
+            isNixySleeping = true;
+            ['heroNixyOrb', 'persistentNixyOrb'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('mood-thinking', 'mood-coding', 'mood-happy', 'mood-error', 'mood-listening');
+                    el.classList.add('mood-sleeping');
+                }
+            });
+            const heroZzz = document.getElementById('heroZzzOverlay');
+            const badgeZzz = document.getElementById('persistentZzzBadge');
+            const bubble = document.getElementById('heroNixyBubble');
+            if (heroZzz) heroZzz.classList.remove('hidden');
+            if (badgeZzz) badgeZzz.classList.remove('hidden');
+            if (bubble) bubble.textContent = 'zzzzz... Nixy is sleeping after 1 minute of quiet. Touch or type to wake me!';
+            document.getElementById('nixyStatusText').textContent = 'Sleeping (zzzzz)';
+            document.getElementById('persistentOrbLabel').textContent = 'zzzzz';
+        }
+
+        function wakeNixyFromSleep() {
+            isNixySleeping = false;
+            ['heroNixyOrb', 'persistentNixyOrb'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('mood-sleeping');
+            });
+            const heroZzz = document.getElementById('heroZzzOverlay');
+            const badgeZzz = document.getElementById('persistentZzzBadge');
+            if (heroZzz) heroZzz.classList.add('hidden');
+            if (badgeZzz) badgeZzz.classList.add('hidden');
+            document.getElementById('nixyStatusText').textContent = 'Ready';
+            document.getElementById('persistentOrbLabel').textContent = 'Nixy';
+        }
+
+        function wakeAndPokeNixy() {
+            wakeNixyFromSleep();
+            resetSleepInactivityTimer();
+            triggerOrbTouchAnimation('click');
+        }
+
+        function setNixyMood(mood, statusLabel) {
+            if (mood !== 'sleeping') wakeNixyFromSleep();
+            ['heroNixyOrb', 'persistentNixyOrb'].forEach(id => {
+                const orb = document.getElementById(id);
+                if (orb) {
+                    orb.classList.remove('mood-thinking', 'mood-coding', 'mood-happy', 'mood-error', 'mood-listening', 'mood-sleeping');
+                    if (mood && mood !== 'idle') orb.classList.add(`mood-${mood}`);
+                }
+            });
             if (statusLabel) {
                 document.getElementById('nixyStatusText').textContent = statusLabel;
             }
@@ -1131,6 +1260,7 @@
         }
 
         function handleComposerInput(el) {
+            resetSleepInactivityTimer();
             el.style.height = 'auto';
             el.style.height = Math.min(el.scrollHeight, 144) + 'px';
 
@@ -1149,7 +1279,29 @@
             }
         }
 
+        function buildCrossChatMemoryContext(currentPrompt) {
+            const olderMessages = allPastMessages.filter(m => m.conversation_id !== activeConversationId);
+            const terms = String(currentPrompt || '')
+                .toLowerCase()
+                .split(/\W+/)
+                .filter(w => w.length > 3);
+
+            const matchedOld = olderMessages.filter(m => {
+                const txt = String(m.content || '').toLowerCase();
+                return terms.some(t => txt.includes(t));
+            });
+
+            const selectedPast = (matchedOld.length ? matchedOld : olderMessages).slice(-8);
+            const currentHistory = messages.slice(-12);
+
+            return {
+                pastChatsSummary: selectedPast.map(m => `[Past Chat - ${m.role}]: ${String(m.content || '').slice(0, 220)}`).join('\n'),
+                currentChatHistory: currentHistory.map(m => ({ role: m.role, content: m.content }))
+            };
+        }
+
         async function sendMessage() {
+            resetSleepInactivityTimer();
             if (isGenerating) return;
             const input = document.getElementById('userInput');
             const rawText = input.value.trim();
@@ -1181,13 +1333,43 @@
                         'Checked Vidy studio capabilities',
                         'Result: Vidy does not understand video files'
                     ]);
-                    await saveMessageToSupabase('assistant', 'I do not understand video files—Vidy only animates motion graphics scenes, not video understanding.');
+                    await saveMessageToSupabase('assistant', 'I do not understand video files—Vidy only generates and animates motion graphics videos, not video understanding.');
                     setNixyMood('error', 'Video not supported');
                     return;
                 }
 
+                // Detect if user asks to generate/make/create a video -> Vidy tool
+                if (/\b(generate|create|make|render|animate)\b.*\b(video|animation|clip|motion)\b/i.test(lower) && !/\b(image|picture|photo|logo|qr)\b/i.test(lower)) {
+                    setActiveToolBadge('Vidy');
+                    showThinkingSteps('Vidy', 'Generating video scene in Vidy...', [
+                        'Parsed motion & video scene request',
+                        'Started Vidy 60fps canvas animation generator'
+                    ]);
+                    openToolStudio('video');
+                    document.getElementById('vidyPromptInput').value = rawText;
+                    generateVidySceneFromInput();
+                    await saveMessageToSupabase('assistant', `🎬 Generated your motion video scene in **Vidy** for: *"${escapeHtml(rawText)}"*. You can also click **Export Video** in Vidy to download a recorded clip.`);
+                    setNixyMood('happy', 'Vidy video ready');
+                    return;
+                }
+
+                // Detect if user asks to share screen -> Open ShareNix and start sharing automatically
+                if (/\b(share\s*(my\s*)?screen|screen\s*share|sharenix)\b/i.test(lower)) {
+                    setActiveToolBadge('ShareNix');
+                    showThinkingSteps('ShareNix', 'Opening ShareNix & starting screen share...', [
+                        'Opened ShareNix studio panel',
+                        'Requesting display capture permission...'
+                    ]);
+                    openToolStudio('share');
+                    await startShareNixHost();
+                    appendThinkingStep('Checked ShareNix screen share status.');
+                    await saveMessageToSupabase('assistant', `🖥️ Opened **ShareNix** and initiated screen sharing.`);
+                    setNixyMood('happy', 'ShareNix active');
+                    return;
+                }
+
                 // 1. Direct Image Generation Trigger (GPT Images 2) -> shows generation progress, displays image in chat, hides tool canvas
-                if (/\b(generate|draw|create|make)\b.*\b(image|picture|photo|illustration|artwork|logo|gpt\s*images?\s*2)\b/i.test(lower)) {
+                if (/\b(generate|draw|create|make)\b.*\b(image|picture|photo|illustration|artwork|logo|gpt\s*images?\s*2|subeai)\b/i.test(lower)) {
                     setActiveToolBadge('GPT Images 2');
                     toggleStudioDrawer(false);
                     showThinkingSteps('GPT Images 2', 'Generating image with GPT Images 2...', [
@@ -1242,11 +1424,8 @@
                 // 4. Unified AI Agent Prompt via Puter.js (Handles Websites, Auto Publish, Tables, Docs, and General Chat)
                 setActiveToolBadge('Nix Agent');
                 showThinkingSteps('Nix Agent', 'Planning steps & reasoning...', [
-                    'Analyzing prompt intent and memory context',
-                    'Executing model response and checking output'
-                ]);
-
-                const agentSystemPrompt = `You are Nixy, a purple orb AI agent with white eyes. Note that you do NOT understand video files. You support:
+                const memoryBundle = buildCrossChatMemoryContext(userPrompt);
+                const agentSystemPrompt = `You are Nixy, a purple orb AI agent with white eyes. Note that you do NOT understand video files, while Vidy generates motion videos. Always remember and use details from both the current conversation and previous conversations when relevant. You support:
 - General AI Chat & Reasoning
 - Multi-Page Web Builder (NixCode): Output complete HTML files using fenced blocks like \`\`\`html:index.html ... \`\`\`.
 - Tables Maker: Output a Markdown table AND a JSON block \`\`\`json:table
@@ -1256,11 +1435,14 @@
 - QR Code: Include \`QR_TARGET: <url>\` when a URL is requested for a QR code.
 
 User Memories:
-${memories.map(m => '- ' + m).join('\n')}`;
+${memories.map(m => '- ' + m).join('\n')}
+
+Relevant Messages From Previous Chats:
+${memoryBundle.pastChatsSummary || 'None yet.'}`;
 
                 const chatPayload = [
                     { role: 'system', content: agentSystemPrompt },
-                    ...messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
+                    ...memoryBundle.currentChatHistory
                 ];
 
                 let aiReply = '';
@@ -1400,6 +1582,11 @@ ${memories.map(m => '- ' + m).join('\n')}`;
                 renderNixyQrCode();
             } else if (toolName === 'video') {
                 startVidyLoop();
+            } else if (toolName === 'palette') {
+                generateColorPalette();
+            } else if (toolName === 'formatter') {
+                formatJsonTool();
+                runRegexTester();
             }
         }
 
@@ -1456,22 +1643,22 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             statusEl.textContent = `Published "${file.name}" automatically!`;
             linkEl.href = liveUrl;
             linkEl.textContent = liveUrl;
-
-            appendThinkingStep('Live site verified & published.');
-            walkOrbInPortal(0.95, 'Published live!');
-            await saveMessageToSupabase('assistant', `🌐 **Auto Publish** published \`${file.name}\` live at [${liveUrl}](${liveUrl}).`);
-            setTimeout(() => hideThinkingSteps(), 2200);
-        }
-
-        // --- GPT Images 2 Generator ---
+        // --- GPT Images 2 Generator (avoids unsupported gpt-image-1.5 errors) ---
         async function generateWithGptImages2(prompt, provider = 'openai-image-generation', testMode = false) {
+            const safeProvider = provider === 'gpt-image-1.5' ? 'openai-image-generation' : (provider || 'openai-image-generation');
             if (window.puter?.ai?.txt2img) {
-                const imgEl = await window.puter.ai.txt2img(prompt, {
-                    provider: provider || 'openai-image-generation',
-                    model: 'gpt-image-1.5',
-                    test_mode: !!testMode
-                });
-                if (imgEl?.src) return imgEl.src;
+                try {
+                    const imgEl = await window.puter.ai.txt2img(prompt, {
+                        provider: safeProvider,
+                        test_mode: !!testMode
+                    });
+                    if (imgEl?.src) return imgEl.src;
+                } catch (_) {
+                    try {
+                        const fallbackEl = await window.puter.ai.txt2img(prompt, { test_mode: true });
+                        if (fallbackEl?.src) return fallbackEl.src;
+                    } catch (_) {}
+                }
             }
             return `https://placehold.co/960x640/6d28d9/ffffff?text=${encodeURIComponent('GPT Images 2: ' + prompt.slice(0, 28))}`;
         }
@@ -1509,7 +1696,7 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             }
         }
 
-        // --- Vidy Motion Graphics (Does NOT understand video) ---
+        // --- Vidy Motion Graphics & Video Exporter (Does NOT understand video) ---
         let vidyAnimFrame = null;
         let vidyPaused = false;
         let vidyPhase = 0;
@@ -1566,6 +1753,55 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             vidyPaused = false;
             vidyPhase += 0.8;
             startVidyLoop();
+            const statusEl = document.getElementById('vidyVideoStatus');
+            if (statusEl) {
+                const pText = document.getElementById('vidyPromptInput')?.value.trim() || 'Motion scene';
+                statusEl.textContent = `Vidy animated video scene active: "${pText}"`;
+                statusEl.classList.remove('hidden');
+            }
+        }
+
+        function exportVidyVideoClip() {
+            startVidyLoop();
+            const canvas = document.getElementById('vidyCanvas');
+            const statusEl = document.getElementById('vidyVideoStatus');
+            if (!canvas || !canvas.captureStream || typeof MediaRecorder === 'undefined') {
+                if (statusEl) {
+                    statusEl.textContent = 'Live Vidy canvas video is playing.';
+                    statusEl.classList.remove('hidden');
+                }
+                return;
+            }
+            try {
+                const stream = canvas.captureStream(30);
+                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+                const recorder = new MediaRecorder(stream, { mimeType });
+                const chunks = [];
+                recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'vidy-video.webm';
+                    a.click();
+                    if (statusEl) {
+                        statusEl.textContent = 'Exported Vidy video clip (vidy-video.webm)!';
+                        statusEl.classList.remove('hidden');
+                    }
+                };
+                if (statusEl) {
+                    statusEl.textContent = 'Recording 3-second Vidy video clip...';
+                    statusEl.classList.remove('hidden');
+                }
+                recorder.start();
+                setTimeout(() => recorder.stop(), 3000);
+            } catch (_) {
+                if (statusEl) {
+                    statusEl.textContent = 'Vidy video preview running.';
+                    statusEl.classList.remove('hidden');
+                }
+            }
         }
 
         // --- NixCode Editor & HostNix Deploy ---
@@ -1772,6 +2008,87 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             a.click();
         }
 
+        // --- Additional Tools: Color Palette, JSON & Regex, Scratchpad Notes ---
+        function generateColorPalette() {
+            const grid = document.getElementById('paletteSwatchesGrid');
+            if (!grid) return;
+            const hues = [262, 245, 280, 195, 320].map(h => (h + Math.floor(Math.random() * 45)) % 360);
+            const hexes = hues.map((h, i) => {
+                const l = 28 + i * 11;
+                return hslToHex(h, 78, l);
+            });
+            grid.innerHTML = hexes.map(hex => `
+                <button onclick="copyHexValue('${hex}', this)" class="rounded-2xl overflow-hidden border border-slate-200 dark:border-nix-borderdark text-left shadow-xs transition hover:scale-[1.02]">
+                    <div class="h-20 w-full" style="background-color:${hex}"></div>
+                    <div class="p-2 bg-white dark:bg-nix-carddark text-xs font-mono font-semibold flex items-center justify-between">
+                        <span>${hex}</span>
+                        <span class="text-[10px] text-purple-400">Copy</span>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function hslToHex(h, s, l) {
+            s /= 100; l /= 100;
+            const k = n => (n + h / 30) % 12;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
+            return '#' + [f(0), f(8), f(4)].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+        }
+
+        function copyHexValue(hex, el) {
+            const ta = document.createElement('textarea');
+            ta.value = hex;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            if (el) {
+                const tag = el.querySelector('span:last-child');
+                if (tag) {
+                    tag.textContent = 'Copied!';
+                    setTimeout(() => { tag.textContent = 'Copy'; }, 1000);
+                }
+            }
+        }
+
+        function formatJsonTool() {
+            const inp = document.getElementById('jsonFormatterInput');
+            const status = document.getElementById('jsonFormatterStatus');
+            if (!inp || !status) return;
+            try {
+                const parsed = JSON.parse(inp.value);
+                inp.value = JSON.stringify(parsed, null, 2);
+                status.className = 'text-xs text-emerald-400';
+                status.textContent = 'Valid JSON formatted.';
+            } catch (err) {
+                status.className = 'text-xs text-rose-400';
+                status.textContent = 'Invalid JSON: ' + err.message;
+            }
+        }
+
+        function runRegexTester() {
+            const pat = document.getElementById('regexPatternInput')?.value || '';
+            const sample = document.getElementById('regexSampleInput')?.value || '';
+            const out = document.getElementById('regexMatchResult');
+            if (!out) return;
+            try {
+                const re = new RegExp(pat, 'g');
+                const matches = sample.match(re);
+                out.textContent = matches ? `Matches (${matches.length}): ${matches.join(', ')}` : 'No matches found.';
+            } catch (err) {
+                out.textContent = 'Regex error: ' + err.message;
+            }
+        }
+
+        function downloadScratchpadNote() {
+            const txt = document.getElementById('scratchpadTextarea')?.value || '';
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+            a.download = 'nixy-notes.txt';
+            a.click();
+        }
+
         // =========================================================================
         // 5. UI HELPERS, MEMORY, DICTATION & FILE ATTACHMENT
         // =========================================================================
@@ -1864,6 +2181,7 @@ ${memories.map(m => '- ' + m).join('\n')}`;
 
         // Mouse eye tracking for Nixy Purple Orb
         window.addEventListener('mousemove', e => {
+            resetSleepInactivityTimer();
             const orb = document.getElementById('heroNixyOrb');
             const eyes = document.getElementById('nixyEyesContainer');
             if (!orb || !eyes) return;
@@ -1873,13 +2191,18 @@ ${memories.map(m => '- ' + m).join('\n')}`;
             eyes.style.transform = `translate(${dx}px, ${dy}px)`;
         });
 
+        window.addEventListener('keydown', () => resetSleepInactivityTimer());
+        window.addEventListener('pointerdown', () => resetSleepInactivityTimer());
+
         window.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
+            resetSleepInactivityTimer();
             const ok = await checkSupabaseSessionAndGuard();
             if (!ok) return;
             await loadConversationsFromSupabase();
             renderNixyQrCode();
             renderTablesMaker();
+            generateColorPalette();
             walkOrbInPortal(0.55, 'Ready in portal');
             lucide.createIcons();
         });
