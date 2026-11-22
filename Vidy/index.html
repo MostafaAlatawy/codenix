@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidy — AI Motion Graphics Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Puter.js SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        codenixPurple: '#7C3AED',
+                        codenixPurpleHover: '#6D28D9',
+                        codenixPurpleLight: '#A855F7',
+                        codenixLightBg: '#FFFFFF',
+                        codenixLightPanel: '#F8F6FF',
+                        codenixLightBorder: '#E9E2FF',
+                        codenixDarkBg: '#09090B',
+                        codenixDarkPanel: '#111015',
+                        codenixDarkBorder: '#231E33',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbars for Codenix Purple theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(124, 58, 237, 0.28);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(124, 58, 237, 0.5);
+        }
+
+        /* Checkerboard pattern for canvas stage */
+        .canvas-backdrop {
+            background-color: #09090B;
+            background-image: 
+                radial-gradient(rgba(168, 85, 247, 0.14) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+
+        /* Smooth transitions */
+        .tab-indicator {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Recording pulse animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .recording-dot::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background-color: #ef4444;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        /* Cinematic AI Synthesis Loading Animations */
+        @keyframes orbit-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes orbit-spin-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes shimmer-sweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        @keyframes eq-bar {
+            0%, 100% { transform: scaleY(0.28); }
+            50% { transform: scaleY(1); }
+        }
+        .animate-orbit { animation: orbit-spin 3.2s linear infinite; }
+        .animate-orbit-rev { animation: orbit-spin-reverse 2.4s linear infinite; }
+        .animate-shimmer { animation: shimmer-sweep 2.2s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-codenixLightBg dark:bg-codenixDarkBg text-zinc-900 dark:text-zinc-100 font-sans antialiased h-[100dvh] overflow-hidden flex flex-col selection:bg-codenixPurple/20 selection:text-codenixPurple transition-colors duration-200">
+
+    <!-- Supabase Auth Verification Gate Overlay -->
+    <div id="auth-gate-overlay" class="fixed inset-0 z-50 bg-white dark:bg-[#09090B] flex flex-col items-center justify-center p-6 transition-opacity duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-codenixPurple to-codenixPurpleLight flex items-center justify-center text-white shadow-lg shadow-codenixPurple/30 mb-4 animate-pulse">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <div class="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">Verifying Codenix Session...</div>
+        <div class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Authenticating workspace access</div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="h-13 sm:h-14 border-b border-codenixLightBorder dark:border-codenixDarkBorder bg-codenixLightBg/95 dark:bg-codenixDarkBg/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between shrink-0 z-30">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-codenixPurple to-codenixPurpleLight flex items-center justify-center text-white shadow-sm shadow-codenixPurple/25">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <span class="font-bold text-base tracking-tight text-zinc-900 dark:text-white">Vidy</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-codenixPurple/10 dark:bg-codenixPurple/20 border border-codenixPurple/25 text-codenixPurple dark:text-codenixPurpleLight">Codenix</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Project Title -->
+        <div class="hidden md:flex items-center gap-2 bg-codenixLightPanel dark:bg-codenixDarkPanel px-3 py-1.5 rounded-xl border border-codenixLightBorder dark:border-codenixDarkBorder">
+            <i data-lucide="film" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+            <input id="project-title-input" type="text" value="Untitled Motion Sequence" 
+                   class="bg-transparent text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none w-48 text-center truncate" 
+                   title="Click to rename project">
+        </div>
+
+        <!-- Right Controls: Theme Toggle, New Chat & Account -->
+        <div class="flex items-center gap-2">
+            <!-- Light / Dark Theme Toggle (Codenix Official Purple/White & Purple/Black) -->
+            <button onclick="toggleCodenixTheme()" title="Toggle Codenix Light / Dark Mode"
+                    class="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 transition-colors border border-codenixLightBorder dark:border-codenixDarkBorder">
+                <i id="theme-toggle-icon" data-lucide="moon" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+            </button>
+
+            <button onclick="startNewConversation()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-900 dark:text-zinc-100 bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 transition-colors border border-codenixLightBorder dark:border-codenixDarkBorder">
+                <i data-lucide="message-square-plus" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+                <span class="hidden sm:inline">New Chat</span>
+            </button>
+
+            <!-- Account Pill (Supabase + Puter Synced) -->
+            <div id="auth-container" class="flex items-center">
+                <button id="puter-login-btn" onclick="handlePuterSignIn()" 
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenixPurple hover:bg-codenixPurpleHover text-white text-xs font-medium transition-all shadow-sm shadow-codenixPurple/20">
+                    <i data-lucide="cloud" class="w-3.5 h-3.5"></i>
+                    <span>Connect AI</span>
+                </button>
+
+                <div id="puter-user-badge" class="hidden items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel border border-codenixLightBorder dark:border-codenixDarkBorder">
+                    <div class="w-2 h-2 rounded-full bg-codenixPurple animate-pulse"></div>
+                    <span id="puter-username" class="text-xs font-medium text-zinc-900 dark:text-zinc-100 max-w-[90px] sm:max-w-[120px] truncate">Creator</span>
+                    <button onclick="handleAccountSignOut()" title="Sign out & return to /Start" 
+                            class="p-1 rounded-lg hover:bg-codenixPurple/10 text-zinc-500 dark:text-zinc-400 hover:text-red-500 transition-colors">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Pane Switcher (Only visible on < lg screens so mobile users get full-screen Canvas or Chat) -->
+    <div class="lg:hidden flex items-center bg-codenixLightPanel dark:bg-codenixDarkPanel border-b border-codenixLightBorder dark:border-codenixDarkBorder p-1.5 gap-1.5 shrink-0 z-20">
+        <button id="mobile-tab-canvas" onclick="switchMobilePane('canvas')"
+                class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-semibold bg-codenixPurple text-white shadow-2xs transition-all">
+            <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
+            <span>Video Canvas</span>
+        </button>
+        <button id="mobile-tab-chat" onclick="switchMobilePane('chat')"
+                class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-codenixPurple transition-all">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>AI Director Chat</span>
+        </button>
+    </div>
+
+    <!-- Main Split Workspace (Chat Left, Motion Canvas Right) -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0 relative">
+
+        <!-- LEFT PANEL: AI Director Chat -->
+        <section id="panel-chat" class="hidden lg:flex w-full lg:w-[420px] xl:w-[460px] h-full min-h-0 lg:border-r border-codenixLightBorder dark:border-codenixDarkBorder bg-codenixLightBg dark:bg-codenixDarkBg flex-col shrink-0">
+            
+            <!-- Chat Panel Sub-Header with New Conversation Button -->
+            <div class="h-11 px-4 border-b border-codenixLightBorder dark:border-codenixDarkBorder bg-codenixLightPanel/70 dark:bg-codenixDarkPanel/80 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-codenixPurple"></span>
+                    <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Creative Director</span>
+                </div>
+                <button onclick="startNewConversation()" 
+                        title="Clear chat history and start a fresh motion graphic conversation"
+                        class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-codenixDarkBg hover:bg-codenixPurple/10 text-zinc-900 dark:text-zinc-100 border border-codenixLightBorder dark:border-codenixDarkBorder text-xs font-medium transition-all shadow-2xs">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3 text-codenixPurple dark:text-codenixPurpleLight"></i>
+                    <span>New Conversation</span>
+                </button>
+            </div>
+
+            <!-- Chat History Feed -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-4">
+                <!-- Initial Welcome Message -->
+                <div class="flex gap-2.5 sm:gap-3 items-start">
+                    <div class="w-7 h-7 rounded-lg bg-codenixPurple/15 border border-codenixPurple/30 flex items-center justify-center shrink-0 mt-0.5">
+                        <i data-lucide="wand-2" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+                    </div>
+                    <div class="flex-1 space-y-2 min-w-0">
+                        <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Vidy Director</div>
+                        <div class="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 bg-codenixLightPanel dark:bg-codenixDarkPanel border border-codenixLightBorder dark:border-codenixDarkBorder rounded-2xl rounded-tl-sm p-3.5 shadow-2xs">
+                            Welcome to <strong class="font-semibold text-codenixPurple dark:text-codenixPurpleLight">Vidy</strong> by Codenix. Describe any motion graphic, explainer scene, realistic UI showcase, or kinetic typography—and I will engineer a seamless 60fps looping video you can download as MP4.
+                        </div>
+                        <!-- Quick Prompt Pills -->
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <button onclick="usePresetPrompt('Create a photorealistic Apple-style iPhone notification & FaceID unlock animation with glassmorphic cards, subtle light reflections, and smooth spring physics')" 
+                                    class="text-[11px] px-2.5 py-1.5 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 text-zinc-800 dark:text-zinc-200 border border-codenixLightBorder dark:border-codenixDarkBorder transition-colors text-left">
+                                📱 Realistic UI Showcase
+                            </button>
+                            <button onclick="usePresetPrompt('Create a cinematic financial wealth & portfolio growth explainer with glowing purple & emerald spline curves, glassmorphic KPI cards, and animated counters')" 
+                                    class="text-[11px] px-2.5 py-1.5 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 text-zinc-800 dark:text-zinc-200 border border-codenixLightBorder dark:border-codenixDarkBorder transition-colors text-left">
+                                📈 Fintech Motion Explainer
+                            </button>
+                            <button onclick="usePresetPrompt('Create a realistic deep-space solar eclipse & orbital satellite telemetry animation with volumetric purple corona rays, lens flare, and orbital rings')" 
+                                    class="text-[11px] px-2.5 py-1.5 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 text-zinc-800 dark:text-zinc-200 border border-codenixLightBorder dark:border-codenixDarkBorder transition-colors text-left">
+                                🪐 Volumetric Solar Eclipse
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uploaded Attachments Preview Strip -->
+            <div id="attachment-preview-bar" class="hidden px-4 py-2 bg-codenixLightPanel dark:bg-codenixDarkPanel border-t border-codenixLightBorder dark:border-codenixDarkBorder flex items-center gap-2 overflow-x-auto">
+                <!-- Dynamic file chips injected here -->
+            </div>
+
+            <!-- Chat Composer Box (Codenix Purple Style) -->
+            <div class="p-3 sm:p-3.5 bg-codenixLightBg dark:bg-codenixDarkBg border-t border-codenixLightBorder dark:border-codenixDarkBorder shrink-0">
+                <div class="bg-white dark:bg-codenixDarkPanel rounded-2xl border border-codenixLightBorder dark:border-codenixDarkBorder shadow-sm focus-within:border-codenixPurple focus-within:ring-2 focus-within:ring-codenixPurple/15 transition-all p-2.5">
+                    <textarea id="chat-input" rows="2" 
+                              placeholder="Describe your video scene or ask for edits..."
+                              class="w-full resize-none bg-transparent text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none px-1 leading-relaxed"
+                              onkeydown="handleInputKeydown(event)"></textarea>
+                    
+                    <div class="flex items-center justify-between pt-2 mt-1 border-t border-codenixLightBorder/70 dark:border-codenixDarkBorder">
+                        <div class="flex items-center gap-1">
+                            <!-- File Upload Trigger -->
+                            <input type="file" id="file-upload-input" class="hidden" accept="image/*,.svg,.json,.txt" multiple onchange="handleFileUpload(event)">
+                            <button onclick="document.getElementById('file-upload-input').click()" 
+                                    title="Upload logo, image, SVG, or reference"
+                                    class="p-2 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenixPurple dark:hover:text-codenixPurpleLight hover:bg-codenixLightPanel dark:hover:bg-white/5 transition-colors flex items-center gap-1.5 text-xs">
+                                <i data-lucide="paperclip" class="w-4 h-4"></i>
+                                <span class="hidden sm:inline font-medium">Attach</span>
+                            </button>
+
+                            <!-- Aspect Ratio Selector -->
+                            <select id="aspect-ratio-select" onchange="changeAspectRatio(this.value)"
+                                    class="text-xs bg-codenixLightPanel dark:bg-codenixDarkBg hover:border-codenixPurple/50 text-zinc-900 dark:text-zinc-100 font-medium px-2 py-1.5 rounded-xl border border-codenixLightBorder dark:border-codenixDarkBorder focus:outline-none cursor-pointer">
+                                <option value="16:9">16:9</option>
+                                <option value="1:1">1:1</option>
+                                <option value="9:16">9:16</option>
+                            </select>
+                        </div>
+
+                        <button id="send-btn" onclick="sendMessage()" 
+                                class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-codenixPurple hover:bg-codenixPurpleHover disabled:opacity-50 text-white text-xs font-semibold transition-all shadow-xs shadow-codenixPurple/25">
+                            <span>Create Video</span>
+                            <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mt-1.5 px-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <span>Codenix • Puter AI Engine</span>
+                    <span id="loop-duration-label">Loop: 4.0s @ 60fps</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Motion Canvas, Timeline & Code Artifact -->
+        <section id="panel-canvas" class="flex flex-1 h-full min-h-0 bg-[#09090B] text-white flex-col overflow-hidden relative">
+            
+            <!-- Canvas Top Toolbar -->
+            <div class="h-12 px-3 sm:px-4 bg-codenixDarkPanel border-b border-codenixDarkBorder flex items-center justify-between shrink-0">
+                <!-- View Mode Switcher: Preview Canvas vs Motion Code -->
+                <div class="flex items-center bg-black/50 p-1 rounded-xl border border-codenixDarkBorder">
+                    <button id="tab-preview" onclick="switchStudioTab('preview')" 
+                            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium bg-codenixPurple text-white transition-all">
+                        <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
+                        <span>Canvas</span>
+                    </button>
+                    <button id="tab-code" onclick="switchStudioTab('code')" 
+                            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium text-white/60 hover:text-white transition-all">
+                        <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+                        <span>Code</span>
+                    </button>
+                </div>
+
+                <!-- Loop & Export Actions -->
+                <div class="flex items-center gap-2">
+                    <!-- Infinite Loop Indicator Badge -->
+                    <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-codenixPurple/15 border border-codenixPurple/30 text-codenixPurpleLight text-[11px] font-medium">
+                        <i data-lucide="repeat" class="w-3 h-3"></i>
+                        <span>Auto-Loop</span>
+                    </div>
+
+                    <!-- Export MP4 Button -->
+                    <button id="export-mp4-btn" onclick="exportToMP4()" 
+                            class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-codenixPurple hover:bg-codenixPurpleHover text-white text-xs font-medium transition-all shadow-md shadow-codenixPurple/25">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span id="export-btn-text">Export MP4</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW 1: Interactive Video Canvas Stage -->
+            <div id="view-preview" class="flex-1 flex flex-col overflow-hidden relative min-h-0">
+                
+                <!-- Stage Wrapper -->
+                <div id="stage-container" class="flex-1 canvas-backdrop flex items-center justify-center p-3 sm:p-8 overflow-hidden relative min-h-0">
+                    <!-- Aspect-Ratio Locked Canvas Container -->
+                    <div id="canvas-aspect-box" class="relative shadow-2xl rounded-xl overflow-hidden border border-codenixPurple/30 bg-[#0D0B14] transition-all duration-300" style="aspect-ratio: 16/9; width: 100%; max-width: 820px; max-height: 100%;">
+                        <canvas id="motion-canvas" class="w-full h-full block"></canvas>
+
+                        <!-- Recording Overlay Banner -->
+                        <div id="recording-overlay" class="hidden absolute top-3 left-3 bg-black/85 backdrop-blur-md border border-red-500/40 px-3 py-1.5 rounded-full flex items-center gap-2 z-10">
+                            <span class="relative w-2.5 h-2.5 rounded-full bg-red-500 recording-dot"></span>
+                            <span id="recording-status-text" class="text-[11px] font-medium text-white">Rendering MP4 Loop... 0%</span>
+                        </div>
+
+                        <!-- Multi-Stage Cinematic AI Waiting Overlay (Codenix Purple) -->
+                        <div id="generating-overlay" class="hidden absolute inset-0 bg-[#09080E]/88 backdrop-blur-md flex flex-col items-center justify-center p-6 z-20">
+                            <div class="relative w-16 h-16 flex items-center justify-center mb-4">
+                                <!-- Outer orbital ring -->
+                                <div class="absolute inset-0 rounded-full border-2 border-dashed border-codenixPurpleLight/60 animate-orbit"></div>
+                                <!-- Inner counter-orbital ring -->
+                                <div class="absolute inset-2 rounded-full border-2 border-t-codenixPurple border-r-fuchsia-400 border-b-transparent border-l-transparent animate-orbit-rev"></div>
+                                <!-- Center equalizer bars -->
+                                <div class="flex items-end gap-1 h-5">
+                                    <span class="w-1 h-full bg-codenixPurple rounded-full" style="animation: eq-bar 0.9s ease-in-out infinite 0.0s"></span>
+                                    <span class="w-1 h-full bg-codenixPurpleLight rounded-full" style="animation: eq-bar 0.9s ease-in-out infinite 0.2s"></span>
+                                    <span class="w-1 h-full bg-white rounded-full" style="animation: eq-bar 0.9s ease-in-out infinite 0.4s"></span>
+                                    <span class="w-1 h-full bg-fuchsia-400 rounded-full" style="animation: eq-bar 0.9s ease-in-out infinite 0.1s"></span>
+                                </div>
+                            </div>
+
+                            <div id="gen-stage-title" class="text-sm font-semibold text-white tracking-tight text-center">
+                                Directing Scene Choreography...
+                            </div>
+                            <div id="gen-stage-sub" class="text-xs text-white/60 mt-1 text-center max-w-xs">
+                                Crafting vector layers, spring curves & lighting
+                            </div>
+
+                            <!-- Shimmer Progress Bar -->
+                            <div class="w-52 h-1.5 bg-white/10 rounded-full overflow-hidden mt-4 relative">
+                                <div class="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-codenixPurpleLight to-fuchsia-400 rounded-full animate-shimmer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Scrubber & Playback Transport Bar -->
+                <div class="h-14 px-3 sm:px-4 bg-codenixDarkPanel border-t border-codenixDarkBorder flex items-center gap-2.5 sm:gap-3 shrink-0">
+                    <button id="play-pause-btn" onclick="togglePlayPause()" 
+                            class="w-9 h-9 rounded-xl bg-codenixPurple/20 hover:bg-codenixPurple/35 border border-codenixPurple/30 flex items-center justify-center text-white transition-colors shrink-0">
+                        <i id="play-pause-icon" data-lucide="pause" class="w-4 h-4"></i>
+                    </button>
+
+                    <button onclick="restartLoop()" title="Restart Loop" 
+                            class="w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors shrink-0">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    </button>
+
+                    <!-- Timeline Scrubber -->
+                    <div class="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
+                        <span id="time-current" class="text-[11px] font-mono text-white/70 w-10 text-right shrink-0">0.00s</span>
+                        <input id="timeline-scrubber" type="range" min="0" max="1000" value="0" 
+                               oninput="scrubTimeline(this.value)"
+                               class="flex-1 h-2 bg-white/15 rounded-lg appearance-none cursor-pointer accent-codenixPurple min-w-0">
+                        <span id="time-total" class="text-[11px] font-mono text-white/50 w-10 shrink-0">4.00s</span>
+                    </div>
+
+                    <!-- Duration Selector -->
+                    <select id="duration-select" onchange="updateLoopDuration(this.value)" 
+                            class="bg-black/50 border border-codenixDarkBorder rounded-lg px-2 py-1.5 text-[11px] font-mono text-white/80 focus:outline-none shrink-0">
+                        <option value="3">3.0s</option>
+                        <option value="4" selected>4.0s</option>
+                        <option value="6">6.0s</option>
+                        <option value="8">8.0s</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Live Motion Code & Standalone HTML Export Editor -->
+            <div id="view-code" class="hidden flex-1 flex flex-col overflow-hidden bg-[#09090B]">
+                <div class="px-3 sm:px-4 py-2.5 bg-codenixDarkPanel border-b border-codenixDarkBorder flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs font-mono text-codenixPurpleLight truncate">renderFrame.js</span>
+                        <span class="hidden sm:inline text-[11px] text-white/40">— 60fps Motion Script</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="applyManualCodeEdit()" class="px-2.5 sm:px-3 py-1 rounded-lg bg-codenixPurple hover:bg-codenixPurpleHover text-white text-xs font-medium transition-colors">
+                            Apply
+                        </button>
+                        <button onclick="copyStandaloneHtml()" class="px-2.5 sm:px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors flex items-center gap-1.5">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>Copy HTML</span>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="json-code-editor" spellcheck="false"
+                          class="flex-1 w-full bg-transparent text-purple-200/90 font-mono text-xs p-4 focus:outline-none resize-none leading-relaxed"></textarea>
+            </div>
+
+            <!-- Toast Notification Banner -->
+            <div id="toast-banner" class="hidden absolute bottom-16 left-1/2 -translate-x-1/2 bg-white dark:bg-codenixDarkPanel text-zinc-900 dark:text-white px-4 py-2 rounded-xl shadow-xl border border-codenixLightBorder dark:border-codenixDarkBorder text-xs font-medium flex items-center gap-2 z-50 transition-all max-w-[90vw]">
+                <i data-lucide="info" class="w-4 h-4 text-codenixPurple dark:text-codenixPurpleLight shrink-0"></i>
+                <span id="toast-message" class="truncate">Notification</span>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        /**
+         * VIDY GENERATIVE MOTION ENGINE — CODENIX EDITION
+         * 1. Supabase Auth Session Verification (Redirects unauthenticated users to /Start?redirect=/Vidy)
+         * 2. Official Codenix Theme Engine (Purple & White Light Mode / Purple & Black Dark Mode)
+         * 3. LocalStorage Account & Session Persistence + Puter.js AI Motion Director
+         * 4. Deterministic 60FPS Parametric HTML5 Canvas Engine & MP4 Video Exporter
+         */
+
+        // ==========================================
+        // 0. SUPABASE CLIENT & AUTH GUARD
+        // ==========================================
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function verifySupabaseAuth() {
+            const gateOverlay = document.getElementById('auth-gate-overlay');
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error || !session || !session.user) {
+                    // User is NOT signed in -> redirect to /Start with redirect link back to /Vidy
+                    const returnPath = encodeURIComponent('/Vidy');
+                    window.location.replace(`/Start?redirect=${returnPath}`);
+                    return false;
+                }
+
+                // Store authenticated Supabase user into appState & localStorage
+                const sbUser = session.user;
+                const displayName = sbUser.user_metadata?.full_name ||
+                                    sbUser.user_metadata?.username ||
+                                    (sbUser.email ? sbUser.email.split('@')[0] : 'Codenix Creator');
+
+                appState.supabaseUser = {
+                    id: sbUser.id,
+                    email: sbUser.email || '',
+                    username: displayName
+                };
+
+                if (!appState.user) {
+                    appState.user = {
+                        username: displayName,
+                        uuid: sbUser.id,
+                        email: sbUser.email || ''
+                    };
+                    persistToLocalStorage();
+                }
+                updateAuthUI();
+
+                // Reveal studio smoothly
+                if (gateOverlay) {
+                    gateOverlay.classList.add('opacity-0', 'pointer-events-none');
+                    setTimeout(() => gateOverlay.remove(), 300);
+                }
+                return true;
+            } catch (err) {
+                console.error('Supabase session verification error:', err);
+                const returnPath = encodeURIComponent('/Vidy');
+                window.location.replace(`/Start?redirect=${returnPath}`);
+                return false;
+            }
+        }
+
+        // Listen for auth state changes (e.g. sign out in another tab)
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                const returnPath = encodeURIComponent('/Vidy');
+                window.location.replace(`/Start?redirect=${returnPath}`);
+            }
+        });
+
+        // ==========================================
+        // 1. GLOBAL STATE & CODENIX THEME MANAGEMENT
+        // ==========================================
+        const STORAGE_KEYS = {
+            USER: 'vidy_puter_account_v4',
+            SCENE: 'vidy_current_scene_v4',
+            CHAT: 'vidy_chat_history_v4',
+            TITLE: 'vidy_project_title_v4',
+            THEME: 'codenix_vidy_theme_v1'
+        };
+
+        let appState = {
+            user: null,
+            supabaseUser: null,
+            isPlaying: true,
+            duration: 4.0,
+            currentTime: 0,
+            lastFrameTimestamp: null,
+            aspectRatio: '16:9',
+            isRecording: false,
+            attachments: [],
+            uploadedImagesMap: {},
+            chatHistory: [],
+            compiledRenderFn: null,
+            renderError: null,
+            mobilePane: 'canvas',
+            genTimerInterval: null
+        };
+
+        function initCodenixTheme() {
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const useDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+            applyCodenixTheme(useDark ? 'dark' : 'light');
+        }
+
+        function toggleCodenixTheme() {
+            const isCurrentlyDark = document.documentElement.classList.contains('dark');
+            const nextTheme = isCurrentlyDark ? 'light' : 'dark';
+            localStorage.setItem(STORAGE_KEYS.THEME, nextTheme);
+            applyCodenixTheme(nextTheme);
+        }
+
+        function applyCodenixTheme(mode) {
+            const htmlEl = document.documentElement;
+            const iconEl = document.getElementById('theme-toggle-icon');
+            if (mode === 'dark') {
+                htmlEl.classList.add('dark');
+                if (iconEl) iconEl.setAttribute('data-lucide', 'sun');
+            } else {
+                htmlEl.classList.remove('dark');
+                if (iconEl) iconEl.setAttribute('data-lucide', 'moon');
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // Flagship Codenix Purple & Obsidian Studio Motion Graphic
+        const DEFAULT_RENDER_CODE = `// Seamless Infinite Loop Renderer (t goes from 0.0 to 1.0 every loop)
+// Helpers available: TAU, PI, clamp, clamp01, lerp, seg, easeOutCubic, easeInOutCubic, easeOutBack, pulseWave
+
+// 1. Deep Obsidian & Royal Violet Studio Backdrop
+const bg = ctx.createRadialGradient(w * 0.5, h * 0.42, w * 0.03, w * 0.5, h * 0.5, w * 0.78);
+bg.addColorStop(0, '#1E1338');
+bg.addColorStop(0.55, '#0F0B1A');
+bg.addColorStop(1, '#07060B');
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, w, h);
+
+const cx = w * 0.5;
+const cy = h * 0.5;
+const rs = Math.min(w, h) / 720;
+
+// 2. Subtle Architectural Grid & Perspective Glow
+ctx.strokeStyle = 'rgba(168, 85, 247, 0.07)';
+ctx.lineWidth = 1;
+const gridStep = 48 * rs;
+for (let x = (cx % gridStep); x < w; x += gridStep) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+}
+for (let y = (cy % gridStep); y < h; y += gridStep) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+}
+
+// 3. Ambient Floating Violet Bokeh Motes (Deterministic Seamless Loop)
+for (let i = 0; i < 28; i++) {
+    const angle = i * 2.39996 + t * TAU;
+    const dist = (140 + (i % 7) * 44) * rs + Math.sin(t * TAU * 2 + i) * 14 * rs;
+    const px = cx + Math.cos(angle) * dist * 1.35;
+    const py = cy + Math.sin(angle) * dist * 0.85;
+    const radius = (1.5 + (i % 4) * 1.1) * rs;
+    const alpha = 0.16 + 0.24 * Math.sin(t * TAU + i * 1.3);
+    ctx.fillStyle = i % 3 === 0 ? \`rgba(168, 85, 247, \${alpha})\` : \`rgba(233, 213, 255, \${alpha * 0.75})\`;
+    ctx.beginPath();
+    ctx.arc(px, py, radius, 0, TAU);
+    ctx.fill();
+}
+
+// 4. Symmetric Entrance / Exit Envelope for Hero Card
+const enter = easeOutBack(seg(t, 0.04, 0.24));
+const exit = 1 - easeInOutCubic(seg(t, 0.82, 0.97));
+const env = clamp01(enter * exit);
+const floatY = Math.sin(t * TAU) * 8 * rs;
+
+// 5. Glassmorphic Codenix Studio Showcase Card
+const cardW = 468 * rs;
+const cardH = 260 * rs;
+const cardX = cx - cardW * 0.5;
+const cardY = cy - cardH * 0.5 + floatY + (1 - env) * 35 * rs;
+
+ctx.save();
+ctx.globalAlpha = clamp01(env);
+
+// Soft Ambient Drop Shadow
+ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+ctx.shadowBlur = 45 * rs;
+ctx.shadowOffsetY = 22 * rs;
+
+const cardGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+cardGrad.addColorStop(0, 'rgba(30, 22, 48, 0.92)');
+cardGrad.addColorStop(1, 'rgba(15, 11, 24, 0.96)');
+ctx.fillStyle = cardGrad;
+ctx.beginPath();
+ctx.roundRect(cardX, cardY, cardW, cardH, 24 * rs);
+ctx.fill();
+
+// Reset shadow for crisp specular purple border
+ctx.shadowBlur = 0;
+ctx.shadowOffsetY = 0;
+const borderGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+borderGrad.addColorStop(0, 'rgba(192, 132, 252, 0.45)');
+borderGrad.addColorStop(0.5, 'rgba(124, 58, 237, 0.55)');
+borderGrad.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
+ctx.strokeStyle = borderGrad;
+ctx.lineWidth = 1.5 * rs;
+ctx.stroke();
+
+// 6. Animated Orbital Emblem Inside Card
+const orbX = cardX + 92 * rs;
+const orbY = cardY + cardH * 0.5;
+const orbR = 42 * rs;
+
+const orbGlow = ctx.createRadialGradient(orbX, orbY, 4 * rs, orbX, orbY, orbR * 1.5);
+orbGlow.addColorStop(0, 'rgba(124, 58, 237, 0.55)');
+orbGlow.addColorStop(1, 'rgba(124, 58, 237, 0)');
+ctx.fillStyle = orbGlow;
+ctx.beginPath();
+ctx.arc(orbX, orbY, orbR * 1.5, 0, TAU);
+ctx.fill();
+
+ctx.strokeStyle = 'rgba(168, 85, 247, 0.35)';
+ctx.lineWidth = 2 * rs;
+ctx.beginPath();
+ctx.arc(orbX, orbY, orbR, 0, TAU);
+ctx.stroke();
+
+ctx.strokeStyle = '#A855F7';
+ctx.lineWidth = 3.5 * rs;
+ctx.lineCap = 'round';
+ctx.beginPath();
+ctx.arc(orbX, orbY, orbR, t * TAU - 0.8, t * TAU + 1.4);
+ctx.stroke();
+
+// Inner Core Pulse
+const coreR = (14 + 3 * Math.sin(t * TAU * 2)) * rs;
+const coreGrad = ctx.createLinearGradient(orbX - coreR, orbY - coreR, orbX + coreR, orbY + coreR);
+coreGrad.addColorStop(0, '#C084FC');
+coreGrad.addColorStop(1, '#7C3AED');
+ctx.fillStyle = coreGrad;
+ctx.beginPath();
+ctx.arc(orbX, orbY, coreR, 0, TAU);
+ctx.fill();
+
+// 7. Kinetic Typography & Live Waveform Bars
+const textX = cardX + 162 * rs;
+ctx.fillStyle = '#C084FC';
+ctx.font = \`600 \${Math.round(12 * rs)}px Inter, sans-serif\`;
+ctx.textAlign = 'left';
+ctx.fillText('CODENIX VIDY ENGINE • 60 FPS', textX, cardY + 76 * rs);
+
+ctx.fillStyle = '#FFFFFF';
+ctx.font = \`700 \${Math.round(32 * rs)}px Inter, sans-serif\`;
+ctx.fillText('Studio Ready.', textX, cardY + 116 * rs);
+
+ctx.fillStyle = 'rgba(243, 232, 255, 0.68)';
+ctx.font = \`400 \${Math.round(14 * rs)}px Inter, sans-serif\`;
+ctx.fillText('Describe any scene in chat to generate', textX, cardY + 144 * rs);
+ctx.fillText('looping HD motion graphics & MP4.', textX, cardY + 164 * rs);
+
+// Animated Audio/Motion Equalizer Pill
+const barCount = 14;
+for (let b = 0; b < barCount; b++) {
+    const bx = textX + b * 17 * rs;
+    const wave = 0.25 + 0.75 * Math.abs(Math.sin(t * TAU * 2 + b * 0.45));
+    const bh = 22 * rs * wave;
+    ctx.fillStyle = b % 2 === 0 ? '#A855F7' : 'rgba(255, 255, 255, 0.35)';
+    ctx.beginPath();
+    ctx.roundRect(bx, cardY + 206 * rs - bh, 8 * rs, bh, 4 * rs);
+    ctx.fill();
+}
+
+ctx.restore();`;
+
+        let currentScene = {
+            title: 'Codenix Vidy Showcase',
+            duration: 4.0,
+            code: DEFAULT_RENDER_CODE
+        };
+
+        // Built-in deterministic math, easing & canvas polyfill prelude injected into every compiled renderFrame
+        const ENGINE_PRELUDE = `
+            const TAU = Math.PI * 2;
+            const PI = Math.PI;
+            const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+            const clamp01 = (x) => Math.max(0, Math.min(1, x));
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const seg = (t, start, end) => clamp01((t - start) / Math.max(0.0001, end - start));
+            const easeOutCubic = (x) => 1 - Math.pow(1 - clamp01(x), 3);
+            const easeInCubic = (x) => Math.pow(clamp01(x), 3);
+            const easeInOutCubic = (x) => {
+                x = clamp01(x);
+                return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+            };
+            const easeOutBack = (x) => {
+                x = clamp01(x);
+                const c1 = 1.70158;
+                const c3 = c1 + 1;
+                return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+            };
+            const easeOutElastic = (x) => {
+                x = clamp01(x);
+                if (x === 0 || x === 1) return x;
+                const c4 = (2 * Math.PI) / 3;
+                return Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+            };
+            const pulseWave = (t, freq = 1) => 0.5 - 0.5 * Math.cos(t * TAU * freq);
+            if (ctx && !ctx.roundRect) {
+                ctx.roundRect = function(x, y, w, h, r) {
+                    const rad = Array.isArray(r) ? r[0] : (r || 0);
+                    this.moveTo(x + rad, y);
+                    this.arcTo(x + w, y, x + w, y + h, rad);
+                    this.arcTo(x + w, y + h, x, y + h, rad);
+                    this.arcTo(x, y + h, x, y, rad);
+                    this.arcTo(x, y, x + w, y, rad);
+                    this.closePath();
+                };
+            }
+        `;
+
+        function compileSceneCode(codeStr) {
+            try {
+                // Strip any accidental function wrapper if AI included `function renderFrame(...) { ... }`
+                let body = codeStr.trim();
+                const fnWrapperMatch = body.match(/^(?:export\s+)?function\s+renderFrame\s*\([^)]*\)\s*\{([\s\S]*)\}\s*$/);
+                if (fnWrapperMatch) {
+                    body = fnWrapperMatch[1];
+                }
+
+                // Wrap user/AI body in a lexical block { ... } so its const/let declarations never collide with ENGINE_PRELUDE
+                const fullBody = ENGINE_PRELUDE + '\n{\n' + body + '\n}';
+                const fn = new Function('ctx', 'w', 'h', 't', 'assets', fullBody);
+
+                // Dry-run test on an offscreen 64x64 canvas at t=0.25 and t=0.5 to guarantee it draws non-black pixels and throws no runtime errors!
+                const testCanvas = document.createElement('canvas');
+                testCanvas.width = 64;
+                testCanvas.height = 64;
+                const testCtx = testCanvas.getContext('2d');
+                fn(testCtx, 64, 64, 0.25, {});
+                fn(testCtx, 64, 64, 0.5, {});
+
+                const imgData = testCtx.getImageData(0, 0, 64, 64).data;
+                let hasVisiblePixels = false;
+                for (let i = 0; i < imgData.length; i += 16) {
+                    if (imgData[i + 3] > 10 && (imgData[i] > 5 || imgData[i + 1] > 5 || imgData[i + 2] > 5)) {
+                        hasVisiblePixels = true;
+                        break;
+                    }
+                }
+                if (!hasVisiblePixels) {
+                    throw new Error('Generated canvas rendered a blank/black frame.');
+                }
+
+                appState.compiledRenderFn = fn;
+                appState.renderError = null;
+                return true;
+            } catch (err) {
+                console.error('Shader/Render compile or dry-run error:', err);
+                appState.renderError = err.message;
+                return false;
+            }
+        }
+
+        // ==========================================
+        // 2. MOBILE RESPONSIVE PANE SWITCHER
+        // ==========================================
+        function switchMobilePane(pane) {
+            appState.mobilePane = pane;
+            const chatPanel = document.getElementById('panel-chat');
+            const canvasPanel = document.getElementById('panel-canvas');
+            const tabCanvas = document.getElementById('mobile-tab-canvas');
+            const tabChat = document.getElementById('mobile-tab-chat');
+
+            if (pane === 'canvas') {
+                canvasPanel.classList.remove('hidden');
+                canvasPanel.classList.add('flex');
+                chatPanel.classList.add('hidden');
+                chatPanel.classList.remove('flex');
+
+                tabCanvas.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-semibold bg-codenixPurple text-white shadow-2xs transition-all';
+                tabChat.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-codenixPurple transition-all';
+            } else {
+                chatPanel.classList.remove('hidden');
+                chatPanel.classList.add('flex');
+                canvasPanel.classList.add('hidden');
+                canvasPanel.classList.remove('flex');
+
+                tabChat.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-semibold bg-codenixPurple text-white shadow-2xs transition-all';
+                tabCanvas.className = 'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-codenixPurple transition-all';
+            }
+        }
+
+        // ==========================================
+        // 3. INITIALIZATION & LOCAL STORAGE PERSISTENCE
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            initCodenixTheme();
+            lucide.createIcons();
+
+            // Enforce Supabase Auth Check before loading studio
+            const isAuthed = await verifySupabaseAuth();
+            if (!isAuthed) return;
+
+            restoreFromLocalStorage();
+            const ok = compileSceneCode(currentScene.code);
+            if (!ok) {
+                currentScene.code = DEFAULT_RENDER_CODE;
+                compileSceneCode(currentScene.code);
+            }
+            initPuterSession();
+            resizeCanvas();
+            syncJsonEditor();
+            requestAnimationFrame(renderLoop);
+        });
+        async function handleAccountSignOut() {
+            try {
+                if (typeof puter !== 'undefined' && puter.auth && puter.auth.isSignedIn()) {
+                    await puter.auth.signOut();
+                }
+            } catch (e) {}
+            try {
+                await supabaseClient.auth.signOut();
+            } catch (e) {}
+            appState.user = null;
+            appState.supabaseUser = null;
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            const returnPath = encodeURIComponent('/Vidy');
+            window.location.replace(`/Start?redirect=${returnPath}`);
+        }
+
+        function restoreFromLocalStorage() {
+            try {
+                const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
+                if (savedUser) {
+                    appState.user = JSON.parse(savedUser);
+                    updateAuthUI();
+                }
+
+                const savedTitle = localStorage.getItem(STORAGE_KEYS.TITLE);
+                if (savedTitle) {
+                    document.getElementById('project-title-input').value = savedTitle;
+                }
+
+                const savedScene = localStorage.getItem(STORAGE_KEYS.SCENE);
+                if (savedScene) {
+                    const parsed = JSON.parse(savedScene);
+                    if (parsed && typeof parsed.code === 'string' && parsed.code.trim().length > 40) {
+                        currentScene = parsed;
+                        appState.duration = currentScene.duration || 4.0;
+                        document.getElementById('duration-select').value = String(appState.duration);
+                        updateDurationLabels();
+                    }
+                }
+
+                const savedChat = localStorage.getItem(STORAGE_KEYS.CHAT);
+                if (savedChat) {
+                    const messages = JSON.parse(savedChat);
+                    if (Array.isArray(messages) && messages.length > 0) {
+                        appState.chatHistory = messages;
+                        messages.forEach(msg => appendChatBubble(msg.role, msg.content, msg.attachments, false));
+                    }
+                }
+            } catch (err) {
+                console.warn('LocalStorage restore warning:', err);
+            }
+        }
+
+        function persistToLocalStorage() {
+            try {
+                if (appState.user) {
+                    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(appState.user));
+                } else {
+                    localStorage.removeItem(STORAGE_KEYS.USER);
+                }
+                localStorage.setItem(STORAGE_KEYS.SCENE, JSON.stringify(currentScene));
+                localStorage.setItem(STORAGE_KEYS.CHAT, JSON.stringify(appState.chatHistory.slice(-30)));
+                localStorage.setItem(STORAGE_KEYS.TITLE, document.getElementById('project-title-input').value);
+            } catch (err) {
+                console.warn('LocalStorage save warning:', err);
+            }
+        }
+
+        document.getElementById('project-title-input').addEventListener('input', persistToLocalStorage);
+
+        // ==========================================
+        // 4. PUTER.JS AUTHENTICATION & ACCOUNT SYNC
+        // ==========================================
+        async function initPuterSession() {
+            try {
+                if (typeof puter !== 'undefined' && puter.auth) {
+                    const isSignedIn = puter.auth.isSignedIn();
+                    if (isSignedIn) {
+                        const user = await puter.auth.getUser();
+                        appState.user = {
+                            username: user.username || 'Puter Creator',
+                            uuid: user.uuid || 'local-session',
+                            email: user.email || ''
+                        };
+                        persistToLocalStorage();
+                        updateAuthUI();
+                    }
+                }
+            } catch (err) {
+                console.log('Puter session check:', err.message);
+            }
+        }
+
+        async function handlePuterSignIn() {
+            try {
+                if (typeof puter === 'undefined') {
+                    showToast('Puter SDK is still loading, please try again.');
+                    return;
+                }
+                const res = await puter.auth.signIn();
+                const user = await puter.auth.getUser();
+                appState.user = {
+                    username: user.username || res?.username || 'Puter Creator',
+                    uuid: user.uuid || Date.now().toString()
+                };
+                persistToLocalStorage();
+                updateAuthUI();
+                showToast(`Signed in as ${appState.user.username} (Saved locally)`);
+            } catch (err) {
+                console.error('Puter sign-in error:', err);
+                showToast('Sign-in cancelled or unavailable.');
+            }
+        }
+
+        async function handlePuterSignOut() {
+            try {
+                if (typeof puter !== 'undefined' && puter.auth && puter.auth.isSignedIn()) {
+                    await puter.auth.signOut();
+                }
+            } catch (e) {}
+            appState.user = null;
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            updateAuthUI();
+            showToast('Account disconnected from local storage.');
+        }
+
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('puter-login-btn');
+            const userBadge = document.getElementById('puter-user-badge');
+            const usernameEl = document.getElementById('puter-username');
+
+            if (appState.user) {
+                loginBtn.classList.add('hidden');
+                userBadge.classList.remove('hidden');
+                userBadge.classList.add('flex');
+                usernameEl.textContent = appState.user.username;
+            } else {
+                loginBtn.classList.remove('hidden');
+                userBadge.classList.add('hidden');
+                userBadge.classList.remove('flex');
+            }
+        }
+
+        // ==========================================
+        // 5. FILE UPLOAD & ASSET MANAGEMENT
+        // ==========================================
+        function handleFileUpload(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const dataUrl = e.target.result;
+                    const assetId = 'asset_' + Math.random().toString(36).substring(2, 8);
+
+                    if (file.type.startsWith('image/') || file.name.endsWith('.svg')) {
+                        const img = new Image();
+                        img.onload = () => {
+                            appState.uploadedImagesMap[assetId] = img;
+                            appState.attachments.push({
+                                id: assetId,
+                                name: file.name,
+                                type: 'image',
+                                dataUrl: dataUrl
+                            });
+                            renderAttachmentBar();
+                        };
+                        img.src = dataUrl;
+                    } else {
+                        appState.attachments.push({
+                            id: assetId,
+                            name: file.name,
+                            type: 'text',
+                            content: dataUrl
+                        });
+                        renderAttachmentBar();
+                    }
+                };
+
+                if (file.type.startsWith('image/') || file.name.endsWith('.svg')) {
+                    reader.readAsDataURL(file);
+                } else {
+                    reader.readAsText(file);
+                }
+            });
+
+            event.target.value = '';
+        }
+
+        function renderAttachmentBar() {
+            const bar = document.getElementById('attachment-preview-bar');
+            if (!appState.attachments.length) {
+                bar.classList.add('hidden');
+                bar.innerHTML = '';
+                return;
+            }
+            bar.classList.remove('hidden');
+            bar.innerHTML = appState.attachments.map((att, idx) => `
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-codenixDarkBg border border-codenixLightBorder dark:border-codenixDarkBorder text-xs text-zinc-900 dark:text-zinc-100 shrink-0 shadow-2xs">
+                    <i data-lucide="${att.type === 'image' ? 'image' : 'file-code'}" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+                    <span class="max-w-[120px] truncate font-medium">${att.name}</span>
+                    <button onclick="removeAttachment(${idx})" class="text-zinc-400 hover:text-red-500 ml-1">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function removeAttachment(index) {
+            appState.attachments.splice(index, 1);
+            renderAttachmentBar();
+        }
+
+        // ==========================================
+        // 6. MULTI-STAGE CINEMATIC LOADING ANIMATION
+        // ==========================================
+        const LOADING_STAGES = [
+            { title: 'Directing Scene Choreography...', sub: 'Planning camera framing, depth layers & motion arcs' },
+            { title: 'Sculpting Vector Geometry & Shaders...', sub: 'Building gradients, glassmorphism & realistic lighting' },
+            { title: 'Synchronizing 60fps Keyframe Curves...', sub: 'Balancing spring physics for a seamless infinite loop' },
+            { title: 'Compiling HD Motion Canvas...', sub: 'Validating frame rendering & anti-aliasing' }
+        ];
+
+        function startLoadingAnimation() {
+            const genOverlay = document.getElementById('generating-overlay');
+            const titleEl = document.getElementById('gen-stage-title');
+            const subEl = document.getElementById('gen-stage-sub');
+
+            // On mobile, switch straight to Video Canvas so the user watches the live synthesis overlay
+            if (window.innerWidth < 1024) {
+                switchMobilePane('canvas');
+            }
+
+            let step = 0;
+            titleEl.textContent = LOADING_STAGES[0].title;
+            subEl.textContent = LOADING_STAGES[0].sub;
+            genOverlay.classList.remove('hidden');
+
+            clearInterval(appState.genTimerInterval);
+            appState.genTimerInterval = setInterval(() => {
+                step = (step + 1) % LOADING_STAGES.length;
+                titleEl.textContent = LOADING_STAGES[step].title;
+                subEl.textContent = LOADING_STAGES[step].sub;
+            }, 2200);
+        }
+
+        function stopLoadingAnimation() {
+            clearInterval(appState.genTimerInterval);
+            document.getElementById('generating-overlay').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 7. CHAT INTERACTION & PUTER AI SCENE GENERATION
+        // ==========================================
+        function usePresetPrompt(text) {
+            const input = document.getElementById('chat-input');
+            input.value = text;
+            sendMessage();
+        }
+
+        function handleInputKeydown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('chat-input');
+            const promptText = inputEl.value.trim();
+            if (!promptText && appState.attachments.length === 0) return;
+
+            const currentAttachments = [...appState.attachments];
+            inputEl.value = '';
+            appState.attachments = [];
+            renderAttachmentBar();
+
+            appendChatBubble('user', promptText || 'Animate attached asset', currentAttachments, true);
+
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+            startLoadingAnimation();
+
+            try {
+                // Attempt generation with automatic 1-retry self-healing if AI returns invalid/black code
+                let updatedScene = await generateMotionSceneWithPuter(promptText, currentAttachments, null);
+                let compiledOk = updatedScene && typeof updatedScene.code === 'string' && compileSceneCode(updatedScene.code);
+
+                if (!compiledOk) {
+                    const fixFeedback = appState.renderError || 'Code failed to draw visible graphics on canvas.';
+                    updatedScene = await generateMotionSceneWithPuter(promptText, currentAttachments, fixFeedback);
+                    compiledOk = updatedScene && typeof updatedScene.code === 'string' && compileSceneCode(updatedScene.code);
+                }
+
+                if (!compiledOk) {
+                    throw new Error(appState.renderError || 'Unable to compile visual frames.');
+                }
+
+                currentScene = updatedScene;
+                appState.duration = Number(updatedScene.duration) || appState.duration;
+                document.getElementById('duration-select').value = String(appState.duration);
+                updateDurationLabels();
+                appState.currentTime = 0;
+                appState.isPlaying = true;
+                updatePlayPauseUI();
+                syncJsonEditor();
+                persistToLocalStorage();
+
+                if (updatedScene.title) {
+                    document.getElementById('project-title-input').value = updatedScene.title;
+                }
+
+                appendChatBubble(
+                    'assistant',
+                    `Generated **${updatedScene.title || 'Motion Sequence'}** (${appState.duration}s seamless 60fps loop). Request any edits—colors, camera motion, text, or realism details—or tap **Export MP4**.`,
+                    [],
+                    true
+                );
+            } catch (error) {
+                console.error('Motion generation error:', error);
+                appendChatBubble(
+                    'assistant',
+                    `I hit a snag synthesizing that scene (${error.message}). Your previous scene is preserved—try describing it slightly differently or click **New Conversation**.`,
+                    [],
+                    true
+                );
+            } finally {
+                sendBtn.disabled = false;
+                stopLoadingAnimation();
+            }
+        }
+
+        function startNewConversation() {
+            appState.chatHistory = [];
+            appState.attachments = [];
+            renderAttachmentBar();
+            localStorage.removeItem(STORAGE_KEYS.CHAT);
+            localStorage.removeItem(STORAGE_KEYS.SCENE);
+            localStorage.removeItem(STORAGE_KEYS.TITLE);
+            document.getElementById('project-title-input').value = 'Untitled Motion Sequence';
+
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = `
+                <div class="flex gap-2.5 sm:gap-3 items-start">
+                    <div class="w-7 h-7 rounded-lg bg-codenixPurple/15 border border-codenixPurple/30 flex items-center justify-center shrink-0 mt-0.5">
+                        <i data-lucide="wand-2" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+                    </div>
+                    <div class="flex-1 space-y-2 min-w-0">
+                        <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Vidy Director</div>
+                        <div class="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 bg-codenixLightPanel dark:bg-codenixDarkPanel border border-codenixLightBorder dark:border-codenixDarkBorder rounded-2xl rounded-tl-sm p-3.5 shadow-2xs">
+                            Started a <strong class="font-semibold text-codenixPurple dark:text-codenixPurpleLight">new conversation</strong>. Describe any realistic motion graphic—product UI showcase, financial chart explainer, volumetric space scene, or kinetic typography—and I will create a 60fps looping video.
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <button onclick="usePresetPrompt('Create a photorealistic Apple-style iPhone notification & FaceID unlock animation with glassmorphic cards, subtle light reflections, and smooth spring physics')" 
+                                    class="text-[11px] px-2.5 py-1.5 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 text-zinc-800 dark:text-zinc-200 border border-codenixLightBorder dark:border-codenixDarkBorder transition-colors text-left">
+                                📱 Realistic UI Showcase
+                            </button>
+                            <button onclick="usePresetPrompt('Create a cinematic financial wealth & portfolio growth explainer with glowing purple & emerald spline curves, glassmorphic KPI cards, and animated counters')" 
+                                    class="text-[11px] px-2.5 py-1.5 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 text-zinc-800 dark:text-zinc-200 border border-codenixLightBorder dark:border-codenixDarkBorder transition-colors text-left">
+                                📈 Fintech Motion Explainer
+                            </button>
+                            <button onclick="usePresetPrompt('Create a realistic deep-space solar eclipse & orbital satellite telemetry animation with volumetric purple corona rays, lens flare, and orbital rings')" 
+                                    class="text-[11px] px-2.5 py-1.5 rounded-xl bg-codenixLightPanel dark:bg-codenixDarkPanel hover:border-codenixPurple/50 text-zinc-800 dark:text-zinc-200 border border-codenixLightBorder dark:border-codenixDarkBorder transition-colors text-left">
+                                🪐 Volumetric Solar Eclipse
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            if (window.innerWidth < 1024) {
+                switchMobilePane('chat');
+            }
+            showToast('Started a fresh conversation');
+        }
+
+        async function generateMotionSceneWithPuter(userPrompt, attachments, repairError) {
+            if (typeof puter !== 'undefined' && puter.auth && !puter.auth.isSignedIn()) {
+                try {
+                    await handlePuterSignIn();
+                } catch (e) {}
+            }
+
+            const assetContext = attachments.map(a => {
+                if (a.type === 'image') {
+                    return `Uploaded Image Asset available at \`assets["${a.id}"]\` (an HTMLImageElement, filename: ${a.name}). Check \`if (assets["${a.id}"] && assets["${a.id}"].complete)\` before calling \`ctx.drawImage(assets["${a.id}"], ...)\`.`;
+                }
+                return `Uploaded Reference File (${a.name}): ${a.content?.slice(0, 1500)}`;
+            }).join('\n');
+
+            const isFirstTurnInConversation = appState.chatHistory.filter(m => m.role === 'user').length <= 1;
+            const recentConversation = appState.chatHistory.slice(-6).map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
+
+            const systemPrompt = `You are Vidy, an award-winning Creative Director and Motion Designer (Apple Keynote, Stripe, Linear, and Claude Artifacts level).
+You write **complete, realistic, high-craft procedural HTML5 Canvas 2D JavaScript rendering code** that draws a rich 60fps motion graphic every frame.
+
+FUNCTION SIGNATURE YOU ARE WRITING THE BODY OF:
+\`function renderFrame(ctx, w, h, t, assets)\`
+- \`ctx\`: CanvasRenderingContext2D (already reset cleanly each frame).
+- \`w\`, \`h\`: exact pixel width and height of the HD canvas. ALWAYS scale coordinates and font sizes proportionally using \`const rs = Math.min(w, h) / 720;\` and center around \`const cx = w * 0.5, cy = h * 0.5;\` so it looks great in 16:9, 1:1, and 9:16!
+- \`t\`: normalized loop progress strictly in \`[0.0, 1.0)\`.
+- \`assets\`: dictionary of uploaded \`HTMLImageElement\` objects keyed by assetId.
+
+PRE-DEFINED HELPERS ALREADY AVAILABLE IN SCOPE (you may use them directly):
+\`TAU\`, \`PI\`, \`clamp(v, min, max)\`, \`clamp01(x)\`, \`lerp(a, b, t)\`, \`seg(t, start, end)\`, \`easeOutCubic(x)\`, \`easeInCubic(x)\`, \`easeInOutCubic(x)\`, \`easeOutBack(x)\`, \`easeOutElastic(x)\`, \`pulseWave(t, freq)\`.
+
+CRITICAL REALISM & ANTI-BLACK-SCREEN RULES:
+1. **ALWAYS DRAW A RICH BACKGROUND FIRST**: Start by filling \`ctx.fillRect(0, 0, w, h)\` with a rich multi-stop linear or radial gradient (never leave the canvas transparent or solid pitch black!).
+2. **PHOTOREALISTIC & TACTILE DEPTH**:
+   - Use multi-stop gradients, realistic soft drop shadows (\`ctx.shadowColor\`, \`ctx.shadowBlur\`, \`ctx.shadowOffsetY\`), specular glass highlights (1px translucent white top/left edge strokes), layered parallax planes, bezier curves, glowing light blooms (\`globalCompositeOperation = 'lighter'\` used carefully and reset via \`ctx.save()\`/\`ctx.restore()\`), and crisp \`Inter, sans-serif\` typography.
+   - Draw detailed, recognizable subjects matching the user's prompt—realistic product mockups, dashboards, landscapes, 3D-shaded spheres/planets, kinetic headlines, or custom vector illustrations.
+3. **100% SEAMLESS INFINITE LOOP**:
+   - Every animation MUST loop seamlessly from \`t = 1.0\` back to \`t = 0.0\`!
+   - Use periodic math (\`Math.sin(t * TAU)\`, \`Math.cos(t * TAU)\`), full \`TAU\` rotations, or symmetric entrance + exit envelopes (enter \`t ∈ [0.04, 0.24]\`, hold/animate \`t ∈ [0.24, 0.80]\`, exit \`t ∈ [0.80, 0.96]\`).
+4. **DETERMINISTIC ONLY**: NEVER use \`Math.random()\` inside \`renderFrame\`. Use golden angle \`i * 2.39996\` or \`Math.sin(i * 12.9898)\`.
+5. **MODE**:
+   - ${isFirstTurnInConversation ? 'NEW SCENE: Write fresh, bespoke rendering code tailored specifically to the user prompt.' : 'ITERATIVE EDIT: Modify and enhance the existing scene code below according to the user request.'}
+${repairError ? `\n⚠️ PREVIOUS ATTEMPT FAILED WITH ERROR: "${repairError}". Fix this bug completely and ensure bright, visible, well-lit graphics are drawn at all values of t!` : ''}
+
+OUTPUT FORMAT:
+Return ONLY a valid raw JSON object (no markdown fences, no commentary outside JSON):
+{
+  "title": "Short Scene Title",
+  "duration": ${appState.duration},
+  "code": "// Complete JavaScript body for renderFrame(ctx, w, h, t, assets)..."
+}
+
+RECENT CONVERSATION:
+${recentConversation}
+
+${!isFirstTurnInConversation ? 'CURRENT RENDER CODE TO MODIFY:\n' + currentScene.code : ''}
+
+${assetContext ? 'ATTACHED USER ASSETS:\n' + assetContext : ''}`;
+
+            const fullPrompt = `${systemPrompt}\n\nUSER REQUEST: ${userPrompt}`;
+
+            let response;
+            try {
+                response = await puter.ai.chat(fullPrompt);
+            } catch (primaryErr) {
+                response = await puter.ai.chat(fullPrompt, { model: 'gpt-4o' });
+            }
+
+            let rawText = '';
+            if (typeof response === 'string') {
+                rawText = response;
+            } else if (response?.message?.content) {
+                if (Array.isArray(response.message.content)) {
+                    rawText = response.message.content.map(c => c.text || '').join('');
+                } else {
+                    rawText = response.message.content;
+                }
+            } else if (response?.text) {
+                rawText = response.text;
+            } else {
+                rawText = JSON.stringify(response);
+            }
+
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            const cleanedJson = (jsonMatch ? jsonMatch[0] : rawText)
+                .replace(/^```json\s*/i, '')
+                .replace(/^```\s*/i, '')
+                .replace(/```\s*$/i, '')
+                .trim();
+
+            return JSON.parse(cleanedJson);
+        }
+
+        function appendChatBubble(role, text, attachments = [], save = true) {
+            const container = document.getElementById('chat-messages');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex gap-2.5 sm:gap-3 items-start animate-fadeIn';
+
+            const isUser = role === 'user';
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
+
+            let attachmentHtml = '';
+            if (attachments && attachments.length > 0) {
+                attachmentHtml = `<div class="flex flex-wrap gap-1.5 mb-2">` + attachments.map(att => `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/5 text-[11px] font-medium">
+                        <i data-lucide="paperclip" class="w-3 h-3"></i> ${att.name}
+                    </span>
+                `).join('') + `</div>`;
+            }
+
+            wrapper.innerHTML = isUser ? `
+                <div class="w-7 h-7 rounded-lg bg-codenixPurple text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-semibold">
+                    ${appState.user ? appState.user.username.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div class="flex-1 space-y-1 min-w-0">
+                    <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">${appState.user ? appState.user.username : 'You'}</div>
+                    <div class="text-sm leading-relaxed text-zinc-900 dark:text-zinc-100 bg-codenixLightPanel dark:bg-codenixDarkPanel border border-codenixLightBorder dark:border-codenixDarkBorder rounded-2xl rounded-tl-sm p-3 break-words">
+                        ${attachmentHtml}
+                        <div>${formattedText}</div>
+                    </div>
+                </div>
+            ` : `
+                <div class="w-7 h-7 rounded-lg bg-codenixPurple/15 border border-codenixPurple/30 flex items-center justify-center shrink-0 mt-0.5">
+                    <i data-lucide="wand-2" class="w-3.5 h-3.5 text-codenixPurple dark:text-codenixPurpleLight"></i>
+                </div>
+                <div class="flex-1 space-y-1 min-w-0">
+                    <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Vidy Director</div>
+                    <div class="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 bg-white dark:bg-codenixDarkPanel border border-codenixLightBorder dark:border-codenixDarkBorder rounded-2xl rounded-tl-sm p-3.5 shadow-2xs break-words">
+                        ${formattedText}
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+            lucide.createIcons();
+
+            if (save) {
+                appState.chatHistory.push({
+                    role,
+                    content: text,
+                    attachments: attachments.map(a => ({ name: a.name, type: a.type }))
+                });
+                persistToLocalStorage();
+            }
+        }
+
+        // ==========================================
+        // 8. DETERMINISTIC 60FPS PROCEDURAL MOTION RENDERER
+        // ==========================================
+        function renderSceneAtProgress(ctx, width, height, progress) {
+            ctx.save();
+            // Always paint a deep studio base so canvas is never dead-black/transparent
+            ctx.fillStyle = '#141211';
+            ctx.fillRect(0, 0, width, height);
+
+            if (appState.compiledRenderFn) {
+                try {
+                    appState.compiledRenderFn(ctx, width, height, progress, appState.uploadedImagesMap);
+                } catch (runtimeErr) {
+                    ctx.fillStyle = '#191514';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.fillStyle = '#F87171';
+                    ctx.font = '600 18px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Render Script Runtime Error: ' + runtimeErr.message, width / 2, height / 2);
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function renderLoop(timestamp) {
+            if (!appState.lastFrameTimestamp) appState.lastFrameTimestamp = timestamp;
+            const deltaSec = (timestamp - appState.lastFrameTimestamp) / 1000;
+            appState.lastFrameTimestamp = timestamp;
+
+            if (appState.isPlaying && !appState.isRecording) {
+                appState.currentTime = (appState.currentTime + deltaSec) % appState.duration;
+                updateTimelineUI();
+            }
+
+            const canvas = document.getElementById('motion-canvas');
+            const ctx = canvas.getContext('2d');
+            const progress = appState.duration > 0 ? appState.currentTime / appState.duration : 0;
+
+            renderSceneAtProgress(ctx, canvas.width, canvas.height, progress);
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        // ==========================================
+        // 7. CANVAS RESIZING, PLAYBACK & TIMELINE CONTROLS
+        // ==========================================
+        function resizeCanvas() {
+            const canvas = document.getElementById('motion-canvas');
+            // Render internally at crisp HD resolution based on aspect ratio
+            if (appState.aspectRatio === '16:9') {
+                canvas.width = 1280;
+                canvas.height = 720;
+            } else if (appState.aspectRatio === '1:1') {
+                canvas.width = 1080;
+                canvas.height = 1080;
+            } else {
+                canvas.width = 720;
+                canvas.height = 1280;
+            }
+        }
+
+        function changeAspectRatio(ratio) {
+            appState.aspectRatio = ratio;
+            const box = document.getElementById('canvas-aspect-box');
+            if (ratio === '16:9') {
+                box.style.aspectRatio = '16 / 9';
+                box.style.maxWidth = '820px';
+            } else if (ratio === '1:1') {
+                box.style.aspectRatio = '1 / 1';
+                box.style.maxWidth = '540px';
+            } else {
+                box.style.aspectRatio = '9 / 16';
+                box.style.maxWidth = '340px';
+            }
+            resizeCanvas();
+        }
+
+        function togglePlayPause() {
+            appState.isPlaying = !appState.isPlaying;
+            updatePlayPauseUI();
+        }
+
+        function updatePlayPauseUI() {
+            const icon = document.getElementById('play-pause-icon');
+            icon.setAttribute('data-lucide', appState.isPlaying ? 'pause' : 'play');
+            lucide.createIcons();
+        }
+
+        function restartLoop() {
+            appState.currentTime = 0;
+            appState.isPlaying = true;
+            updatePlayPauseUI();
+            updateTimelineUI();
+        }
+
+        function scrubTimeline(val) {
+            appState.isPlaying = false;
+            updatePlayPauseUI();
+            appState.currentTime = (Number(val) / 1000) * appState.duration;
+            updateTimelineUI();
+        }
+
+        function updateLoopDuration(sec) {
+            appState.duration = parseFloat(sec);
+            currentScene.duration = appState.duration;
+            appState.currentTime = 0;
+            updateDurationLabels();
+            syncJsonEditor();
+            persistToLocalStorage();
+        }
+
+        function updateDurationLabels() {
+            document.getElementById('time-total').textContent = appState.duration.toFixed(2) + 's';
+            document.getElementById('loop-duration-label').textContent = `Loop: ${appState.duration.toFixed(1)}s @ 60fps`;
+        }
+
+        function updateTimelineUI() {
+            const scrubber = document.getElementById('timeline-scrubber');
+            const currentEl = document.getElementById('time-current');
+            const norm = appState.duration > 0 ? appState.currentTime / appState.duration : 0;
+            scrubber.value = Math.round(norm * 1000);
+            currentEl.textContent = appState.currentTime.toFixed(2) + 's';
+        }
+
+        // ==========================================
+        // 8. MP4 VIDEO EXPORT ENGINE (REAL-TIME 60FPS CAPTURE)
+        // ==========================================
+        async function exportToMP4() {
+            if (appState.isRecording) return;
+
+            const canvas = document.getElementById('motion-canvas');
+            const ctx = canvas.getContext('2d');
+            const overlay = document.getElementById('recording-overlay');
+            const statusText = document.getElementById('recording-status-text');
+            const exportBtn = document.getElementById('export-mp4-btn');
+
+            // Determine best supported MP4 / H.264 mimeType, fallback to WebM
+            const mimeCandidates = [
+                'video/mp4;codecs=avc1',
+                'video/mp4',
+                'video/webm;codecs=vp9',
+                'video/webm'
+            ];
+            const selectedMime = mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || '';
+
+            if (!selectedMime) {
+                showToast('Video recording is not supported in this browser.');
+                return;
+            }
+
+            appState.isRecording = true;
+            exportBtn.disabled = true;
+            overlay.classList.remove('hidden');
+
+            try {
+                const stream = canvas.captureStream(60);
+                const recorder = new MediaRecorder(stream, {
+                    mimeType: selectedMime,
+                    videoBitsPerSecond: 8_000_000 // 8 Mbps crisp high bitrate
+                });
+
+                const chunks = [];
+                recorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) chunks.push(e.data);
+                };
+
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: selectedMime });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const cleanTitle = (document.getElementById('project-title-input').value || 'vidy-motion')
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-');
+                    a.href = url;
+                    a.download = `${cleanTitle}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    appState.isRecording = false;
+                    exportBtn.disabled = false;
+                    overlay.classList.add('hidden');
+                    showToast(`Downloaded ${cleanTitle}.mp4 (${appState.duration}s HD Loop)`);
+                };
+
+                // Record exactly one complete seamless loop from t=0 to t=duration
+                const totalMs = appState.duration * 1000;
+                const startTime = performance.now();
+                recorder.start();
+
+                function stepRecord(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(1, elapsed / totalMs);
+
+                    renderSceneAtProgress(ctx, canvas.width, canvas.height, progress);
+                    statusText.textContent = `Rendering MP4 Loop... ${Math.round(progress * 100)}%`;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(stepRecord);
+                    } else {
+                        setTimeout(() => recorder.stop(), 80);
+                    }
+                }
+
+                requestAnimationFrame(stepRecord);
+            } catch (err) {
+                console.error('Export error:', err);
+                appState.isRecording = false;
+                exportBtn.disabled = false;
+                overlay.classList.add('hidden');
+                showToast('Failed to encode MP4 video.');
+            }
+        }
+
+        // ==========================================
+        // 9. STUDIO TABS, JSON EDITOR & STANDALONE HTML EXPORT
+        // ==========================================
+        function switchStudioTab(tab) {
+            const previewView = document.getElementById('view-preview');
+            const codeView = document.getElementById('view-code');
+            const tabPreview = document.getElementById('tab-preview');
+            const tabCode = document.getElementById('tab-code');
+
+            if (tab === 'preview') {
+                previewView.classList.remove('hidden');
+                codeView.classList.add('hidden');
+                tabPreview.className = 'flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium bg-codenixPurple text-white transition-all';
+                tabCode.className = 'flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium text-white/60 hover:text-white transition-all';
+            } else {
+                syncJsonEditor();
+                previewView.classList.add('hidden');
+                codeView.classList.remove('hidden');
+                tabCode.className = 'flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium bg-codenixPurple text-white transition-all';
+                tabPreview.className = 'flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-medium text-white/60 hover:text-white transition-all';
+            }
+        }
+
+        function syncJsonEditor() {
+            document.getElementById('json-code-editor').value = currentScene.code || '';
+        }
+
+        function applyManualCodeEdit() {
+            const newCode = document.getElementById('json-code-editor').value;
+            if (!newCode.trim()) {
+                showToast('Code cannot be empty.');
+                return;
+            }
+            const ok = compileSceneCode(newCode);
+            if (!ok) {
+                showToast('Syntax Error: ' + appState.renderError);
+                return;
+            }
+            currentScene.code = newCode;
+            persistToLocalStorage();
+            switchStudioTab('preview');
+            showToast('Custom motion script applied to live canvas!');
+        }
+
+        function copyStandaloneHtml() {
+            const safeCode = currentScene.code || '';
+            const htmlSnippet = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${currentScene.title || 'Vidy Motion Graphic'}</title>
+<style>body{margin:0;background:#0e0e11;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}canvas{max-width:100%;max-height:100%}</style>
+</head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const duration = ${appState.duration};
+function renderFrame(ctx, w, h, t, assets) {
+${ENGINE_PRELUDE}
+${safeCode}
+}
+function loop(ts) {
+  const t = ((ts / 1000) % duration) / duration;
+  ctx.save();
+  ctx.fillStyle = '#141211';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  renderFrame(ctx, canvas.width, canvas.height, t, {});
+  ctx.restore();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+<\/script>
+</body>
+</html>`;
+
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = htmlSnippet;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextarea);
+            showToast('Standalone looping HTML copied to clipboard!');
+        }
+
+        function resetProject() {
+            localStorage.removeItem(STORAGE_KEYS.SCENE);
+            localStorage.removeItem(STORAGE_KEYS.CHAT);
+            localStorage.removeItem(STORAGE_KEYS.TITLE);
+            location.reload();
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const banner = document.getElementById('toast-banner');
+            const textEl = document.getElementById('toast-message');
+            textEl.textContent = msg;
+            banner.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 3200);
+        }
+    </script>
+</body>
+</html>
