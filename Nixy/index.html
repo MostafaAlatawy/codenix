@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nixy — All-in-One AI Agent Studio</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace']
+                    },
+                    colors: {
+                        nix: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            bgdark: '#09080e',
+                            carddark: '#13111c',
+                            borderdark: '#26203b',
+                        }
+                    },
+                    animation: {
+                        'float': 'nixyFloat 3.6s ease-in-out infinite',
+                        'pulse-glow': 'nixyPulse 2.8s ease-in-out infinite',
+                        'blink': 'nixyEyeBlink 4.2s infinite',
+                        'orbit-spin': 'orbitSpin 1.8s linear infinite',
+                        'orbit-reverse': 'orbitReverse 2.5s linear infinite',
+                    },
+                    keyframes: {
+                        nixyFloat: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-7px)' },
+                        },
+                        nixyPulse: {
+                            '0%, 100%': { boxShadow: '0 0 28px rgba(139, 92, 246, 0.55), inset 0 -6px 14px rgba(15, 10, 30, 0.45)' },
+                            '50%': { boxShadow: '0 0 44px rgba(167, 139, 250, 0.85), inset 0 -6px 14px rgba(15, 10, 30, 0.45)' },
+                        },
+                        nixyEyeBlink: {
+                            '0%, 92%, 96%, 100%': { transform: 'scaleY(1)' },
+                            '94%': { transform: 'scaleY(0.12)' },
+                        },
+                        orbitSpin: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                        orbitReverse: {
+                            '0%': { transform: 'rotate(360deg)' },
+                            '100%': { transform: 'rotate(0deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Puter.js v2 SDK -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script>if (window.puter) window.puter.quiet = true;</script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Marked & Highlight.js for Smart Markdown & Code Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- QRCode.js & JSZip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.35); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.65); }
+
+        .welcome-ambient-light {
+            background: radial-gradient(circle at 50% 45%, rgba(139, 92, 246, 0.14) 0%, rgba(255, 255, 255, 0) 65%);
+        }
+        .dark .welcome-ambient-dark {
+            background: radial-gradient(circle at 50% 45%, rgba(139, 92, 246, 0.2) 0%, rgba(9, 8, 14, 0) 65%);
+        }
+
+        /* Nixy Purple Orb & Expressive White Eyes */
+        .nixy-orb {
+            background: radial-gradient(circle at 30% 25%, #ddd6fe 0%, #8b5cf6 52%, #4c1d95 100%);
+            transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        background 0.35s ease;
+            position: relative;
+            user-select: none;
+        }
+        .nixy-eye {
+            background-color: #ffffff;
+            border-radius: 9999px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.95);
+            transition: transform 0.14s ease-out, width 0.2s ease, height 0.2s ease, border-radius 0.2s ease, background-color 0.25s ease;
+        }
+        .nixy-orb.mood-thinking .nixy-eye,
+        .nixy-orb.mood-coding .nixy-eye {
+            background-color: #fef08a;
+            box-shadow: 0 0 12px #fef08a;
+            transform: scale(1.12);
+        }
+        .nixy-orb.mood-thinking .nixy-aura,
+        .nixy-orb.mood-coding .nixy-aura {
+            opacity: 1 !important;
+        }
+        .nixy-orb.mood-happy .nixy-eye {
+            height: 44% !important;
+            border-radius: 9999px 9999px 3px 3px !important;
+            background-color: #ffffff;
+            box-shadow: 0 0 12px #a7f3d0;
+        }
+        .nixy-orb.mood-error .nixy-eye:first-child {
+            height: 55% !important;
+            border-radius: 4px 9999px 9999px 9999px !important;
+            transform: rotate(-16deg);
+            background-color: #fda4af;
+        }
+        .nixy-orb.mood-error .nixy-eye:last-child {
+            height: 55% !important;
+            border-radius: 9999px 4px 9999px 9999px !important;
+            transform: rotate(16deg);
+            background-color: #fda4af;
+        }
+        .nixy-orb.mood-listening .nixy-eye {
+            background-color: #6ee7b7;
+            box-shadow: 0 0 12px #6ee7b7;
+            transform: scale(1.15);
+        }
+
+        /* Prose & Smart Code Card Styles from Nix 4.5 */
+        .prose p { margin-bottom: 0.7rem; line-height: 1.65; }
+        .prose p:last-child { margin-bottom: 0; }
+        .prose ul { list-style-type: disc; padding-left: 1.4rem; margin-bottom: 0.7rem; }
+        .prose ol { list-style-type: decimal; padding-left: 1.4rem; margin-bottom: 0.7rem; }
+        .prose code:not(pre code) {
+            background-color: rgba(139, 92, 246, 0.16);
+            color: #7c3aed;
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.35rem;
+            font-size: 0.85em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .dark .prose code:not(pre code) { color: #c4b5fd; }
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 12px;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+        .prose th {
+            background: rgba(124, 58, 237, 0.16);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.55rem 0.75rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+        }
+        .prose td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.14);
+        }
+
+        .nix-code-card {
+            background-color: #0d0c15;
+            border: 1px solid #26203b;
+            border-radius: 0.75rem;
+            margin: 0.75rem 0;
+            overflow: hidden;
+        }
+        .nix-code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.45rem 0.85rem;
+            background-color: #151224;
+            border-bottom: 1px solid #26203b;
+            font-size: 11px;
+            color: #c4b5fd;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .nix-code-btn {
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.375rem;
+            background: rgba(139, 92, 246, 0.16);
+            color: #ddd6fe;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .nix-code-btn:hover { background: rgba(139, 92, 246, 0.35); color: #fff; }
+        .nix-code-card pre {
+            margin: 0 !important;
+            padding: 0.85rem 1rem !important;
+            max-height: 360px;
+            overflow: auto;
+            background: #0d0c15 !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-nix-bgdark dark:text-zinc-100 font-sans antialiased h-screen flex overflow-hidden transition-colors duration-200">
+
+    <!-- SUPABASE AUTHENTICATION GATE OVERLAY -->
+    <div id="auth-gate-overlay" class="fixed inset-0 z-50 bg-white dark:bg-nix-bgdark flex flex-col items-center justify-center p-6 transition-opacity duration-300">
+        <div class="w-16 h-16 rounded-full nixy-orb animate-pulse-glow flex items-center justify-center mb-4 border-2 border-purple-300/40">
+            <div class="flex items-center gap-2">
+                <span class="nixy-eye w-3 h-3 block"></span>
+                <span class="nixy-eye w-3 h-3 block"></span>
+            </div>
+        </div>
+        <div class="text-sm font-bold tracking-tight">Verifying Nixy Session...</div>
+        <div class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Checking Supabase authentication</div>
+    </div>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobileBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden md:hidden" onclick="toggleMobileSidebar()"></div>
+
+    <!-- MAIN APP LAYOUT -->
+    <div class="flex h-full w-full overflow-hidden relative">
+
+        <!-- LEFT SIDEBAR: CONVERSATIONS & TOOL LAUNCHER -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-white dark:bg-nix-carddark border-r border-slate-200 dark:border-nix-borderdark flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0 select-none">
+            
+            <!-- Brand & New Chat -->
+            <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark/70 space-y-2.5">
+                <div class="flex items-center justify-between px-1.5 py-1">
+                    <button onclick="resetToNixCodeHero()" class="flex items-center gap-2.5 group text-left">
+                        <div class="w-8 h-8 rounded-full nixy-orb flex items-center justify-center shadow-md border border-purple-300/40">
+                            <div class="flex items-center gap-1">
+                                <span class="nixy-eye w-1.5 h-1.5 block"></span>
+                                <span class="nixy-eye w-1.5 h-1.5 block"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-extrabold text-base tracking-tight bg-gradient-to-r from-nix-600 to-purple-400 dark:from-white dark:to-nix-300 bg-clip-text text-transparent">Nixy</span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-nix-600/15 text-nix-600 dark:text-nix-300 border border-nix-500/30">AGENT</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 dark:text-zinc-500">All-in-One AI Workspace</p>
+                        </div>
+                    </button>
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <button onclick="createNewConversation()" class="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-gradient-to-r from-nix-600 to-nix-700 hover:from-nix-500 hover:to-nix-600 text-white rounded-xl font-semibold text-xs shadow-lg shadow-nix-700/20 transition active:scale-[0.98]">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>New Conversation</span>
+                </button>
+
+                <!-- Search Conversations -->
+                <div class="relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="renderConversationsList()" placeholder="Search conversations..." class="w-full bg-slate-100 dark:bg-nix-bgdark/80 border border-slate-200 dark:border-nix-borderdark rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-nix-500">
+                </div>
+            </div>
+
+            <!-- Conversations History (Supabase `conversations` table + local cache) -->
+            <div class="flex-1 overflow-y-auto p-2 space-y-1" id="conversationsList"></div>
+
+            <!-- Unified Nixy Super-Tools Quick Switcher -->
+            <div class="p-2.5 border-t border-slate-200 dark:border-nix-borderdark/70 bg-slate-50/70 dark:bg-nix-bgdark/40 space-y-1.5">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1.5">Nixy Studio Tools</div>
+                <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <button onclick="openToolStudio('code')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="code-2" class="w-3.5 h-3.5 text-nix-500 shrink-0"></i>
+                        <span class="truncate font-medium">NixCode Web</span>
+                    </button>
+                    <button onclick="openToolStudio('image')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="image" class="w-3.5 h-3.5 text-purple-400 shrink-0"></i>
+                        <span class="truncate font-medium">SubeAI Image</span>
+                    </button>
+                    <button onclick="openToolStudio('video')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="film" class="w-3.5 h-3.5 text-fuchsia-400 shrink-0"></i>
+                        <span class="truncate font-medium">Vidy Motion</span>
+                    </button>
+                    <button onclick="openToolStudio('share')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-sky-400 shrink-0"></i>
+                        <span class="truncate font-medium">ShareNix</span>
+                    </button>
+                    <button onclick="openToolStudio('tables')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="table" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                        <span class="truncate font-medium">Tables Maker</span>
+                    </button>
+                    <button onclick="openToolStudio('qr')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition text-left">
+                        <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                        <span class="truncate font-medium">QR & LinkNix</span>
+                    </button>
+                    <button onclick="openToolStudio('docs')" class="col-span-2 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nix-600/10 dark:bg-nix-600/20 border border-nix-500/30 hover:border-nix-500 text-nix-700 dark:text-nix-200 transition font-semibold">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-nix-500"></i>
+                        <span>Docs Maker & Rich Editor</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Account & Footer Controls -->
+            <div class="p-3 border-t border-slate-200 dark:border-nix-borderdark/70 bg-slate-50 dark:bg-nix-bgdark/60 space-y-2">
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                        <span id="accountLabel" class="truncate font-medium text-slate-700 dark:text-zinc-200">Authenticated User</span>
+                    </div>
+                    <button onclick="handleSignOut()" title="Sign Out" class="text-slate-400 hover:text-rose-500 p-1 transition">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 px-1">
+                    <button onclick="openMemoryModal()" class="flex items-center gap-1.5 hover:text-nix-500 transition">
+                        <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-nix-500"></i>
+                        <span>Memory (<span id="memoryCountBadge">1</span>)</span>
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <button onclick="toggleTheme()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-nix-borderdark/60 transition" title="Toggle Theme">
+                            <i data-lucide="sun-moon" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="exportCurrentChat()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-nix-borderdark/60 transition" title="Export Chat JSON">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT WORKSPACE -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+
+            <!-- Top Header Bar -->
+            <header class="h-14 border-b border-slate-200 dark:border-nix-borderdark/70 bg-white/85 dark:bg-nix-bgdark/85 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-nix-carddark">
+                        <i data-lucide="panel-left" class="w-5 h-5"></i>
+                    </button>
+
+                    <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-nix-600/10 dark:bg-nix-carddark border border-nix-500/30 text-xs font-semibold text-nix-700 dark:text-nix-200">
+                        <span id="nixyStatusDot" class="w-2 h-2 rounded-full bg-nix-500 animate-pulse"></span>
+                        <span id="nixyStatusText">Nixy is ready</span>
+                    </div>
+
+                    <div id="supabaseSyncBadge" class="hidden sm:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400">
+                        <i data-lucide="database" class="w-3 h-3"></i>
+                        <span>Supabase Synced</span>
+                    </div>
+                </div>
+
+                <!-- Right Tool Drawer Toggle & Quick Studio Access -->
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleStudioDrawer()" id="studioDrawerBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-nix-600 hover:bg-nix-500 text-white text-xs font-semibold shadow-sm transition active:scale-95">
+                        <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                        <span>Open Studio</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- SPLIT AREA: CHAT ON LEFT / NIXCODE HERO ON START + SLIDE-IN MULTI-TOOL STUDIO ON RIGHT -->
+            <div class="flex-1 flex overflow-hidden relative">
+
+                <!-- LEFT/CENTER: NIX 4.5 CHAT & NIXCODE ONE HERO SCREEN -->
+                <section class="flex-1 flex flex-col h-full overflow-hidden relative">
+                    <div id="messagesContainer" class="flex-1 overflow-y-auto px-4 py-6 max-w-4xl w-full mx-auto scroll-smooth">
+                        
+                        <!-- NIXCODE ONE STYLE HERO SCREEN (Centered Nixy Purple Orb + White Eyes + Greeting + Quick Capabilities) -->
+                        <div id="emptyHero" class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 welcome-ambient-light dark:welcome-ambient-dark">
+                            <!-- Floating Greeting Speech Bubble -->
+                            <div id="heroNixyBubble" class="mb-4 px-4 py-2 rounded-2xl bg-white dark:bg-nix-carddark border border-purple-200 dark:border-nix-borderdark text-xs sm:text-sm font-medium text-slate-800 dark:text-zinc-100 shadow-lg max-w-sm">
+                                Hi! I'm <span class="text-nix-600 dark:text-nix-400 font-bold">Nixy</span>. I can chat, build websites, generate images & motion videos, share screens, and make tables, QR codes & docs!
+                            </div>
+
+                            <!-- Nixy Purple Ball with White Eyes -->
+                            <div id="heroNixyOrb" onclick="pokeNixy()" title="Click Nixy!" class="cursor-pointer w-24 h-24 sm:w-28 sm:h-28 rounded-full nixy-orb animate-pulse-glow animate-float flex items-center justify-center mb-6 border-2 border-purple-300/40 shadow-2xl">
+                                <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-2.5 rounded-full border-2 border-dashed border-purple-400/80 animate-orbit-spin"></div>
+                                <div class="nixy-aura opacity-0 transition-opacity duration-300 pointer-events-none absolute -inset-4 rounded-full border border-indigo-400/50 animate-orbit-reverse"></div>
+                                <div class="absolute top-2.5 left-4 w-1/3 h-1/5 rounded-full bg-white/35 blur-[1px] -rotate-12"></div>
+                                <div id="nixyEyesContainer" class="flex items-center justify-center gap-3.5">
+                                    <span class="nixy-eye w-5 h-5 block animate-blink"></span>
+                                    <span class="nixy-eye w-5 h-5 block animate-blink"></span>
+                                </div>
+                            </div>
+
+                            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
+                                Where should we start?
+                            </h1>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-lg mb-7">
+                                Ask Nixy anything in chat or trigger any integrated tool directly by prompt or studio tab.
+                            </p>
+
+                            <!-- Quick Capability Action Pills -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-2xl text-left">
+                                <button onclick="sendQuickPrompt('Build a modern multi-page startup landing page in NixCode with index.html and about.html')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-nix-600 dark:text-nix-400 mb-1">
+                                        <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+                                        <span>NixCode Web</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Build & deploy multi-page sites to HostNix</p>
+                                </button>
+
+                                <button onclick="sendQuickPrompt('Generate an image of a glowing purple cybernetic owl in a neon library')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-purple-500 mb-1">
+                                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                        <span>SubeAI Image</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Multi-model AI image studio</p>
+                                </button>
+
+                                <button onclick="sendQuickPrompt('Create a comparison table of top cloud databases with columns for Name, Engine, Pricing, and Best Use Case')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-500 mb-1">
+                                        <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                        <span>Tables Maker</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Structured tables & CSV export</p>
+                                </button>
+
+                                <button onclick="sendQuickPrompt('Write a professional product launch document in Docs Maker and generate a QR code for https://hostnix.vercel.app')" class="p-3 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark hover:border-nix-500 transition shadow-xs">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-1">
+                                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                        <span>Docs & QR</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2">Rich documents, LinkNix & QR codes</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages Stream -->
+                        <div id="messagesList" class="space-y-5 pb-4"></div>
+                    </div>
+
+                    <!-- NIX 4.5 COMPOSER BAR -->
+                    <div class="p-3 sm:p-4 border-t border-slate-200 dark:border-nix-borderdark/60 bg-white/90 dark:bg-nix-bgdark/90 backdrop-blur-md shrink-0">
+                        <div class="max-w-4xl mx-auto">
+                            <!-- File Attachment Preview -->
+                            <div id="filePreview" class="hidden mb-2 px-3 py-1.5 rounded-xl bg-nix-600/10 border border-nix-500/30 flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2 truncate">
+                                    <i data-lucide="paperclip" class="w-3.5 h-3.5 text-nix-500"></i>
+                                    <span id="fileName" class="font-mono truncate">file.txt</span>
+                                </div>
+                                <button onclick="clearAttachedFile()" class="text-rose-500 hover:text-rose-400 p-0.5"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                            </div>
+
+                            <div class="flex items-end bg-slate-100 dark:bg-nix-carddark rounded-2xl border border-slate-300 dark:border-nix-borderdark focus-within:border-nix-500 p-2 shadow-lg transition-all">
+                                <button onclick="document.getElementById('fileInput').click()" title="Attach file or image" class="p-2.5 text-slate-500 dark:text-zinc-400 hover:text-nix-500 rounded-xl transition shrink-0">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                                <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)">
+
+                                <button id="dictationBtn" onclick="toggleDictation()" title="Voice Input" class="p-2.5 text-slate-500 dark:text-zinc-400 hover:text-nix-500 rounded-xl transition shrink-0">
+                                    <i data-lucide="mic" class="w-4 h-4"></i>
+                                </button>
+
+                                <textarea id="userInput" rows="1" placeholder="Ask Nixy to chat, code a site, generate an image/video, make a table, QR code, or doc..." onkeydown="handleKeyDown(event)" oninput="handleComposerInput(this)" class="flex-1 bg-transparent px-2.5 py-2 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none resize-none max-h-36 min-h-[40px]"></textarea>
+
+                                <button id="sendBtn" onclick="sendMessage()" class="p-2.5 bg-gradient-to-tr from-nix-600 to-nix-500 hover:from-nix-500 hover:to-nix-400 text-white rounded-xl shadow-md transition active:scale-95 shrink-0 disabled:opacity-50">
+                                    <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RIGHT PANEL: UNIFIED MULTI-TOOL STUDIO DRAWER -->
+                <section id="studioDrawer" class="hidden fixed inset-0 md:static md:w-[54%] lg:w-[56%] z-30 bg-white dark:bg-[#0c0b12] border-l border-slate-200 dark:border-nix-borderdark flex-col h-full overflow-hidden">
+                    
+                    <!-- Studio Tabs Header -->
+                    <div class="h-12 px-3 bg-slate-100 dark:bg-nix-carddark border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between gap-2 shrink-0">
+                        <div class="flex items-center gap-1 overflow-x-auto py-1">
+                            <button onclick="switchStudioTool('code')" id="stab-code" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white shrink-0">NixCode</button>
+                            <button onclick="switchStudioTool('image')" id="stab-image" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">SubeAI</button>
+                            <button onclick="switchStudioTool('video')" id="stab-video" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Vidy</button>
+                            <button onclick="switchStudioTool('share')" id="stab-share" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">ShareNix</button>
+                            <button onclick="switchStudioTool('tables')" id="stab-tables" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Tables</button>
+                            <button onclick="switchStudioTool('qr')" id="stab-qr" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">QR & LinkNix</button>
+                            <button onclick="switchStudioTool('docs')" id="stab-docs" class="stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-white shrink-0">Docs</button>
+                        </div>
+                        <button onclick="toggleStudioDrawer(false)" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 shrink-0" title="Close Studio">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- TOOL 1: NIXCODE MULTI-PAGE WEB BUILDER & HOSTNIX DEPLOY -->
+                    <div id="tool-code" class="studio-pane flex-1 flex flex-col overflow-hidden">
+                        <div class="px-3 py-2 border-b border-slate-200 dark:border-nix-borderdark flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-nix-bgdark">
+                            <div id="nixcode-page-tabs" class="flex items-center gap-1 overflow-x-auto"></div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="setNixCodeView('preview')" id="nc-btn-preview" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white">Preview</button>
+                                <button onclick="setNixCodeView('code')" id="nc-btn-code" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-zinc-400">Code</button>
+                                <button onclick="exportNixCodeZip()" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-200 dark:bg-nix-carddark border border-slate-300 dark:border-nix-borderdark">ZIP</button>
+                                <button onclick="openHostNixModal()" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">HostNix Deploy</button>
+                            </div>
+                        </div>
+                        <div id="nc-preview-box" class="flex-1 bg-white">
+                            <iframe id="nc-preview-frame" sandbox="allow-scripts allow-same-origin allow-forms" class="w-full h-full border-0"></iframe>
+                        </div>
+                        <div id="nc-code-box" class="hidden flex-1 flex flex-col bg-[#0d0c15]">
+                            <textarea id="nc-code-editor" spellcheck="false" oninput="onNixCodeEditorInput()" class="flex-1 w-full bg-transparent text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 2: SUBEAI IMAGE STUDIO -->
+                    <div id="tool-image" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-nix-500"></i> SubeAI Image Generator</h3>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-nix-600/15 text-nix-400">puter.ai.txt2img</span>
+                        </div>
+                        <textarea id="subePromptInput" rows="3" placeholder="Describe the image you want Nixy to create..." class="w-full rounded-xl p-3 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none focus:border-nix-500"></textarea>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <select id="subeProvider" class="rounded-xl p-2.5 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs">
+                                <option value="openai-image-generation">OpenAI GPT Image</option>
+                                <option value="gemini">Gemini 3.1 Flash Image</option>
+                                <option value="xai">xAI Grok Image</option>
+                                <option value="together">Together FLUX</option>
+                            </select>
+                            <label class="flex items-center gap-2 px-3 rounded-xl bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs cursor-pointer">
+                                <input type="checkbox" id="subeTestMode" class="accent-nix-600">
+                                <span>Test Mode (Free)</span>
+                            </label>
+                        </div>
+                        <button onclick="runSubeImageStudio()" id="subeGenBtn" class="w-full py-2.5 rounded-xl bg-nix-600 hover:bg-nix-500 text-white font-semibold text-xs shadow-md">Generate Image</button>
+                        <div id="subeResultBox" class="rounded-2xl border border-dashed border-nix-500/30 min-h-[260px] flex flex-col items-center justify-center p-4 bg-black/20">
+                            <p id="subePlaceholder" class="text-xs text-slate-400">Generated artwork appears here</p>
+                            <img id="subeOutputImg" class="hidden max-h-80 rounded-xl shadow-xl object-contain" alt="Generated AI Image">
+                            <a id="subeDownloadBtn" download="nixy-image.png" class="hidden mt-3 px-4 py-1.5 rounded-lg bg-nix-600 text-white text-xs font-semibold">Download PNG</a>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 3: VIDY 60FPS MOTION GRAPHICS STUDIO -->
+                    <div id="tool-video" class="studio-pane hidden flex-1 flex flex-col overflow-hidden">
+                        <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark flex items-center justify-between gap-2 bg-slate-50 dark:bg-nix-carddark">
+                            <span class="text-xs font-bold flex items-center gap-1.5"><i data-lucide="film" class="w-4 h-4 text-fuchsia-400"></i> Vidy 60fps Motion Canvas</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleVidyPlayback()" id="vidyPlayBtn" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">Pause</button>
+                                <button onclick="exportVidyVideo()" id="vidyExportBtn" class="px-3 py-1 rounded-lg bg-nix-600 hover:bg-nix-500 text-white text-xs font-semibold">Export Video</button>
+                            </div>
+                        </div>
+                        <div class="p-3 border-b border-slate-200 dark:border-nix-borderdark flex gap-2">
+                            <input id="vidyPromptInput" type="text" placeholder="Describe a 60fps motion scene (e.g., Neon purple audio wave & orbital ring)..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
+                            <button onclick="generateVidySceneFromInput()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Animate</button>
+                        </div>
+                        <div class="flex-1 bg-black flex items-center justify-center p-4">
+                            <canvas id="vidyCanvas" width="960" height="540" class="max-w-full max-h-full rounded-xl border border-nix-500/30 shadow-2xl"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 4: SHARENIX REALTIME WEBRTC SCREEN SHARING -->
+                    <div id="tool-share" class="studio-pane hidden flex-1 overflow-y-auto p-5 flex flex-col items-center justify-center text-center space-y-4">
+                        <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                            <i data-lucide="monitor-up" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base">ShareNix Live Screen Share</h3>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mt-1">Share your screen instantly via Supabase Realtime & WebRTC or watch using a 5-letter room code.</p>
+                        </div>
+                        <div id="shareMenu" class="flex flex-wrap justify-center gap-2.5">
+                            <button onclick="startShareNixHost()" class="px-4 py-2.5 rounded-xl bg-nix-600 hover:bg-nix-500 text-white text-xs font-semibold">Share My Screen</button>
+                            <div class="flex items-center gap-1.5">
+                                <input id="shareJoinCode" maxlength="5" placeholder="CODE" class="w-24 px-3 py-2 rounded-xl bg-slate-100 dark:bg-nix-carddark border border-nix-500/40 text-center font-mono font-bold text-xs uppercase">
+                                <button onclick="joinShareNixRoom()" class="px-3.5 py-2 rounded-xl bg-slate-800 text-white text-xs font-semibold">Watch</button>
+                            </div>
+                        </div>
+                        <div id="shareActiveRoom" class="hidden w-full max-w-lg space-y-2">
+                            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-nix-600/15 border border-nix-500/30 text-xs">
+                                <span>Room Code: <strong id="shareRoomCodeLabel" class="font-mono text-amber-400 text-sm">-----</strong></span>
+                                <button onclick="stopShareNix()" class="px-2.5 py-1 rounded-lg bg-rose-600 text-white text-xs font-semibold">Stop / Leave</button>
+                            </div>
+                            <video id="shareVideoEl" autoplay playsinline muted class="w-full rounded-xl bg-black max-h-72 border border-nix-500/30"></video>
+                        </div>
+                        <p id="shareStatusMsg" class="text-xs text-rose-400"></p>
+                    </div>
+
+                    <!-- TOOL 5: TABLES MAKER -->
+                    <div id="tool-tables" class="studio-pane hidden flex-1 flex flex-col overflow-hidden p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <h3 class="font-bold text-sm flex items-center gap-1.5"><i data-lucide="table" class="w-4 h-4 text-emerald-400"></i> Nixy Tables Maker</h3>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="addTableRow()" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">+ Row</button>
+                                <button onclick="addTableCol()" class="px-2.5 py-1 rounded-lg bg-nix-600/20 text-nix-300 text-xs font-semibold">+ Column</button>
+                                <button onclick="copyTableMarkdown()" class="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-nix-carddark text-xs font-medium">Copy MD</button>
+                                <button onclick="exportTableCsv()" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto rounded-xl border border-slate-200 dark:border-nix-borderdark bg-white dark:bg-nix-carddark">
+                            <table id="nixyTableGrid" class="w-full text-xs border-collapse"></table>
+                        </div>
+                    </div>
+
+                    <!-- TOOL 6: QR CODE MAKER & LINKNIX BIO HUB -->
+                    <div id="tool-qr" class="studio-pane hidden flex-1 overflow-y-auto p-4 space-y-5">
+                        <!-- QR Code Maker -->
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark space-y-3">
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="qr-code" class="w-4 h-4 text-amber-400"></i> Instant QR Code Maker</h3>
+                            <div class="flex gap-2">
+                                <input id="qrTextInput" type="text" value="https://hostnix.vercel.app" oninput="renderNixyQrCode()" placeholder="Enter URL, Wi-Fi, or text..." class="flex-1 rounded-xl px-3 py-2 bg-white dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs focus:outline-none">
+                                <button onclick="downloadNixyQrCode()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold shrink-0">Download PNG</button>
+                            </div>
+                            <div class="flex justify-center p-4 bg-white rounded-xl w-fit mx-auto shadow-inner">
+                                <div id="nixyQrBox"></div>
+                            </div>
+                        </div>
+
+                        <!-- LinkNix Mini Hub -->
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="link" class="w-4 h-4 text-nix-400"></i> LinkNix Bio Page Publisher</h3>
+                                <button onclick="publishLinkNixHub()" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Publish to HostNix</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input id="lnHandle" type="text" value="nixy-hub" placeholder="Handle (slug)" class="rounded-xl px-3 py-2 bg-white dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs">
+                                <input id="lnName" type="text" value="Nixy Creator" placeholder="Display Name" class="rounded-xl px-3 py-2 bg-white dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs">
+                            </div>
+                            <input id="lnBio" type="text" value="All my links & projects powered by Nixy AI" placeholder="Short bio" class="w-full rounded-xl px-3 py-2 bg-white dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs">
+                        </div>
+                    </div>
+
+                    <!-- TOOL 7: DOCS MAKER -->
+                    <div id="tool-docs" class="studio-pane hidden flex-1 flex flex-col overflow-hidden p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <input id="docTitleInput" type="text" value="Untitled Nixy Document" class="bg-transparent font-bold text-sm focus:outline-none border-b border-transparent focus:border-nix-500 px-1">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="formatDocCmd('bold')" class="px-2 py-1 rounded bg-slate-200 dark:bg-nix-carddark text-xs font-bold">B</button>
+                                <button onclick="formatDocCmd('italic')" class="px-2 py-1 rounded bg-slate-200 dark:bg-nix-carddark text-xs italic">I</button>
+                                <button onclick="formatDocCmd('insertUnorderedList')" class="px-2 py-1 rounded bg-slate-200 dark:bg-nix-carddark text-xs">• List</button>
+                                <button onclick="downloadDocHtml()" class="px-3 py-1 rounded-lg bg-nix-600 text-white text-xs font-semibold">Export HTML</button>
+                            </div>
+                        </div>
+                        <div id="nixyDocEditor" contenteditable="true" class="flex-1 overflow-y-auto p-5 rounded-2xl bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark text-sm leading-relaxed focus:outline-none">
+                            <h2 class="text-lg font-bold mb-2">Welcome to Nixy Docs Maker</h2>
+                            <p>Ask Nixy in the chat to draft reports, proposals, or articles—and they will automatically populate right here for editing and export.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MEMORY MODAL -->
+    <div id="memoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="brain-circuit" class="w-4 h-4 text-nix-500"></i> Nixy Agent Memory</h3>
+                <button onclick="document.getElementById('memoryModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="flex gap-2">
+                <input id="newMemoryInput" type="text" placeholder="Add a preference for Nixy to remember..." class="flex-1 rounded-xl px-3 py-2 bg-slate-100 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark text-xs">
+                <button onclick="addMemoryItem()" class="px-3.5 py-2 rounded-xl bg-nix-600 text-white text-xs font-semibold">Save</button>
+            </div>
+            <div id="memoriesListContainer" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- HOSTNIX DEPLOY MODAL -->
+    <div id="hostnixModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-sm flex items-center gap-2"><i data-lucide="rocket" class="w-4 h-4 text-emerald-400"></i> Deploy with HostNix</h3>
+                <button onclick="document.getElementById('hostnixModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="flex items-center rounded-xl bg-slate-100 dark:bg-nix-bgdark border border-slate-200 dark:border-nix-borderdark overflow-hidden">
+                <span class="px-3 py-2 text-xs font-mono text-slate-400">https://hostnix.vercel.app/#</span>
+                <input id="hostnixSlugInput" type="text" value="nixy-site" class="flex-1 bg-transparent px-2 py-2 text-xs font-mono focus:outline-none">
+            </div>
+            <div id="hostnixResultBox" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
+                Live URL: <a id="hostnixLiveUrl" href="#" target="_blank" class="font-mono text-emerald-400 underline"></a>
+            </div>
+            <button onclick="deployNixCodeToHostNix()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">Publish Live</button>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. SUPABASE CONFIGURATION & AUTHENTICATION CHECK (/Start?redirect=/Nixy)
+        // =========================================================================
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        const HOSTNIX_URL = 'https://zncztttvefahofdeacxf.supabase.co';
+        const HOSTNIX_KEY = 'sb_publishable_GhwVsgutWW4EpK9Fc_3DQQ_pW_R48LM';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const hostnixClient = window.supabase.createClient(HOSTNIX_URL, HOSTNIX_KEY);
+
+        let currentUser = null;
+        let activeConversationId = null;
+        let conversations = [];
+        let messages = [];
+        let memories = ['Prefer clean, modern purple and dark aesthetics with responsive layouts.'];
+        let attachedFileContext = null;
+        let isGenerating = false;
+
+        // Multi-tool workspace state
+        let nixcodePages = {
+            'index.html': '<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center p-6"><div class="text-center space-y-3"><h1 class="text-3xl font-bold text-purple-400">Nixy Web Studio</h1><p class="text-zinc-400 text-sm">Ask Nixy in chat to build any multi-page site here.</p></div></body></html>'
+        };
+        let activeNixCodePage = 'index.html';
+        let tableData = [
+            ['Feature', 'Nixy Agent', 'Status'],
+            ['AI Chat & Memory', 'Nix 4.5 Engine', 'Active'],
+            ['Multi-Page Web & Deploy', 'NixCode + HostNix', 'Active'],
+            ['Image & Motion Studio', 'SubeAI + Vidy', 'Active']
+        ];
+
+        async function checkSupabaseSessionAndGuard() {
+            const overlay = document.getElementById('auth-gate-overlay');
+            try {
+                // Support tokens passed back from /Start redirect
+                const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+                const queryParams = new URLSearchParams(window.location.search || '');
+                const accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
+
+                if (accessToken && refreshToken) {
+                    await supabaseClient.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    });
+                }
+
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error || !session || !session.user) {
+                    // Not signed in -> redirect to /Start with redirect link to /Nixy
+                    const redirectTarget = encodeURIComponent('/Nixy');
+                    window.location.replace(`/Start?redirect=${redirectTarget}`);
+                    return false;
+                }
+
+                currentUser = session.user;
+                const displayName = currentUser.user_metadata?.full_name || currentUser.email || 'Nixy Creator';
+                document.getElementById('accountLabel').textContent = displayName;
+                document.getElementById('supabaseSyncBadge').classList.remove('hidden');
+
+                if (overlay) {
+                    overlay.classList.add('opacity-0', 'pointer-events-none');
+                    setTimeout(() => overlay.remove(), 300);
+                }
+                return true;
+            } catch (err) {
+                const redirectTarget = encodeURIComponent('/Nixy');
+                window.location.replace(`/Start?redirect=${redirectTarget}`);
+                return false;
+            }
+        }
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                window.location.replace(`/Start?redirect=${encodeURIComponent('/Nixy')}`);
+            }
+        });
+
+        async function handleSignOut() {
+            try { await supabaseClient.auth.signOut(); } catch (_) {}
+            window.location.replace(`/Start?redirect=${encodeURIComponent('/Nixy')}`);
+        }
+
+        // =========================================================================
+        // 2. SUPABASE CONVERSATIONS & MESSAGES TABLES (FROM NIX 4.5)
+        // =========================================================================
+        async function loadConversationsFromSupabase() {
+            if (!currentUser) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('conversations')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('updated_at', { ascending: false });
+
+                if (!error && Array.isArray(data)) {
+                    conversations = data;
+                    renderConversationsList();
+                    if (conversations.length > 0 && !activeConversationId) {
+                        await selectConversation(conversations[0].id);
+                    }
+                }
+            } catch (e) {
+                console.warn('Supabase conversations load fallback:', e);
+            }
+        }
+
+        async function createNewConversation(initialTitle = 'New Conversation') {
+            const newId = crypto.randomUUID ? crypto.randomUUID() : 'conv-' + Date.now();
+            const nowIso = new Date().toISOString();
+            const newConv = {
+                id: newId,
+                user_id: currentUser?.id,
+                title: initialTitle,
+                created_at: nowIso,
+                updated_at: nowIso
+            };
+
+            conversations.unshift(newConv);
+            activeConversationId = newId;
+            messages = [];
+            renderConversationsList();
+            renderMessages();
+
+            if (currentUser) {
+                try {
+                    await supabaseClient.from('conversations').insert([newConv]);
+                } catch (_) {}
+            }
+            return newId;
+        }
+
+        async function selectConversation(convId) {
+            activeConversationId = convId;
+            renderConversationsList();
+            if (!currentUser) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('messages')
+                    .select('*')
+                    .eq('conversation_id', convId)
+                    .order('created_at', { ascending: true });
+
+                if (!error && Array.isArray(data)) {
+                    messages = data;
+                    renderMessages();
+                }
+            } catch (_) {}
+        }
+
+        async function saveMessageToSupabase(role, content) {
+            if (!activeConversationId) {
+                await createNewConversation(content.slice(0, 40) || 'New Conversation');
+            }
+            const msgObj = {
+                id: crypto.randomUUID ? crypto.randomUUID() : 'msg-' + Date.now(),
+                conversation_id: activeConversationId,
+                user_id: currentUser?.id,
+                role: role,
+                content: content,
+                created_at: new Date().toISOString()
+            };
+            messages.push(msgObj);
+            renderMessages();
+
+            if (currentUser) {
+                try {
+                    await supabaseClient.from('messages').insert([msgObj]);
+                    const activeConv = conversations.find(c => c.id === activeConversationId);
+                    if (activeConv && activeConv.title === 'New Conversation' && role === 'user') {
+                        const updatedTitle = content.slice(0, 42);
+                        activeConv.title = updatedTitle;
+                        renderConversationsList();
+                        await supabaseClient
+                            .from('conversations')
+                            .update({ title: updatedTitle, updated_at: new Date().toISOString() })
+                            .eq('id', activeConversationId);
+                    } else {
+                        await supabaseClient
+                            .from('conversations')
+                            .update({ updated_at: new Date().toISOString() })
+                            .eq('id', activeConversationId);
+                    }
+                } catch (_) {}
+            }
+        }
+
+        function renderConversationsList() {
+            const list = document.getElementById('conversationsList');
+            const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const filtered = conversations.filter(c => !query || (c.title || '').toLowerCase().includes(query));
+
+            if (!filtered.length) {
+                list.innerHTML = '<div class="px-3 py-6 text-center text-xs text-slate-400 dark:text-zinc-500">No conversations yet. Ask Nixy anything!</div>';
+                return;
+            }
+            list.innerHTML = filtered.map(c => {
+                const active = c.id === activeConversationId;
+                return `
+                    <button onclick="selectConversation('${c.id}')" class="w-full text-left px-3 py-2 rounded-xl text-xs truncate transition ${
+                        active
+                            ? 'bg-nix-600/15 dark:bg-nix-600/25 text-nix-700 dark:text-nix-200 font-semibold border border-nix-500/30'
+                            : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-nix-bgdark/60'
+                    }">
+                        ${escapeHtml(c.title || 'New Conversation')}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderMessages() {
+            const hero = document.getElementById('emptyHero');
+            const list = document.getElementById('messagesList');
+            if (!messages.length) {
+                hero.classList.remove('hidden');
+                list.innerHTML = '';
+                return;
+            }
+            hero.classList.add('hidden');
+            list.innerHTML = messages.map(m => {
+                if (m.role === 'user') {
+                    return `
+                        <div class="flex justify-end">
+                            <div class="max-w-[82%] bg-nix-600 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md text-sm whitespace-pre-wrap">${escapeHtml(m.content)}</div>
+                        </div>
+                    `;
+                }
+                const html = window.marked ? window.marked.parse(m.content || '') : escapeHtml(m.content || '');
+                return `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full nixy-orb flex items-center justify-center shrink-0 mt-0.5 border border-purple-300/40">
+                            <div class="flex gap-1">
+                                <span class="nixy-eye w-1.5 h-1.5 block"></span>
+                                <span class="nixy-eye w-1.5 h-1.5 block"></span>
+                            </div>
+                        </div>
+                        <div class="flex-1 bg-white dark:bg-nix-carddark border border-slate-200 dark:border-nix-borderdark rounded-2xl p-4 shadow-xs prose prose-sm dark:prose-invert max-w-none">${html}</div>
+                    </div>
+                `;
+            }).join('');
+
+            list.querySelectorAll('pre code').forEach(el => {
+                if (window.hljs) window.hljs.highlightElement(el);
+            });
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // =========================================================================
+        // 3. UNIFIED AI AGENT ROUTER (CHAT + AUTOMATICALLY TRIGGERS ALL TOOLS)
+        // =========================================================================
+        function setNixyMood(mood, statusLabel) {
+            const orb = document.getElementById('heroNixyOrb');
+            if (orb) {
+                orb.classList.remove('mood-thinking', 'mood-coding', 'mood-happy', 'mood-error', 'mood-listening');
+                if (mood && mood !== 'idle') orb.classList.add(`mood-${mood}`);
+            }
+            if (statusLabel) {
+                document.getElementById('nixyStatusText').textContent = statusLabel;
+            }
+        }
+
+        function pokeNixy() {
+            setNixyMood('happy', 'Nixy is ready to create!');
+            setTimeout(() => setNixyMood('idle', 'Nixy is ready'), 2200);
+        }
+
+        function sendQuickPrompt(text) {
+            const input = document.getElementById('userInput');
+            input.value = text;
+            sendMessage();
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function handleComposerInput(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+        }
+
+        async function sendMessage() {
+            if (isGenerating) return;
+            const input = document.getElementById('userInput');
+            const rawText = input.value.trim();
+            if (!rawText && !attachedFileContext) return;
+
+            const userPrompt = attachedFileContext
+                ? `${rawText || 'Analyze attached file'}\n\n[Attached File: ${attachedFileContext.name}]\n${attachedFileContext.content}`
+                : rawText;
+
+            input.value = '';
+            handleComposerInput(input);
+            clearAttachedFile();
+
+            await saveMessageToSupabase('user', userPrompt);
+
+            isGenerating = true;
+            document.getElementById('sendBtn').disabled = true;
+            setNixyMood('thinking', 'Nixy is thinking & selecting tools...');
+
+            try {
+                const lower = userPrompt.toLowerCase();
+
+                // 1. Direct Image Generation Trigger (SubeAI)
+                if (/\b(generate|draw|create|make)\b.*\b(image|picture|photo|illustration|artwork|logo)\b/i.test(lower)) {
+                    openToolStudio('image');
+                    document.getElementById('subePromptInput').value = rawText;
+                    await runSubeImageStudio();
+                    await saveMessageToSupabase('assistant', `🎨 I generated your image in **SubeAI Image Studio**! You can inspect or download it on the right panel.`);
+                    setNixyMood('happy', 'Image generated!');
+                    return;
+                }
+
+                // 2. Direct QR Code Trigger
+                if (/\bqr\s*code\b/i.test(lower) && !/\btable\b/i.test(lower) && !/\bdoc\b/i.test(lower)) {
+                    const urlMatch = rawText.match(/https?:\/\/[^\s]+/i);
+                    const qrValue = urlMatch ? urlMatch[0] : rawText.replace(/.*qr\s*code\s*(for)?/i, '').trim() || 'https://hostnix.vercel.app';
+                    openToolStudio('qr');
+                    document.getElementById('qrTextInput').value = qrValue;
+                    renderNixyQrCode();
+                    await saveMessageToSupabase('assistant', `📱 Generated your **QR Code** for \`${qrValue}\` in the **QR & LinkNix** studio tab!`);
+                    setNixyMood('happy', 'QR Code created!');
+                    return;
+                }
+
+                // 3. Direct Screen Share Trigger
+                if (/\b(share\s*screen|screen\s*share|sharenix)\b/i.test(lower)) {
+                    openToolStudio('share');
+                    await saveMessageToSupabase('assistant', `🖥️ Opened **ShareNix**! Click **Share My Screen** to broadcast live or enter a 5-letter room code to watch.`);
+                    setNixyMood('happy', 'ShareNix ready!');
+                    return;
+                }
+
+                // 4. Unified AI Agent Prompt via Puter.js (Handles Websites, Tables, Docs, Motion, and General Chat)
+                const agentSystemPrompt = `You are Nixy, a super-capable purple orb AI agent with white eyes. You combine:
+- General AI Assistant (Nix 4.5)
+- Multi-Page Web Builder (NixCode): If the user asks to build a website, landing page, or web app, output complete HTML files using fenced blocks like \`\`\`html:index.html ... \`\`\`.
+- Tables Maker: If the user asks to create a table or spreadsheet, output a clean Markdown table AND a JSON block \`\`\`json:table
+[["Col1","Col2"],["Val1","Val2"]]
+\`\`\`
+- Docs Maker: If the user asks to write a document, essay, report, or proposal, wrap the rich document content in \`\`\`html:doc.html ... \`\`\`
+- Motion Graphics (Vidy): If the user asks for an animation or motion graphic, describe it clearly.
+- QR Code: If the user mentions a URL for a QR code, include \`QR_TARGET: <url>\`.
+
+User Memories:
+${memories.map(m => '- ' + m).join('\n')}`;
+
+                const chatPayload = [
+                    { role: 'system', content: agentSystemPrompt },
+                    ...messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
+                ];
+
+                let aiReply = '';
+                if (window.puter?.ai?.chat) {
+                    const res = await window.puter.ai.chat(chatPayload, { model: 'gpt-4o-mini' });
+                    aiReply = typeof res === 'string'
+                        ? res
+                        : (res?.message?.content || res?.text || res?.choices?.[0]?.message?.content || '');
+                }
+                if (!aiReply) {
+                    aiReply = 'I am ready! Ask me to build a website, generate an image, create a table, write a document, or make a QR code.';
+                }
+
+                // Parse any generated multi-page website files -> load into NixCode Studio
+                const htmlFileRegex = /```html(?::([^\n`]+))?\n([\s\S]*?)```/gi;
+                let match;
+                let webFilesFound = false;
+                while ((match = htmlFileRegex.exec(aiReply)) !== null) {
+                    const fname = (match[1] || 'index.html').trim();
+                    const code = match[2].trim();
+                    if (fname === 'doc.html') {
+                        openToolStudio('docs');
+                        document.getElementById('nixyDocEditor').innerHTML = code;
+                    } else if (code) {
+                        nixcodePages[fname] = code;
+                        activeNixCodePage = fname;
+                        webFilesFound = true;
+                    }
+                }
+                if (webFilesFound) {
+                    openToolStudio('code');
+                    renderNixCodeTabs();
+                    loadNixCodeEditorAndPreview();
+                }
+
+                // Parse JSON table -> load into Tables Maker
+                const tableMatch = aiReply.match(/```json:table\n([\s\S]*?)```/i);
+                if (tableMatch) {
+                    try {
+                        const parsed = JSON.parse(tableMatch[1].trim());
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            tableData = parsed;
+                            openToolStudio('tables');
+                            renderTablesMaker();
+                        }
+                    } catch (_) {}
+                }
+
+                // Parse QR_TARGET -> load into QR Maker
+                const qrMatch = aiReply.match(/QR_TARGET:\s*(\S+)/i);
+                if (qrMatch) {
+                    openToolStudio('qr');
+                    document.getElementById('qrTextInput').value = qrMatch[1];
+                    renderNixyQrCode();
+                }
+
+                const cleanChatReply = aiReply
+                    .replace(/```json:table[\s\S]*?```/gi, '')
+                    .replace(/QR_TARGET:\s*\S+/gi, '')
+                    .trim();
+
+                await saveMessageToSupabase('assistant', cleanChatReply);
+                setNixyMood('happy', 'Done! Nixy completed your request');
+            } catch (err) {
+                await saveMessageToSupabase('assistant', `⚠️ Error: ${err?.message || 'Could not reach AI service.'}`);
+                setNixyMood('error', 'Something went wrong');
+            } finally {
+                isGenerating = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        // =========================================================================
+        // 4. INTEGRATED STUDIO TOOLS IMPLEMENTATION
+        // =========================================================================
+        function toggleStudioDrawer(force) {
+            const drawer = document.getElementById('studioDrawer');
+            const show = typeof force === 'boolean' ? force : drawer.classList.contains('hidden');
+            if (show) {
+                drawer.classList.remove('hidden');
+                drawer.classList.add('flex');
+            } else {
+                drawer.classList.add('hidden');
+                drawer.classList.remove('flex');
+            }
+        }
+
+        function openToolStudio(toolName) {
+            toggleStudioDrawer(true);
+            switchStudioTool(toolName);
+        }
+
+        function switchStudioTool(toolName) {
+            document.querySelectorAll('.studio-pane').forEach(p => {
+                p.classList.add('hidden');
+                p.classList.remove('flex');
+            });
+            document.querySelectorAll('.stab-btn').forEach(b => {
+                b.className = 'stab-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-zinc-400 hover:text-nix-500 shrink-0';
+            });
+
+            const activePane = document.getElementById(`tool-${toolName}`);
+            const activeBtn = document.getElementById(`stab-${toolName}`);
+            if (activePane) {
+                activePane.classList.remove('hidden');
+                if (['code', 'video', 'tables', 'docs'].includes(toolName)) {
+                    activePane.classList.add('flex');
+                }
+            }
+            if (activeBtn) {
+                activeBtn.className = 'stab-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white shrink-0';
+            }
+
+            if (toolName === 'code') {
+                renderNixCodeTabs();
+                loadNixCodeEditorAndPreview();
+            } else if (toolName === 'tables') {
+                renderTablesMaker();
+            } else if (toolName === 'qr') {
+                renderNixyQrCode();
+            } else if (toolName === 'video') {
+                startVidyLoop();
+            }
+        }
+
+        // --- NixCode Multi-Page & HostNix ---
+        function renderNixCodeTabs() {
+            const container = document.getElementById('nixcode-page-tabs');
+            container.innerHTML = Object.keys(nixcodePages).map(fn => `
+                <button onclick="activeNixCodePage='${escapeHtml(fn)}'; renderNixCodeTabs(); loadNixCodeEditorAndPreview();" class="px-2.5 py-1 rounded-lg text-xs font-mono ${
+                    fn === activeNixCodePage ? 'bg-nix-600 text-white font-semibold' : 'bg-white dark:bg-nix-carddark text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-nix-borderdark'
+                }">${escapeHtml(fn)}</button>
+            `).join('');
+        }
+
+        function loadNixCodeEditorAndPreview() {
+            const code = nixcodePages[activeNixCodePage] || '';
+            document.getElementById('nc-code-editor').value = code;
+            document.getElementById('nc-preview-frame').srcdoc = code;
+        }
+
+        function onNixCodeEditorInput() {
+            nixcodePages[activeNixCodePage] = document.getElementById('nc-code-editor').value;
+            document.getElementById('nc-preview-frame').srcdoc = nixcodePages[activeNixCodePage];
+        }
+
+        function setNixCodeView(mode) {
+            const prev = document.getElementById('nc-preview-box');
+            const code = document.getElementById('nc-code-box');
+            if (mode === 'preview') {
+                prev.classList.remove('hidden');
+                code.classList.add('hidden');
+                document.getElementById('nc-btn-preview').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white';
+                document.getElementById('nc-btn-code').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-zinc-400';
+            } else {
+                prev.classList.add('hidden');
+                code.classList.remove('hidden');
+                code.classList.add('flex');
+                document.getElementById('nc-btn-code').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-nix-600 text-white';
+                document.getElementById('nc-btn-preview').className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-zinc-400';
+            }
+        }
+
+        async function exportNixCodeZip() {
+            if (!window.JSZip) return;
+            const zip = new JSZip();
+            Object.entries(nixcodePages).forEach(([k, v]) => zip.file(k, v));
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'nixy-project.zip';
+            a.click();
+        }
+
+        function openHostNixModal() {
+            document.getElementById('hostnixResultBox').classList.add('hidden');
+            document.getElementById('hostnixModal').classList.remove('hidden');
+        }
+
+        async function deployNixCodeToHostNix() {
+            const slug = (document.getElementById('hostnixSlugInput').value || 'nixy-site').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            const files = Object.entries(nixcodePages).map(([name, content]) => ({ name, content }));
+            try {
+                await hostnixClient.from('apps').upsert([{ slug, files }], { onConflict: 'slug' });
+                const url = `https://hostnix.vercel.app/#${slug}`;
+                const link = document.getElementById('hostnixLiveUrl');
+                link.href = url;
+                link.textContent = url;
+                document.getElementById('hostnixResultBox').classList.remove('hidden');
+            } catch (_) {}
+        }
+
+        // --- SubeAI Image Studio ---
+        async function runSubeImageStudio() {
+            const prompt = document.getElementById('subePromptInput').value.trim();
+            if (!prompt) return;
+            const provider = document.getElementById('subeProvider').value;
+            const testMode = document.getElementById('subeTestMode').checked;
+            const btn = document.getElementById('subeGenBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                let imgEl;
+                if (window.puter?.ai?.txt2img) {
+                    imgEl = await window.puter.ai.txt2img(prompt, { provider, test_mode: testMode });
+                } else {
+                    imgEl = { src: `https://placehold.co/800x800/6d28d9/ffffff?text=${encodeURIComponent(prompt.slice(0, 24))}` };
+                }
+                const outImg = document.getElementById('subeOutputImg');
+                const dlBtn = document.getElementById('subeDownloadBtn');
+                outImg.src = imgEl.src;
+                outImg.classList.remove('hidden');
+                dlBtn.href = imgEl.src;
+                dlBtn.classList.remove('hidden');
+                document.getElementById('subePlaceholder').classList.add('hidden');
+            } catch (e) {
+                document.getElementById('subePlaceholder').textContent = 'Generation error: ' + (e.message || 'Try enabling Test Mode');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Image';
+            }
+        }
+
+        // --- Vidy 60FPS Motion Graphics ---
+        let vidyPlaying = true;
+        let vidyAnimating = false;
+        let vidyLabel = 'NIXY MOTION 60FPS';
+
+        function toggleVidyPlayback() {
+            vidyPlaying = !vidyPlaying;
+            document.getElementById('vidyPlayBtn').textContent = vidyPlaying ? 'Pause' : 'Play';
+        }
+
+        function generateVidySceneFromInput() {
+            const val = document.getElementById('vidyPromptInput').value.trim();
+            if (val) vidyLabel = val.toUpperCase().slice(0, 32);
+        }
+
+        function startVidyLoop() {
+            if (vidyAnimating) return;
+            vidyAnimating = true;
+            const canvas = document.getElementById('vidyCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function frame(ts) {
+                if (vidyPlaying) {
+                    const t = ((ts / 1000) % 4) / 4;
+                    const TAU = Math.PI * 2;
+                    const w = canvas.width, h = canvas.height;
+                    const bg = ctx.createRadialGradient(w / 2, h / 2, 20, w / 2, h / 2, w * 0.7);
+                    bg.addColorStop(0, '#2e1065');
+                    bg.addColorStop(1, '#09080e');
+                    ctx.fillStyle = bg;
+                    ctx.fillRect(0, 0, w, h);
+
+                    // Animated orbital rings & equalizer
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(w / 2, h / 2, 110 + Math.sin(t * TAU) * 12, t * TAU, t * TAU + Math.PI * 1.4);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 28px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(vidyLabel, w / 2, h / 2 + 10);
+                }
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function exportVidyVideo() {
+            const canvas = document.getElementById('vidyCanvas');
+            const stream = canvas.captureStream(60);
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+            recorder.onstop = () => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+                a.download = 'nixy-motion.webm';
+                a.click();
+            };
+            recorder.start();
+            setTimeout(() => recorder.stop(), 3000);
+        }
+
+        // --- ShareNix WebRTC Screen Sharing ---
+        let shareChannel = null;
+        let shareStream = null;
+        let sharePc = null;
+
+        async function startShareNixHost() {
+            try {
+                shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                const code = Array.from({ length: 5 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
+                document.getElementById('shareRoomCodeLabel').textContent = code;
+                document.getElementById('shareVideoEl').srcObject = shareStream;
+                document.getElementById('shareMenu').classList.add('hidden');
+                document.getElementById('shareActiveRoom').classList.remove('hidden');
+
+                shareChannel = hostnixClient.channel('sharenix-' + code);
+                shareChannel.on('broadcast', { event: 'join' }, async () => {
+                    sharePc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+                    shareStream.getTracks().forEach(track => sharePc.addTrack(track, shareStream));
+                    sharePc.onicecandidate = e => e.candidate && shareChannel.send({ type: 'broadcast', event: 'ice', payload: e.candidate });
+                    const offer = await sharePc.createOffer();
+                    await sharePc.setLocalDescription(offer);
+                    shareChannel.send({ type: 'broadcast', event: 'offer', payload: offer });
+                }).on('broadcast', { event: 'answer' }, async ({ payload }) => {
+                    if (sharePc) await sharePc.setRemoteDescription(payload);
+                }).on('broadcast', { event: 'ice' }, async ({ payload }) => {
+                    if (sharePc) await sharePc.addIceCandidate(payload);
+                }).subscribe();
+            } catch (e) {
+                document.getElementById('shareStatusMsg').textContent = 'Screen share cancelled or unsupported.';
+            }
+        }
+
+        async function joinShareNixRoom() {
+            const code = (document.getElementById('shareJoinCode').value || '').trim().toUpperCase();
+            if (code.length < 5) return;
+            document.getElementById('shareRoomCodeLabel').textContent = code;
+            document.getElementById('shareMenu').classList.add('hidden');
+            document.getElementById('shareActiveRoom').classList.remove('hidden');
+
+            sharePc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            sharePc.ontrack = e => { document.getElementById('shareVideoEl').srcObject = e.streams[0]; };
+            shareChannel = hostnixClient.channel('sharenix-' + code);
+            sharePc.onicecandidate = e => e.candidate && shareChannel.send({ type: 'broadcast', event: 'ice', payload: e.candidate });
+            shareChannel.on('broadcast', { event: 'offer' }, async ({ payload }) => {
+                await sharePc.setRemoteDescription(payload);
+                const ans = await sharePc.createAnswer();
+                await sharePc.setLocalDescription(ans);
+                shareChannel.send({ type: 'broadcast', event: 'answer', payload: ans });
+            }).on('broadcast', { event: 'ice' }, async ({ payload }) => {
+                await sharePc.addIceCandidate(payload);
+            }).subscribe(s => {
+                if (s === 'SUBSCRIBED') shareChannel.send({ type: 'broadcast', event: 'join', payload: {} });
+            });
+        }
+
+        function stopShareNix() {
+            if (shareStream) shareStream.getTracks().forEach(t => t.stop());
+            if (sharePc) sharePc.close();
+            if (shareChannel) hostnixClient.removeChannel(shareChannel);
+            document.getElementById('shareActiveRoom').classList.add('hidden');
+            document.getElementById('shareMenu').classList.remove('hidden');
+        }
+
+        // --- Tables Maker ---
+        function renderTablesMaker() {
+            const table = document.getElementById('nixyTableGrid');
+            table.innerHTML = tableData.map((row, rIdx) => `
+                <tr class="${rIdx === 0 ? 'bg-nix-600/15 font-bold' : 'border-t border-slate-200 dark:border-nix-borderdark'}">
+                    ${row.map((cell, cIdx) => `
+                        <td class="p-2 border-r border-slate-200 dark:border-nix-borderdark">
+                            <input type="text" value="${escapeHtml(cell)}" onchange="tableData[${rIdx}][${cIdx}]=this.value" class="w-full bg-transparent focus:outline-none">
+                        </td>
+                    `).join('')}
+                </tr>
+            `).join('');
+        }
+
+        function addTableRow() {
+            const cols = tableData[0]?.length || 3;
+            tableData.push(Array(cols).fill('New Cell'));
+            renderTablesMaker();
+        }
+
+        function addTableCol() {
+            tableData.forEach((r, idx) => r.push(idx === 0 ? 'Column' : 'Value'));
+            renderTablesMaker();
+        }
+
+        function exportTableCsv() {
+            const csv = tableData.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            a.download = 'nixy-table.csv';
+            a.click();
+        }
+
+        function copyTableMarkdown() {
+            if (!tableData.length) return;
+            const header = '| ' + tableData[0].join(' | ') + ' |';
+            const sep = '| ' + tableData[0].map(() => '---').join(' | ') + ' |';
+            const body = tableData.slice(1).map(r => '| ' + r.join(' | ') + ' |').join('\n');
+            const md = [header, sep, body].join('\n');
+            const ta = document.createElement('textarea');
+            ta.value = md;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+        }
+
+        // --- QR Code Maker & LinkNix ---
+        function renderNixyQrCode() {
+            const box = document.getElementById('nixyQrBox');
+            const val = document.getElementById('qrTextInput').value.trim() || 'https://hostnix.vercel.app';
+            box.innerHTML = '';
+            if (window.QRCode) {
+                new QRCode(box, { text: val, width: 160, height: 160 });
+            }
+        }
+
+        function downloadNixyQrCode() {
+            const img = document.querySelector('#nixyQrBox img');
+            if (!img) return;
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'nixy-qrcode.png';
+            a.click();
+        }
+
+        async function publishLinkNixHub() {
+            const slug = (document.getElementById('lnHandle').value || 'nixy-hub').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            const name = document.getElementById('lnName').value || 'Nixy Creator';
+            const bio = document.getElementById('lnBio').value || '';
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-6"><div class="max-w-sm w-full text-center space-y-4"><h1 class="text-2xl font-bold text-purple-400">${escapeHtml(name)}</h1><p class="text-xs text-slate-400">${escapeHtml(bio)}</p></div></body></html>`;
+            await hostnixClient.from('apps').upsert([{ slug, files: [{ name: 'index.html', content: html }] }], { onConflict: 'slug' });
+            document.getElementById('qrTextInput').value = `https://hostnix.vercel.app/#${slug}`;
+            renderNixyQrCode();
+        }
+
+        // --- Docs Maker ---
+        function formatDocCmd(cmd) {
+            document.execCommand(cmd, false, null);
+        }
+
+        function downloadDocHtml() {
+            const title = document.getElementById('docTitleInput').value || 'nixy-document';
+            const content = document.getElementById('nixyDocEditor').innerHTML;
+            const docHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>body{font-family:Inter,sans-serif;max-width:760px;margin:40px auto;padding:20px;line-height:1.7;color:#111827}</style></head><body><h1>${escapeHtml(title)}</h1>${content}</body></html>`;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([docHtml], { type: 'text/html' }));
+            a.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.html`;
+            a.click();
+        }
+
+        // =========================================================================
+        // 5. UI HELPERS, MEMORY, DICTATION & FILE ATTACHMENT
+        // =========================================================================
+        function resetToNixCodeHero() {
+            activeConversationId = null;
+            messages = [];
+            renderConversationsList();
+            renderMessages();
+            toggleStudioDrawer(false);
+        }
+
+        function toggleMobileSidebar() {
+            const sb = document.getElementById('sidebar');
+            const bd = document.getElementById('mobileBackdrop');
+            const open = sb.classList.contains('-translate-x-full');
+            sb.classList.toggle('-translate-x-full', !open);
+            bd.classList.toggle('hidden', !open);
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                attachedFileContext = { name: file.name, content: String(reader.result || '').slice(0, 12000) };
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('filePreview').classList.remove('hidden');
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAttachedFile() {
+            attachedFileContext = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').classList.add('hidden');
+        }
+
+        function toggleDictation() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return;
+            const rec = new SR();
+            rec.onstart = () => setNixyMood('listening', 'Nixy is listening...');
+            rec.onresult = e => {
+                const text = e.results?.[0]?.[0]?.transcript || '';
+                const input = document.getElementById('userInput');
+                input.value = input.value ? `${input.value} ${text}` : text;
+            };
+            rec.onend = () => setNixyMood('idle', 'Nixy is ready');
+            rec.start();
+        }
+
+        function openMemoryModal() {
+            renderMemories();
+            document.getElementById('memoryModal').classList.remove('hidden');
+        }
+
+        function renderMemories() {
+            document.getElementById('memoryCountBadge').textContent = memories.length;
+            document.getElementById('memoriesListContainer').innerHTML = memories.map((m, idx) => `
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-nix-bgdark text-xs">
+                    <span>${escapeHtml(m)}</span>
+                    <button onclick="memories.splice(${idx}, 1); renderMemories();" class="text-rose-500 ml-2">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function addMemoryItem() {
+            const inp = document.getElementById('newMemoryInput');
+            if (!inp.value.trim()) return;
+            memories.unshift(inp.value.trim());
+            inp.value = '';
+            renderMemories();
+        }
+
+        function exportCurrentChat() {
+            const blob = new Blob([JSON.stringify({ conversationId: activeConversationId, messages }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'nixy-chat.json';
+            a.click();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        }
+
+        // Mouse eye tracking for Nixy Purple Orb
+        window.addEventListener('mousemove', e => {
+            const orb = document.getElementById('heroNixyOrb');
+            const eyes = document.getElementById('nixyEyesContainer');
+            if (!orb || !eyes) return;
+            const rect = orb.getBoundingClientRect();
+            const dx = Math.max(-5, Math.min(5, (e.clientX - (rect.left + rect.width / 2)) / 40));
+            const dy = Math.max(-5, Math.min(5, (e.clientY - (rect.top + rect.height / 2)) / 40));
+            eyes.style.transform = `translate(${dx}px, ${dy}px)`;
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            const ok = await checkSupabaseSessionAndGuard();
+            if (!ok) return;
+            await loadConversationsFromSupabase();
+            renderNixyQrCode();
+            renderTablesMaker();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
