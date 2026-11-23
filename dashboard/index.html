@@ -507,6 +507,71 @@
         html[dir="rtl"] .dropdown-menu { transform-origin: top left; }
         html[dir="rtl"] .app-path, html[dir="rtl"] .play-url, html[dir="rtl"] .font-mono { direction: ltr; unicode-bidi: plaintext; }
         html[dir="rtl"] .play-uses-badge { left: auto; right: 8px; }
+
+        /* ---------- Nixy Walking Companion (Footless Orb Observer) ---------- */
+        #nixy-stage {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 76px;
+            pointer-events: none;
+            z-index: 45;
+            overflow: visible;
+        }
+        #nixy-actor {
+            position: absolute;
+            bottom: 8px;
+            left: 280px;
+            width: 64px;
+            height: 64px;
+            pointer-events: auto;
+            user-select: none;
+            will-change: transform, left;
+            transition: filter .25s ease;
+        }
+        @media (max-width: 1023px) {
+            #nixy-actor { left: 24px; }
+        }
+        @keyframes nixyBob {
+            0%, 100% { transform: translateY(0px) scaleY(1) scaleX(1); }
+            50% { transform: translateY(-4px) scaleY(1.03) scaleX(0.98); }
+        }
+        @keyframes nixyShiver {
+            0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+            25% { transform: translate(-2px, 1px) rotate(-2deg); }
+            50% { transform: translate(2px, -1px) rotate(2deg); }
+            75% { transform: translate(-2px, -1px) rotate(-1.5deg); }
+        }
+        .nixy-walking .nixy-body-wrap {
+            animation: nixyBob .68s ease-in-out infinite;
+        }
+        .nixy-cold .nixy-body-wrap {
+            animation: nixyShiver .22s linear infinite;
+        }
+        #nixy-bubble {
+            position: absolute;
+            bottom: 68px;
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: var(--panel);
+            border: 1px solid var(--line-strong);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            padding: 5px 10px;
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px -8px rgba(0, 0, 0, .45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+        #nixy-actor:hover #nixy-bubble,
+        #nixy-actor.show-bubble #nixy-bubble {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-brand-500/30 relative">
@@ -670,7 +735,7 @@
         </header>
 
         <!-- Main Container -->
-        <main class="max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-16">
+        <main class="max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-24">
 
             <!-- Page header -->
             <section class="mb-6">
@@ -805,6 +870,14 @@
                 </div>
             </div>
         </footer>
+    </div>
+
+    <!-- NIXY WALKING COMPANION STAGE (Footless Orb Observer) -->
+    <div id="nixy-stage" aria-hidden="true">
+        <div id="nixy-actor" class="nixy-walking" title="Nixy is observing your workspace">
+            <div id="nixy-bubble">Watching your workspace...</div>
+            <div id="nixy-svg-container" class="nixy-body-wrap w-full h-full"></div>
+        </div>
     </div>
 
     <!-- Broadcast / Alert Modal Overlay -->
@@ -1095,7 +1168,7 @@
             return `<img src="${url}" alt="Attachment" class="w-full h-full object-cover" onerror="this.outerHTML='<iframe class=\\'w-full h-full border-0\\' src=\\'${url}\\'></iframe>'">`;
         }
 
-        // Fetch Spreadsheet Sections
+        // Fetch Spreadsheet Sections (supports unlimited column triplets: Name, Link, Image)
         async function fetchSpreadsheetSections() {
             try {
                 const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
@@ -1141,27 +1214,17 @@
                     }
 
                     const tools = [];
-
-                    if (getValue(1)) {
-                        tools.push({
-                            name: getValue(1).toString().trim(),
-                            link: getValue(2).toString().trim(),
-                            image: cleanImageUrl(getValue(3).toString())
-                        });
-                    }
-                    if (getValue(4)) {
-                        tools.push({
-                            name: getValue(4).toString().trim(),
-                            link: getValue(5).toString().trim(),
-                            image: cleanImageUrl(getValue(6).toString())
-                        });
-                    }
-                    if (getValue(7)) {
-                        tools.push({
-                            name: getValue(7).toString().trim(),
-                            link: getValue(8).toString().trim(),
-                            image: cleanImageUrl(getValue(9).toString())
-                        });
+                    for (let colIdx = 1; colIdx + 1 < cells.length; colIdx += 3) {
+                        const toolName = getValue(colIdx).toString().trim();
+                        const toolLink = getValue(colIdx + 1).toString().trim();
+                        const toolImage = cleanImageUrl(getValue(colIdx + 2).toString());
+                        if (toolName) {
+                            tools.push({
+                                name: toolName,
+                                link: toolLink || '#',
+                                image: toolImage
+                            });
+                        }
                     }
 
                     parsedGrouped[sectionType].push(...tools);
@@ -1676,6 +1739,226 @@
             cursor.style.borderBottomColor = '#8b5cf6';
         }
 
+        // ---------- Nixy: Footless Purple Orb Smart Observer ----------
+        const nixyActor = document.getElementById('nixy-actor');
+        const nixySvgContainer = document.getElementById('nixy-svg-container');
+        const nixyBubble = document.getElementById('nixy-bubble');
+
+        const nixyState = {
+            x: window.innerWidth >= 1024 ? 280 : 24,
+            dir: 1, // 1 = right, -1 = left
+            speed: 38, // px per second
+            pausedUntil: 0
+        };
+
+        const nixyObserverState = {
+            lastHoverLabel: '',
+            lastHoverTime: 0,
+            lastBroadcastTime: 0,
+            hoverCount: 0,
+            actionCount: 0,
+            seenBroadcastTexts: new Set()
+        };
+
+        function getNixyOrbSVG(dir) {
+            const lookOffsetX = dir === -1 ? -1.8 : 1.8;
+            return `
+                <svg viewBox="0 0 64 64" class="w-full h-full overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="nixy-orb-grad" cx="34%" cy="24%" r="72%">
+                            <stop offset="0%" stop-color="#c4b5fd" />
+                            <stop offset="32%" stop-color="#8b5cf6" />
+                            <stop offset="78%" stop-color="#6d28d9" />
+                            <stop offset="100%" stop-color="#4c1d95" />
+                        </radialGradient>
+                        <radialGradient id="nixy-eye-glow" cx="50%" cy="50%" r="55%">
+                            <stop offset="0%" stop-color="#ffffff" />
+                            <stop offset="65%" stop-color="#f5f3ff" />
+                            <stop offset="100%" stop-color="#ddd6fe" stop-opacity="0.85" />
+                        </radialGradient>
+                        <filter id="nixy-soft-glow" x="-25%" y="-25%" width="150%" height="150%">
+                            <feGaussianBlur stdDeviation="2.2" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Soft floor shadow directly beneath orb (no feet) -->
+                    <ellipse cx="32" cy="59" rx="14" ry="3" fill="rgba(139, 92, 246, 0.25)" />
+
+                    <!-- Glossy Purple Sphere -->
+                    <circle cx="32" cy="32" r="22" fill="url(#nixy-orb-grad)" stroke="rgba(196, 181, 253, 0.45)" stroke-width="1.2" />
+
+                    <!-- Top-left specular highlight -->
+                    <ellipse cx="24" cy="20.5" rx="6.5" ry="3.6" transform="rotate(-24 24 20.5)" fill="rgba(255, 255, 255, 0.45)" />
+                    <circle cx="18.2" cy="24.5" r="1.6" fill="rgba(255, 255, 255, 0.35)" />
+
+                    <!-- Two glowing white eyes -->
+                    <g filter="url(#nixy-soft-glow)" transform="translate(${lookOffsetX}, 0)">
+                        <circle cx="26.5" cy="32.5" r="3.4" fill="url(#nixy-eye-glow)" />
+                        <circle cx="37.5" cy="32.5" r="3.4" fill="url(#nixy-eye-glow)" />
+                    </g>
+                </svg>
+            `;
+        }
+
+        function renderNixyOrb() {
+            nixySvgContainer.innerHTML = getNixyOrbSVG(nixyState.dir);
+        }
+
+        function flashNixyStatus(label, ms = 2200) {
+            nixyBubble.textContent = label;
+            nixyActor.classList.add('show-bubble');
+            nixyState.pausedUntil = performance.now() + 900;
+            clearTimeout(nixyActor._bubbleTimer);
+            nixyActor._bubbleTimer = setTimeout(() => {
+                nixyActor.classList.remove('show-bubble');
+            }, ms);
+        }
+
+        // Silent smart assistant: never speaks to user, logs observations into broadcasts
+        function postNixyBroadcast(observation) {
+            const now = Date.now();
+            if (!observation || now - nixyObserverState.lastBroadcastTime < 6500) return;
+            if (nixyObserverState.seenBroadcastTexts.has(observation)) return;
+
+            nixyObserverState.lastBroadcastTime = now;
+            nixyObserverState.seenBroadcastTexts.add(observation);
+
+            parsedNotifications.unshift({
+                title: `Nixy observed: ${observation}`,
+                link: '#',
+                isBroadcast: true
+            });
+
+            if (parsedNotifications.length > 30) {
+                parsedNotifications.length = 30;
+            }
+
+            renderNotifs();
+            flashNixyStatus(`Broadcasted observation #${nixyObserverState.seenBroadcastTexts.size}`);
+        }
+
+        function describeHoveredElement(el) {
+            if (!el) return '';
+            const cardName = el.closest('.play-card, .app-card')?.querySelector('.play-name, .app-name')?.textContent?.trim();
+            if (cardName) return `hovering over "${cardName}"`;
+            const navLabel = el.closest('.nav-item, .pill')?.querySelector('span')?.textContent?.trim() || el.closest('.nav-item, .pill')?.textContent?.trim();
+            if (navLabel) return `inspecting category "${navLabel}"`;
+            const aria = el.getAttribute('aria-label')?.trim();
+            if (aria) return `hovering "${aria}"`;
+            return '';
+        }
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('.play-card, .app-card, .nav-item, .pill, button[aria-label], a[href]');
+            if (!target || target.closest('#nixy-actor')) return;
+            const desc = describeHoveredElement(target);
+            if (!desc) return;
+
+            const now = Date.now();
+            nixyObserverState.hoverCount += 1;
+            if (desc !== nixyObserverState.lastHoverLabel || now - nixyObserverState.lastHoverTime > 12000) {
+                nixyObserverState.lastHoverLabel = desc;
+                nixyObserverState.lastHoverTime = now;
+                postNixyBroadcast(desc);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#nixy-actor')) return;
+            nixyObserverState.actionCount += 1;
+
+            const favBtn = e.target.closest('[data-fav]');
+            if (favBtn) {
+                const label = favBtn.getAttribute('aria-label') || 'updated a pinned app';
+                postNixyBroadcast(label.toLowerCase());
+                return;
+            }
+
+            const appLink = e.target.closest('a[data-track]');
+            if (appLink) {
+                const name = appLink.closest('.play-card, .app-card')?.querySelector('.play-name, .app-name')?.textContent?.trim() || appLink.getAttribute('href');
+                postNixyBroadcast(`opened app "${name}"`);
+                return;
+            }
+
+            const catBtn = e.target.closest('[data-category]');
+            if (catBtn) {
+                postNixyBroadcast(`filtered by "${catBtn.dataset.category}"`);
+                return;
+            }
+
+            const viewBtn = e.target.closest('#view-grid-btn, #view-list-btn');
+            if (viewBtn) {
+                postNixyBroadcast(`switched to ${currentViewMode} view`);
+                return;
+            }
+
+            const themeBtn = e.target.closest('#theme-toggle');
+            if (themeBtn) {
+                const mode = document.documentElement.classList.contains('dark') ? 'dark mode' : 'light mode';
+                postNixyBroadcast(`switched to ${mode}`);
+            }
+        });
+
+        let _searchObsTimer;
+        document.getElementById('tool-search-input').addEventListener('input', (e) => {
+            clearTimeout(_searchObsTimer);
+            const q = e.target.value.trim();
+            if (!q) return;
+            _searchObsTimer = setTimeout(() => {
+                postNixyBroadcast(`searched for "${q}"`);
+            }, 900);
+        });
+
+        nixyActor.addEventListener('click', () => {
+            postNixyBroadcast(`logged summary (${nixyObserverState.hoverCount} hovers, ${nixyObserverState.actionCount} actions)`);
+        });
+
+        function startNixyWalkLoop() {
+            renderNixyOrb();
+            let lastTime = performance.now();
+
+            function step(now) {
+                const dt = Math.min((now - lastTime) / 1000, 0.1);
+                lastTime = now;
+
+                const minX = window.innerWidth >= 1024 ? 276 : 16;
+                const maxX = Math.max(minX + 40, window.innerWidth - 84);
+
+                if (nixyState.x < minX) {
+                    nixyState.x = minX;
+                    nixyState.dir = 1;
+                    renderNixyOrb();
+                } else if (nixyState.x > maxX) {
+                    nixyState.x = maxX;
+                    nixyState.dir = -1;
+                    renderNixyOrb();
+                }
+
+                if (now >= nixyState.pausedUntil && !nixyActor.matches(':hover')) {
+                    nixyState.x += nixyState.dir * nixyState.speed * dt;
+                    if (nixyState.x >= maxX) {
+                        nixyState.x = maxX;
+                        nixyState.dir = -1;
+                        renderNixyOrb();
+                    } else if (nixyState.x <= minX) {
+                        nixyState.x = minX;
+                        nixyState.dir = 1;
+                        renderNixyOrb();
+                    }
+                }
+
+                nixyActor.style.left = `${Math.round(nixyState.x)}px`;
+                requestAnimationFrame(step);
+            }
+
+            requestAnimationFrame(step);
+        }
+
         // Supabase Profile Check
         async function checkUser() {
             if (!supabaseClient) return;
@@ -1729,6 +2012,7 @@
         window.onload = async () => {
             initTheme();
             initClockAndGreeting();
+            startNixyWalkLoop();
             applyHoverBindings();
 
             await checkUser();
