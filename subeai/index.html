@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SubeAI | Multi-Model & Chat Image Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://js.puter.com/v2/"></script>
@@ -56,17 +56,17 @@
         }
 
         html:not(.dark) .card-theme {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(16px);
             border-color: #ede9fe;
             box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.09);
         }
 
         html.dark .card-theme {
-            background: rgba(14, 11, 28, 0.88);
+            background: rgba(14, 11, 28, 0.92);
             backdrop-filter: blur(16px);
-            border-color: rgba(139, 92, 246, 0.22);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+            border-color: rgba(139, 92, 246, 0.24);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.65);
         }
 
         .btn-primary {
@@ -80,7 +80,7 @@
         }
 
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         html.dark ::-webkit-scrollbar-thumb { background: #3b0764; border-radius: 9999px; }
         html:not(.dark) ::-webkit-scrollbar-thumb { background: #ddd6fe; border-radius: 9999px; }
@@ -115,11 +115,17 @@
 
         #nixyContainer {
             position: fixed;
-            bottom: 20px;
-            left: 36px;
+            bottom: 12px;
+            left: 14px;
             z-index: 60;
             transition: left 2.8s ease-in-out, bottom 0.35s ease;
             user-select: none;
+        }
+        @media (min-width: 640px) {
+            #nixyContainer {
+                bottom: 20px;
+                left: 36px;
+            }
         }
     </style>
 </head>
@@ -127,7 +133,7 @@
 
     <!-- Supabase Auth Redirect Overlay (Shown when not signed in) -->
     <div id="supabaseAuthGuard" class="hidden fixed inset-0 z-[100] bg-[#05040a]/95 backdrop-blur-xl flex items-center justify-center p-4">
-        <div class="card-theme max-w-md w-full p-8 rounded-3xl border text-center space-y-5 shadow-2xl">
+        <div class="card-theme max-w-md w-full p-6 sm:p-8 rounded-3xl border text-center space-y-5 shadow-2xl">
             <div class="w-16 h-16 rounded-2xl bg-brand-600/20 text-brand-400 flex items-center justify-center mx-auto text-3xl animate-pulse">
                 <i class="ph ph-shield-check"></i>
             </div>
@@ -158,18 +164,18 @@
                     <i class="ph ph-sparkle"></i>
                     <span>Welcome to SubeAI Studio</span>
                 </div>
-                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">How would you like to create today?</h2>
-                <p class="text-sm text-purple-300/80 max-w-lg mx-auto">Choose your preferred creative workflow. You can switch between modes anytime from the top bar.</p>
+                <h2 class="text-xl sm:text-3xl font-extrabold tracking-tight">How would you like to create today?</h2>
+                <p class="text-xs sm:text-sm text-purple-300/80 max-w-lg mx-auto">Choose your preferred creative workflow. You can switch between modes anytime from the top bar.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- Option 1: Prompt 2 Image -->
-                <button onclick="selectAppMode('prompt2img', true)" class="group text-left p-6 rounded-2xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/20 hover:bg-brand-600/10 transition-all space-y-3">
-                    <div class="w-12 h-12 rounded-2xl bg-brand-600/20 text-brand-400 group-hover:bg-brand-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
+                <button onclick="selectAppMode('prompt2img', true)" class="group text-left p-5 sm:p-6 rounded-2xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/20 hover:bg-brand-600/10 transition-all space-y-3">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-brand-600/20 text-brand-400 group-hover:bg-brand-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
                         <i class="ph ph-squares-four"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg flex items-center gap-2">
+                        <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
                             <span>Prompt 2 Image</span>
                             <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300">Multi-Model</span>
                         </h3>
@@ -178,12 +184,12 @@
                 </button>
 
                 <!-- Option 2: Chat 2 Image -->
-                <button onclick="selectAppMode('chat2img', true)" class="group text-left p-6 rounded-2xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/20 hover:bg-brand-600/10 transition-all space-y-3">
-                    <div class="w-12 h-12 rounded-2xl bg-fuchsia-600/20 text-fuchsia-400 group-hover:bg-fuchsia-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
+                <button onclick="selectAppMode('chat2img', true)" class="group text-left p-5 sm:p-6 rounded-2xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/20 hover:bg-brand-600/10 transition-all space-y-3">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-fuchsia-600/20 text-fuchsia-400 group-hover:bg-fuchsia-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
                         <i class="ph ph-chat-circle-dots"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg flex items-center gap-2">
+                        <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
                             <span>Chat 2 Image</span>
                             <span class="text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300">Iterative Edit</span>
                         </h3>
@@ -196,49 +202,49 @@
 
     <!-- Header -->
     <header class="sticky top-0 z-40 backdrop-blur-xl border-b border-purple-500/15 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2">
             <!-- Brand -->
-            <div class="flex items-center space-x-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-purple-400 flex items-center justify-center shadow-lg shadow-brand-600/30 text-white font-bold text-xl">
+            <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
+                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-purple-400 flex items-center justify-center shadow-lg shadow-brand-600/30 text-white font-bold text-lg sm:text-xl">
                     <i class="ph ph-sparkle"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-brand-500 to-purple-300 bg-clip-text text-transparent">SubeAI</h1>
-                    <p class="text-[11px] text-purple-400 font-medium hidden sm:block">Multi-Model & Chat Image Studio</p>
+                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-brand-500 to-purple-300 bg-clip-text text-transparent">SubeAI</h1>
+                    <p class="text-[11px] text-purple-400 font-medium hidden md:block">Multi-Model & Chat Image Studio</p>
                 </div>
             </div>
 
             <!-- Mode Switcher Pill -->
-            <div class="flex items-center p-1 rounded-2xl card-theme border">
-                <button id="tabPrompt2Img" onclick="selectAppMode('prompt2img', false)" class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all bg-brand-600 text-white shadow">
+            <div class="flex items-center p-1 rounded-xl sm:rounded-2xl card-theme border">
+                <button id="tabPrompt2Img" onclick="selectAppMode('prompt2img', false)" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all bg-brand-600 text-white shadow">
                     <i class="ph ph-squares-four text-sm"></i>
-                    <span>Prompt 2 Image</span>
+                    <span>Prompt<span class="hidden sm:inline"> 2 Image</span></span>
                 </button>
-                <button id="tabChat2Img" onclick="selectAppMode('chat2img', false)" class="px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-purple-300 hover:text-white">
+                <button id="tabChat2Img" onclick="selectAppMode('chat2img', false)" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all text-purple-300 hover:text-white">
                     <i class="ph ph-chat-circle-dots text-sm"></i>
-                    <span>Chat 2 Image</span>
+                    <span>Chat<span class="hidden sm:inline"> 2 Image</span></span>
                 </button>
             </div>
 
             <!-- Right Actions -->
-            <div class="flex items-center space-x-2.5">
-                <button onclick="toggleTheme()" class="p-2.5 rounded-xl card-theme border hover:border-brand-500 transition-all" title="Toggle Theme">
-                    <i id="themeIcon" class="ph ph-sun text-lg text-amber-400"></i>
+            <div class="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
+                <button onclick="toggleTheme()" class="p-2 sm:p-2.5 rounded-xl card-theme border hover:border-brand-500 transition-all" title="Toggle Theme">
+                    <i id="themeIcon" class="ph ph-sun text-base sm:text-lg text-amber-400"></i>
                 </button>
 
-                <button onclick="openLibraryModal()" class="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl card-theme border hover:border-brand-500 transition-all font-medium text-xs sm:text-sm">
-                    <i class="ph ph-images text-brand-500 text-lg"></i>
+                <button onclick="openLibraryModal()" class="flex items-center space-x-1.5 px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl card-theme border hover:border-brand-500 transition-all font-medium text-xs sm:text-sm">
+                    <i class="ph ph-images text-brand-500 text-base sm:text-lg"></i>
                     <span class="hidden md:inline">Library</span>
-                    <span id="libraryCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-brand-500/20 text-brand-400 font-bold">0</span>
+                    <span id="libraryCountBadge" class="px-1.5 py-0.5 rounded-full text-[11px] bg-brand-500/20 text-brand-400 font-bold">0</span>
                 </button>
 
                 <!-- User Session Badge -->
                 <div class="relative">
-                    <button onclick="toggleAuthMenu()" class="flex items-center space-x-2 px-3 py-2 rounded-xl card-theme border hover:border-brand-500 transition-all text-xs font-medium">
-                        <div id="authAvatar" class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white font-bold">
+                    <button onclick="toggleAuthMenu()" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-2 rounded-xl card-theme border hover:border-brand-500 transition-all text-xs font-medium">
+                        <div id="authAvatar" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-brand-600 flex items-center justify-center text-white font-bold">
                             <i class="ph ph-user"></i>
                         </div>
-                        <span id="authUsername" class="max-w-[90px] truncate hidden sm:inline">Account</span>
+                        <span id="authUsername" class="max-w-[75px] truncate hidden sm:inline">Account</span>
                         <i class="ph ph-caret-down text-xs"></i>
                     </button>
 
@@ -261,204 +267,265 @@
         </div>
     </header>
 
-    <!-- Main Workspace -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Hidden File Input shared by Upload Buttons -->
+    <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
 
-            <!-- LEFT SIDEBAR: Persistent Settings, Models & Size (Always Accessible in Both Modes) -->
-            <aside class="lg:col-span-4 space-y-5">
-                <div class="card-theme p-5 rounded-3xl border space-y-5">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-base font-bold flex items-center gap-2">
-                            <i class="ph ph-sliders-horizontal text-brand-500 text-lg"></i>
-                            <span>Image & Model Settings</span>
-                        </h2>
-                        <span id="modeIndicatorBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-400 font-semibold">Multi-Model</span>
-                    </div>
+    <!-- Main Mobile-Friendly Workspace (Unified Type Bar + Controls) -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-32">
 
-                    <!-- Model Selection Section (Multi-select in Prompt2Img, Single-select in Chat2Img) -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label id="modelSectionLabel" class="block text-xs font-semibold uppercase tracking-wider text-purple-400">Select Models (Choose 1 or More)</label>
-                            <button id="selectAllModelsBtn" onclick="toggleSelectAllModels()" class="text-[11px] text-brand-400 hover:underline font-medium">Select Top 3</button>
-                        </div>
-
-                        <div id="modelsChecklist" class="space-y-2 max-h-[290px] overflow-y-auto pr-1">
-                            <!-- Populated dynamically with Puter.js free/standard models -->
+        <!-- MODE A: PROMPT 2 IMAGE (Multi-Model Comparison Studio) -->
+        <div id="prompt2ImgView" class="space-y-5">
+            <!-- Unified Typing & Controls Composer Box -->
+            <div class="card-theme p-4 sm:p-5 rounded-3xl border space-y-3 shadow-xl relative">
+                <!-- Uploaded Image Preview Chip (if attached) -->
+                <div id="promptAttachmentBar" class="hidden items-center justify-between px-3 py-2 rounded-2xl bg-brand-500/15 border border-brand-500/30">
+                    <div class="flex items-center gap-2.5">
+                        <img id="promptInputImageThumb" src="" alt="Attached" class="w-10 h-10 rounded-xl object-cover border border-purple-400/30">
+                        <div>
+                            <p class="text-xs font-semibold text-brand-300">Reference Image Attached</p>
+                            <p class="text-[10px] text-purple-300/80">Will be used for Img2Img generation</p>
                         </div>
                     </div>
-
-                    <!-- Image Size & Aspect Ratio -->
-                    <div class="space-y-2">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-purple-400">Image Dimensions & Ratio</label>
-                        <div class="grid grid-cols-2 gap-2" id="sizePresetsGrid">
-                            <button type="button" onclick="selectSizePreset('1024x1024', '1:1', this)" class="size-btn active-size p-2.5 rounded-xl border border-brand-500 bg-brand-600/20 text-left transition-all">
-                                <div class="text-xs font-bold">1024 × 1024</div>
-                                <div class="text-[10px] text-purple-300">Square (1:1)</div>
-                            </button>
-                            <button type="button" onclick="selectSizePreset('1344x768', '16:9', this)" class="size-btn p-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/60 text-left transition-all">
-                                <div class="text-xs font-bold">1344 × 768</div>
-                                <div class="text-[10px] text-purple-300">Landscape (16:9)</div>
-                            </button>
-                            <button type="button" onclick="selectSizePreset('768x1344', '9:16', this)" class="size-btn p-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/60 text-left transition-all">
-                                <div class="text-xs font-bold">768 × 1344</div>
-                                <div class="text-[10px] text-purple-300">Portrait (9:16)</div>
-                            </button>
-                            <button type="button" onclick="selectSizePreset('1152x896', '4:3', this)" class="size-btn p-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/60 text-left transition-all">
-                                <div class="text-xs font-bold">1152 × 896</div>
-                                <div class="text-[10px] text-purple-300">Classic (4:3)</div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Quality & Style Preset -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-purple-400">Quality Tier</label>
-                            <select id="qualitySelect" class="w-full rounded-xl p-2.5 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs">
-                                <option value="low">Standard / Fast</option>
-                                <option value="medium" selected>Balanced (Medium)</option>
-                                <option value="high">Ultra HD (High)</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-purple-400">Art Style</label>
-                            <select id="stylePresetSelect" class="w-full rounded-xl p-2.5 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs">
-                                <option value="">None (Raw Prompt)</option>
-                                <option value="photorealistic, 8k resolution, highly detailed, cinematic lighting">Photorealistic</option>
-                                <option value="anime key visual, vibrant colors, studio ghibli inspired">Anime / Manga</option>
-                                <option value="3d octane render, unreal engine 5, volumetric lighting">3D Render</option>
-                                <option value="digital oil painting, expressive brushstrokes, fantasy art">Digital Painting</option>
-                                <option value="cyberpunk neon aesthetic, rain reflections, futuristic">Cyberpunk</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Reference Image Upload (Img2Img) -->
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-xs font-semibold text-purple-400">Reference Image (Optional)</label>
-                            <button onclick="clearInputImage()" id="clearImgBtn" class="hidden text-[11px] text-red-400 hover:underline">Remove</button>
-                        </div>
-                        <div class="rounded-2xl p-3 border border-dashed border-purple-500/30 hover:border-brand-500 text-center cursor-pointer relative overflow-hidden flex flex-col items-center justify-center min-h-[76px] transition-colors">
-                            <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                            <div id="dropZoneContent" class="flex items-center gap-2 text-xs text-purple-300">
-                                <i class="ph ph-image-square text-lg text-brand-400"></i>
-                                <span>Upload base image for Img2Img</span>
-                            </div>
-                            <img id="inputImagePreview" class="hidden max-h-24 object-contain rounded-xl z-0">
-                        </div>
-                    </div>
-
-                    <!-- Test Mode Toggle -->
-                    <div class="pt-2 border-t border-purple-500/15 flex items-center justify-between">
-                        <label for="testModeCheck" class="text-xs font-medium cursor-pointer flex items-center gap-2">
-                            <input type="checkbox" id="testModeCheck" class="w-4 h-4 accent-brand-600 rounded">
-                            <span>Test Mode (No Credits Used)</span>
-                        </label>
-                        <button onclick="openModeSelector()" class="text-[11px] text-purple-400 hover:text-brand-400 underline">Switch Mode</button>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- RIGHT WORKSPACE: Dynamic Area for Prompt 2 Image OR Chat 2 Image -->
-            <section class="lg:col-span-8 space-y-6">
-
-                <!-- MODE A: PROMPT 2 IMAGE (Multi-Model Comparison Studio) -->
-                <div id="prompt2ImgView" class="space-y-6">
-                    <div class="card-theme p-5 sm:p-6 rounded-3xl border space-y-4">
-                        <div class="flex items-center justify-between">
-                            <label for="promptInput" class="text-sm font-bold flex items-center gap-2">
-                                <i class="ph ph-magic-wand text-brand-500 text-lg"></i>
-                                <span>Prompt Description</span>
-                            </label>
-                            <span id="selectedModelsCounter" class="text-xs text-brand-400 font-semibold">2 models selected</span>
-                        </div>
-
-                        <textarea id="promptInput" rows="3" placeholder="Describe the image you want to generate across all selected models (e.g., A cat in the forest bathed in golden sunbeams)..." class="w-full rounded-2xl p-4 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm resize-none transition-all"></textarea>
-
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                            <div class="flex items-center gap-2 text-xs text-purple-400">
-                                <i class="ph ph-info"></i>
-                                <span>Tip: Add <code class="text-brand-400">?prompt="your text"</code> to the URL to auto-fill!</span>
-                            </div>
-                            <button onclick="generateMultiModelImages()" id="generateMultiBtn" class="btn-primary text-white font-semibold px-6 py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-sm">
-                                <i class="ph ph-sparkle text-lg"></i>
-                                <span>Generate Across Selected Models</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Multi-Model Results Grid -->
-                    <div id="multiResultsContainer" class="space-y-4">
-                        <div id="multiEmptyState" class="card-theme p-12 rounded-3xl border border-dashed text-center space-y-3">
-                            <div class="w-16 h-16 rounded-2xl bg-brand-500/15 text-brand-400 flex items-center justify-center mx-auto text-3xl">
-                                <i class="ph ph-images"></i>
-                            </div>
-                            <h3 class="font-bold text-lg">Multi-Model Comparison Canvas</h3>
-                            <p class="text-xs text-purple-300/80 max-w-md mx-auto">Select one or more AI models on the left, type your prompt above, and compare every model's visual interpretation side-by-side.</p>
-                        </div>
-
-                        <div id="multiResultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <!-- Model result cards injected here -->
-                        </div>
-                    </div>
+                    <button type="button" onclick="clearInputImage()" class="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 text-xs font-semibold flex items-center gap-1">
+                        <i class="ph ph-trash"></i>
+                        <span>Remove</span>
+                    </button>
                 </div>
 
-                <!-- MODE B: CHAT 2 IMAGE (Conversational Creation & Iterative Image Editing) -->
-                <div id="chat2ImgView" class="hidden card-theme rounded-3xl border flex flex-col h-[700px] overflow-hidden">
-                    <!-- Chat Top Bar -->
-                    <div class="p-4 sm:p-5 border-b border-purple-500/15 flex items-center justify-between bg-purple-950/20">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-2xl bg-fuchsia-600/20 text-fuchsia-400 flex items-center justify-center text-xl">
-                                <i class="ph ph-chat-teardrop-text"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-sm sm:text-base">Chat 2 Image Studio</h3>
-                                <p class="text-xs text-purple-400">Describe an image, then send follow-up messages to edit it!</p>
-                            </div>
-                        </div>
-                        <button onclick="resetChatSession()" class="px-3 py-1.5 rounded-xl border border-purple-500/25 hover:border-brand-500 text-xs font-medium flex items-center gap-1.5 transition-colors">
-                            <i class="ph ph-arrow-counter-clockwise"></i>
-                            <span>New Chat</span>
+                <!-- Prompt Textarea -->
+                <textarea id="promptInput" rows="3" placeholder="Describe the image you want to create (e.g., A cat in the forest bathed in golden sunbeams)..." class="w-full bg-transparent focus:outline-none text-sm sm:text-base resize-none placeholder:text-purple-400/60"></textarea>
+
+                <!-- Inline Action Toolbar: Models List Button, Size & Settings Button, Upload Button, Generate Button -->
+                <div class="pt-3 border-t border-purple-500/15 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <!-- 1. Choose Models List Button -->
+                        <button type="button" onclick="openModelsPopover()" class="px-3 py-2 rounded-xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/25 text-xs font-semibold flex items-center gap-1.5 transition-all">
+                            <i class="ph ph-cpu text-brand-400 text-base"></i>
+                            <span id="toolbarModelsLabel">Models (2)</span>
+                            <i class="ph ph-caret-down text-[10px] text-purple-400"></i>
+                        </button>
+
+                        <!-- 2. Size & Settings Button -->
+                        <button type="button" onclick="openSettingsPopover()" class="px-3 py-2 rounded-xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/25 text-xs font-semibold flex items-center gap-1.5 transition-all">
+                            <i class="ph ph-sliders-horizontal text-brand-400 text-base"></i>
+                            <span id="toolbarSizeLabel">1024×1024 • Settings</span>
+                        </button>
+
+                        <!-- 3. Upload File Button -->
+                        <button type="button" onclick="triggerFileUpload()" class="px-3 py-2 rounded-xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/25 text-xs font-semibold flex items-center gap-1.5 transition-all" title="Upload Reference Image">
+                            <i class="ph ph-upload-simple text-brand-400 text-base"></i>
+                            <span id="toolbarUploadLabel">Upload</span>
                         </button>
                     </div>
 
-                    <!-- Chat Messages Feed -->
-                    <div id="chatMessagesFeed" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-                        <!-- Initial AI Greeting -->
-                        <div class="flex items-start gap-3 max-w-2xl">
-                            <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm shrink-0 mt-1">
-                                <i class="ph ph-sparkle"></i>
-                            </div>
-                            <div class="p-4 rounded-2xl rounded-tl-none bg-purple-950/40 border border-purple-500/20 text-sm space-y-1.5">
-                                <p class="font-semibold text-brand-300">SubeAI Creative Assistant</p>
-                                <p class="text-purple-100/90 leading-relaxed">Tell me what image you want to create! Once I generate it, you can reply with edits like <em>"make it at sunset"</em>, <em>"add a glowing crown"</em>, or <em>"change the background to a cyber city"</em>.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Generate Submit Button -->
+                    <button type="button" onclick="generateMultiModelImages()" id="generateMultiBtn" class="w-full sm:w-auto btn-primary text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <i class="ph ph-sparkle text-base"></i>
+                        <span>Generate</span>
+                    </button>
+                </div>
+            </div>
 
-                    <!-- Chat Input Footer -->
-                    <div class="p-4 border-t border-purple-500/15 bg-black/20">
-                        <div id="activeEditIndicator" class="hidden mb-2 px-3 py-1.5 rounded-xl bg-brand-500/15 border border-brand-500/30 text-xs text-brand-300 flex items-center justify-between">
-                            <span class="flex items-center gap-1.5">
-                                <i class="ph ph-pencil-simple-line"></i>
-                                <span>Editing active image — describe what you want to change</span>
-                            </span>
-                            <button onclick="clearChatEditContext()" class="text-purple-300 hover:text-white underline text-[11px]">Start Fresh Image</button>
-                        </div>
-                        <form onsubmit="handleChatSubmit(event)" class="flex items-center gap-2.5">
-                            <input type="text" id="chatPromptInput" placeholder="Describe a new image or type edits to your current image..." class="flex-1 rounded-2xl px-4 py-3.5 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                            <button type="submit" id="chatSendBtn" class="btn-primary text-white p-3.5 rounded-2xl shadow-lg flex items-center justify-center">
-                                <i class="ph ph-paper-plane-right text-lg"></i>
-                            </button>
-                        </form>
+            <!-- Multi-Model Results Grid -->
+            <div id="multiResultsContainer" class="space-y-4">
+                <div id="multiEmptyState" class="card-theme p-8 sm:p-12 rounded-3xl border border-dashed text-center space-y-3">
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-brand-500/15 text-brand-400 flex items-center justify-center mx-auto text-2xl sm:text-3xl">
+                        <i class="ph ph-images"></i>
                     </div>
+                    <h3 class="font-bold text-base sm:text-lg">Multi-Model Comparison Canvas</h3>
+                    <p class="text-xs text-purple-300/80 max-w-md mx-auto">Tap <strong>Models</strong>, <strong>Size & Settings</strong>, or <strong>Upload</strong> right inside the typing box above, then hit Generate!</p>
                 </div>
 
-            </section>
+                <div id="multiResultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                    <!-- Model result cards injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- MODE B: CHAT 2 IMAGE (Conversational Creation & Iterative Image Editing) -->
+        <div id="chat2ImgView" class="hidden card-theme rounded-3xl border flex flex-col h-[calc(100vh-140px)] min-h-[500px] max-h-[760px] overflow-hidden shadow-xl">
+            <!-- Chat Top Bar -->
+            <div class="p-3.5 sm:p-4 border-b border-purple-500/15 flex items-center justify-between bg-purple-950/20">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-fuchsia-600/20 text-fuchsia-400 flex items-center justify-center text-lg">
+                        <i class="ph ph-chat-teardrop-text"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xs sm:text-sm">Chat 2 Image Studio</h3>
+                        <p class="text-[11px] text-purple-400">Create & edit step-by-step via chat</p>
+                    </div>
+                </div>
+                <button onclick="resetChatSession()" class="px-3 py-1.5 rounded-xl border border-purple-500/25 hover:border-brand-500 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                    <i class="ph ph-arrow-counter-clockwise"></i>
+                    <span>New Chat</span>
+                </button>
+            </div>
+
+            <!-- Chat Messages Feed -->
+            <div id="chatMessagesFeed" class="flex-1 p-3.5 sm:p-5 overflow-y-auto space-y-4">
+                <!-- Initial AI Greeting -->
+                <div class="flex items-start gap-2.5 max-w-2xl">
+                    <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm shrink-0 mt-1">
+                        <i class="ph ph-sparkle"></i>
+                    </div>
+                    <div class="p-3.5 rounded-2xl rounded-tl-none bg-purple-950/40 border border-purple-500/20 text-xs sm:text-sm space-y-1.5">
+                        <p class="font-semibold text-brand-300">SubeAI Creative Assistant</p>
+                        <p class="text-purple-100/90 leading-relaxed">Tell me what image you want to create! Use the buttons inside the typing bar below to pick your model, adjust size & settings, or upload a photo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unified Chat Typing & Controls Footer -->
+            <div class="p-3 sm:p-4 border-t border-purple-500/15 bg-black/25 space-y-2.5">
+                <!-- Active Edit Context Banner -->
+                <div id="activeEditIndicator" class="hidden px-3 py-1.5 rounded-xl bg-brand-500/15 border border-brand-500/30 text-xs text-brand-300 flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 truncate">
+                        <i class="ph ph-pencil-simple-line"></i>
+                        <span class="truncate">Editing active image — describe changes</span>
+                    </span>
+                    <button onclick="clearChatEditContext()" class="text-purple-300 hover:text-white underline text-[11px] shrink-0 ml-2">New Image</button>
+                </div>
+
+                <!-- Chat Attachment Chip -->
+                <div id="chatAttachmentBar" class="hidden items-center justify-between px-3 py-1.5 rounded-xl bg-brand-500/15 border border-brand-500/30">
+                    <div class="flex items-center gap-2">
+                        <img id="chatInputImageThumb" src="" alt="Attached" class="w-8 h-8 rounded-lg object-cover">
+                        <span class="text-xs font-medium text-brand-300">Reference image attached</span>
+                    </div>
+                    <button type="button" onclick="clearInputImage()" class="text-red-400 text-xs hover:underline">Remove</button>
+                </div>
+
+                <!-- Chat Input Row -->
+                <form onsubmit="handleChatSubmit(event)" class="flex items-center gap-2">
+                    <input type="text" id="chatPromptInput" placeholder="Describe an image or type edits..." class="flex-1 rounded-2xl px-3.5 py-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs sm:text-sm">
+                    <button type="submit" id="chatSendBtn" class="btn-primary text-white p-3 rounded-2xl shadow-lg flex items-center justify-center shrink-0">
+                        <i class="ph ph-paper-plane-right text-lg"></i>
+                    </button>
+                </form>
+
+                <!-- Inline Chat Controls Bar (Model List, Size & Settings, Upload Button) -->
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <button type="button" onclick="openModelsPopover()" class="px-2.5 py-1.5 rounded-xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/30 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all">
+                        <i class="ph ph-cpu text-brand-400"></i>
+                        <span id="chatModelsLabel">Model: GPT 2.6</span>
+                        <i class="ph ph-caret-up text-[10px] text-purple-400"></i>
+                    </button>
+
+                    <button type="button" onclick="openSettingsPopover()" class="px-2.5 py-1.5 rounded-xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/30 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all">
+                        <i class="ph ph-sliders-horizontal text-brand-400"></i>
+                        <span id="chatSizeLabel">1024×1024 • Settings</span>
+                    </button>
+
+                    <button type="button" onclick="triggerFileUpload()" class="px-2.5 py-1.5 rounded-xl border border-purple-500/25 hover:border-brand-500 bg-purple-950/30 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all">
+                        <i class="ph ph-upload-simple text-brand-400"></i>
+                        <span id="chatUploadLabel">Upload</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- POPOVER MODAL 1: CHOOSE MODELS LIST (Bottom Sheet on Mobile, Centered Modal on Desktop) -->
+    <div id="modelsModal" class="hidden fixed inset-0 z-[75] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this) closeModelsPopover()">
+        <div class="card-theme w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl border p-5 space-y-4 shadow-2xl max-h-[82vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-purple-500/15 pb-3">
+                <div>
+                    <h3 id="modelSectionLabel" class="font-bold text-base">Select AI Models</h3>
+                    <p id="modelSectionSubtext" class="text-xs text-purple-400">Choose one or more models to compare</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="selectAllModelsBtn" type="button" onclick="toggleSelectAllModels()" class="px-2.5 py-1 rounded-lg bg-brand-500/15 text-brand-300 text-xs font-semibold hover:bg-brand-500/25">
+                        Top 3
+                    </button>
+                    <button type="button" onclick="closeModelsPopover()" class="p-1.5 rounded-full hover:bg-purple-500/15 text-lg">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="modelsChecklist" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <!-- Populated dynamically with Puter.js free/standard models -->
+            </div>
+
+            <button type="button" onclick="closeModelsPopover()" class="w-full py-3 btn-primary text-white font-semibold rounded-2xl text-sm">
+                Done
+            </button>
+        </div>
+    </div>
+
+    <!-- POPOVER MODAL 2: SIZE & IMAGE SETTINGS (Bottom Sheet on Mobile, Centered Modal on Desktop) -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-[75] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this) closeSettingsPopover()">
+        <div class="card-theme w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border p-5 space-y-5 shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-purple-500/15 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-sliders-horizontal text-brand-400 text-xl"></i>
+                    <h3 class="font-bold text-base">Size & Image Settings</h3>
+                </div>
+                <button type="button" onclick="closeSettingsPopover()" class="p-1.5 rounded-full hover:bg-purple-500/15 text-lg">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <!-- Image Dimensions & Aspect Ratio -->
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-purple-400">Image Size & Ratio</label>
+                <div class="grid grid-cols-2 gap-2.5" id="sizePresetsGrid">
+                    <button type="button" onclick="selectSizePreset('1024x1024', '1:1', this)" class="size-btn p-3 rounded-xl border border-brand-500 bg-brand-600/20 text-left transition-all">
+                        <div class="text-xs font-bold">1024 × 1024</div>
+                        <div class="text-[11px] text-purple-300">Square (1:1)</div>
+                    </button>
+                    <button type="button" onclick="selectSizePreset('1344x768', '16:9', this)" class="size-btn p-3 rounded-xl border border-purple-500/20 hover:border-brand-500/60 text-left transition-all">
+                        <div class="text-xs font-bold">1344 × 768</div>
+                        <div class="text-[11px] text-purple-300">Landscape (16:9)</div>
+                    </button>
+                    <button type="button" onclick="selectSizePreset('768x1344', '9:16', this)" class="size-btn p-3 rounded-xl border border-purple-500/20 hover:border-brand-500/60 text-left transition-all">
+                        <div class="text-xs font-bold">768 × 1344</div>
+                        <div class="text-[11px] text-purple-300">Portrait (9:16)</div>
+                    </button>
+                    <button type="button" onclick="selectSizePreset('1152x896', '4:3', this)" class="size-btn p-3 rounded-xl border border-purple-500/20 hover:border-brand-500/60 text-left transition-all">
+                        <div class="text-xs font-bold">1152 × 896</div>
+                        <div class="text-[11px] text-purple-300">Classic (4:3)</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quality & Style Preset -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-purple-400">Quality Tier</label>
+                    <select id="qualitySelect" onchange="syncToolbarLabels()" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs">
+                        <option value="low">Standard / Fast</option>
+                        <option value="medium" selected>Balanced (Medium)</option>
+                        <option value="high">Ultra HD (High)</option>
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-purple-400">Art Style</label>
+                    <select id="stylePresetSelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs">
+                        <option value="">None (Raw Prompt)</option>
+                        <option value="photorealistic, 8k resolution, highly detailed, cinematic lighting">Photorealistic</option>
+                        <option value="anime key visual, vibrant colors, studio ghibli inspired">Anime / Manga</option>
+                        <option value="3d octane render, unreal engine 5, volumetric lighting">3D Render</option>
+                        <option value="digital oil painting, expressive brushstrokes, fantasy art">Digital Painting</option>
+                        <option value="cyberpunk neon aesthetic, rain reflections, futuristic">Cyberpunk</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Test Mode Toggle -->
+            <div class="pt-3 border-t border-purple-500/15 flex items-center justify-between">
+                <label for="testModeCheck" class="text-xs font-medium cursor-pointer flex items-center gap-2">
+                    <input type="checkbox" id="testModeCheck" class="w-4 h-4 accent-brand-600 rounded">
+                    <span>Test Mode (No Credits Used)</span>
+                </label>
+                <button type="button" onclick="closeSettingsPopover(); openModeSelector();" class="text-xs text-brand-400 hover:underline font-medium">Switch Mode</button>
+            </div>
+
+            <button type="button" onclick="closeSettingsPopover()" class="w-full py-3 btn-primary text-white font-semibold rounded-2xl text-sm">
+                Apply Settings
+            </button>
+        </div>
+    </div>
 
     <!-- Library Modal -->
     <div id="libraryModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -488,7 +555,7 @@
     </div>
 
     <!-- Toast Notification Banner -->
-    <div id="toastBanner" class="hidden fixed top-24 right-5 z-[80] px-4 py-3 rounded-2xl bg-brand-700 text-white text-xs font-semibold shadow-2xl border border-purple-400/30 flex items-center gap-2 transition-all">
+    <div id="toastBanner" class="hidden fixed top-20 right-4 z-[80] px-4 py-3 rounded-2xl bg-brand-700 text-white text-xs font-semibold shadow-2xl border border-purple-400/30 flex items-center gap-2 transition-all">
         <i class="ph ph-check-circle text-base"></i>
         <span id="toastText">Action completed</span>
     </div>
@@ -496,36 +563,33 @@
     <!-- NIXY: The Glossy Purple Ball with 2 Glowing White Eyes -->
     <div id="nixyContainer" class="nixy-walking">
         <!-- Speech Bubble -->
-        <div id="nixySpeechBubble" class="mb-2.5 ml-3 max-w-[235px] p-3 rounded-2xl rounded-bl-none bg-[#170d2e]/95 border border-purple-400/40 text-white text-xs shadow-[0_8px_30px_rgba(139,92,246,0.35)] backdrop-blur-md transition-all duration-300 relative">
+        <div id="nixySpeechBubble" class="mb-2 ml-2 max-w-[225px] p-2.5 sm:p-3 rounded-2xl rounded-bl-none bg-[#170d2e]/95 border border-purple-400/40 text-white text-[11px] sm:text-xs shadow-[0_8px_30px_rgba(139,92,246,0.35)] backdrop-blur-md transition-all duration-300 relative">
             <p id="nixySpeechText" class="leading-snug font-medium">Hi! I'm Nixy! Click me for prompt tips or bounce around!</p>
-            <div class="mt-2 flex items-center gap-1.5">
-                <button onclick="nixyGiveRandomPrompt()" class="px-2.5 py-1 rounded-lg bg-brand-600/60 hover:bg-brand-500 text-[10px] font-semibold transition-colors">
+            <div class="mt-1.5 flex items-center gap-1.5">
+                <button onclick="nixyGiveRandomPrompt()" class="px-2 py-0.5 rounded-lg bg-brand-600/60 hover:bg-brand-500 text-[10px] font-semibold transition-colors">
                     ✨ Idea
                 </button>
-                <button onclick="nixyBounce()" class="px-2.5 py-1 rounded-lg bg-purple-500/30 hover:bg-purple-500/50 text-[10px] font-semibold transition-colors">
+                <button onclick="nixyBounce()" class="px-2 py-0.5 rounded-lg bg-purple-500/30 hover:bg-purple-500/50 text-[10px] font-semibold transition-colors">
                     🔮 Bounce
                 </button>
             </div>
         </div>
 
-        <!-- Nixy Glossy 3D Purple Orb SVG (Matching NixCode design) -->
-        <div onclick="handleNixyClick()" class="nixy-orb-wrapper cursor-pointer w-14 h-14 relative group" title="Click Nixy to interact!">
+        <!-- Nixy Glossy 3D Purple Orb SVG -->
+        <div onclick="handleNixyClick()" class="nixy-orb-wrapper cursor-pointer w-12 h-12 sm:w-14 sm:h-14 relative group" title="Click Nixy to interact!">
             <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible drop-shadow-[0_0_18px_rgba(147,51,234,0.75)]">
                 <defs>
-                    <!-- Main 3D Purple Sphere Gradient -->
                     <radialGradient id="nixyBallGrad" cx="38%" cy="30%" r="65%">
                         <stop offset="0%" stop-color="#c084fc" />
                         <stop offset="45%" stop-color="#7e22ce" />
                         <stop offset="85%" stop-color="#4c1d95" />
                         <stop offset="100%" stop-color="#3b0764" />
                     </radialGradient>
-                    <!-- Inner Rim Glow -->
                     <radialGradient id="nixyRimGlow" cx="50%" cy="50%" r="50%">
                         <stop offset="78%" stop-color="#a855f7" stop-opacity="0" />
                         <stop offset="96%" stop-color="#d8b4fe" stop-opacity="0.7" />
                         <stop offset="100%" stop-color="#f3e8ff" stop-opacity="0.9" />
                     </radialGradient>
-                    <!-- White Eye Glow Filter -->
                     <filter id="nixyEyeGlow" x="-40%" y="-40%" width="180%" height="180%">
                         <feGaussianBlur stdDeviation="2.5" result="blur" />
                         <feMerge>
@@ -535,16 +599,13 @@
                     </filter>
                 </defs>
 
-                <!-- Rolling Sphere Base & Glossy Highlights -->
                 <g class="nixy-orb-sphere" style="transform-origin: 50px 50px;">
                     <circle cx="50" cy="50" r="44" fill="url(#nixyBallGrad)" />
                     <circle cx="50" cy="50" r="44" fill="url(#nixyRimGlow)" stroke="#c084fc" stroke-width="1.5" />
-                    <!-- Top-Left Glossy Specular Highlight -->
                     <ellipse cx="34" cy="26" rx="11" ry="6.5" transform="rotate(-28 34 26)" fill="#ffffff" fill-opacity="0.48" />
                     <circle cx="24" cy="37" r="3" fill="#ffffff" fill-opacity="0.35" />
                 </g>
 
-                <!-- 2 Glowing White Eyes (Centered & Steady) -->
                 <g filter="url(#nixyEyeGlow)">
                     <circle class="nixy-eye" cx="38" cy="53" r="6.2" fill="#ffffff" />
                     <circle class="nixy-eye" cx="62" cy="53" r="6.2" fill="#ffffff" />
@@ -685,7 +746,6 @@
             }
         });
 
-        // Parse ?prompt="a cat in the forest" or ?prompt=a+cat+in+the+forest
         function parseUrlParameters() {
             try {
                 let rawSearch = window.location.search;
@@ -696,7 +756,6 @@
                 let urlPrompt = params.get('prompt');
 
                 if (urlPrompt) {
-                    // Strip wrapping quotes if present
                     urlPrompt = urlPrompt.replace(/^["'](.*)["']$/, '$1').trim();
                     if (urlPrompt) {
                         document.getElementById('promptInput').value = urlPrompt;
@@ -739,27 +798,27 @@
             const tabChat = document.getElementById('tabChat2Img');
             const promptView = document.getElementById('prompt2ImgView');
             const chatView = document.getElementById('chat2ImgView');
-            const modeBadge = document.getElementById('modeIndicatorBadge');
             const modelLabel = document.getElementById('modelSectionLabel');
+            const modelSubtext = document.getElementById('modelSectionSubtext');
             const selectTopBtn = document.getElementById('selectAllModelsBtn');
 
             if (mode === 'prompt2img') {
-                tabPrompt.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all bg-brand-600 text-white shadow';
-                tabChat.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-purple-300 hover:text-white';
+                tabPrompt.className = 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all bg-brand-600 text-white shadow';
+                tabChat.className = 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all text-purple-300 hover:text-white';
                 promptView.classList.remove('hidden');
                 chatView.classList.add('hidden');
-                modeBadge.textContent = 'Multi-Model';
-                modelLabel.textContent = 'Select Models (Choose 1 or More)';
+                modelLabel.textContent = 'Select AI Models';
+                modelSubtext.textContent = 'Choose 1 or more models to compare';
                 selectTopBtn.classList.remove('hidden');
                 renderModelsList(false);
-                nixySay('Prompt 2 Image mode active! Pick multiple models to compare results.');
+                nixySay('Prompt 2 Image mode active! Tap Models, Size & Settings, or Upload inside the box.');
             } else {
-                tabChat.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all bg-fuchsia-600 text-white shadow';
-                tabPrompt.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all text-purple-300 hover:text-white';
+                tabChat.className = 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all bg-fuchsia-600 text-white shadow';
+                tabPrompt.className = 'px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all text-purple-300 hover:text-white';
                 chatView.classList.remove('hidden');
                 promptView.classList.add('hidden');
-                modeBadge.textContent = 'Chat & Edit';
-                modelLabel.textContent = 'Active Chat Model (Choose 1)';
+                modelLabel.textContent = 'Choose Chat Model';
+                modelSubtext.textContent = 'Select the active model for chat & edits';
                 selectTopBtn.classList.add('hidden');
                 renderModelsList(true);
                 nixySay('Chat 2 Image mode active! Tell me what to draw or edit.');
@@ -767,8 +826,51 @@
         }
 
         // ==========================================
-        // 5. MODEL SELECTION & SIZE SETTINGS
+        // 5. POPOVERS, MODEL SELECTION & SIZE SETTINGS
         // ==========================================
+        function openModelsPopover() {
+            document.getElementById('modelsModal').classList.remove('hidden');
+        }
+
+        function closeModelsPopover() {
+            document.getElementById('modelsModal').classList.add('hidden');
+            syncToolbarLabels();
+        }
+
+        function openSettingsPopover() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsPopover() {
+            document.getElementById('settingsModal').classList.add('hidden');
+            syncToolbarLabels();
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('imageFileInput').click();
+        }
+
+        function syncToolbarLabels() {
+            const checked = Array.from(document.querySelectorAll('.model-selector-input:checked'));
+            const promptModelsLbl = document.getElementById('toolbarModelsLabel');
+            const chatModelsLbl = document.getElementById('chatModelsLabel');
+            const promptSizeLbl = document.getElementById('toolbarSizeLabel');
+            const chatSizeLbl = document.getElementById('chatSizeLabel');
+
+            if (promptModelsLbl) {
+                promptModelsLbl.textContent = checked.length === 1
+                    ? checked[0].dataset.name
+                    : `Models (${checked.length})`;
+            }
+            if (chatModelsLbl) {
+                chatModelsLbl.textContent = checked.length > 0
+                    ? `Model: ${checked[0].dataset.name}`
+                    : 'Choose Model';
+            }
+            if (promptSizeLbl) promptSizeLbl.textContent = `${selectedSize} • Settings`;
+            if (chatSizeLbl) chatSizeLbl.textContent = `${selectedSize} • Settings`;
+        }
+
         function renderModelsList(singleSelect = false) {
             const container = document.getElementById('modelsChecklist');
             const inputType = singleSelect ? 'radio' : 'checkbox';
@@ -786,9 +888,9 @@
                 }
 
                 return `
-                    <label class="flex items-center justify-between p-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/60 bg-purple-950/15 cursor-pointer transition-all">
+                    <label class="flex items-center justify-between p-3 rounded-xl border border-purple-500/20 hover:border-brand-500/60 bg-purple-950/15 cursor-pointer transition-all">
                         <div class="flex items-center gap-2.5 min-w-0">
-                            <input type="${inputType}" name="aiModelChoice" value="${m.id}" data-provider="${m.provider}" data-name="${m.name}" ${checked ? 'checked' : ''} onchange="updateSelectedModelsCount()" class="model-selector-input w-4 h-4 accent-brand-600 rounded">
+                            <input type="${inputType}" name="aiModelChoice" value="${m.id}" data-provider="${m.provider}" data-name="${m.name}" ${checked ? 'checked' : ''} onchange="syncToolbarLabels()" class="model-selector-input w-4 h-4 accent-brand-600 rounded">
                             <span class="text-xs font-semibold truncate">${m.name}</span>
                         </div>
                         <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-300 font-medium shrink-0">${m.badge}</span>
@@ -796,7 +898,7 @@
                 `;
             }).join('');
 
-            updateSelectedModelsCount();
+            syncToolbarLabels();
         }
 
         function toggleSelectAllModels() {
@@ -807,15 +909,7 @@
             } else {
                 inputs.forEach((inp, i) => inp.checked = (i < 3));
             }
-            updateSelectedModelsCount();
-        }
-
-        function updateSelectedModelsCount() {
-            const checked = document.querySelectorAll('.model-selector-input:checked');
-            const counter = document.getElementById('selectedModelsCounter');
-            if (counter) {
-                counter.textContent = `${checked.length} model${checked.length === 1 ? '' : 's'} selected`;
-            }
+            syncToolbarLabels();
         }
 
         function selectSizePreset(sizeStr, ratioStr, btnEl) {
@@ -827,6 +921,7 @@
             });
             btnEl.classList.remove('border-purple-500/20');
             btnEl.classList.add('border-brand-500', 'bg-brand-600/20');
+            syncToolbarLabels();
         }
 
         // ==========================================
@@ -841,7 +936,6 @@
             return full;
         }
 
-        // Build provider-accurate Puter.js txt2img options object
         function buildProviderTxt2ImgOptions({ provider, modelId, quality, testMode, inputImage }) {
             const [wStr, hStr] = selectedSize.split('x');
             const [rwStr, rhStr] = selectedAspectRatio.split(':');
@@ -895,7 +989,6 @@
                     options.input_images = [inputImage];
                 }
             } else {
-                // OpenAI & default
                 options.quality = quality;
                 if (inputImage) {
                     options.input_image = inputImage;
@@ -917,6 +1010,7 @@
             const selectedInputs = Array.from(document.querySelectorAll('.model-selector-input:checked'));
             if (selectedInputs.length === 0) {
                 showToast('Please select at least one AI model!');
+                openModelsPopover();
                 return;
             }
 
@@ -945,7 +1039,7 @@
                             </div>
                             <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300">${selectedSize}</span>
                         </div>
-                        <div class="card-body flex-1 min-h-[270px] flex flex-col items-center justify-center p-4 bg-black/25 relative">
+                        <div class="card-body flex-1 min-h-[250px] flex flex-col items-center justify-center p-4 bg-black/25 relative">
                             <div class="w-10 h-10 rounded-full border-4 border-brand-500 border-t-transparent animate-spin mb-2"></div>
                             <p class="text-xs text-purple-300 font-medium">Rendering with ${modelName}...</p>
                         </div>
@@ -1027,7 +1121,7 @@
                             <i class="ph ph-warning-circle"></i>
                         </div>
                         <p class="text-xs font-bold text-amber-300">${isQuota ? 'Quota Reached for Model' : 'Model Generation Notice'}</p>
-                        <p class="text-[11px] text-purple-300/80">${isQuota ? 'Enable Test Mode on the left to preview for free!' : errMsg}</p>
+                        <p class="text-[11px] text-purple-300/80">${isQuota ? 'Enable Test Mode inside Size & Settings to preview for free!' : errMsg}</p>
                     </div>
                 `;
             }
@@ -1095,7 +1189,7 @@
                 nixySay('Done! Want to tweak anything? Just tell me in the chat!');
             } catch (err) {
                 removeChatElement(loadingBubbleId);
-                appendChatMessage('ai', `I couldn't complete that render (${err.message || 'Quota/Network'}). Try enabling **Test Mode** in the left panel to test immediately!`);
+                appendChatMessage('ai', `I couldn't complete that render (${err.message || 'Quota/Network'}). Try enabling **Test Mode** inside Size & Settings!`);
             }
         }
 
@@ -1103,17 +1197,17 @@
             const feed = document.getElementById('chatMessagesFeed');
             const isUser = sender === 'user';
             const html = isUser ? `
-                <div class="flex items-start justify-end gap-3">
-                    <div class="p-3.5 rounded-2xl rounded-tr-none bg-brand-600 text-white text-sm max-w-lg shadow-md">
+                <div class="flex items-start justify-end gap-2.5">
+                    <div class="p-3.5 rounded-2xl rounded-tr-none bg-brand-600 text-white text-xs sm:text-sm max-w-lg shadow-md">
                         ${escapeHtml(text)}
                     </div>
                 </div>
             ` : `
-                <div class="flex items-start gap-3 max-w-2xl">
+                <div class="flex items-start gap-2.5 max-w-2xl">
                     <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm shrink-0 mt-1">
                         <i class="ph ph-sparkle"></i>
                     </div>
-                    <div class="p-3.5 rounded-2xl rounded-tl-none bg-purple-950/40 border border-purple-500/20 text-sm text-purple-100">
+                    <div class="p-3.5 rounded-2xl rounded-tl-none bg-purple-950/40 border border-purple-500/20 text-xs sm:text-sm text-purple-100">
                         ${escapeHtml(text)}
                     </div>
                 </div>
@@ -1126,7 +1220,7 @@
             const id = 'chat-load-' + Date.now();
             const feed = document.getElementById('chatMessagesFeed');
             feed.insertAdjacentHTML('beforeend', `
-                <div id="${id}" class="flex items-start gap-3 max-w-md">
+                <div id="${id}" class="flex items-start gap-2.5 max-w-md">
                     <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm shrink-0 mt-1">
                         <i class="ph ph-spinner animate-spin"></i>
                     </div>
@@ -1150,17 +1244,17 @@
             const safePrompt = promptText.replace(/'/g, "\\'");
 
             feed.insertAdjacentHTML('beforeend', `
-                <div class="flex items-start gap-3 max-w-xl">
+                <div class="flex items-start gap-2.5 max-w-xl">
                     <div class="w-8 h-8 rounded-full bg-fuchsia-600 flex items-center justify-center text-white text-sm shrink-0 mt-1">
                         <i class="ph ph-image"></i>
                     </div>
-                    <div class="p-4 rounded-3xl rounded-tl-none bg-purple-950/40 border border-purple-500/25 space-y-3 shadow-xl w-full">
-                        <div class="flex items-center justify-between text-xs text-purple-300">
+                    <div class="p-3.5 sm:p-4 rounded-3xl rounded-tl-none bg-purple-950/40 border border-purple-500/25 space-y-3 shadow-xl w-full">
+                        <div class="flex items-center justify-between text-[11px] sm:text-xs text-purple-300">
                             <span class="font-semibold">${wasEdit ? '✨ Edited Version' : '🎨 Generated Image'} • ${escapeHtml(modelName)}</span>
                             <span>${selectedSize}</span>
                         </div>
                         <div class="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30">
-                            <img src="${imgSrc}" class="w-full max-h-[360px] object-contain">
+                            <img src="${imgSrc}" class="w-full max-h-[340px] object-contain">
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="saveImageToLibrary('${safeUrl}', '${safePrompt}')" class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold flex items-center gap-1.5">
@@ -1197,11 +1291,11 @@
         function resetChatSession() {
             clearChatEditContext();
             document.getElementById('chatMessagesFeed').innerHTML = `
-                <div class="flex items-start gap-3 max-w-2xl">
+                <div class="flex items-start gap-2.5 max-w-2xl">
                     <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm shrink-0 mt-1">
                         <i class="ph ph-sparkle"></i>
                     </div>
-                    <div class="p-4 rounded-2xl rounded-tl-none bg-purple-950/40 border border-purple-500/20 text-sm space-y-1">
+                    <div class="p-3.5 rounded-2xl rounded-tl-none bg-purple-950/40 border border-purple-500/20 text-xs sm:text-sm space-y-1">
                         <p class="font-semibold text-brand-300">New Creative Session Started</p>
                         <p class="text-purple-100/90">Describe any image you want to create, then chat with me to refine or edit it!</p>
                     </div>
@@ -1221,10 +1315,10 @@
         ];
 
         const NIXY_QUOTES = [
-            "I'm Nixy! Try comparing 3 models at once in Prompt 2 Image!",
+            "I'm Nixy! Tap Models right inside the typing box to compare AI engines!",
             "Psst! In Chat 2 Image, you can say 'make the sky purple' to edit!",
             "Need inspiration? Click my 'Idea' button for a magic prompt!",
-            "You can change image dimensions anytime in the left sidebar!"
+            "Tap Size & Settings in the typing bar to switch aspect ratios!"
         ];
 
         let nixyWalkInterval = null;
@@ -1234,8 +1328,8 @@
             if (!nixyEl) return;
 
             nixyWalkInterval = setInterval(() => {
-                const maxX = Math.max(80, window.innerWidth - 290);
-                const randomX = Math.floor(24 + Math.random() * maxX);
+                const maxX = Math.max(40, window.innerWidth - 250);
+                const randomX = Math.floor(16 + Math.random() * maxX);
                 nixyEl.classList.add('nixy-walking');
                 nixyEl.style.left = `${randomX}px`;
 
@@ -1254,8 +1348,8 @@
         function nixyBounce() {
             const nixyEl = document.getElementById('nixyContainer');
             if (nixyEl) {
-                nixyEl.style.bottom = '46px';
-                setTimeout(() => { nixyEl.style.bottom = '20px'; }, 350);
+                nixyEl.style.bottom = '42px';
+                setTimeout(() => { nixyEl.style.bottom = window.innerWidth >= 640 ? '20px' : '12px'; }, 350);
             }
             nixySay("Boing! Ready to create something awesome! 🔮");
         }
@@ -1284,12 +1378,16 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentInputImageBase64 = e.target.result;
-                const preview = document.getElementById('inputImagePreview');
-                preview.src = currentInputImageBase64;
-                preview.classList.remove('hidden');
-                document.getElementById('dropZoneContent').classList.add('hidden');
-                document.getElementById('clearImgBtn').classList.remove('hidden');
+                document.getElementById('promptInputImageThumb').src = currentInputImageBase64;
+                document.getElementById('chatInputImageThumb').src = currentInputImageBase64;
+                document.getElementById('promptAttachmentBar').classList.remove('hidden');
+                document.getElementById('promptAttachmentBar').classList.add('flex');
+                document.getElementById('chatAttachmentBar').classList.remove('hidden');
+                document.getElementById('chatAttachmentBar').classList.add('flex');
+                document.getElementById('toolbarUploadLabel').textContent = 'Uploaded';
+                document.getElementById('chatUploadLabel').textContent = 'Uploaded';
                 nixySay('Reference image uploaded! Ready for Img2Img magic!');
+                showToast('Reference image attached!');
             };
             reader.readAsDataURL(file);
         }
@@ -1297,10 +1395,14 @@
         function clearInputImage() {
             currentInputImageBase64 = null;
             document.getElementById('imageFileInput').value = '';
-            document.getElementById('inputImagePreview').src = '';
-            document.getElementById('inputImagePreview').classList.add('hidden');
-            document.getElementById('dropZoneContent').classList.remove('hidden');
-            document.getElementById('clearImgBtn').classList.add('hidden');
+            document.getElementById('promptInputImageThumb').src = '';
+            document.getElementById('chatInputImageThumb').src = '';
+            document.getElementById('promptAttachmentBar').classList.add('hidden');
+            document.getElementById('promptAttachmentBar').classList.remove('flex');
+            document.getElementById('chatAttachmentBar').classList.add('hidden');
+            document.getElementById('chatAttachmentBar').classList.remove('flex');
+            document.getElementById('toolbarUploadLabel').textContent = 'Upload';
+            document.getElementById('chatUploadLabel').textContent = 'Upload';
         }
 
         function loadLibraryFromStorage() {
@@ -1382,14 +1484,14 @@
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('sube_theme', isDark ? 'dark' : 'light');
-            document.getElementById('themeIcon').className = isDark ? 'ph ph-sun text-lg text-amber-400' : 'ph ph-moon text-lg text-brand-600';
+            document.getElementById('themeIcon').className = isDark ? 'ph ph-sun text-base sm:text-lg text-amber-400' : 'ph ph-moon text-base sm:text-lg text-brand-600';
         }
 
         function loadThemePreference() {
             const saved = localStorage.getItem('sube_theme');
             const isDark = saved ? saved === 'dark' : true;
             document.documentElement.classList.toggle('dark', isDark);
-            document.getElementById('themeIcon').className = isDark ? 'ph ph-sun text-lg text-amber-400' : 'ph ph-moon text-lg text-brand-600';
+            document.getElementById('themeIcon').className = isDark ? 'ph ph-sun text-base sm:text-lg text-amber-400' : 'ph ph-moon text-base sm:text-lg text-brand-600';
         }
 
         function toggleAuthMenu() {
