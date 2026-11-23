@@ -3,25 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubeAI | Advanced Multi-Model AI Image Studio</title>
+    <title>SubeAI | Multi-Model Image Studio & Chat Editor</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Puter AI SDK v2 -->
     <script src="https://js.puter.com/v2/"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
                         brand: {
                             50: '#f5f3ff',
                             100: '#ede9fe',
                             200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
                             500: '#8b5cf6',
                             600: '#7c3aed',
                             700: '#6d28d9',
+                            800: '#5b21b6',
                             900: '#4c1d95',
                         }
                     }
@@ -34,106 +46,234 @@
         body {
             font-family: 'Inter', sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
         }
-        
-        /* Light mode: Purple and White */
+
+        /* Light mode theme */
         html:not(.dark) body {
             background-color: #f8fafc;
             color: #1e1b4b;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 40%);
+                radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(124, 58, 237, 0.06) 0%, transparent 45%);
         }
 
-        /* Dark mode: Purple and Black */
+        /* Dark mode theme */
         html.dark body {
-            background-color: #030307;
+            background-color: #05040a;
             color: #f3e8ff;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(76, 29, 149, 0.2) 0%, transparent 40%);
+                radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(76, 29, 149, 0.22) 0%, transparent 45%);
         }
 
-        /* Glassmorphism helpers */
-        .glass-light {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(139, 92, 246, 0.15);
+        html:not(.dark) .card-theme {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: #ede9fe;
+            box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.08);
         }
 
-        .glass-dark {
-            background: rgba(15, 13, 26, 0.8);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(139, 92, 246, 0.2);
+        html.dark .card-theme {
+            background: rgba(14, 12, 28, 0.85);
+            border-color: rgba(139, 92, 246, 0.22);
+            box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.65);
         }
 
-        html:not(.dark) .card-theme { background: #ffffff; border-color: #ede9fe; box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.08); }
-        html.dark .card-theme { background: #0c0a1d; border-color: rgba(139, 92, 246, 0.2); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.5);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        html.dark ::-webkit-scrollbar-thumb { background: #2e1065; border-radius: 4px; }
-        html:not(.dark) ::-webkit-scrollbar-thumb { background: #ddd6fe; border-radius: 4px; }
+        html.dark ::-webkit-scrollbar-thumb { background: #3b0764; border-radius: 9999px; }
+        html:not(.dark) ::-webkit-scrollbar-thumb { background: #ddd6fe; border-radius: 9999px; }
 
-        @keyframes pulse-sube {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.98); }
+        /* Nixy the Purple Bot Animations */
+        @keyframes nixy-bob {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-4px) rotate(-3deg); }
+            75% { transform: translateY(-4px) rotate(3deg); }
         }
-        .animate-sube { animation: pulse-sube 3s infinite ease-in-out; }
+        @keyframes nixy-blink {
+            0%, 92%, 100% { transform: scaleY(1); }
+            96% { transform: scaleY(0.1); }
+        }
+        @keyframes nixy-leg-left {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        @keyframes nixy-leg-right {
+            0%, 100% { transform: translateY(-3px); }
+            50% { transform: translateY(0); }
+        }
+
+        .nixy-walking .nixy-body { animation: nixy-bob 0.45s infinite ease-in-out; }
+        .nixy-walking .nixy-leg-l { animation: nixy-leg-left 0.45s infinite ease-in-out; }
+        .nixy-walking .nixy-leg-r { animation: nixy-leg-right 0.45s infinite ease-in-out; }
+        .nixy-eye { animation: nixy-blink 4s infinite ease-in-out; transform-origin: center; }
+
+        #nixyContainer {
+            position: fixed;
+            bottom: 18px;
+            left: 40px;
+            z-index: 60;
+            transition: left 2.8s linear, bottom 0.5s ease;
+            user-select: none;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
-    <header class="sticky top-0 z-40 backdrop-blur-xl border-b transition-colors duration-300" id="mainHeader">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <!-- Supabase Auth Redirect Overlay (Shown if not signed in) -->
+    <div id="supabaseAuthOverlay" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4">
+        <div class="card-theme max-w-md w-full rounded-3xl border p-8 text-center space-y-6 shadow-2xl">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-700 to-purple-400 flex items-center justify-center mx-auto text-white text-3xl shadow-lg shadow-brand-600/40">
+                <i class="ph ph-lock-key"></i>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-bold tracking-tight">Authentication Required</h2>
+                <p class="text-sm text-purple-300/80">You are not signed in to SubeAI. Redirecting you to the login gateway...</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-brand-900/30 border border-brand-500/20 text-xs text-left space-y-1 font-mono text-purple-300">
+                <p>Target: <span id="redirectTargetDisplay" class="text-white font-semibold">/Start?redirect=/subeai</span></p>
+                <p>Status: <span id="redirectCountdownText" class="text-amber-400">Redirecting in 3s...</span></p>
+            </div>
+            <div class="flex flex-col space-y-2.5">
+                <button onclick="executeSupabaseRedirect()" class="w-full py-3.5 btn-primary text-white font-semibold rounded-2xl text-sm flex items-center justify-center space-x-2">
+                    <span>Continue to Sign In Now</span>
+                    <i class="ph ph-arrow-right"></i>
+                </button>
+                <button onclick="bypassAuthForPreview()" class="w-full py-2.5 rounded-xl text-xs text-purple-400 hover:text-white hover:bg-white/5 transition-colors">
+                    Continue in Local Demo Mode (Bypass Redirect)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- First-Time Mode Selection Modal -->
+    <div id="modeSelectionModal" class="hidden fixed inset-0 z-[90] bg-black/85 backdrop-blur-xl flex items-center justify-center p-4">
+        <div class="card-theme max-w-2xl w-full rounded-3xl border p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/15 text-brand-400 text-xs font-semibold">
+                    <i class="ph ph-sparkle"></i>
+                    <span>Welcome to SubeAI Studio</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Choose Your Creative Mode</h2>
+                <p class="text-sm text-purple-400 max-w-md mx-auto">How would you like to create today? You can switch between modes anytime from the top header.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <!-- Prompt 2 Image Option -->
+                <button onclick="selectWorkspaceMode('prompt2img', true)" class="group text-left p-6 rounded-2xl border-2 border-purple-500/20 hover:border-brand-500 bg-brand-500/5 hover:bg-brand-500/10 transition-all space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-brand-600/30 group-hover:scale-110 transition-transform">
+                        <i class="ph ph-squares-four"></i>
+                    </div>
+                    <div class="space-y-1.5">
+                        <h3 class="text-lg font-bold flex items-center justify-between">
+                            <span>Prompt 2 Image</span>
+                            <i class="ph ph-arrow-right text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </h3>
+                        <p class="text-xs text-purple-300/80 leading-relaxed">
+                            Select <strong>multiple AI models</strong> simultaneously (GPT Image, Gemini, Grok, FLUX) and compare their generated results side-by-side in real time.
+                        </p>
+                    </div>
+                </button>
+
+                <!-- Chat 2 Image Option -->
+                <button onclick="selectWorkspaceMode('chat2img', true)" class="group text-left p-6 rounded-2xl border-2 border-purple-500/20 hover:border-brand-500 bg-brand-500/5 hover:bg-brand-500/10 transition-all space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-fuchsia-600 text-white flex items-center justify-center text-2xl shadow-lg shadow-fuchsia-600/30 group-hover:scale-110 transition-transform">
+                        <i class="ph ph-chat-circle-dots"></i>
+                    </div>
+                    <div class="space-y-1.5">
+                        <h3 class="text-lg font-bold flex items-center justify-between">
+                            <span>Chat 2 Image</span>
+                            <i class="ph ph-arrow-right text-fuchsia-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </h3>
+                        <p class="text-xs text-purple-300/80 leading-relaxed">
+                            Conversational image creation! Describe your idea in chat, then ask the AI to <strong>make iterative edits</strong>, change styles, or refine details naturally.
+                        </p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Toast Notification Container (Replaces alert/confirm) -->
+    <div id="toastContainer" class="fixed top-24 right-4 z-[80] flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- Main Header -->
+    <header class="sticky top-0 z-40 backdrop-blur-xl border-b border-purple-500/15 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+            <!-- Logo -->
             <div class="flex items-center space-x-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-purple-400 flex items-center justify-center shadow-lg shadow-brand-600/30 text-white font-bold text-xl">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-purple-400 flex items-center justify-center shadow-lg shadow-brand-600/30 text-white font-bold text-xl">
                     <i class="ph ph-sparkle"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-brand-600 to-purple-400 bg-clip-text text-transparent">SubeAI</h1>
-                    <p class="text-xs text-purple-500/80 font-medium">Advanced Multi-Model AI Image Generator</p>
+                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-brand-500 to-purple-300 bg-clip-text text-transparent">SubeAI</h1>
+                    <p class="text-[11px] text-purple-400 font-medium hidden sm:block">Multi-Model & Chat Image Studio</p>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-3">
-                <!-- Theme Toggle Button -->
-                <button onclick="toggleTheme()" class="p-2.5 rounded-xl card-theme hover:scale-105 transition-transform" title="Toggle Theme">
-                    <i id="themeIcon" class="ph ph-moon text-lg"></i>
+            <!-- Mode Switcher Pill -->
+            <div class="flex items-center p-1 rounded-2xl card-theme border">
+                <button id="tabPrompt2Img" onclick="selectWorkspaceMode('prompt2img', false)" class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all bg-brand-600 text-white shadow">
+                    <i class="ph ph-squares-four text-sm"></i>
+                    <span>Prompt 2 Image</span>
+                </button>
+                <button id="tabChat2Img" onclick="selectWorkspaceMode('chat2img', false)" class="px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all text-purple-400 hover:text-white">
+                    <i class="ph ph-chat-circle-dots text-sm"></i>
+                    <span>Chat 2 Image</span>
+                </button>
+            </div>
+
+            <!-- Right Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl card-theme border hover:border-brand-500 transition-all" title="Toggle Theme">
+                    <i id="themeIcon" class="ph ph-sun text-lg text-amber-400"></i>
                 </button>
 
                 <!-- Library Button -->
-                <button onclick="openLibraryModal()" class="flex items-center space-x-2 px-4 py-2.5 rounded-xl card-theme hover:border-brand-500 transition-all font-medium text-sm">
-                    <i class="ph ph-images text-brand-600 text-lg"></i>
-                    <span class="hidden sm:inline">My Library</span>
-                    <span id="libraryCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-brand-500/20 text-brand-600 dark:text-purple-300 font-bold">0</span>
+                <button onclick="openLibraryModal()" class="flex items-center space-x-2 px-3 sm:px-4 py-2.5 rounded-xl card-theme border hover:border-brand-500 transition-all font-medium text-xs sm:text-sm">
+                    <i class="ph ph-images text-brand-500 text-lg"></i>
+                    <span class="hidden md:inline">Library</span>
+                    <span id="libraryCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-brand-500/20 text-brand-500 dark:text-purple-300 font-bold">0</span>
                 </button>
 
-                <!-- Account / Puter Auth Widget -->
-                <div id="authWidget" class="relative">
-                    <button onclick="toggleAuthMenu()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl card-theme hover:border-brand-500 transition-all text-sm font-medium">
+                <!-- Account Widget -->
+                <div class="relative">
+                    <button onclick="toggleAuthMenu()" class="flex items-center space-x-2 px-3 py-2 rounded-xl card-theme border hover:border-brand-500 transition-all text-xs sm:text-sm font-medium">
                         <div id="authAvatar" class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">
                             <i class="ph ph-user"></i>
                         </div>
-                        <span id="authUsername" class="max-w-[100px] truncate">Sign In</span>
+                        <span id="authUsername" class="max-w-[90px] truncate hidden sm:inline">Account</span>
                         <i class="ph ph-caret-down text-xs"></i>
                     </button>
 
-                    <!-- Auth Dropdown Menu -->
-                    <div id="authDropdown" class="hidden absolute right-0 mt-2 w-64 card-theme rounded-2xl shadow-2xl p-4 z-50 border">
-                        <div class="mb-3 pb-3 border-b border-purple-500/10">
-                            <p class="text-xs text-purple-400 font-medium">Puter Account Session</p>
-                            <p id="authDropdownEmail" class="text-sm font-semibold truncate mt-0.5">Not Signed In</p>
+                    <!-- Dropdown -->
+                    <div id="authDropdown" class="hidden absolute right-0 mt-2 w-64 card-theme rounded-2xl shadow-2xl p-4 z-50 border space-y-3">
+                        <div class="pb-2 border-b border-purple-500/15">
+                            <p class="text-[11px] text-purple-400 font-medium">Supabase & Puter Session</p>
+                            <p id="authDropdownEmail" class="text-xs font-semibold truncate mt-0.5">Checking session...</p>
                         </div>
-                        <div id="authActions" class="space-y-2">
-                            <button onclick="handlePuterSignIn()" class="w-full py-2 px-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition-colors flex items-center justify-center space-x-2">
-                                <i class="ph ph-sign-in"></i>
-                                <span>Sign In with Puter</span>
+                        <div class="space-y-2">
+                            <button onclick="handlePuterSignIn()" class="w-full py-2 px-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center space-x-2">
+                                <i class="ph ph-plugs-connected"></i>
+                                <span>Connect Puter AI</span>
                             </button>
-                            <button onclick="handleClearAccount()" class="w-full py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-medium transition-colors flex items-center justify-center space-x-2">
+                            <button onclick="handleSignOut()" class="w-full py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center space-x-2">
                                 <i class="ph ph-sign-out"></i>
-                                <span>Sign Out / Reset</span>
+                                <span>Sign Out (Go to /Start)</span>
                             </button>
                         </div>
                     </div>
@@ -142,197 +282,218 @@
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Left Column: Controls & Prompt Studio -->
-            <div class="lg:col-span-5 space-y-6">
-                <div class="card-theme p-6 rounded-3xl border space-y-6">
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- SHARED LEFT PANEL: Persistent Image Size, Settings & Model Controls -->
+            <div class="lg:col-span-4 space-y-5">
+                <div class="card-theme p-5 rounded-3xl border space-y-5">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-bold flex items-center space-x-2">
-                            <i class="ph ph-paint-brush-broad text-brand-500"></i>
-                            <span>Generation Studio</span>
+                        <h2 class="text-base font-bold flex items-center space-x-2">
+                            <i class="ph ph-sliders-horizontal text-brand-500 text-lg"></i>
+                            <span>Image & Model Settings</span>
                         </h2>
-                        <span class="text-xs px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-purple-300 font-semibold">puter.ai.txt2img()</span>
+                        <span id="activeModeBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-400 font-semibold">Multi-Model</span>
                     </div>
 
-                    <!-- Prompt Input -->
+                    <!-- Size / Aspect Ratio Selection (Always Available) -->
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold">Prompt Description</label>
-                        <textarea id="promptInput" rows="4" placeholder="Describe the image you want to create in vivid detail (e.g., A cybernetic samurai meditating in a neon-lit cyberpunk bamboo forest)..." class="w-full rounded-2xl p-4 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm resize-none transition-all"></textarea>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-purple-400">Image Size & Aspect Ratio</label>
+                        <div class="grid grid-cols-2 gap-2" id="sizeButtonsGrid">
+                            <button type="button" onclick="selectImageSize('1024x1024', '1:1', this)" class="size-btn active-size px-3 py-2.5 rounded-xl border border-brand-500 bg-brand-500/15 text-xs font-semibold flex items-center justify-between">
+                                <span>1:1 Square</span>
+                                <span class="text-[10px] opacity-75">1024²</span>
+                            </button>
+                            <button type="button" onclick="selectImageSize('1792x1024', '16:9', this)" class="size-btn px-3 py-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/50 text-xs font-semibold flex items-center justify-between">
+                                <span>16:9 Wide</span>
+                                <span class="text-[10px] opacity-75">1792×1024</span>
+                            </button>
+                            <button type="button" onclick="selectImageSize('1024x1792', '9:16', this)" class="size-btn px-3 py-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/50 text-xs font-semibold flex items-center justify-between">
+                                <span>9:16 Story</span>
+                                <span class="text-[10px] opacity-75">1024×1792</span>
+                            </button>
+                            <button type="button" onclick="selectImageSize('1344x1024', '4:3', this)" class="size-btn px-3 py-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/50 text-xs font-semibold flex items-center justify-between">
+                                <span>4:3 Photo</span>
+                                <span class="text-[10px] opacity-75">1344×1024</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Provider Selection -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold">AI Provider</label>
-                        <select id="providerSelect" onchange="onProviderChange()" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                            <option value="openai-image-generation">OpenAI (GPT Image)</option>
-                            <option value="gemini">Gemini</option>
-                            <option value="xai">xAI (Grok Image)</option>
-                            <option value="together">Together AI</option>
-                            <option value="replicate-image-generation">Replicate (FLUX / Leonardo)</option>
-                        </select>
-                    </div>
-
-                    <!-- Model Selection (Dynamic) -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold">Model</label>
-                        <select id="modelSelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                            <!-- Populated dynamically via JS -->
-                        </select>
-                    </div>
-
-                    <!-- Quality / Ratio Options -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold">Quality / Tier</label>
-                            <select id="qualitySelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                                <option value="low">Low (Fast & Default)</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
+                    <!-- Image Settings: Quality & Style Preset -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-purple-400">Quality Tier</label>
+                            <select id="qualitySelect" class="w-full rounded-xl p-2.5 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-medium">
+                                <option value="low">Standard (Fast)</option>
+                                <option value="medium" selected>Medium (Balanced)</option>
+                                <option value="high">Ultra HD (High)</option>
                                 <option value="auto">Auto</option>
                             </select>
                         </div>
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold">Aspect Ratio</label>
-                            <select id="aspectRatioSelect" class="w-full rounded-xl p-3 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                                <option value="1:1">Square (1:1)</option>
-                                <option value="16:9">Widescreen (16:9)</option>
-                                <option value="9:16">Portrait (9:16)</option>
-                                <option value="4:3">Standard (4:3)</option>
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-purple-400">Style Preset</label>
+                            <select id="stylePresetSelect" class="w-full rounded-xl p-2.5 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-xs font-medium">
+                                <option value="">None (Raw Prompt)</option>
+                                <option value="photorealistic, 8k resolution, highly detailed">Photorealistic</option>
+                                <option value="cinematic lighting, dramatic atmosphere, movie still">Cinematic</option>
+                                <option value="vibrant anime illustration, studio ghibli style">Anime / Manga</option>
+                                <option value="digital concept art, fantasy painting, trending on artstation">Digital Art</option>
+                                <option value="3d isometric render, blender cycles, soft studio lighting">3D Render</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Image-to-Image Input Section -->
+                    <!-- Model Selection Section (Multi-select in Prompt2Img, Single-select in Chat2Img) -->
                     <div class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-semibold">Input Image (Optional Img2Img)</label>
-                            <button onclick="clearInputImage()" id="clearImgBtn" class="hidden text-xs text-red-400 hover:underline">Remove image</button>
-                        </div>
-                        <div id="dropZone" class="drop-zone rounded-2xl p-4 text-center cursor-pointer relative overflow-hidden flex flex-col items-center justify-center min-h-[100px]">
-                            <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                            <div id="dropZoneContent" class="flex flex-col items-center space-y-2">
-                                <i class="ph ph-cloud-arrow-up text-2xl text-brand-500"></i>
-                                <p class="text-xs font-medium">Drop an image here or click to upload</p>
-                                <p class="text-[10px] text-purple-400">Supports URL, Data-URI, or Base64</p>
-                            </div>
-                            <img id="inputImagePreview" class="hidden max-h-32 object-contain rounded-xl z-0">
-                        </div>
-                    </div>
-
-                    <!-- Test Mode & Path Options -->
-                    <div class="space-y-3 pt-2 border-t border-purple-500/10">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="testModeCheck" class="w-4 h-4 text-brand-600 rounded focus:ring-brand-500">
-                                <label for="testModeCheck" class="text-sm font-medium cursor-pointer">Test Mode (No Credits Used)</label>
-                            </div>
+                            <label id="modelSectionLabel" class="block text-xs font-semibold uppercase tracking-wider text-purple-400">Select Models (Choose 1 or More)</label>
+                            <button id="selectAllModelsBtn" onclick="toggleSelectAllModels()" class="text-[11px] text-brand-400 hover:underline font-medium">Select Top 3</button>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-purple-400">Puter Filesystem Path (Optional)</label>
-                            <input type="text" id="puterPathInput" placeholder="images/my-creation.png" class="w-full rounded-xl p-2.5 card-theme border text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        
+                        <div id="modelsChecklist" class="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                            <!-- Populated dynamically with working verified models -->
                         </div>
                     </div>
 
-                    <!-- Generate Button -->
-                    <button onclick="generateImage()" id="generateBtn" class="w-full btn-primary text-white font-semibold py-4 rounded-2xl shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 text-base transition-all">
-                        <i class="ph ph-magic-wand text-xl"></i>
-                        <span>Generate Image</span>
-                    </button>
+                    <!-- Reference Image (Optional Img2Img) -->
+                    <div class="space-y-1.5 pt-2 border-t border-purple-500/15">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-semibold text-purple-400">Reference Image (Optional)</label>
+                            <button onclick="clearInputImage()" id="clearImgBtn" class="hidden text-[11px] text-red-400 hover:underline">Remove</button>
+                        </div>
+                        <div class="rounded-2xl p-3 border border-dashed border-purple-500/30 hover:border-brand-500 transition-colors text-center cursor-pointer relative overflow-hidden flex flex-col items-center justify-center min-h-[72px]">
+                            <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div id="dropZoneContent" class="flex items-center space-x-2 text-purple-400">
+                                <i class="ph ph-upload-simple text-lg text-brand-500"></i>
+                                <span class="text-xs font-medium">Upload reference image</span>
+                            </div>
+                            <img id="inputImagePreview" class="hidden max-h-24 object-contain rounded-xl z-0">
+                        </div>
+                    </div>
+
+                    <!-- Test Mode Toggle -->
+                    <div class="flex items-center justify-between pt-2 border-t border-purple-500/15">
+                        <label for="testModeCheck" class="text-xs font-medium flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="testModeCheck" class="w-4 h-4 accent-brand-600 rounded">
+                            <span>Test Mode (Free Preview / No Credits)</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right Column: Canvas Output & Results -->
-            <div class="lg:col-span-7 flex flex-col space-y-6">
-                <div class="card-theme p-6 rounded-3xl border flex-1 flex flex-col min-h-[500px] relative overflow-hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-bold uppercase tracking-wider text-purple-400">Output Canvas</h3>
-                        <div id="generationMeta" class="text-xs text-purple-400 font-medium">Ready to create</div>
-                    </div>
+            <!-- RIGHT PANEL: Dynamic Workspace (Prompt 2 Image OR Chat 2 Image) -->
+            <div class="lg:col-span-8">
 
-                    <!-- Output Viewer Container -->
-                    <div id="outputContainer" class="flex-1 flex flex-col items-center justify-center rounded-2xl border border-dashed border-purple-500/20 relative p-4 min-h-[400px] bg-black/20 overflow-hidden">
-                        
-                        <!-- Empty State -->
-                        <div id="emptyState" class="text-center space-y-3 max-w-sm">
-                            <div class="w-20 h-20 rounded-3xl bg-brand-500/10 flex items-center justify-center mx-auto text-brand-500 animate-sube">
-                                <i class="ph ph-image text-4xl"></i>
-                            </div>
-                            <h4 class="font-bold text-lg">No Image Generated Yet</h4>
-                            <p class="text-xs text-purple-400">Configure your prompt and settings on the left, then click Generate Image to unleash Puter AI.</p>
+                <!-- VIEW 1: PROMPT 2 IMAGE (Multi-Model Parallel Generator) -->
+                <div id="prompt2ImgWorkspace" class="space-y-6">
+                    <!-- Prompt Input Card -->
+                    <div class="card-theme p-5 sm:p-6 rounded-3xl border space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label for="promptInput" class="text-sm font-bold flex items-center space-x-2">
+                                <i class="ph ph-magic-wand text-brand-500 text-lg"></i>
+                                <span>Prompt Description</span>
+                            </label>
+                            <span id="selectedModelCountBadge" class="text-xs font-semibold text-brand-400">2 models selected</span>
                         </div>
 
-                        <!-- Loading State -->
-                        <div id="loadingState" class="hidden flex flex-col items-center space-y-4">
-                            <div class="relative w-20 h-20">
-                                <div class="absolute inset-0 rounded-full border-4 border-brand-500/20 animate-ping"></div>
-                                <div class="absolute inset-0 rounded-full border-4 border-brand-600 border-t-transparent animate-spin"></div>
-                                <div class="absolute inset-0 flex items-center justify-center text-brand-500">
-                                    <i class="ph ph-sparkle text-2xl animate-pulse"></i>
-                                </div>
-                            </div>
-                            <div class="text-center space-y-1">
-                                <p class="font-bold text-sm" id="loadingStatusText">Generating masterpiece...</p>
-                                <p class="text-xs text-purple-400">Communicating with AI Provider via Puter.ai</p>
-                            </div>
-                        </div>
+                        <textarea id="promptInput" rows="3" placeholder="Describe what you want to create (e.g., A cat in the forest surrounded by glowing mushrooms at twilight)..." class="w-full rounded-2xl p-4 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm resize-none transition-all"></textarea>
 
-                        <!-- Result Display -->
-                        <div id="resultWrapper" class="hidden w-full h-full flex flex-col items-center justify-center space-y-4">
-                            <div class="relative group max-h-[450px] overflow-hidden rounded-2xl shadow-2xl border border-purple-500/30">
-                                <img id="resultImage" class="max-h-[420px] w-auto object-contain transition-transform duration-300 group-hover:scale-105" alt="Generated AI Masterpiece">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                                    <p id="resultPromptCaption" class="text-xs text-white truncate"></p>
-                                </div>
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div class="flex items-center space-x-2 text-xs text-purple-400">
+                                <i class="ph ph-info"></i>
+                                <span>Generates across all checked models simultaneously</span>
                             </div>
-
-                            <!-- Action Toolbar -->
-                            <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-                                <button onclick="addToLibraryCurrent()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-2 shadow-lg shadow-brand-600/20 transition-all">
-                                    <i class="ph ph-bookmark-simple text-base"></i>
-                                    <span>Add to Library</span>
-                                </button>
-                                <button onclick="downloadCurrent()" class="px-4 py-2.5 card-theme hover:border-brand-500 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
-                                    <i class="ph ph-download text-base text-brand-500"></i>
-                                    <span>Download</span>
-                                </button>
-                                <button onclick="copyImageToClipboard()" class="px-4 py-2.5 card-theme hover:border-brand-500 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
-                                    <i class="ph ph-copy text-base text-brand-500"></i>
-                                    <span>Copy URL</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Quota Exceeded / Error State (Custom SubeAI Quota Bypass Overlay) -->
-                        <div id="quotaState" class="hidden absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
-                            <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center text-3xl">
-                                <i class="ph ph-hourglass-high"></i>
-                            </div>
-                            <h4 class="text-xl font-bold">Quota Limit Reached</h4>
-                            <p class="text-sm text-zinc-300 max-w-sm">Get back tomorrow for more quota or try enabling <span class="text-brand-400 font-semibold">Test Mode</span> to continue experimenting instantly without credits!</p>
-                            <button onclick="dismissQuotaModal()" class="px-6 py-3 btn-primary text-white font-semibold rounded-xl text-sm shadow-lg">
-                                Got it, let's use Test Mode
+                            <button onclick="generateMultiModelImages()" id="generateMultiBtn" class="w-full sm:w-auto px-7 py-3.5 btn-primary text-white font-semibold rounded-2xl shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 text-sm">
+                                <i class="ph ph-sparkle text-lg"></i>
+                                <span>Generate Images</span>
                             </button>
                         </div>
+                    </div>
 
+                    <!-- Multi-Model Results Grid -->
+                    <div id="multiResultsContainer" class="space-y-4">
+                        <!-- Empty State -->
+                        <div id="multiEmptyState" class="card-theme p-12 rounded-3xl border border-dashed border-purple-500/25 text-center space-y-3">
+                            <div class="w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto text-3xl">
+                                <i class="ph ph-images-square"></i>
+                            </div>
+                            <h3 class="text-lg font-bold">Multi-Model Comparison Canvas</h3>
+                            <p class="text-xs text-purple-400 max-w-md mx-auto">Select one or more AI models on the left, enter your prompt above, and compare every model's masterpiece side-by-side.</p>
+                        </div>
+
+                        <!-- Dynamic Grid for Model Outputs -->
+                        <div id="multiResultsGrid" class="hidden grid grid-cols-1 md:grid-cols-2 gap-5"></div>
                     </div>
                 </div>
-            </div>
 
+                <!-- VIEW 2: CHAT 2 IMAGE (Conversational Creation & Iterative Image Editing) -->
+                <div id="chat2ImgWorkspace" class="hidden card-theme rounded-3xl border flex flex-col h-[680px] overflow-hidden">
+                    <!-- Chat Header -->
+                    <div class="p-4 sm:p-5 border-b border-purple-500/15 flex items-center justify-between bg-brand-950/20">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-fuchsia-600/20 text-fuchsia-400 flex items-center justify-center text-xl">
+                                <i class="ph ph-chat-teardrop-text"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold">Chat 2 Image & Iterative Editor</h3>
+                                <p class="text-[11px] text-purple-400">Generate an image, then tell the AI what to edit or change!</p>
+                            </div>
+                        </div>
+                        <button onclick="resetChatSession()" class="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-xs font-semibold text-purple-300 flex items-center space-x-1.5 transition-colors">
+                            <i class="ph ph-arrow-counter-clockwise"></i>
+                            <span>New Chat</span>
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages Feed -->
+                    <div id="chatMessagesFeed" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
+                        <!-- Initial Welcome Message -->
+                        <div class="flex items-start space-x-3 max-w-xl">
+                            <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                                <i class="ph ph-sparkle"></i>
+                            </div>
+                            <div class="p-4 rounded-2xl rounded-tl-none bg-brand-500/10 border border-brand-500/20 text-xs sm:text-sm space-y-2">
+                                <p class="font-semibold text-brand-300">Hi! I'm your SubeAI Visual Assistant.</p>
+                                <p class="text-purple-200/90 leading-relaxed">Tell me what image you want to create (for example: <em>"A futuristic cyberpunk cafe in Tokyo"</em>). Once I generate it, you can reply with edits like <em>"Make it night time with neon rain"</em> or <em>"Add a robot barista"</em>!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Edit Context Banner -->
+                    <div id="chatEditContextBanner" class="hidden px-4 py-2 bg-brand-600/15 border-t border-brand-500/20 flex items-center justify-between text-xs">
+                        <div class="flex items-center space-x-2 truncate">
+                            <img id="chatContextThumb" class="w-7 h-7 rounded-lg object-cover border border-brand-400">
+                            <span class="text-brand-300 font-medium truncate">Editing previous image — your next message will modify it</span>
+                        </div>
+                        <button onclick="clearChatEditContext()" class="text-purple-400 hover:text-white text-[11px] underline ml-2 flex-shrink-0">Start fresh image</button>
+                    </div>
+
+                    <!-- Chat Input Box -->
+                    <form onsubmit="handleChatSubmit(event)" class="p-4 border-t border-purple-500/15 flex items-center space-x-3 bg-black/10">
+                        <input type="text" id="chatPromptInput" placeholder="Describe an image or ask for an edit (e.g., 'Make the sky purple')..." class="flex-1 rounded-2xl px-4 py-3.5 card-theme border focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm" autocomplete="off">
+                        <button type="submit" id="chatSendBtn" class="px-5 py-3.5 btn-primary text-white font-semibold rounded-2xl flex items-center space-x-2 text-sm shadow-lg">
+                            <span>Send</span>
+                            <i class="ph ph-paper-plane-right"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
         </div>
     </main>
 
+    <!-- Library Modal -->
     <div id="libraryModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="card-theme max-w-4xl w-full max-h-[85vh] rounded-3xl border flex flex-col overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-purple-500/10 flex items-center justify-between">
+            <div class="p-6 border-b border-purple-500/15 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-500 flex items-center justify-center text-xl">
                         <i class="ph ph-images"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg">My Image Library</h3>
-                        <p class="text-xs text-purple-400">All your generated AI creations stored securely in your browser session</p>
+                        <h3 class="font-bold text-lg">Saved Image Library</h3>
+                        <p class="text-xs text-purple-400">Your generated creations saved locally</p>
                     </div>
                 </div>
                 <button onclick="closeLibraryModal()" class="p-2 rounded-full hover:bg-purple-500/10 transition-colors text-xl">
@@ -340,122 +501,841 @@
                 </button>
             </div>
             
-            <div id="libraryGrid" class="flex-1 p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <!-- Dynamically populated library items -->
-            </div>
+            <div id="libraryGrid" class="flex-1 p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
 
-            <div class="p-4 border-t border-purple-500/10 flex justify-between items-center bg-black/10">
+            <div class="p-4 border-t border-purple-500/15 flex justify-between items-center bg-black/10">
                 <p id="libraryStats" class="text-xs text-purple-400 font-medium">0 images saved</p>
-                <button onclick="clearLibrary()" class="text-xs text-red-400 hover:underline font-medium">Clear Library</button>
+                <button onclick="clearLibrary()" class="text-xs text-red-400 hover:underline font-medium">Clear All</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Model definitions per provider matching Puter AI docs
-        const providerModels = {
-            "openai-image-generation": [
-                { id: "gpt-image-1-mini", name: "GPT Image 1 Mini (Default)" },
-                { id: "gpt-image-1", name: "GPT Image 1" },
-                { id: "gpt-image-1.5", name: "GPT Image 1.5" },
-                { id: "gpt-image-2", name: "GPT Image 2" }
-            ],
-            "gemini": [
-                { id: "gemini-3.1-flash-image-preview", name: "Gemini 3.1 Flash Image" }
-            ],
-            "xai": [
-                { id: "grok-imagine-image", name: "Grok Imagine Image (Default)" },
-                { id: "grok-imagine-image-quality", name: "Grok Imagine Quality" }
-            ],
-            "together": [
-                { id: "black-forest-labs/flux-schnell", name: "FLUX Schnell (Together)" },
-                { id: "black-forest-labs/flux-dev", name: "FLUX Dev (Together)" }
-            ],
-            "replicate-image-generation": [
-                { id: "black-forest-labs/flux-schnell", name: "FLUX Schnell (Replicate)" },
-                { id: "black-forest-labs/flux-dev", name: "FLUX Dev (Replicate)" },
-                { id: "leonardoai/lucid-origin", name: "Leonardo Lucid Origin" }
-            ]
-        };
+    <!-- NIXY: The Small Purple Bot with 2 White Eyes -->
+    <div id="nixyContainer" class="nixy-walking">
+        <!-- Speech Bubble -->
+        <div id="nixySpeechBubble" class="mb-2 ml-4 max-w-[230px] p-3 rounded-2xl rounded-bl-none bg-brand-900/95 border border-brand-400/40 text-white text-xs shadow-xl backdrop-blur-md transition-all duration-300 relative">
+            <p id="nixySpeechText" class="leading-snug font-medium">Hi! I'm Nixy! Click me for prompt tips or say hi!</p>
+            <div class="mt-2 flex items-center gap-1.5">
+                <button onclick="nixyGiveRandomPrompt()" class="px-2 py-0.5 rounded-lg bg-brand-500/40 hover:bg-brand-500/60 text-[10px] font-semibold transition-colors">
+                    ✨ Idea
+                </button>
+                <button onclick="nixyWave()" class="px-2 py-0.5 rounded-lg bg-purple-500/30 hover:bg-purple-500/50 text-[10px] font-semibold transition-colors">
+                    👋 Wave
+                </button>
+            </div>
+        </div>
 
+        <!-- Nixy SVG Character -->
+        <div onclick="handleNixyClick()" class="cursor-pointer w-14 h-16 relative group" title="Click Nixy to interact!">
+            <svg viewBox="0 0 80 90" class="w-full h-full drop-shadow-[0_6px_12px_rgba(124,58,237,0.5)]">
+                <!-- Little Legs -->
+                <rect class="nixy-leg-l" x="26" y="66" width="8" height="14" rx="4" fill="#5b21b6" />
+                <rect class="nixy-leg-r" x="46" y="66" width="8" height="14" rx="4" fill="#5b21b6" />
+
+                <!-- Main Body Group -->
+                <g class="nixy-body">
+                    <!-- Antenna -->
+                    <line x1="40" y1="18" x2="40" y2="7" stroke="#a78bfa" stroke-width="3" stroke-linecap="round" />
+                    <circle cx="40" cy="6" r="4" fill="#e9d5ff" />
+
+                    <!-- Little Arms -->
+                    <rect id="nixyArmLeft" x="8" y="42" width="10" height="18" rx="5" fill="#6d28d9" />
+                    <rect id="nixyArmRight" x="62" y="42" width="10" height="18" rx="5" fill="#6d28d9" />
+
+                    <!-- Rounded Purple Robot Head/Torso -->
+                    <rect x="16" y="18" width="48" height="52" rx="18" fill="url(#nixyPurpleGrad)" stroke="#c4b5fd" stroke-width="2" />
+
+                    <!-- Dark Visor Faceplate -->
+                    <rect x="22" y="28" width="36" height="24" rx="10" fill="#130926" />
+
+                    <!-- 2 Expressive White Eyes -->
+                    <ellipse class="nixy-eye" cx="32" cy="40" rx="4.5" ry="6" fill="#ffffff" />
+                    <ellipse class="nixy-eye" cx="48" cy="40" rx="4.5" ry="6" fill="#ffffff" />
+                </g>
+
+                <defs>
+                    <linearGradient id="nixyPurpleGrad" x1="16" y1="18" x2="64" y2="70" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#9333ea" />
+                        <stop offset="100%" stop-color="#6d28d9" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. SUPABASE CONFIGURATION & AUTH CHECK
+        // ==========================================
+        const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+        let supabaseClient = null;
+        let redirectTimer = null;
+
+        try {
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch (err) {
+            console.warn('Supabase client init warning:', err);
+        }
+
+        async function verifySupabaseAuth() {
+            // Allow manual demo bypass if user clicked bypass previously in session
+            if (sessionStorage.getItem('sube_demo_bypass') === 'true') {
+                updateAuthDisplay({ email: 'demo@subeai.local', isDemo: true });
+                return;
+            }
+
+            if (!supabaseClient) {
+                triggerSupabaseRedirectOverlay();
+                return;
+            }
+
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error || !session || !session.user) {
+                    triggerSupabaseRedirectOverlay();
+                } else {
+                    updateAuthDisplay(session.user);
+                }
+            } catch (e) {
+                triggerSupabaseRedirectOverlay();
+            }
+        }
+
+        function triggerSupabaseRedirectOverlay() {
+            const overlay = document.getElementById('supabaseAuthOverlay');
+            overlay.classList.remove('hidden');
+
+            const targetUrl = `${window.location.origin}/Start?redirect=${encodeURIComponent('/subeai')}`;
+            document.getElementById('redirectTargetDisplay').textContent = `/Start?redirect=/subeai`;
+
+            let seconds = 3;
+            const countdownEl = document.getElementById('redirectCountdownText');
+            countdownEl.textContent = `Redirecting in ${seconds}s...`;
+
+            redirectTimer = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(redirectTimer);
+                    executeSupabaseRedirect();
+                } else {
+                    countdownEl.textContent = `Redirecting in ${seconds}s...`;
+                }
+            }, 1000);
+        }
+
+        function executeSupabaseRedirect() {
+            if (redirectTimer) clearInterval(redirectTimer);
+            const targetUrl = `${window.location.origin}/Start?redirect=${encodeURIComponent('/subeai')}`;
+            window.location.href = targetUrl;
+        }
+
+        function bypassAuthForPreview() {
+            if (redirectTimer) clearInterval(redirectTimer);
+            sessionStorage.setItem('sube_demo_bypass', 'true');
+            document.getElementById('supabaseAuthOverlay').classList.add('hidden');
+            updateAuthDisplay({ email: 'demo@subeai.local', isDemo: true });
+            showToast('Entered Local Demo Mode', 'info');
+            checkFirstTimeModePrompt();
+        }
+
+        function updateAuthDisplay(user) {
+            const usernameEl = document.getElementById('authUsername');
+            const emailEl = document.getElementById('authDropdownEmail');
+            const avatarEl = document.getElementById('authAvatar');
+            const label = user.email ? user.email.split('@')[0] : 'Creator';
+            usernameEl.textContent = label;
+            emailEl.textContent = user.email || 'Authenticated User';
+            avatarEl.innerHTML = `<span>${label.charAt(0).toUpperCase()}</span>`;
+        }
+
+        async function handleSignOut() {
+            sessionStorage.removeItem('sube_demo_bypass');
+            if (supabaseClient) {
+                try { await supabaseClient.auth.signOut(); } catch (e) {}
+            }
+            executeSupabaseRedirect();
+        }
+
+        // ==========================================
+        // 2. VERIFIED WORKING MODELS REGISTRY
+        // (Removed broken models; added verified working models)
+        // ==========================================
+        const VERIFIED_MODELS = [
+            {
+                id: 'gpt-image-1',
+                provider: 'openai-image-generation',
+                name: 'GPT Image 1',
+                badge: 'OpenAI',
+                defaultSelected: true
+            },
+            {
+                id: 'gpt-image-1-mini',
+                provider: 'openai-image-generation',
+                name: 'GPT Image 1 Mini',
+                badge: 'OpenAI Fast',
+                defaultSelected: true
+            },
+            {
+                id: 'gemini-2.5-flash-image-preview',
+                provider: 'gemini',
+                name: 'Gemini 2.5 Flash Image',
+                badge: 'Google',
+                defaultSelected: false
+            },
+            {
+                id: 'grok-2-image',
+                provider: 'xai',
+                name: 'Grok 2 Image',
+                badge: 'xAI',
+                defaultSelected: false
+            },
+            {
+                id: 'black-forest-labs/FLUX.1-schnell',
+                provider: 'together',
+                name: 'FLUX.1 Schnell',
+                badge: 'Together',
+                defaultSelected: false
+            },
+            {
+                id: 'black-forest-labs/FLUX.1-dev',
+                provider: 'together',
+                name: 'FLUX.1 Dev',
+                badge: 'Together Pro',
+                defaultSelected: false
+            },
+            {
+                id: 'stabilityai/stable-diffusion-xl-base-1.0',
+                provider: 'together',
+                name: 'Stable Diffusion XL 1.0',
+                badge: 'Stability',
+                defaultSelected: false
+            },
+            {
+                id: 'dall-e-3',
+                provider: 'openai-image-generation',
+                name: 'DALL·E 3',
+                badge: 'OpenAI HD',
+                defaultSelected: false
+            }
+        ];
+
+        // ==========================================
+        // 3. APPLICATION STATE
+        // ==========================================
+        let currentMode = 'prompt2img'; // 'prompt2img' | 'chat2img'
+        let selectedSize = '1024x1024';
+        let selectedAspectRatio = '1:1';
         let currentInputImageBase64 = null;
-        let lastGeneratedImageUrl = null;
-        let lastPromptText = "";
         let libraryImages = [];
 
-        // Initialize application on load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadThemePreference();
-            loadAccountState();
-            loadLibraryFromStorage();
-            onProviderChange();
+        // Chat 2 Image state
+        let chatHistory = [];
+        let lastChatImageUrl = null;
+        let lastChatPromptContext = '';
 
-            // Intercept Puter quota alerts or UI errors globally
-            setupQuotaInterception();
+        // ==========================================
+        // 4. INITIALIZATION & URL PROMPT PARSING
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            loadThemePreference();
+            renderModelsChecklist();
+            loadLibraryFromStorage();
+            parseUrlQueryPrompt();
+            startNixyBehavior();
+
+            // Check Supabase Auth
+            await verifySupabaseAuth();
+
+            // If auth overlay isn't blocking, check first-time mode modal
+            if (document.getElementById('supabaseAuthOverlay').classList.contains('hidden')) {
+                checkFirstTimeModePrompt();
+            }
         });
 
-        // Theme management (Light: purple/white, Dark: purple/black)
+        // Parse ?prompt="a cat in the forest" or ?prompt=a+cat+in+the+forest from URL
+        function parseUrlQueryPrompt() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                let urlPrompt = urlParams.get('prompt');
+
+                // Also support raw pathname/hash patterns like prompt="a cat in the forest"
+                if (!urlPrompt) {
+                    const rawDecode = decodeURIComponent(window.location.href);
+                    const match = rawDecode.match(/prompt=["']?([^"'&]+)["']?/i);
+                    if (match && match[1]) {
+                        urlPrompt = match[1];
+                    }
+                }
+
+                if (urlPrompt) {
+                    // Strip surrounding quotes if present
+                    urlPrompt = urlPrompt.replace(/^["']|["']$/g, '').trim();
+                    if (urlPrompt) {
+                        document.getElementById('promptInput').value = urlPrompt;
+                        document.getElementById('chatPromptInput').value = urlPrompt;
+                        nixySay(`Ooh! I loaded your prompt: "${urlPrompt}"!`);
+                    }
+                }
+            } catch (e) {
+                console.warn('URL prompt parsing error:', e);
+            }
+        }
+
+        // First-time visitor mode prompt
+        function checkFirstTimeModePrompt() {
+            const savedMode = localStorage.getItem('subeai_preferred_mode');
+            if (!savedMode) {
+                document.getElementById('modeSelectionModal').classList.remove('hidden');
+            } else {
+                selectWorkspaceMode(savedMode, false);
+            }
+        }
+
+        function selectWorkspaceMode(mode, savePreference) {
+            currentMode = mode;
+            if (savePreference) {
+                localStorage.setItem('subeai_preferred_mode', mode);
+                document.getElementById('modeSelectionModal').classList.add('hidden');
+            }
+
+            const tabPrompt = document.getElementById('tabPrompt2Img');
+            const tabChat = document.getElementById('tabChat2Img');
+            const promptWorkspace = document.getElementById('prompt2ImgWorkspace');
+            const chatWorkspace = document.getElementById('chat2ImgWorkspace');
+            const modeBadge = document.getElementById('activeModeBadge');
+            const modelLabel = document.getElementById('modelSectionLabel');
+            const selectAllBtn = document.getElementById('selectAllModelsBtn');
+
+            if (mode === 'prompt2img') {
+                tabPrompt.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all bg-brand-600 text-white shadow';
+                tabChat.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all text-purple-400 hover:text-white';
+                promptWorkspace.classList.remove('hidden');
+                chatWorkspace.classList.add('hidden');
+                modeBadge.textContent = 'Multi-Model';
+                modelLabel.textContent = 'Select Models (1 or More)';
+                selectAllBtn.classList.remove('hidden');
+                renderModelsChecklist(false);
+                nixySay('Prompt 2 Image mode! Check multiple models to compare them!');
+            } else {
+                tabChat.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all bg-fuchsia-600 text-white shadow';
+                tabPrompt.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all text-purple-400 hover:text-white';
+                chatWorkspace.classList.remove('hidden');
+                promptWorkspace.classList.add('hidden');
+                modeBadge.textContent = 'Chat Editor';
+                modelLabel.textContent = 'Active Chat Model';
+                selectAllBtn.classList.add('hidden');
+                renderModelsChecklist(true);
+                nixySay('Chat 2 Image mode! Tell me what to draw or edit!');
+            }
+        }
+
+        // ==========================================
+        // 5. MODEL & SIZE SELECTION UI
+        // ==========================================
+        function renderModelsChecklist(singleRadio = false) {
+            const container = document.getElementById('modelsChecklist');
+            const previouslyChecked = Array.from(document.querySelectorAll('.model-selector-input:checked')).map(el => el.value);
+
+            container.innerHTML = VERIFIED_MODELS.map((model, idx) => {
+                let isChecked = false;
+                if (singleRadio) {
+                    isChecked = previouslyChecked.length > 0 ? previouslyChecked[0] === model.id : idx === 0;
+                } else {
+                    isChecked = previouslyChecked.length > 0 ? previouslyChecked.includes(model.id) : model.defaultSelected;
+                }
+
+                return `
+                    <label class="flex items-center justify-between p-2.5 rounded-xl border border-purple-500/20 hover:border-brand-500/60 bg-brand-500/5 cursor-pointer transition-all">
+                        <div class="flex items-center space-x-2.5 min-w-0">
+                            <input type="${singleRadio ? 'radio' : 'checkbox'}" 
+                                   name="aiModelChoice" 
+                                   value="${model.id}" 
+                                   data-provider="${model.provider}"
+                                   data-name="${model.name}"
+                                   onchange="updateSelectedModelCount()"
+                                   ${isChecked ? 'checked' : ''}
+                                   class="model-selector-input w-4 h-4 accent-brand-600 rounded">
+                            <span class="text-xs font-semibold truncate">${model.name}</span>
+                        </div>
+                        <span class="text-[10px] px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 font-medium flex-shrink-0">${model.badge}</span>
+                    </label>
+                `;
+            }).join('');
+
+            updateSelectedModelCount();
+        }
+
+        function updateSelectedModelCount() {
+            const count = document.querySelectorAll('.model-selector-input:checked').length;
+            const badge = document.getElementById('selectedModelCountBadge');
+            if (badge) {
+                badge.textContent = `${count} model${count === 1 ? '' : 's'} selected`;
+            }
+        }
+
+        function toggleSelectAllModels() {
+            const inputs = Array.from(document.querySelectorAll('.model-selector-input'));
+            const checkedCount = inputs.filter(i => i.checked).length;
+            if (checkedCount >= 3) {
+                // Reset to top 1
+                inputs.forEach((inp, i) => inp.checked = (i === 0));
+            } else {
+                // Select top 3
+                inputs.forEach((inp, i) => inp.checked = (i < 3));
+            }
+            updateSelectedModelCount();
+        }
+
+        function selectImageSize(sizeStr, ratioStr, btnEl) {
+            selectedSize = sizeStr;
+            selectedAspectRatio = ratioStr;
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('border-brand-500', 'bg-brand-500/15');
+                btn.classList.add('border-purple-500/20');
+            });
+            btnEl.classList.remove('border-purple-500/20');
+            btnEl.classList.add('border-brand-500', 'bg-brand-500/15');
+        }
+
+        function buildFinalPrompt(rawPrompt) {
+            const stylePreset = document.getElementById('stylePresetSelect').value;
+            let full = rawPrompt.trim();
+            if (stylePreset) {
+                full += `, ${stylePreset}`;
+            }
+            if (selectedAspectRatio !== '1:1') {
+                full += ` --ar ${selectedAspectRatio}`;
+            }
+            return full;
+        }
+
+        // ==========================================
+        // 6. PROMPT 2 IMAGE: MULTI-MODEL EXECUTION
+        // ==========================================
+        async function generateMultiModelImages() {
+            const rawPrompt = document.getElementById('promptInput').value.trim();
+            if (!rawPrompt) {
+                showToast('Please enter a prompt description first.', 'error');
+                return;
+            }
+
+            const selectedInputs = Array.from(document.querySelectorAll('.model-selector-input:checked'));
+            if (selectedInputs.length === 0) {
+                showToast('Please select at least one AI model on the left.', 'error');
+                return;
+            }
+
+            const finalPrompt = buildFinalPrompt(rawPrompt);
+            const quality = document.getElementById('qualitySelect').value;
+            const testMode = document.getElementById('testModeCheck').checked;
+
+            const emptyState = document.getElementById('multiEmptyState');
+            const grid = document.getElementById('multiResultsGrid');
+            const btn = document.getElementById('generateMultiBtn');
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+            grid.innerHTML = '';
+
+            btn.disabled = true;
+            btn.classList.add('opacity-60', 'cursor-not-allowed');
+            nixySay(`Generating across ${selectedInputs.length} model${selectedInputs.length > 1 ? 's' : ''}! Hang tight!`);
+
+            // Create placeholder cards for each selected model
+            const tasks = selectedInputs.map((input, idx) => {
+                const modelId = input.value;
+                const provider = input.dataset.provider;
+                const modelName = input.dataset.name;
+                const cardId = `result_card_${idx}_${Date.now()}`;
+
+                const cardHTML = `
+                    <div id="${cardId}" class="card-theme rounded-3xl border overflow-hidden flex flex-col">
+                        <div class="px-4 py-3 border-b border-purple-500/15 flex items-center justify-between bg-black/15">
+                            <span class="text-xs font-bold text-brand-300 flex items-center space-x-1.5">
+                                <i class="ph ph-cpu text-brand-500"></i>
+                                <span>${modelName}</span>
+                            </span>
+                            <span class="text-[10px] text-purple-400">${selectedSize} • ${quality}</span>
+                        </div>
+                        <div class="aspect-square bg-black/30 flex flex-col items-center justify-center p-6 text-center relative card-body">
+                            <div class="w-10 h-10 rounded-full border-4 border-brand-500 border-t-transparent animate-spin mb-3"></div>
+                            <p class="text-xs font-semibold">Generating with ${modelName}...</p>
+                            <p class="text-[11px] text-purple-400 mt-1">Running parallel request</p>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+
+                return executeSingleModelGeneration({
+                    cardId,
+                    prompt: finalPrompt,
+                    rawPrompt,
+                    provider,
+                    modelId,
+                    modelName,
+                    quality,
+                    testMode,
+                    inputImage: currentInputImageBase64
+                });
+            });
+
+            await Promise.allSettled(tasks);
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-60', 'cursor-not-allowed');
+            nixySay('All models finished! Compare your results!');
+        }
+
+        async function executeSingleModelGeneration({ cardId, prompt, rawPrompt, provider, modelId, modelName, quality, testMode, inputImage }) {
+            const cardEl = document.getElementById(cardId);
+            const bodyEl = cardEl.querySelector('.card-body');
+
+            const options = {
+                provider,
+                model: modelId,
+                quality,
+                test_mode: testMode
+            };
+
+            if (inputImage) {
+                options.input_image = inputImage;
+                options.input_image_mime_type = 'image/png';
+            }
+
+            try {
+                let imgSrc = '';
+                if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2img) {
+                    const imgEl = await puter.ai.txt2img(prompt, options);
+                    imgSrc = imgEl.src;
+                } else {
+                    await new Promise(r => setTimeout(r, 1400));
+                    imgSrc = `https://placehold.co/${selectedSize.replace('x', 'x')}/5b21b6/ffffff?text=${encodeURIComponent(modelName + ': ' + rawPrompt.slice(0, 22))}`;
+                }
+
+                bodyEl.className = 'relative group bg-black/40 flex flex-col';
+                bodyEl.innerHTML = `
+                    <img src="${imgSrc}" alt="${rawPrompt}" class="w-full h-auto object-contain max-h-[380px]">
+                    <div class="p-3 border-t border-purple-500/15 flex items-center justify-between gap-2 bg-black/20">
+                        <button onclick="saveImageToLibrary('${imgSrc}', '${escapeQuotes(rawPrompt)} (${modelName})', this)" class="flex-1 py-2 px-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors">
+                            <i class="ph ph-bookmark-simple"></i>
+                            <span>Save</span>
+                        </button>
+                        <button onclick="downloadImageUrl('${imgSrc}', '${modelId}')" class="py-2 px-3 rounded-xl card-theme border hover:border-brand-500 text-xs font-semibold flex items-center justify-center" title="Download">
+                            <i class="ph ph-download text-brand-400"></i>
+                        </button>
+                        <button onclick="sendImageToChatEditor('${imgSrc}', '${escapeQuotes(rawPrompt)}')" class="py-2 px-3 rounded-xl card-theme border hover:border-fuchsia-500 text-xs font-semibold flex items-center justify-center" title="Edit in Chat 2 Image">
+                            <i class="ph ph-chat-circle-dots text-fuchsia-400"></i>
+                        </button>
+                    </div>
+                `;
+            } catch (err) {
+                const errMsg = String(err.message || err);
+                const isQuota = /balance|funds|quota|402/i.test(errMsg);
+                bodyEl.innerHTML = `
+                    <div class="p-4 text-center space-y-2">
+                        <i class="ph ph-warning-circle text-3xl text-amber-400"></i>
+                        <p class="text-xs font-bold text-amber-300">${isQuota ? 'Quota Reached' : 'Model Busy / Error'}</p>
+                        <p class="text-[11px] text-purple-300/80">${isQuota ? 'Enable Test Mode on the left to preview for free.' : errMsg.slice(0, 90)}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // 7. CHAT 2 IMAGE: CONVERSATIONAL & EDITING
+        // ==========================================
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('chatPromptInput');
+            const userText = inputEl.value.trim();
+            if (!userText) return;
+
+            inputEl.value = '';
+            appendChatMessage('user', userText);
+
+            const selectedModelInput = document.querySelector('.model-selector-input:checked') || document.querySelector('.model-selector-input');
+            const modelId = selectedModelInput.value;
+            const provider = selectedModelInput.dataset.provider;
+            const modelName = selectedModelInput.dataset.name;
+            const quality = document.getElementById('qualitySelect').value;
+            const testMode = document.getElementById('testModeCheck').checked;
+
+            const isEditing = Boolean(lastChatImageUrl);
+            const combinedPrompt = isEditing
+                ? `Edit this image based on the previous scene (${lastChatPromptContext}): ${userText}`
+                : buildFinalPrompt(userText);
+
+            const loadingBubbleId = appendChatLoading(isEditing ? `Editing image with ${modelName}...` : `Creating image with ${modelName}...`);
+            nixySay(isEditing ? 'Applying your edits to the image!' : 'Drawing your chat prompt now!');
+
+            const options = {
+                provider,
+                model: modelId,
+                quality,
+                test_mode: testMode
+            };
+
+            // Pass previous image for iterative Img2Img editing, or uploaded reference image
+            const refImage = lastChatImageUrl || currentInputImageBase64;
+            if (refImage && refImage.startsWith('data:image')) {
+                options.input_image = refImage;
+                options.input_image_mime_type = 'image/png';
+            }
+
+            try {
+                let imgSrc = '';
+                if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2img) {
+                    const imgEl = await puter.ai.txt2img(combinedPrompt, options);
+                    imgSrc = imgEl.src;
+                } else {
+                    await new Promise(r => setTimeout(r, 1500));
+                    imgSrc = `https://placehold.co/1024x1024/701a75/ffffff?text=${encodeURIComponent(userText.slice(0, 28))}`;
+                }
+
+                removeChatLoading(loadingBubbleId);
+
+                lastChatImageUrl = imgSrc;
+                lastChatPromptContext = isEditing ? `${lastChatPromptContext} -> ${userText}` : userText;
+                updateChatEditBanner();
+
+                appendChatImageResult(imgSrc, userText, modelName, isEditing);
+                nixySay('Done! Tell me what else you want to tweak!');
+            } catch (err) {
+                removeChatLoading(loadingBubbleId);
+                appendChatMessage('ai', `Sorry, I couldn't generate that image (${err.message || 'Provider error'}). Try enabling Test Mode or switching models on the left!`);
+            }
+        }
+
+        function appendChatMessage(sender, text) {
+            const feed = document.getElementById('chatMessagesFeed');
+            const isUser = sender === 'user';
+            const html = isUser ? `
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="p-3.5 rounded-2xl rounded-tr-none bg-brand-600 text-white text-xs sm:text-sm max-w-md shadow">
+                        <p>${escapeHtml(text)}</p>
+                    </div>
+                </div>
+            ` : `
+                <div class="flex items-start space-x-3 max-w-xl">
+                    <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                        <i class="ph ph-sparkle"></i>
+                    </div>
+                    <div class="p-3.5 rounded-2xl rounded-tl-none bg-brand-500/10 border border-brand-500/20 text-xs sm:text-sm">
+                        <p>${escapeHtml(text)}</p>
+                    </div>
+                </div>
+            `;
+            feed.insertAdjacentHTML('beforeend', html);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function appendChatLoading(statusText) {
+            const id = 'chat_load_' + Date.now();
+            const feed = document.getElementById('chatMessagesFeed');
+            const html = `
+                <div id="${id}" class="flex items-start space-x-3 max-w-md">
+                    <div class="w-8 h-8 rounded-xl bg-fuchsia-600 text-white flex items-center justify-center flex-shrink-0">
+                        <i class="ph ph-spinner animate-spin"></i>
+                    </div>
+                    <div class="p-3.5 rounded-2xl rounded-tl-none bg-fuchsia-500/10 border border-fuchsia-500/20 text-xs text-fuchsia-300 font-medium">
+                        ${escapeHtml(statusText)}
+                    </div>
+                </div>
+            `;
+            feed.insertAdjacentHTML('beforeend', html);
+            feed.scrollTop = feed.scrollHeight;
+            return id;
+        }
+
+        function removeChatLoading(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function appendChatImageResult(imgSrc, promptText, modelName, wasEdit) {
+            const feed = document.getElementById('chatMessagesFeed');
+            const html = `
+                <div class="flex items-start space-x-3 max-w-lg">
+                    <div class="w-8 h-8 rounded-xl bg-fuchsia-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                        <i class="ph ph-sparkle"></i>
+                    </div>
+                    <div class="card-theme rounded-2xl rounded-tl-none border overflow-hidden shadow-xl space-y-2 p-3">
+                        <div class="flex items-center justify-between text-[11px] text-purple-400">
+                            <span>${wasEdit ? '✨ Edited Version' : '🎨 Generated Image'} • ${modelName}</span>
+                            <span>${selectedSize}</span>
+                        </div>
+                        <img src="${imgSrc}" class="rounded-xl max-h-[320px] w-auto object-contain bg-black/30">
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <button onclick="saveImageToLibrary('${imgSrc}', '${escapeQuotes(promptText)}', this)" class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold flex items-center space-x-1">
+                                <i class="ph ph-bookmark-simple"></i>
+                                <span>Save to Library</span>
+                            </button>
+                            <button onclick="downloadImageUrl('${imgSrc}', 'chat_edit')" class="px-3 py-1.5 rounded-xl card-theme border hover:border-brand-500 text-xs font-semibold flex items-center space-x-1">
+                                <i class="ph ph-download"></i>
+                                <span>Download</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            feed.insertAdjacentHTML('beforeend', html);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function updateChatEditBanner() {
+            const banner = document.getElementById('chatEditContextBanner');
+            const thumb = document.getElementById('chatContextThumb');
+            if (lastChatImageUrl) {
+                thumb.src = lastChatImageUrl;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function clearChatEditContext() {
+            lastChatImageUrl = null;
+            lastChatPromptContext = '';
+            updateChatEditBanner();
+            showToast('Ready to create a brand new image in chat!', 'info');
+        }
+
+        function resetChatSession() {
+            clearChatEditContext();
+            const feed = document.getElementById('chatMessagesFeed');
+            feed.innerHTML = `
+                <div class="flex items-start space-x-3 max-w-xl">
+                    <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                        <i class="ph ph-sparkle"></i>
+                    </div>
+                    <div class="p-4 rounded-2xl rounded-tl-none bg-brand-500/10 border border-brand-500/20 text-xs sm:text-sm">
+                        <p class="font-semibold text-brand-300">Fresh Chat Started!</p>
+                        <p class="text-purple-200/90 mt-1">Describe any image you'd like to create, and then tell me what edits to make.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function sendImageToChatEditor(imgSrc, promptText) {
+            selectWorkspaceMode('chat2img', false);
+            lastChatImageUrl = imgSrc;
+            lastChatPromptContext = promptText;
+            updateChatEditBanner();
+            appendChatImageResult(imgSrc, promptText, 'Imported', false);
+            showToast('Image loaded into Chat 2 Image! Type your edits below.', 'success');
+        }
+
+        // ==========================================
+        // 8. NIXY THE WALKING PURPLE BOT
+        // ==========================================
+        const NIXY_QUOTES = [
+            "Hi! I'm Nixy! Need a cool prompt idea?",
+            "Tip: Try selecting 3 models in Prompt 2 Image to compare styles!",
+            "In Chat 2 Image, you can say 'make it sunset' to edit your picture!",
+            "Purple is obviously the best color. Just look at me!",
+            "Click 'Idea' on my speech bubble for instant inspiration!",
+            "You can change image size & quality anytime on the left panel!"
+        ];
+
+        const SAMPLE_PROMPTS = [
+            "A cat in the forest surrounded by bioluminescent blue mushrooms at midnight",
+            "A cozy floating library inside a giant glass teapot above the clouds",
+            "A cyberpunk street food vendor serving glowing ramen in rainy Neo-Tokyo",
+            "An astronaut playing chess with a friendly purple robot on Mars",
+            "A crystal dragon perched on a waterfall under the northern lights"
+        ];
+
+        let nixyWalkInterval = null;
+        let nixySpeechTimeout = null;
+
+        function startNixyBehavior() {
+            const nixyEl = document.getElementById('nixyContainer');
+
+            // Roam horizontally across the bottom of the screen periodically
+            nixyWalkInterval = setInterval(() => {
+                const maxLeft = Math.max(60, window.innerWidth - 280);
+                const nextX = Math.floor(Math.random() * maxLeft) + 20;
+                nixyEl.classList.add('nixy-walking');
+                nixyEl.style.left = `${nextX}px`;
+
+                setTimeout(() => {
+                    nixyEl.classList.remove('nixy-walking');
+                }, 2800);
+            }, 6500);
+
+            // Periodic friendly chatter
+            setInterval(() => {
+                if (Math.random() > 0.45) {
+                    const randomMsg = NIXY_QUOTES[Math.floor(Math.random() * NIXY_QUOTES.length)];
+                    nixySay(randomMsg);
+                }
+            }, 14000);
+        }
+
+        function nixySay(message) {
+            const textEl = document.getElementById('nixySpeechText');
+            const bubble = document.getElementById('nixySpeechBubble');
+            if (!textEl || !bubble) return;
+            textEl.textContent = message;
+            bubble.classList.remove('opacity-0', 'scale-95');
+            if (nixySpeechTimeout) clearTimeout(nixySpeechTimeout);
+            nixySpeechTimeout = setTimeout(() => {
+                bubble.classList.add('opacity-90');
+            }, 8000);
+        }
+
+        function handleNixyClick() {
+            nixyWave();
+            const randomMsg = NIXY_QUOTES[Math.floor(Math.random() * NIXY_QUOTES.length)];
+            nixySay(randomMsg);
+        }
+
+        function nixyWave() {
+            const arm = document.getElementById('nixyArmRight');
+            if (arm) {
+                arm.setAttribute('transform', 'rotate(-35 67 42)');
+                setTimeout(() => arm.setAttribute('transform', 'rotate(15 67 42)'), 200);
+                setTimeout(() => arm.setAttribute('transform', 'rotate(-35 67 42)'), 400);
+                setTimeout(() => arm.removeAttribute('transform'), 650);
+            }
+            nixySay("Beep boop! Hello friend! 👋");
+        }
+
+        function nixyGiveRandomPrompt() {
+            const idea = SAMPLE_PROMPTS[Math.floor(Math.random() * SAMPLE_PROMPTS.length)];
+            if (currentMode === 'prompt2img') {
+                document.getElementById('promptInput').value = idea;
+            } else {
+                document.getElementById('chatPromptInput').value = idea;
+            }
+            nixySay("I filled in a fun prompt for you! Hit Generate!");
+        }
+
+        // ==========================================
+        // 9. LIBRARY, THEME, PUTER & HELPERS
+        // ==========================================
         function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.classList.toggle('dark');
+            const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('sube_theme', isDark ? 'dark' : 'light');
-            updateThemeIcon(isDark);
+            document.getElementById('themeIcon').className = isDark
+                ? 'ph ph-sun text-lg text-amber-400'
+                : 'ph ph-moon text-lg text-brand-600';
         }
 
         function loadThemePreference() {
             const saved = localStorage.getItem('sube_theme');
-            const isDark = saved ? saved === 'dark' : true; // Default dark
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            updateThemeIcon(isDark);
-        }
-
-        function updateThemeIcon(isDark) {
-            const icon = document.getElementById('themeIcon');
-            icon.className = isDark ? 'ph ph-sun text-lg text-amber-400' : 'ph ph-moon text-lg text-brand-600';
-        }
-
-        // Puter Authentication and Persistence
-        function loadAccountState() {
-            try {
-                const savedUser = localStorage.getItem('sube_puter_user');
-                if (savedUser) {
-                    const user = JSON.parse(savedUser);
-                    updateAuthUI(user);
-                } else if (typeof puter !== 'undefined' && puter.auth) {
-                    puter.auth.getUser().then(user => {
-                        if (user) {
-                            localStorage.setItem('sube_puter_user', JSON.stringify(user));
-                            updateAuthUI(user);
-                        }
-                    }).catch(() => {});
-                }
-            } catch (e) {
-                console.warn("Account state load error:", e);
-            }
-        }
-
-        function updateAuthUI(user) {
-            const usernameEl = document.getElementById('authUsername');
-            const emailEl = document.getElementById('authDropdownEmail');
-            const avatarEl = document.getElementById('authAvatar');
-            if (user && user.username) {
-                usernameEl.textContent = user.username;
-                emailEl.textContent = user.email || user.username + "@puter.com";
-                avatarEl.innerHTML = `<span class="font-bold text-xs">${user.username.charAt(0).toUpperCase()}</span>`;
-            } else {
-                usernameEl.textContent = "Sign In";
-                emailEl.textContent = "Not Signed In";
-                avatarEl.innerHTML = `<i class="ph ph-user"></i>`;
-            }
+            const isDark = saved ? saved === 'dark' : true;
+            document.documentElement.classList.toggle('dark', isDark);
+            document.getElementById('themeIcon').className = isDark
+                ? 'ph ph-sun text-lg text-amber-400'
+                : 'ph ph-moon text-lg text-brand-600';
         }
 
         function toggleAuthMenu() {
-            const dropdown = document.getElementById('authDropdown');
-            dropdown.classList.toggle('hidden');
+            document.getElementById('authDropdown').classList.toggle('hidden');
         }
 
         async function handlePuterSignIn() {
@@ -463,53 +1343,18 @@
                 if (typeof puter !== 'undefined' && puter.auth) {
                     const user = await puter.auth.signIn();
                     if (user) {
-                        localStorage.setItem('sube_puter_user', JSON.stringify(user));
-                        updateAuthUI(user);
+                        showToast(`Connected Puter AI as ${user.username}`, 'success');
                         toggleAuthMenu();
                     }
-                } else {
-                    // Fallback simulation
-                    const mockUser = { username: "PuterUser_" + Math.floor(Math.random()*1000) };
-                    localStorage.setItem('sube_puter_user', JSON.stringify(mockUser));
-                    updateAuthUI(mockUser);
-                    toggleAuthMenu();
                 }
             } catch (e) {
-                console.error("Sign in error:", e);
+                showToast('Puter sign-in cancelled or unavailable.', 'error');
             }
         }
 
-        function handleClearAccount() {
-            localStorage.removeItem('sube_puter_user');
-            try {
-                if (typeof puter !== 'undefined' && puter.auth) {
-                    puter.auth.signOut();
-                }
-            } catch(e) {}
-            updateAuthUI(null);
-            toggleAuthMenu();
-        }
-
-        // Provider change handler
-        function onProviderChange() {
-            const provider = document.getElementById('providerSelect').value;
-            const modelSelect = document.getElementById('modelSelect');
-            modelSelect.innerHTML = '';
-            
-            const models = providerModels[provider] || [];
-            models.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.id;
-                opt.textContent = m.name;
-                modelSelect.appendChild(opt);
-            });
-        }
-
-        // Image upload and Img2Img handling
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentInputImageBase64 = e.target.result;
@@ -525,191 +1370,67 @@
         function clearInputImage() {
             currentInputImageBase64 = null;
             document.getElementById('imageFileInput').value = '';
-            document.getElementById('inputImagePreview').src = '';
             document.getElementById('inputImagePreview').classList.add('hidden');
             document.getElementById('dropZoneContent').classList.remove('hidden');
             document.getElementById('clearImgBtn').classList.add('hidden');
         }
 
-        // Quota interception & error handling
-        function setupQuotaInterception() {
-            // Override window.alert or detect balance rejections
-            const originalAlert = window.alert;
-            window.alert = function(msg) {
-                if (String(msg).toLowerCase().includes('balance') || String(msg).toLowerCase().includes('quota') || String(msg).toLowerCase().includes('funding')) {
-                    triggerQuotaModal();
-                    return true;
-                }
-                return originalAlert.apply(this, arguments);
-            };
-        }
-
-        function triggerQuotaModal() {
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('emptyState').classList.add('hidden');
-            document.getElementById('quotaState').classList.remove('hidden');
-        }
-
-        function dismissQuotaModal() {
-            document.getElementById('quotaState').classList.add('hidden');
-            document.getElementById('testModeCheck').checked = true;
-            document.getElementById('emptyState').classList.remove('hidden');
-        }
-
-        // Main Generation Execution via puter.ai.txt2img()
-        async function generateImage() {
-            const prompt = document.getElementById('promptInput').value.trim();
-            if (!prompt) {
-                alert("Please enter a prompt description for the image generation.");
-                return;
-            }
-
-            const provider = document.getElementById('providerSelect').value;
-            const model = document.getElementById('modelSelect').value;
-            const quality = document.getElementById('qualitySelect').value;
-            const testMode = document.getElementById('testModeCheck').checked;
-            const puterPath = document.getElementById('puterPathInput').value.trim();
-
-            // Switch view to loading
-            document.getElementById('emptyState').classList.add('hidden');
-            document.getElementById('resultWrapper').classList.add('hidden');
-            document.getElementById('quotaState').classList.add('hidden');
-            document.getElementById('loadingState').classList.remove('hidden');
-            document.getElementById('loadingStatusText').textContent = testMode ? "Generating sample in test mode..." : "Generating AI masterpiece...";
-
-            // Construct options object per puter.ai.txt2img specs
-            const options = {
-                provider: provider,
-                model: model,
-                quality: quality,
-                test_mode: testMode
-            };
-
-            if (puterPath) {
-                options.puter_output_path = puterPath;
-            }
-
-            if (currentInputImageBase64) {
-                options.input_image = currentInputImageBase64;
-                options.input_image_mime_type = "image/png";
-            }
-
-            try {
-                let imageElement;
-                if (typeof puter !== 'undefined' && puter.ai && puter.ai.txt2img) {
-                    // Call Puter AI txt2img with prompt and options
-                    imageElement = await puter.ai.txt2img(prompt, options);
-                } else {
-                    // Fallback simulation if puter is not available in offline preview
-                    await new Promise(r => setTimeout(r, 2000));
-                    imageElement = document.createElement('img');
-                    imageElement.src = "https://placehold.co/1024x1024/6366f1/ffffff?text=" + encodeURIComponent(prompt.substring(0, 30));
-                }
-
-                if (!imageElement || !imageElement.src) {
-                    throw new Error("Invalid image response received from AI provider.");
-                }
-
-                lastGeneratedImageUrl = imageElement.src;
-                lastPromptText = prompt;
-
-                // Display result
-                document.getElementById('resultImage').src = lastGeneratedImageUrl;
-                document.getElementById('resultPromptCaption').textContent = prompt;
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('resultWrapper').classList.remove('hidden');
-                document.getElementById('generationMeta').textContent = `${provider} • ${model}`;
-
-            } catch (err) {
-                console.error("Generation error:", err);
-                document.getElementById('loadingState').classList.add('hidden');
-                
-                // Check if error is quota or insufficient funds
-                const errStr = String(err.message || err).toLowerCase();
-                if (errStr.includes('balance') || errStr.includes('funds') || errStr.includes('quota') || errStr.includes('402')) {
-                    triggerQuotaModal();
-                } else {
-                    alert("Generation failed: " + (err.message || "Unknown error occurred. Try enabling Test Mode."));
-                    document.getElementById('emptyState').classList.remove('hidden');
-                }
-            }
-        }
-
-        // Library Management Functions
         function loadLibraryFromStorage() {
             try {
                 const saved = localStorage.getItem('sube_image_library');
-                if (saved) {
-                    libraryImages = JSON.parse(saved);
-                    updateLibraryUI();
-                }
-            } catch (e) {
-                console.warn("Failed to load library:", e);
-            }
+                if (saved) libraryImages = JSON.parse(saved);
+            } catch (e) {}
+            updateLibraryUI();
         }
 
-        function saveLibraryToStorage() {
+        function saveImageToLibrary(url, prompt, btnEl) {
+            libraryImages.unshift({
+                id: 'img_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                url,
+                prompt,
+                timestamp: new Date().toLocaleDateString()
+            });
             try {
                 localStorage.setItem('sube_image_library', JSON.stringify(libraryImages));
-                updateLibraryUI();
-            } catch (e) {
-                console.warn("Failed to save library:", e);
+            } catch (e) {}
+            updateLibraryUI();
+            if (btnEl) {
+                const orig = btnEl.innerHTML;
+                btnEl.innerHTML = `<i class="ph ph-check"></i><span>Saved!</span>`;
+                setTimeout(() => { btnEl.innerHTML = orig; }, 1800);
             }
-        }
-
-        function addToLibraryCurrent() {
-            if (!lastGeneratedImageUrl) return;
-
-            const newItem = {
-                id: 'img_' + Date.now(),
-                url: lastGeneratedImageUrl,
-                prompt: lastPromptText,
-                timestamp: new Date().toLocaleDateString()
-            };
-
-            libraryImages.unshift(newItem);
-            saveLibraryToStorage();
-
-            // Success feedback
-            const btn = event.currentTarget;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="ph ph-check text-base"></i><span>Added!</span>`;
-            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+            showToast('Image saved to your library!', 'success');
         }
 
         function updateLibraryUI() {
+            document.getElementById('libraryCountBadge').textContent = libraryImages.length;
+            document.getElementById('libraryStats').textContent = `${libraryImages.length} image(s) saved`;
             const grid = document.getElementById('libraryGrid');
-            const countBadge = document.getElementById('libraryCountBadge');
-            const stats = document.getElementById('libraryStats');
-
-            countBadge.textContent = libraryImages.length;
-            stats.textContent = `${libraryImages.length} image(s) saved in library`;
 
             if (libraryImages.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full py-12 text-center space-y-2 text-purple-400">
                         <i class="ph ph-image-square text-4xl"></i>
                         <p class="text-sm font-medium">Your library is empty</p>
-                        <p class="text-xs">Save your generated creations here for quick access.</p>
                     </div>
                 `;
                 return;
             }
 
             grid.innerHTML = libraryImages.map(item => `
-                <div class="card-theme rounded-2xl overflow-hidden border group relative flex flex-col">
-                    <div class="h-40 overflow-hidden bg-black/25 relative">
-                        <img src="${item.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="card-theme rounded-2xl overflow-hidden border flex flex-col">
+                    <div class="h-40 bg-black/30 overflow-hidden">
+                        <img src="${item.url}" class="w-full h-full object-cover">
                     </div>
                     <div class="p-3 flex-1 flex flex-col justify-between space-y-2">
-                        <p class="text-xs font-medium line-clamp-2" title="${item.prompt}">${item.prompt}</p>
-                        <div class="flex items-center justify-between pt-2 border-t border-purple-500/10">
+                        <p class="text-xs font-medium line-clamp-2">${escapeHtml(item.prompt)}</p>
+                        <div class="flex items-center justify-between pt-2 border-t border-purple-500/15">
                             <span class="text-[10px] text-purple-400">${item.timestamp}</span>
-                            <div class="flex items-center space-x-2">
-                                <a href="${item.url}" download="subeai_${item.id}.png" class="p-1.5 rounded-lg bg-brand-500/10 text-brand-500 hover:bg-brand-500/20 transition-colors" title="Download">
+                            <div class="flex items-center space-x-1.5">
+                                <button onclick="downloadImageUrl('${item.url}', '${item.id}')" class="p-1.5 rounded-lg bg-brand-500/15 text-brand-400 hover:bg-brand-500/25">
                                     <i class="ph ph-download text-sm"></i>
-                                </a>
-                                <button onclick="deleteLibraryItem('${item.id}')" class="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors" title="Delete">
+                                </button>
+                                <button onclick="deleteLibraryItem('${item.id}')" class="p-1.5 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25">
                                     <i class="ph ph-trash text-sm"></i>
                                 </button>
                             </div>
@@ -720,44 +1441,53 @@
         }
 
         function deleteLibraryItem(id) {
-            libraryImages = libraryImages.filter(item => item.id !== id);
-            saveLibraryToStorage();
+            libraryImages = libraryImages.filter(i => i.id !== id);
+            localStorage.setItem('sube_image_library', JSON.stringify(libraryImages));
+            updateLibraryUI();
         }
 
         function clearLibrary() {
-            if (confirm("Are you sure you want to clear your entire image library?")) {
-                libraryImages = [];
-                saveLibraryToStorage();
-            }
+            libraryImages = [];
+            localStorage.setItem('sube_image_library', JSON.stringify(libraryImages));
+            updateLibraryUI();
+            showToast('Library cleared.', 'info');
         }
 
-        function openLibraryModal() {
-            document.getElementById('libraryModal').classList.remove('hidden');
-        }
+        function openLibraryModal() { document.getElementById('libraryModal').classList.remove('hidden'); }
+        function closeLibraryModal() { document.getElementById('libraryModal').classList.add('hidden'); }
 
-        function closeLibraryModal() {
-            document.getElementById('libraryModal').classList.add('hidden');
-        }
-
-        function downloadCurrent() {
-            if (!lastGeneratedImageUrl) return;
+        function downloadImageUrl(url, prefix = 'subeai') {
             const a = document.createElement('a');
-            a.href = lastGeneratedImageUrl;
-            a.download = `subeai_${Date.now()}.png`;
+            a.href = url;
+            a.download = `${prefix}_${Date.now()}.png`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         }
 
-        function copyImageToClipboard() {
-            if (!lastGeneratedImageUrl) return;
-            const temp = document.createElement('textarea');
-            temp.value = lastGeneratedImageUrl;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-            alert("Image data URL copied to clipboard!");
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const colors = {
+                success: 'border-emerald-500/40 bg-emerald-950/90 text-emerald-200',
+                error: 'border-red-500/40 bg-red-950/90 text-red-200',
+                info: 'border-brand-500/40 bg-brand-950/90 text-purple-100'
+            };
+            const el = document.createElement('div');
+            el.className = `pointer-events-auto px-4 py-3 rounded-2xl border backdrop-blur-xl text-xs font-semibold shadow-xl transition-all duration-300 ${colors[type] || colors.info}`;
+            el.textContent = message;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.classList.add('opacity-0', 'translate-x-4');
+                setTimeout(() => el.remove(), 300);
+            }, 3200);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        }
+
+        function escapeQuotes(str) {
+            return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
