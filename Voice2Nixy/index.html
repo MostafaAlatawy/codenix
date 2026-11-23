@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Voice2Nixy • Codenix Ambient Listening & AI Summary Companion</title>
+  <title>NixVoice & Voice2Nixy • Codenix AI Voice Studio</title>
 
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -16,13 +16,13 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Puter.js SDK (Speech2Text, AI Chat, Text2Speech, KV) -->
+  <!-- Puter.js SDK -->
   <script src="https://js.puter.com/v2/"></script>
 
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- jsPDF for PDF Exports -->
+  <!-- jsPDF for PDF Summarization & Transcript Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
@@ -48,6 +48,7 @@
             }
           },
           animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             'blink': 'blink 4s infinite',
             'nixy-listen': 'nixyListen 1.2s ease-in-out infinite',
             'nixy-think': 'nixyThink 0.8s ease-in-out infinite',
@@ -59,11 +60,11 @@
             },
             nixyListen: {
               '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(239, 68, 68, 0.7)' },
-              '50%': { transform: 'scale(1.1)', boxShadow: '0 0 0 22px rgba(239, 68, 68, 0)' },
+              '50%': { transform: 'scale(1.12)', boxShadow: '0 0 0 14px rgba(239, 68, 68, 0)' },
             },
             nixyThink: {
               '0%, 100%': { transform: 'translateY(0px) scale(1)' },
-              '50%': { transform: 'translateY(-8px) scale(1.05)' },
+              '50%': { transform: 'translateY(-6px) scale(1.06)' },
             }
           }
         }
@@ -83,13 +84,13 @@
     </div>
     <h2 id="auth-status-title" class="text-xl font-bold tracking-tight mb-2">Verifying Codenix Session...</h2>
     <p id="auth-status-desc" class="text-sm text-zinc-400 max-w-md mb-6">
-      Checking your authentication status before launching Voice2Nixy.
+      Checking your authentication status before launching NixVoice Studio.
     </p>
     <div id="auth-redirect-actions" class="hidden flex-col sm:flex-row items-center gap-3">
-      <a id="manual-redirect-btn" href="/Start?redirect=%2FVoice2Nixy" class="px-5 py-2.5 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white font-medium text-sm transition shadow-lg shadow-codenix-purple/30">
+      <a id="manual-redirect-btn" href="/Start?redirect=%2FNixVoice" class="px-5 py-2.5 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white font-medium text-sm transition shadow-lg shadow-codenix-purple/30">
         Continue to Sign In (/Start)
       </a>
-      <button onclick="bypassAuthForPreview()" class="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition">
+      <button type="button" onclick="bypassAuthForPreview()" class="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition">
         Preview Mode (Local Sandbox)
       </button>
     </div>
@@ -102,41 +103,46 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
       <!-- Brand Identity -->
       <div class="flex items-center gap-3">
-        <button id="mobile-sidebar-btn" class="lg:hidden p-2 rounded-xl hover:bg-purple-100 dark:hover:bg-zinc-800 text-codenix-purple dark:text-codenix-purpleLight transition" aria-label="Open Sessions">
+        <button id="mobile-sidebar-btn" type="button" class="lg:hidden p-2 rounded-xl hover:bg-purple-100 dark:hover:bg-zinc-800 text-codenix-purple dark:text-codenix-purpleLight transition" aria-label="Open Library">
           <i class="ph ph-list text-xl"></i>
         </button>
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-full bg-codenix-purple flex items-center justify-center gap-1.5 shadow-md shadow-codenix-purple/40">
-            <span class="w-1.5 h-2.5 rounded-full bg-white"></span>
-            <span class="w-1.5 h-2.5 rounded-full bg-white"></span>
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-codenix-purple to-purple-900 flex items-center justify-center text-white shadow-md shadow-codenix-purple/30">
+            <i class="ph-fill ph-waveform text-xl"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-bold text-lg tracking-tight">Voice2<span class="text-codenix-purple dark:text-codenix-purpleLight">Nixy</span></span>
+              <span class="font-bold text-lg tracking-tight">Nix<span class="text-codenix-purple dark:text-codenix-purpleLight">Voice</span></span>
               <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-purple/30">Codenix</span>
             </div>
-            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 hidden sm:block">Ambient Speech-to-Text, Character AI & Document Synthesizer</p>
+            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 hidden sm:block">Puter.js Neural Voice & Voice2Nixy Studio</p>
           </div>
         </div>
       </div>
 
       <!-- Right Controls -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Save Session Button -->
-        <button onclick="saveCurrentSession()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-codenix-purple/15 hover:bg-codenix-purple text-codenix-purple hover:text-white dark:text-codenix-purpleLight dark:hover:text-white border border-codenix-purple/30 transition" title="Save Transcript & Summary">
-          <i class="ph-fill ph-floppy-disk text-sm"></i>
-          <span class="hidden sm:inline">Save Session</span>
+        <!-- Voice2Nixy Quick Launch -->
+        <button type="button" onclick="startVoice2Nixy(0)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-codenix-purple text-white hover:bg-codenix-purpleHover shadow-sm shadow-codenix-purple/30 transition" title="Open Voice2Nixy Listening & AI Chat">
+          <i class="ph-fill ph-ear text-sm"></i>
+          <span class="hidden sm:inline">Voice2Nixy</span>
         </button>
 
-        <!-- Theme Toggle -->
-        <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-2.5 rounded-xl bg-purple-50 dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder text-codenix-purple dark:text-codenix-purpleLight hover:border-codenix-purple transition" title="Toggle Codenix Theme">
+        <!-- Puter KV Sync Button -->
+        <button id="puter-sync-btn" type="button" onclick="syncToPuterKV()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-purple-50 dark:bg-zinc-900 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition" title="Sync saved voices to Puter Cloud KV">
+          <i class="ph ph-cloud-arrow-up text-base"></i>
+          <span>Puter Sync</span>
+        </button>
+
+        <!-- Theme Toggle (Purple/Black Dark Mode <-> Purple/White Light Mode) -->
+        <button id="theme-toggle-btn" type="button" onclick="toggleTheme()" class="p-2.5 rounded-xl bg-purple-50 dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder text-codenix-purple dark:text-codenix-purpleLight hover:border-codenix-purple transition" title="Toggle Codenix Theme">
           <i id="theme-icon" class="ph-fill ph-sun text-lg"></i>
         </button>
 
         <!-- User Badge / Sign Out -->
         <div class="flex items-center gap-2 pl-2 border-l border-codenix-lightBorder dark:border-codenix-darkBorder">
           <span id="user-email-badge" class="hidden md:inline-block text-xs font-mono text-zinc-500 dark:text-zinc-400 max-w-[140px] truncate">Authenticated</span>
-          <button onclick="handleSignOut()" class="p-2 rounded-xl hover:bg-red-500/10 text-zinc-500 hover:text-red-500 transition" title="Sign Out">
+          <button type="button" onclick="handleSignOut()" class="p-2 rounded-xl hover:bg-red-500/10 text-zinc-500 hover:text-red-500 transition" title="Sign Out">
             <i class="ph ph-sign-out text-lg"></i>
           </button>
         </div>
@@ -145,23 +151,23 @@
   </header>
 
   <!-- ===================================================================== -->
-  <!-- MAIN WORKSPACE (SAVED SESSIONS SIDEBAR + CENTRAL NIXY STAGE & CHAT)   -->
+  <!-- MAIN WORKSPACE LAYOUT (CHAT STUDIO + SAVED VOICES DRAWER)             -->
   <!-- ===================================================================== -->
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] relative">
 
-    <!-- LEFT SIDEBAR: SAVED VOICE2NIXY SESSIONS -->
+    <!-- LEFT / COLLAPSIBLE SIDEBAR: SAVED VOICES VAULT (LOCAL STORAGE) -->
     <aside id="saved-sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-80 bg-codenix-lightSurface dark:bg-codenix-darkSurface border-r border-codenix-lightBorder dark:border-codenix-darkBorder transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
       <div class="p-4 border-b border-codenix-lightBorder dark:border-codenix-darkBorder flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <i class="ph-fill ph-notebooks text-codenix-purple text-lg"></i>
-          <h2 class="font-semibold text-sm">Captured Sessions</h2>
+          <i class="ph-fill ph-folder-star text-codenix-purple text-lg"></i>
+          <h2 class="font-semibold text-sm">Saved Voice Vault</h2>
           <span id="saved-count-badge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight">0</span>
         </div>
         <div class="flex items-center gap-1">
-          <button onclick="startNewSession()" class="p-1.5 rounded-lg text-xs text-codenix-purple hover:bg-codenix-purple/15 transition" title="New Session">
-            <i class="ph-bold ph-plus text-base"></i>
+          <button type="button" onclick="clearAllSavedVoices()" class="p-1.5 rounded-lg text-xs text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition" title="Clear All Saved Voices">
+            <i class="ph ph-trash text-base"></i>
           </button>
-          <button id="close-sidebar-btn" class="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
+          <button id="close-sidebar-btn" type="button" class="lg:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
             <i class="ph ph-x text-base"></i>
           </button>
         </div>
@@ -171,152 +177,313 @@
       <div class="p-3 border-b border-codenix-lightBorder dark:border-codenix-darkBorder">
         <div class="relative">
           <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm"></i>
-          <input id="session-search" type="text" placeholder="Search transcripts..." oninput="renderSessionsList()" class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:outline-none focus:border-codenix-purple transition" />
+          <input id="vault-search" type="text" placeholder="Filter saved clips..." oninput="renderSavedVault()" class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:outline-none focus:border-codenix-purple transition" />
         </div>
       </div>
 
-      <!-- Saved Sessions List -->
-      <div id="sessions-list" class="flex-1 overflow-y-auto p-3 space-y-2.5"></div>
+      <!-- Saved Clips List -->
+      <div id="saved-voices-list" class="flex-1 overflow-y-auto p-3 space-y-2.5">
+        <!-- Populated dynamically from localStorage -->
+      </div>
 
       <div class="p-3 border-t border-codenix-lightBorder dark:border-codenix-darkBorder text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
-        <span>Puter.js STT + AI</span>
-        <span class="text-codenix-purple dark:text-codenix-purpleLight font-mono">Voice2Nixy</span>
+        <span>Storage: LocalStorage + Puter</span>
+        <span class="text-codenix-purple dark:text-codenix-purpleLight font-mono">v2.6</span>
       </div>
     </aside>
 
-    <!-- CENTER STAGE: NIXY INTERACTIVE ORB, TRANSCRIPT & CHAT -->
-    <main class="flex-1 flex flex-col justify-between p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
+    <!-- CENTER: CHAT UI VOICE GENERATOR & VOICE2NIXY CONSOLE -->
+    <main class="flex-1 flex flex-col justify-between relative">
+      <!-- Chat Stream Area -->
+      <div id="chat-stream" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-48">
+        <!-- Welcome Banner -->
+        <div class="max-w-2xl mx-auto rounded-3xl p-6 bg-gradient-to-br from-codenix-purple/15 via-purple-500/5 to-transparent border border-codenix-purple/30 text-center space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-codenix-purple/20 text-codenix-purple dark:text-codenix-purpleLight text-xs font-medium">
+            <i class="ph-fill ph-sparkle"></i> Powered by Puter.js Neural TTS, STT & AI Chat
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Welcome to <span class="text-codenix-purple dark:text-codenix-purpleLight">NixVoice</span> & <span class="text-codenix-purple dark:text-codenix-purpleLight">Voice2Nixy</span></h1>
+          <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed">
+            Generate studio voices below, or <strong>click Nixy</strong> (the purple ball) to activate <strong>Voice2Nixy</strong>—he detects different voices as <strong>Character A :</strong>, <strong>Character B :</strong>, adds their spoken name automatically when introduced, chats with character voices, and exports summaries to <strong>PDF & DOC</strong>!
+          </p>
+          <!-- Quick Prompt Chips -->
+          <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <button type="button" onclick="startVoice2Nixy(0)" class="text-xs px-3 py-1.5 rounded-xl bg-codenix-purple text-white hover:bg-codenix-purpleHover transition flex items-center gap-1.5 shadow-md shadow-codenix-purple/25">
+              <i class="ph-fill ph-microphone"></i> Start Voice2Nixy Listening
+            </button>
+            <button type="button" onclick="usePromptPreset('Welcome to Codenix! Building the future of web tools with elegance and speed.')" class="text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition">
+              "Welcome to Codenix..."
+            </button>
+            <button type="button" onclick="usePromptPreset('System online. All neural voice modules operating at peak efficiency.')" class="text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition">
+              "System online..."
+            </button>
+          </div>
+        </div>
 
-      <!-- 1. HERO NIXY INTERACTIVE STAGE -->
-      <section class="rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder p-6 sm:p-8 shadow-xl shadow-codenix-purple/5 flex flex-col items-center text-center relative overflow-hidden">
-        <!-- Subtle Purple Ambient Glow -->
-        <div class="absolute -top-24 w-72 h-72 rounded-full bg-codenix-purple/15 blur-3xl pointer-events-none"></div>
+        <!-- =============================================================== -->
+        <!-- VOICE2NIXY INTERACTIVE CONSOLE (LISTENING, TRANSCRIPT & AI CHAT) -->
+        <!-- =============================================================== -->
+        <div id="voice2nixy-panel" class="max-w-3xl mx-auto hidden rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border-2 border-codenix-purple/50 shadow-2xl shadow-codenix-purple/15 overflow-hidden transition-all">
+          <!-- Panel Header -->
+          <div class="px-5 py-3.5 bg-gradient-to-r from-codenix-purple/20 via-purple-600/10 to-transparent border-b border-codenix-lightBorder dark:border-codenix-darkBorder flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-codenix-purple flex items-center justify-center gap-1 shadow">
+                <span class="w-1.5 h-2 rounded-full bg-white"></span>
+                <span class="w-1.5 h-2 rounded-full bg-white"></span>
+              </div>
+              <div>
+                <h2 class="text-sm font-bold flex flex-wrap items-center gap-2">
+                  Voice2Nixy Studio
+                  <span id="v2n-status-badge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500">Ready</span>
+                  <span id="v2n-speaker-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-purple/30">Voice: Character A :</span>
+                </h2>
+                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Auto Voice Characters (Character A : / Character B : + Name Detection), Chat & Export</p>
+              </div>
+            </div>
 
-        <!-- Status & Character Selector Top Bar -->
-        <div class="w-full flex flex-wrap items-center justify-between gap-3 mb-6 z-10">
-          <div class="flex items-center gap-2">
-            <span id="nixy-status-pill" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-purple/30">
-              <span id="nixy-status-dot" class="w-2 h-2 rounded-full bg-codenix-purple"></span>
-              <span id="nixy-status-text">Idle • Click Nixy to Listen</span>
-            </span>
+            <!-- Character Persona Selector -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1 text-xs">
+                <i class="ph-fill ph-mask-happy text-codenix-purple"></i>
+                <select id="v2n-character-select" onchange="onCharacterChange()" class="bg-transparent font-medium focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
+                  <option value="nixy" class="dark:bg-zinc-900">Nixy (Energetic Companion)</option>
+                  <option value="professor" class="dark:bg-zinc-900">Prof. Orion (Deep Scholar)</option>
+                  <option value="nova" class="dark:bg-zinc-900">Nova (Crisp Executive)</option>
+                  <option value="cyber" class="dark:bg-zinc-900">Cyber-9 (Tactical Comms)</option>
+                  <option value="storyteller" class="dark:bg-zinc-900">Aria (Warm Storyteller)</option>
+                </select>
+              </div>
+              <button type="button" onclick="closeVoice2NixyPanel()" class="p-1.5 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 transition" title="Minimize Panel">
+                <i class="ph ph-x text-base"></i>
+              </button>
+            </div>
           </div>
 
-          <!-- Character Persona Selector -->
-          <div class="flex items-center gap-2 bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-3 py-1.5 text-xs">
-            <i class="ph-fill ph-mask-happy text-codenix-purple text-sm"></i>
-            <span class="text-zinc-500 dark:text-zinc-400 hidden sm:inline">Character:</span>
-            <select id="character-select" onchange="onCharacterChange()" class="bg-transparent font-semibold focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
-              <option value="nixy" class="dark:bg-zinc-900">Nixy (Energetic Companion)</option>
-              <option value="professor" class="dark:bg-zinc-900">Prof. Orion (Deep Scholar)</option>
-              <option value="nova" class="dark:bg-zinc-900">Nova (Crisp Executive)</option>
-              <option value="cyber" class="dark:bg-zinc-900">Cyber-9 (Tactical Comms)</option>
-              <option value="storyteller" class="dark:bg-zinc-900">Aria (Warm Storyteller)</option>
+          <!-- Listening Controls & Timer Bar -->
+          <div class="p-4 sm:p-5 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-codenix-lightBorder dark:border-codenix-darkBorder">
+              <div class="flex items-center gap-3">
+                <button id="v2n-toggle-mic-btn" type="button" onclick="toggleVoice2NixyListening()" class="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold flex items-center gap-2 shadow-md transition">
+                  <i class="ph-fill ph-stop-circle text-base"></i>
+                  <span>Stop Listening</span>
+                </button>
+                <div class="text-xs font-mono">
+                  <span class="text-zinc-400">Timer:</span>
+                  <span id="v2n-timer-display" class="font-bold text-codenix-purple dark:text-codenix-purpleLight">00:00</span>
+                </div>
+              </div>
+
+              <!-- Quick Timer Presets -->
+              <div class="flex items-center gap-1.5 text-[11px]">
+                <span class="text-zinc-400 hidden sm:inline">Set Timer:</span>
+                <button type="button" onclick="setNixyTimer(30)" class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:border-codenix-purple border border-transparent font-mono transition">30s</button>
+                <button type="button" onclick="setNixyTimer(60)" class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:border-codenix-purple border border-transparent font-mono transition">1m</button>
+                <button type="button" onclick="setNixyTimer(300)" class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:border-codenix-purple border border-transparent font-mono transition">5m</button>
+                <button type="button" onclick="setNixyTimer(0)" class="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:border-codenix-purple border border-transparent font-mono transition">∞</button>
+              </div>
+            </div>
+
+            <!-- Live Transcribed Speech Box -->
+            <div>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                <label class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                  <i class="ph-fill ph-ear text-codenix-purple"></i> Captured Speech-to-Text Transcript (Character A : / Name Auto-Tag)
+                </label>
+                <div class="flex items-center gap-3">
+                  <button type="button" onclick="detectCharactersInTranscript()" class="text-[11px] font-semibold text-codenix-purple dark:text-codenix-purpleLight hover:underline flex items-center gap-1">
+                    <i class="ph-fill ph-users-three"></i> Auto-Label Characters
+                  </button>
+                  <button type="button" onclick="clearV2NTranscript()" class="text-[11px] text-zinc-400 hover:text-red-500 transition">Clear</button>
+                </div>
+              </div>
+              <textarea id="v2n-transcript-box" rows="4" placeholder="Nixy is listening... Different voices become Character A : , Character B : , and if someone says their name (e.g. 'Hi, I'm Adam'), it updates automatically!" class="w-full rounded-2xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:border-codenix-purple p-3 text-xs sm:text-sm leading-relaxed focus:outline-none"></textarea>
+            </div>
+
+            <!-- AI Actions & Document Export Toolbar -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="askNixyAI('Summarize everything captured in detail with clear bullet points, preserving character labels.')" class="px-3 py-1.5 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                <i class="ph-fill ph-sparkle"></i> Summarize
+              </button>
+              <button type="button" onclick="askNixyAI('Extract all key details, speaker names, action items, facts, and insights from what was said.')" class="px-3 py-1.5 rounded-xl bg-codenix-purple/15 hover:bg-codenix-purple/25 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-purple/30 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="ph-fill ph-list-bullets"></i> Key Details
+              </button>
+              <button type="button" onclick="exportSummaryDocument('pdf')" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium flex items-center gap-1.5 transition">
+                <i class="ph-fill ph-file-pdf text-red-500"></i> Export PDF
+              </button>
+              <button type="button" onclick="exportSummaryDocument('doc')" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium flex items-center gap-1.5 transition">
+                <i class="ph-fill ph-file-doc text-blue-500"></i> Export DOC
+              </button>
+              <button type="button" onclick="exportSummaryDocument('md')" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium flex items-center gap-1.5 transition">
+                <i class="ph-fill ph-file-text text-emerald-500"></i> Export TXT/MD
+              </button>
+            </div>
+
+            <!-- Voice2Nixy Chat History & Follow-up Input -->
+            <div id="v2n-chat-log" class="max-h-60 overflow-y-auto space-y-2.5 pr-1"></div>
+
+            <form id="v2n-chat-form" class="flex items-center gap-2 pt-1">
+              <input id="v2n-chat-input" type="text" placeholder="Ask Nixy about what each character said (e.g., 'What did Character A say?')..." class="flex-1 rounded-xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:border-codenix-purple px-3.5 py-2 text-xs focus:outline-none" />
+              <button type="submit" class="px-4 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-1.5 transition shrink-0">
+                <i class="ph-fill ph-paper-plane-right"></i> Ask
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Dynamic Chat Messages & Generated Voice Cards -->
+        <div id="messages-container" class="max-w-3xl mx-auto space-y-5"></div>
+      </div>
+
+      <!-- Bottom Sticky Chat Input Dock -->
+      <div class="sticky bottom-0 z-20 p-3 sm:p-5 bg-gradient-to-t from-codenix-lightBg via-codenix-lightBg/95 to-transparent dark:from-codenix-darkBg dark:via-codenix-darkBg/95">
+        <form id="voice-chat-form" class="max-w-3xl mx-auto rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder shadow-2xl shadow-codenix-purple/10 p-3 space-y-2.5">
+          <!-- Voice & Engine Controls Bar -->
+          <div class="flex flex-wrap items-center gap-2 px-1">
+            <!-- Voice Selector -->
+            <div class="flex items-center gap-1.5 bg-purple-50 dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1 text-xs">
+              <i class="ph-fill ph-user-sound text-codenix-purple"></i>
+              <select id="voice-select" class="bg-transparent font-medium focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
+                <option value="Joanna" class="dark:bg-zinc-900">Joanna (Female • Warm)</option>
+                <option value="Matthew" class="dark:bg-zinc-900">Matthew (Male • Deep)</option>
+                <option value="Amy" class="dark:bg-zinc-900">Amy (British • Crisp)</option>
+                <option value="Brian" class="dark:bg-zinc-900">Brian (British • Narrator)</option>
+                <option value="Aria" class="dark:bg-zinc-900">Aria (Expressive • AI)</option>
+                <option value="Salli" class="dark:bg-zinc-900">Salli (Clear • Studio)</option>
+              </select>
+            </div>
+
+            <!-- Engine Selector -->
+            <div class="flex items-center gap-1.5 bg-purple-50 dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1 text-xs">
+              <i class="ph-fill ph-cpu text-codenix-purple"></i>
+              <select id="engine-select" class="bg-transparent font-medium focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
+                <option value="neural" class="dark:bg-zinc-900">Neural Engine</option>
+                <option value="generative" class="dark:bg-zinc-900">Generative AI</option>
+                <option value="standard" class="dark:bg-zinc-900">Standard Fast</option>
+              </select>
+            </div>
+
+            <!-- Speed Pill -->
+            <div class="flex items-center gap-1.5 bg-purple-50 dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1 text-xs">
+              <i class="ph ph-gauge text-codenix-purple"></i>
+              <span class="text-zinc-500 dark:text-zinc-400">Speed:</span>
+              <select id="speed-select" class="bg-transparent font-mono font-medium focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
+                <option value="0.8" class="dark:bg-zinc-900">0.8x</option>
+                <option value="1.0" selected class="dark:bg-zinc-900">1.0x</option>
+                <option value="1.15" class="dark:bg-zinc-900">1.15x</option>
+                <option value="1.35" class="dark:bg-zinc-900">1.35x</option>
+              </select>
+            </div>
+
+            <span id="char-counter" class="ml-auto text-[11px] font-mono text-zinc-400">0 / 1000</span>
+          </div>
+
+          <!-- Textarea & Submit Button -->
+          <div class="flex items-end gap-2">
+            <textarea id="prompt-input" rows="2" maxlength="1000" placeholder="Type what you want NixVoice to speak..." class="flex-1 resize-none bg-transparent px-3 py-2 text-sm focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"></textarea>
+            <button id="generate-btn" type="submit" class="px-4 py-3 rounded-2xl bg-codenix-purple hover:bg-codenix-purpleHover disabled:opacity-50 text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-codenix-purple/30 transition shrink-0">
+              <i class="ph-fill ph-sparkle text-base"></i>
+              <span class="hidden sm:inline">Generate</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VOICE EDITOR MODAL (EDIT TEXT, VOICE, SPEED, AUDIO FX & RE-GENERATE)  -->
+  <!-- ===================================================================== -->
+  <div id="edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="w-full max-w-lg rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-purple/40 shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-codenix-lightBorder dark:border-codenix-darkBorder flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="ph-fill ph-sliders text-codenix-purple text-xl"></i>
+          <h3 class="font-bold text-base">Edit & Remix Voice Clip</h3>
+        </div>
+        <button type="button" onclick="closeEditModal()" class="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <input type="hidden" id="edit-clip-id" />
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Clip Title</label>
+          <input id="edit-title-input" type="text" class="w-full px-3.5 py-2 rounded-xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder text-sm focus:outline-none focus:border-codenix-purple" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Script Text</label>
+          <textarea id="edit-text-input" rows="3" maxlength="1000" class="w-full px-3.5 py-2 rounded-xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder text-sm focus:outline-none focus:border-codenix-purple"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Voice Persona</label>
+            <select id="edit-voice-select" class="w-full px-3 py-2 rounded-xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium">
+              <option value="Joanna">Joanna (Female • Warm)</option>
+              <option value="Matthew">Matthew (Male • Deep)</option>
+              <option value="Amy">Amy (British • Crisp)</option>
+              <option value="Brian">Brian (British • Narrator)</option>
+              <option value="Aria">Aria (Expressive • AI)</option>
+              <option value="Salli">Salli (Clear • Studio)</option>
             </select>
           </div>
-        </div>
-
-        <!-- NIXY: PURPLE BALL WITH TWO WHITE EYES ONLY -->
-        <div class="relative my-2 z-10 flex flex-col items-center">
-          <div id="nixy-hero-orb" onclick="toggleNixyListening()" title="Click Nixy to start or stop listening!" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-codenix-purple shadow-[0_12px_40px_rgba(124,58,237,0.55)] flex items-center justify-center gap-4 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300 select-none">
-            <div id="nixy-eye-left" class="w-4 h-7 sm:w-4.5 sm:h-8 rounded-full bg-white animate-blink transition-all duration-200"></div>
-            <div id="nixy-eye-right" class="w-4 h-7 sm:w-4.5 sm:h-8 rounded-full bg-white animate-blink transition-all duration-200"></div>
-          </div>
-
-          <!-- Nixy Live Speech Caption -->
-          <p id="nixy-caption" class="mt-4 text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-300 max-w-md">
-            "Click me to start hearing everything around you, or set a timer below!"
-          </p>
-        </div>
-
-        <!-- Timer & Listening Controls -->
-        <div class="mt-5 flex flex-wrap items-center justify-center gap-2 z-10">
-          <button id="main-listen-btn" onclick="toggleNixyListening()" class="px-4 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-codenix-purple/30 transition">
-            <i class="ph-fill ph-microphone text-base"></i>
-            <span>Start Listening</span>
-          </button>
-
-          <div class="flex items-center gap-1.5 bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl p-1 text-xs">
-            <span class="px-2 font-mono text-codenix-purple dark:text-codenix-purpleLight font-bold" id="timer-display">00:00</span>
-            <button type="button" onclick="startWithTimer(30)" class="px-2.5 py-1 rounded-lg hover:bg-codenix-purple hover:text-white font-mono text-[11px] transition">30s</button>
-            <button type="button" onclick="startWithTimer(60)" class="px-2.5 py-1 rounded-lg hover:bg-codenix-purple hover:text-white font-mono text-[11px] transition">1m</button>
-            <button type="button" onclick="startWithTimer(300)" class="px-2.5 py-1 rounded-lg hover:bg-codenix-purple hover:text-white font-mono text-[11px] transition">5m</button>
-            <button type="button" onclick="startWithTimer(0)" class="px-2.5 py-1 rounded-lg hover:bg-codenix-purple hover:text-white font-mono text-[11px] transition" title="Continuous Listening">∞</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 2. LIVE AMBIENT SPEECH-TO-TEXT TRANSCRIPT & DOCUMENT EXPORT -->
-      <section class="rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder p-5 shadow-lg space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <i class="ph-fill ph-ear text-codenix-purple text-lg"></i>
-            <h2 class="text-sm font-bold">Captured Ambient Transcript</h2>
-            <span id="stt-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">Puter.js STT</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button type="button" onclick="copyTranscript()" class="text-xs px-2.5 py-1 rounded-lg bg-codenix-lightBg dark:bg-zinc-900 hover:text-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder transition flex items-center gap-1">
-              <i class="ph ph-copy"></i> Copy
-            </button>
-            <button type="button" onclick="clearTranscript()" class="text-xs px-2.5 py-1 rounded-lg bg-codenix-lightBg dark:bg-zinc-900 hover:text-red-500 border border-codenix-lightBorder dark:border-codenix-darkBorder transition flex items-center gap-1">
-              <i class="ph ph-trash"></i> Clear
-            </button>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Playback Speed</label>
+            <input id="edit-speed-range" type="range" min="0.6" max="1.6" step="0.05" value="1.0" oninput="document.getElementById('edit-speed-val').textContent = this.value + 'x'" class="w-full accent-codenix-purple mt-2" />
+            <div class="text-right text-[11px] font-mono text-codenix-purple" id="edit-speed-val">1.0x</div>
           </div>
         </div>
 
-        <textarea id="transcript-box" rows="4" placeholder="Everything Nixy hears around your microphone appears here via Puter.js Speech-to-Text. You can also edit or paste text directly..." class="w-full rounded-2xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:border-codenix-purple p-3.5 text-xs sm:text-sm leading-relaxed focus:outline-none"></textarea>
-
-        <!-- Action & Export Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="askNixyChat('Summarize everything captured clearly with structured bullet points.')" class="px-3.5 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-codenix-purple/25 transition">
-              <i class="ph-fill ph-sparkle"></i> Summarize
-            </button>
-            <button type="button" onclick="askNixyChat('Extract all key details, action items, decisions, and important facts from what was said.')" class="px-3.5 py-2 rounded-xl bg-codenix-purple/15 hover:bg-codenix-purple/25 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-purple/30 text-xs font-semibold flex items-center gap-1.5 transition">
-              <i class="ph-fill ph-list-checks"></i> Extract Details
-            </button>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-1.5">
-            <button type="button" onclick="exportDocument('pdf')" class="px-3 py-2 rounded-xl bg-codenix-lightBg dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-semibold flex items-center gap-1.5 transition">
-              <i class="ph-fill ph-file-pdf text-red-500 text-sm"></i> PDF
-            </button>
-            <button type="button" onclick="exportDocument('doc')" class="px-3 py-2 rounded-xl bg-codenix-lightBg dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-semibold flex items-center gap-1.5 transition">
-              <i class="ph-fill ph-file-doc text-blue-500 text-sm"></i> DOC
-            </button>
-            <button type="button" onclick="exportDocument('md')" class="px-3 py-2 rounded-xl bg-codenix-lightBg dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-semibold flex items-center gap-1.5 transition">
-              <i class="ph-fill ph-file-text text-emerald-500 text-sm"></i> MD / TXT
-            </button>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Studio FX Filter</label>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <label class="cursor-pointer">
+              <input type="radio" name="edit-fx" value="none" checked class="peer sr-only" />
+              <div class="p-2 text-center rounded-xl border border-codenix-lightBorder dark:border-codenix-darkBorder peer-checked:border-codenix-purple peer-checked:bg-codenix-purple/15 font-medium">Clean</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="edit-fx" value="radio" class="peer sr-only" />
+              <div class="p-2 text-center rounded-xl border border-codenix-lightBorder dark:border-codenix-darkBorder peer-checked:border-codenix-purple peer-checked:bg-codenix-purple/15 font-medium">Comms Radio</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="edit-fx" value="deep" class="peer sr-only" />
+              <div class="p-2 text-center rounded-xl border border-codenix-lightBorder dark:border-codenix-darkBorder peer-checked:border-codenix-purple peer-checked:bg-codenix-purple/15 font-medium">Deep Bass</div>
+            </label>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- 3. INTERACTIVE CHAT MODE WITH CHARACTER VOICES -->
-      <section class="rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder p-5 shadow-lg space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <i class="ph-fill ph-chats-circle text-codenix-purple text-lg"></i>
-            <h2 class="text-sm font-bold">Chat with Nixy & Character Personas</h2>
-          </div>
-          <span class="text-[11px] text-zinc-400">Ask questions, request details, or listen to replies</span>
-        </div>
+      <div class="px-5 py-4 bg-purple-50/50 dark:bg-zinc-900/70 border-t border-codenix-lightBorder dark:border-codenix-darkBorder flex items-center justify-end gap-2">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition">Cancel</button>
+        <button id="save-edit-btn" type="button" onclick="saveEditedClip()" class="px-4 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-codenix-purple/25 transition">
+          <i class="ph-fill ph-check-circle"></i> Apply & Re-Synthesize
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <!-- Chat Messages Container -->
-        <div id="chat-log" class="max-h-80 overflow-y-auto space-y-3 pr-1">
-          <div class="rounded-2xl bg-codenix-lightBg dark:bg-zinc-900/80 border border-codenix-lightBorder dark:border-codenix-darkBorder p-3.5 text-xs text-zinc-500 dark:text-zinc-400">
-            Once Nixy listens to speech around you (or you enter notes above), ask any question here—such as <em>"Summarize the main ideas"</em>, <em>"List every action item"</em>, or <em>"Explain the technical details"</em>.
-          </div>
-        </div>
+  <!-- ===================================================================== -->
+  <!-- NIXY: PURPLE BALL WITH TWO WHITE EYES ONLY (VOICE2NIXY INTERACTIVE)   -->
+  <!-- ===================================================================== -->
+  <div id="nixy-wrapper" class="fixed bottom-24 left-6 z-30 select-none pointer-events-auto transition-transform duration-100 ease-linear" style="transform: translateX(0px);">
+    <!-- Nixy Speech Bubble & Quick Timer Trigger -->
+    <div id="nixy-bubble" class="mb-2 max-w-[235px] bg-zinc-900 text-white border border-codenix-purple/60 rounded-2xl rounded-bl-sm px-3 py-2 text-xs shadow-xl shadow-codenix-purple/20 opacity-0 scale-90 transition-all duration-300">
+      <p id="nixy-text" class="leading-snug">Click me to start Voice2Nixy listening!</p>
+      <div class="flex items-center gap-1 mt-1.5 pt-1.5 border-t border-zinc-800">
+        <button type="button" onclick="startVoice2Nixy(0)" class="px-2 py-0.5 rounded bg-codenix-purple hover:bg-codenix-purpleHover text-[10px] font-semibold transition">Listen</button>
+        <button type="button" onclick="startVoice2Nixy(30)" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[10px] font-mono transition">30s</button>
+        <button type="button" onclick="startVoice2Nixy(60)" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[10px] font-mono transition">1m</button>
+        <button type="button" onclick="startVoice2Nixy(300)" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[10px] font-mono transition">5m</button>
+      </div>
+    </div>
 
-        <!-- Chat Input Form -->
-        <form id="nixy-chat-form" class="flex items-center gap-2">
-          <input id="nixy-chat-input" type="text" placeholder="Ask Nixy about what was said..." class="flex-1 rounded-2xl bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:border-codenix-purple px-4 py-2.5 text-xs sm:text-sm focus:outline-none" />
-          <button type="submit" class="px-4 py-2.5 rounded-2xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-md shadow-codenix-purple/25 transition shrink-0">
-            <i class="ph-fill ph-paper-plane-right"></i>
-            <span>Send</span>
-          </button>
-        </form>
-      </section>
-    </main>
+    <!-- Pure Purple Ball with Two White Eyes Only -->
+    <div id="nixy-bot" title="Click Nixy to listen & transcribe!" class="w-12 h-12 rounded-full bg-codenix-purple shadow-[0_6px_20px_rgba(124,58,237,0.65)] flex items-center justify-center gap-2 cursor-pointer hover:scale-105 transition-all">
+      <div id="nixy-eye-left" class="w-2 h-3.5 rounded-full bg-white animate-blink transition-all duration-150"></div>
+      <div id="nixy-eye-right" class="w-2 h-3.5 rounded-full bg-white animate-blink transition-all duration-150"></div>
+    </div>
   </div>
 
   <!-- ===================================================================== -->
@@ -329,12 +496,12 @@
   <!-- ===================================================================== -->
   <script>
     // =========================================================================
-    // 1. SUPABASE CONFIGURATION & AUTHENTICATION GUARD
+    // 1. SUPABASE CONFIGURATION & AUTHENTICATION CHECK
     // =========================================================================
     const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
-    const SESSIONS_STORAGE_KEY = 'codenix_voice2nixy_sessions_v1';
-    const THEME_KEY = 'codenix_voice2nixy_theme';
+    const STORAGE_KEY = 'codenix_nixvoice_clips_v1';
+    const THEME_KEY = 'codenix_nixvoice_theme';
 
     let supabaseClient = null;
     try {
@@ -352,7 +519,7 @@
       const actionsEl = document.getElementById('auth-redirect-actions');
       const userBadge = document.getElementById('user-email-badge');
 
-      const redirectTarget = '/Start?redirect=' + encodeURIComponent('/Voice2Nixy');
+      const redirectTarget = '/Start?redirect=' + encodeURIComponent('/NixVoice');
       const manualBtn = document.getElementById('manual-redirect-btn');
       if (manualBtn) manualBtn.href = redirectTarget;
 
@@ -362,7 +529,7 @@
 
         if (error || !session) {
           titleEl.textContent = 'Sign In Required';
-          descEl.textContent = 'You are not signed in. Redirecting you to /Start so you can return straight back to /Voice2Nixy...';
+          descEl.textContent = 'You are not signed in. Redirecting you to /Start so you can return straight back to /NixVoice...';
           actionsEl.classList.remove('hidden');
           actionsEl.classList.add('flex');
 
@@ -377,10 +544,11 @@
         }
         overlay.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => overlay.remove(), 350);
+        nixySpeak("Welcome back to NixVoice! Click me anytime to start Voice2Nixy!");
       } catch (err) {
         console.warn('Auth check fallback:', err);
         titleEl.textContent = 'Authentication Check';
-        descEl.textContent = 'Redirecting to /Start?redirect=%2FVoice2Nixy...';
+        descEl.textContent = 'Redirecting to /Start?redirect=%2FNixVoice...';
         actionsEl.classList.remove('hidden');
         actionsEl.classList.add('flex');
       }
@@ -407,7 +575,8 @@
       document.getElementById('user-email-badge').textContent = 'Sandbox User';
       overlay.classList.add('opacity-0', 'pointer-events-none');
       setTimeout(() => overlay.remove(), 300);
-      showToast('Entered Voice2Nixy Sandbox Mode', 'info');
+      showToast('Entered NixVoice Sandbox Mode', 'info');
+      nixySpeak("Sandbox active! Click me to listen around you or type text below!");
     }
 
     async function handleSignOut() {
@@ -416,13 +585,13 @@
       } catch (e) {
         console.error(e);
       }
-      const redirectTarget = '/Start?redirect=' + encodeURIComponent('/Voice2Nixy');
+      const redirectTarget = '/Start?redirect=' + encodeURIComponent('/NixVoice');
       safeNavigateToStart(redirectTarget);
       bypassAuthForPreview();
     }
 
     // =========================================================================
-    // 2. CODENIX THEME MANAGEMENT
+    // 2. CODENIX THEME MANAGEMENT (PURPLE & BLACK / PURPLE & WHITE)
     // =========================================================================
     function initTheme() {
       const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
@@ -444,12 +613,611 @@
 
     function toggleTheme() {
       const isDark = document.documentElement.classList.contains('dark');
-      applyTheme(isDark ? 'light' : 'dark');
+      const next = isDark ? 'light' : 'dark';
+      applyTheme(next);
+      nixySpeak(next === 'dark' ? 'Purple & Black Dark Mode engaged!' : 'Purple & White Light Mode activated!');
     }
 
     // =========================================================================
-    // 3. CHARACTER PERSONAS & VOICE SYNTHESIS CONFIG
+    // 3. STATE & LOCALSTORAGE PERSISTENCE
     // =========================================================================
+    let savedClips = [];
+    const activeAudioUrls = new Map();
+
+    function loadClipsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        savedClips = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error('Failed to parse localStorage clips:', e);
+        savedClips = [];
+      }
+      renderSavedVault();
+    }
+
+    function persistClipsToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedClips));
+      } catch (e) {
+        showToast('Local storage quota reached. Consider deleting old clips.', 'error');
+      }
+      renderSavedVault();
+    }
+
+    async function syncToPuterKV() {
+      try {
+        if (!window.puter || !puter.kv) {
+          showToast('Puter KV is unavailable in this environment.', 'error');
+          return;
+        }
+        await puter.kv.set('nixvoice_saved_clips', JSON.stringify(savedClips));
+        showToast('Synced ' + savedClips.length + ' clips to Puter Cloud KV!', 'success');
+        nixyBounceExcited();
+        nixySpeak('Cloud sync complete! Your voices are safe in Puter KV!');
+      } catch (err) {
+        console.error(err);
+        showToast('Puter KV sync failed: ' + err.message, 'error');
+      }
+    }
+
+    // =========================================================================
+    // 4. PUTER.JS VOICE GENERATION & WEB AUDIO FX
+    // =========================================================================
+    const form = document.getElementById('voice-chat-form');
+    const promptInput = document.getElementById('prompt-input');
+    const charCounter = document.getElementById('char-counter');
+    const messagesContainer = document.getElementById('messages-container');
+    const voiceSelect = document.getElementById('voice-select');
+    const engineSelect = document.getElementById('engine-select');
+    const speedSelect = document.getElementById('speed-select');
+    const generateBtn = document.getElementById('generate-btn');
+
+    promptInput.addEventListener('input', () => {
+      charCounter.textContent = `${promptInput.value.length} / 1000`;
+    });
+
+    promptInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    function usePromptPreset(text) {
+      promptInput.value = text;
+      charCounter.textContent = `${text.length} / 1000`;
+      promptInput.focus();
+      nixySpeak('Great preset! Hit Generate to hear it.');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = promptInput.value.trim();
+      if (!text) {
+        showToast('Please enter some text to synthesize.', 'info');
+        return;
+      }
+
+      const voice = voiceSelect.value;
+      const engine = engineSelect.value;
+      const speed = parseFloat(speedSelect.value) || 1.0;
+
+      promptInput.value = '';
+      charCounter.textContent = '0 / 1000';
+
+      appendUserBubble(text, voice, engine);
+      const loadingId = appendLoadingBubble(voice);
+      generateBtn.disabled = true;
+      nixySpeak(`Synthesizing with ${voice}...`);
+
+      try {
+        const audioUrl = await synthesizeWithPuter(text, voice, engine);
+        const clipObj = {
+          id: 'clip_' + Date.now(),
+          title: text.slice(0, 32) + (text.length > 32 ? '...' : ''),
+          text,
+          voice,
+          engine,
+          speed,
+          fx: 'none',
+          createdAt: new Date().toISOString()
+        };
+
+        activeAudioUrls.set(clipObj.id, audioUrl);
+        savedClips.unshift(clipObj);
+        persistClipsToStorage();
+
+        removeBubble(loadingId);
+        appendAssistantVoiceCard(clipObj, audioUrl, true);
+        nixyBounceExcited();
+        nixySpeak('Voice ready! Saved to your Vault automatically.');
+      } catch (err) {
+        console.error('TTS Generation error:', err);
+        removeBubble(loadingId);
+        appendErrorBubble(err.message || 'Voice synthesis failed.');
+        nixySpeak('Oops! Something interrupted synthesis.');
+      } finally {
+        generateBtn.disabled = false;
+      }
+    });
+
+    async function synthesizeWithPuter(text, voice, engine) {
+      if (!window.puter || !puter.ai || !puter.ai.txt2speech) {
+        throw new Error('Puter.js SDK is not loaded yet.');
+      }
+
+      let audioEl;
+      try {
+        audioEl = await puter.ai.txt2speech(text, { voice, engine, language: 'en-US' });
+      } catch (_) {
+        audioEl = await puter.ai.txt2speech(text, voice);
+      }
+
+      if (audioEl && audioEl.src) {
+        return audioEl.src;
+      }
+      throw new Error('No audio stream returned by Puter.js.');
+    }
+
+    function applyAudioEffects(audioElement, clip) {
+      audioElement.playbackRate = clip.speed || 1.0;
+      if (!clip.fx || clip.fx === 'none' || audioElement.dataset.fxAttached) return;
+
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const source = ctx.createMediaElementSource(audioElement);
+        const filter = ctx.createBiquadFilter();
+
+        if (clip.fx === 'radio') {
+          filter.type = 'bandpass';
+          filter.frequency.value = 1400;
+          filter.Q.value = 1.8;
+        } else if (clip.fx === 'deep') {
+          filter.type = 'lowshelf';
+          filter.frequency.value = 220;
+          filter.gain.value = 14;
+        }
+
+        source.connect(filter);
+        filter.connect(ctx.destination);
+        audioElement.dataset.fxAttached = 'true';
+        audioElement.addEventListener('play', () => {
+          if (ctx.state === 'suspended') ctx.resume();
+        });
+      } catch (e) {
+        console.warn('Web Audio FX skipped:', e);
+      }
+    }
+
+    // =========================================================================
+    // 5. CHAT STREAM UI RENDERING
+    // =========================================================================
+    function appendUserBubble(text, voice, engine) {
+      const div = document.createElement('div');
+      div.className = 'flex justify-end';
+      div.innerHTML = `
+        <div class="max-w-[85%] sm:max-w-[75%] rounded-3xl rounded-tr-md bg-codenix-purple text-white px-4 py-3 shadow-md shadow-codenix-purple/20">
+          <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+          <div class="mt-1.5 flex items-center justify-end gap-2 text-[10px] text-purple-200 font-mono">
+            <span>${escapeHtml(voice)}</span>
+            <span>•</span>
+            <span>${escapeHtml(engine)}</span>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(div);
+      scrollToBottom();
+    }
+
+    function appendLoadingBubble(voice) {
+      const id = 'loading_' + Date.now();
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = 'flex justify-start';
+      div.innerHTML = `
+        <div class="rounded-3xl rounded-tl-md bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder px-4 py-3 flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-codenix-purple/20 text-codenix-purple flex items-center justify-center">
+            <i class="ph-fill ph-waveform text-lg animate-pulse"></i>
+          </div>
+          <div class="text-xs">
+            <p class="font-semibold text-codenix-purple dark:text-codenix-purpleLight">Generating ${escapeHtml(voice)}...</p>
+            <p class="text-zinc-400">Synthesizing neural audio via Puter.js</p>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(div);
+      scrollToBottom();
+      return id;
+    }
+
+    function appendErrorBubble(msg) {
+      const div = document.createElement('div');
+      div.className = 'flex justify-start';
+      div.innerHTML = `
+        <div class="rounded-3xl rounded-tl-md bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-3 text-xs flex items-center gap-2">
+          <i class="ph-fill ph-warning-circle text-base"></i>
+          <span>${escapeHtml(msg)}</span>
+        </div>
+      `;
+      messagesContainer.appendChild(div);
+      scrollToBottom();
+    }
+
+    function removeBubble(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function appendAssistantVoiceCard(clip, audioUrl, autoPlay = false) {
+      const cardId = 'card_' + clip.id;
+      const existing = document.getElementById(cardId);
+      if (existing) existing.remove();
+
+      const div = document.createElement('div');
+      div.id = cardId;
+      div.className = 'flex justify-start';
+      div.innerHTML = `
+        <div class="w-full sm:max-w-[85%] rounded-3xl rounded-tl-md bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder p-4 shadow-lg shadow-codenix-purple/5 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-codenix-purple to-purple-800 text-white flex items-center justify-center shadow">
+                <i class="ph-fill ph-speaker-high text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold leading-tight">${escapeHtml(clip.title)}</h3>
+                <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  <span class="text-codenix-purple dark:text-codenix-purpleLight font-semibold">${escapeHtml(clip.voice)}</span>
+                  <span>•</span>
+                  <span>${clip.speed}x</span>
+                  <span>•</span>
+                  <span class="uppercase">${clip.fx || 'clean'}</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20">Saved</span>
+          </div>
+
+          <p class="text-xs text-zinc-600 dark:text-zinc-300 bg-codenix-lightBg dark:bg-zinc-900/80 p-3 rounded-2xl border border-codenix-lightBorder/60 dark:border-codenix-darkBorder/80 leading-relaxed">
+            "${escapeHtml(clip.text)}"
+          </p>
+
+          <!-- Custom Audio Player Controls -->
+          <div class="flex items-center gap-3 bg-purple-50/70 dark:bg-zinc-900 p-2.5 rounded-2xl border border-codenix-lightBorder dark:border-codenix-darkBorder">
+            <button id="play-btn-${clip.id}" type="button" onclick="togglePlayClip('${clip.id}')" class="w-9 h-9 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white flex items-center justify-center shrink-0 transition shadow">
+              <i class="ph-fill ph-play text-base"></i>
+            </button>
+            <div class="flex-1 space-y-1">
+              <div class="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden cursor-pointer" onclick="seekClip(event, '${clip.id}')">
+                <div id="progress-${clip.id}" class="h-full bg-codenix-purple w-0 transition-all duration-100"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-zinc-400">
+                <span id="time-cur-${clip.id}">0:00</span>
+                <span id="time-dur-${clip.id}">0:00</span>
+              </div>
+            </div>
+            <audio id="audio-${clip.id}" src="${audioUrl}" preload="metadata" crossorigin="anonymous"></audio>
+          </div>
+
+          <!-- Action Buttons: Download, Edit, Copy, Delete -->
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <button type="button" onclick="downloadClip('${clip.id}')" class="px-3 py-1.5 rounded-xl bg-codenix-purple/15 hover:bg-codenix-purple text-codenix-purple hover:text-white dark:text-codenix-purpleLight dark:hover:text-white text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="ph ph-download-simple text-sm"></i> Download MP3
+            </button>
+            <button type="button" onclick="openEditModal('${clip.id}')" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium flex items-center gap-1.5 transition">
+              <i class="ph ph-sliders text-sm text-codenix-purple"></i> Edit / Remix
+            </button>
+            <button type="button" onclick="copyClipText('${clip.id}')" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium flex items-center gap-1.5 transition">
+              <i class="ph ph-copy text-sm"></i> Copy Script
+            </button>
+          </div>
+        </div>
+      `;
+
+      messagesContainer.appendChild(div);
+      setupAudioListeners(clip, autoPlay);
+      scrollToBottom();
+    }
+
+    function setupAudioListeners(clip, autoPlay) {
+      const audio = document.getElementById(`audio-${clip.id}`);
+      const playBtn = document.getElementById(`play-btn-${clip.id}`);
+      const progress = document.getElementById(`progress-${clip.id}`);
+      const timeCur = document.getElementById(`time-cur-${clip.id}`);
+      const timeDur = document.getElementById(`time-dur-${clip.id}`);
+      if (!audio) return;
+
+      applyAudioEffects(audio, clip);
+
+      audio.addEventListener('loadedmetadata', () => {
+        if (isFinite(audio.duration)) {
+          timeDur.textContent = formatTime(audio.duration);
+        }
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+          const pct = (audio.currentTime / audio.duration) * 100;
+          progress.style.width = `${pct}%`;
+          timeCur.textContent = formatTime(audio.currentTime);
+        }
+      });
+
+      audio.addEventListener('play', () => {
+        playBtn.innerHTML = `<i class="ph-fill ph-pause text-base"></i>`;
+      });
+
+      audio.addEventListener('pause', () => {
+        playBtn.innerHTML = `<i class="ph-fill ph-play text-base"></i>`;
+      });
+
+      audio.addEventListener('ended', () => {
+        playBtn.innerHTML = `<i class="ph-fill ph-play text-base"></i>`;
+        progress.style.width = '0%';
+      });
+
+      if (autoPlay) {
+        audio.play().catch(() => {});
+      }
+    }
+
+    async function togglePlayClip(clipId) {
+      let audio = document.getElementById(`audio-${clipId}`);
+      const clip = savedClips.find(c => c.id === clipId);
+      if (!clip) return;
+
+      if (!audio) {
+        let url = activeAudioUrls.get(clipId);
+        if (!url) {
+          showToast('Re-hydrating saved voice from Puter...', 'info');
+          url = await synthesizeWithPuter(clip.text, clip.voice, clip.engine);
+          activeAudioUrls.set(clipId, url);
+        }
+        appendAssistantVoiceCard(clip, url, true);
+        return;
+      }
+
+      if (audio.paused) {
+        document.querySelectorAll('audio').forEach(a => { if (a !== audio) a.pause(); });
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    function seekClip(e, clipId) {
+      const audio = document.getElementById(`audio-${clipId}`);
+      if (!audio || !audio.duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      audio.currentTime = ratio * audio.duration;
+    }
+
+    // =========================================================================
+    // 6. DOWNLOAD, EDIT / REMIX & COPY ACTIONS
+    // =========================================================================
+    async function downloadClip(clipId) {
+      const clip = savedClips.find(c => c.id === clipId);
+      if (!clip) return;
+
+      try {
+        let url = activeAudioUrls.get(clipId);
+        if (!url) {
+          showToast('Preparing audio file for download...', 'info');
+          url = await synthesizeWithPuter(clip.text, clip.voice, clip.engine);
+          activeAudioUrls.set(clipId, url);
+        }
+
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        const safeName = clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'nixvoice_clip';
+        a.href = blobUrl;
+        a.download = `${safeName}_${clip.voice}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+
+        showToast('Downloaded voice clip!', 'success');
+        nixyBounceExcited();
+      } catch (err) {
+        console.error(err);
+        showToast('Download failed: ' + err.message, 'error');
+      }
+    }
+
+    function openEditModal(clipId) {
+      const clip = savedClips.find(c => c.id === clipId);
+      if (!clip) return;
+
+      document.getElementById('edit-clip-id').value = clip.id;
+      document.getElementById('edit-title-input').value = clip.title;
+      document.getElementById('edit-text-input').value = clip.text;
+      document.getElementById('edit-voice-select').value = clip.voice;
+      document.getElementById('edit-speed-range').value = clip.speed || 1.0;
+      document.getElementById('edit-speed-val').textContent = (clip.speed || 1.0) + 'x';
+
+      const fxRadios = document.querySelectorAll('input[name="edit-fx"]');
+      fxRadios.forEach(r => { r.checked = (r.value === (clip.fx || 'none')); });
+
+      const modal = document.getElementById('edit-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('edit-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function saveEditedClip() {
+      const id = document.getElementById('edit-clip-id').value;
+      const title = document.getElementById('edit-title-input').value.trim();
+      const text = document.getElementById('edit-text-input').value.trim();
+      const voice = document.getElementById('edit-voice-select').value;
+      const speed = parseFloat(document.getElementById('edit-speed-range').value) || 1.0;
+      const fx = document.querySelector('input[name="edit-fx"]:checked')?.value || 'none';
+
+      if (!text) {
+        showToast('Script text cannot be empty.', 'error');
+        return;
+      }
+
+      const idx = savedClips.findIndex(c => c.id === id);
+      if (idx === -1) return;
+
+      const saveBtn = document.getElementById('save-edit-btn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<i class="ph ph-spinner animate-spin"></i> Rendering...`;
+
+      try {
+        const updatedClip = {
+          ...savedClips[idx],
+          title: title || text.slice(0, 32),
+          text,
+          voice,
+          speed,
+          fx,
+          updatedAt: new Date().toISOString()
+        };
+
+        const newAudioUrl = await synthesizeWithPuter(updatedClip.text, updatedClip.voice, updatedClip.engine);
+        activeAudioUrls.set(updatedClip.id, newAudioUrl);
+        savedClips[idx] = updatedClip;
+        persistClipsToStorage();
+
+        appendAssistantVoiceCard(updatedClip, newAudioUrl, true);
+        closeEditModal();
+        showToast('Voice clip updated & saved!', 'success');
+        nixySpeak('Nice remix! Your edited voice is ready.');
+      } catch (err) {
+        showToast('Re-synthesis error: ' + err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i class="ph-fill ph-check-circle"></i> Apply & Re-Synthesize`;
+      }
+    }
+
+    function copyClipText(clipId) {
+      const clip = savedClips.find(c => c.id === clipId);
+      if (!clip) return;
+
+      const temp = document.createElement('textarea');
+      temp.value = clip.text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showToast('Copied script to clipboard!', 'success');
+    }
+
+    // =========================================================================
+    // 7. SAVED VOICE VAULT SIDEBAR RENDERING
+    // =========================================================================
+    function renderSavedVault() {
+      const listEl = document.getElementById('saved-voices-list');
+      const countBadge = document.getElementById('saved-count-badge');
+      const query = (document.getElementById('vault-search')?.value || '').toLowerCase();
+
+      const filtered = savedClips.filter(c =>
+        c.title.toLowerCase().includes(query) ||
+        c.text.toLowerCase().includes(query) ||
+        c.voice.toLowerCase().includes(query)
+      );
+
+      countBadge.textContent = savedClips.length;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-10 px-4 space-y-2">
+            <i class="ph ph-waveform text-3xl text-zinc-400"></i>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">No saved voice clips found. Generate a voice in the chat to save it automatically!</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(clip => `
+        <div class="p-3 rounded-2xl bg-codenix-lightBg dark:bg-zinc-900/90 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition group">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold truncate">${escapeHtml(clip.title)}</p>
+              <p class="text-[10px] font-mono text-codenix-purple dark:text-codenix-purpleLight mt-0.5">${escapeHtml(clip.voice)} • ${clip.speed || 1.0}x</p>
+            </div>
+            <button type="button" onclick="deleteSavedClip('${clip.id}')" class="text-zinc-400 hover:text-red-500 p-1 rounded-lg transition" title="Delete Clip">
+              <i class="ph ph-trash text-xs"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1.5">${escapeHtml(clip.text)}</p>
+          <div class="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-codenix-lightBorder/50 dark:border-codenix-darkBorder">
+            <button type="button" onclick="togglePlayClip('${clip.id}')" class="flex-1 py-1 rounded-lg bg-codenix-purple/15 hover:bg-codenix-purple text-codenix-purple hover:text-white dark:text-codenix-purpleLight dark:hover:text-white text-[11px] font-semibold transition">
+              Play
+            </button>
+            <button type="button" onclick="openEditModal('${clip.id}')" class="px-2 py-1 rounded-lg bg-white dark:bg-zinc-800 text-[11px] hover:text-codenix-purple transition" title="Edit">
+              <i class="ph ph-pencil-simple"></i>
+            </button>
+            <button type="button" onclick="downloadClip('${clip.id}')" class="px-2 py-1 rounded-lg bg-white dark:bg-zinc-800 text-[11px] hover:text-codenix-purple transition" title="Download">
+              <i class="ph ph-download-simple"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteSavedClip(clipId) {
+      savedClips = savedClips.filter(c => c.id !== clipId);
+      activeAudioUrls.delete(clipId);
+      const card = document.getElementById('card_' + clipId);
+      if (card) card.remove();
+      persistClipsToStorage();
+      showToast('Clip removed from storage.', 'info');
+    }
+
+    function clearAllSavedVoices() {
+      if (savedClips.length === 0) return;
+      savedClips = [];
+      activeAudioUrls.clear();
+      messagesContainer.innerHTML = '';
+      persistClipsToStorage();
+      showToast('Cleared all saved voices from local storage.', 'info');
+    }
+
+    // Mobile Sidebar Toggle
+    const sidebar = document.getElementById('saved-sidebar');
+    document.getElementById('mobile-sidebar-btn').addEventListener('click', () => {
+      sidebar.classList.remove('-translate-x-full');
+    });
+    document.getElementById('close-sidebar-btn').addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+    });
+
+    // =========================================================================
+    // 8. VOICE2NIXY, AUTO VOICE CHARACTERS (CHARACTER A :) & NAME DETECTION
+    // =========================================================================
+    const nixyWrapper = document.getElementById('nixy-wrapper');
+    const nixyBot = document.getElementById('nixy-bot');
+    const nixyBubble = document.getElementById('nixy-bubble');
+    const nixyText = document.getElementById('nixy-text');
+    const nixyEyeLeft = document.getElementById('nixy-eye-left');
+    const nixyEyeRight = document.getElementById('nixy-eye-right');
+
+    const v2nPanel = document.getElementById('voice2nixy-panel');
+    const v2nStatusBadge = document.getElementById('v2n-status-badge');
+    const v2nSpeakerBadge = document.getElementById('v2n-speaker-badge');
+    const v2nToggleMicBtn = document.getElementById('v2n-toggle-mic-btn');
+    const v2nTimerDisplay = document.getElementById('v2n-timer-display');
+    const v2nTranscriptBox = document.getElementById('v2n-transcript-box');
+    const v2nChatLog = document.getElementById('v2n-chat-log');
+    const v2nChatForm = document.getElementById('v2n-chat-form');
+    const v2nChatInput = document.getElementById('v2n-chat-input');
+    const v2nCharacterSelect = document.getElementById('v2n-character-select');
+
+    // Character Profiles with Distinct Voices, Speeds & AI System Personalities
     const NIXY_CHARACTERS = {
       nixy: {
         name: 'Nixy',
@@ -457,7 +1225,7 @@
         engine: 'neural',
         speed: 1.15,
         fx: 'none',
-        prompt: 'You are Nixy, a friendly, sharp spherical AI companion inside Codenix. Provide clear, energetic, and accurate answers.'
+        prompt: 'You are Nixy, a cheerful, helpful spherical AI companion inside Codenix. Be concise, lively, and accurate.'
       },
       professor: {
         name: 'Prof. Orion',
@@ -465,7 +1233,7 @@
         engine: 'neural',
         speed: 0.95,
         fx: 'deep',
-        prompt: 'You are Professor Orion, an articulate academic scholar. Provide structured, deeply analytical summaries and insights.'
+        prompt: 'You are Professor Orion, an articulate academic scholar. Provide structured, deeply analytical insights.'
       },
       nova: {
         name: 'Nova',
@@ -493,129 +1261,236 @@
       }
     };
 
-    function onCharacterChange() {
-      const charKey = document.getElementById('character-select').value;
-      const charObj = NIXY_CHARACTERS[charKey] || NIXY_CHARACTERS.nixy;
-      setNixyCaption(`"Character switched to ${charObj.name} (${charObj.voice} voice)!"`);
-      showToast(`Active Character: ${charObj.name}`, 'info');
+    let isListeningMode = false;
+    let mediaStream = null;
+    let chunkRecorder = null;
+    let recordingChunkInterval = null;
+    let timerInterval = null;
+    let elapsedSeconds = 0;
+    let targetTimerSeconds = 0;
+    let v2nMessages = [];
+    let lastGeneratedSummary = '';
+
+    // Voice-based Character A / Character B / Name tracking state
+    let characterProfiles = []; // [{ code: 'Character A', name: null, pitchHz: 150 }]
+    let characterLetterIndex = 0;
+    let activeCharacterPrefix = 'Character A :';
+
+    let nixyX = 24;
+    let nixyDirection = 1;
+    let isNixyWalking = true;
+    let isNixyDragging = false;
+    let wasDragged = false;
+    let dragStartX = 0;
+    let nixyBubbleTimeout = null;
+    let rollPhase = 0;
+
+    const nixyQuotes = [
+      "Click me to start Voice2Nixy! I label voices as Character A : and detect names!",
+      "Need a timer? Hover over me and pick 30s, 1m, or 5m!",
+      "If someone says their name, I attach it to their Character tag automatically!",
+      "Switch my character persona to change my voice and personality!",
+      "Rolling around in purple & black Codenix style!"
+    ];
+
+    function formatCharacterTag(profile) {
+      return profile.name ? `${profile.code} (${profile.name}) :` : `${profile.code} :`;
     }
 
-    // =========================================================================
-    // 4. NIXY AMBIENT LISTENING, TIMER & PUTER.JS SPEECH-TO-TEXT
-    // =========================================================================
-    const nixyHeroOrb = document.getElementById('nixy-hero-orb');
-    const nixyEyeLeft = document.getElementById('nixy-eye-left');
-    const nixyEyeRight = document.getElementById('nixy-eye-right');
-    const nixyStatusPill = document.getElementById('nixy-status-pill');
-    const nixyStatusDot = document.getElementById('nixy-status-dot');
-    const nixyStatusText = document.getElementById('nixy-status-text');
-    const nixyCaption = document.getElementById('nixy-caption');
-    const mainListenBtn = document.getElementById('main-listen-btn');
-    const timerDisplay = document.getElementById('timer-display');
-    const transcriptBox = document.getElementById('transcript-box');
-    const sttBadge = document.getElementById('stt-badge');
+    function updateActiveSpeakerBadge(tag) {
+      activeCharacterPrefix = tag;
+      if (v2nSpeakerBadge) {
+        v2nSpeakerBadge.textContent = `Voice: ${tag}`;
+      }
+    }
 
-    let isListening = false;
-    let mediaStream = null;
-    let activeRecorder = null;
-    let chunkLoopInterval = null;
-    let countdownInterval = null;
-    let elapsedSec = 0;
-    let targetTimerSec = 0;
+    // Extract self-introduced name from spoken text (e.g., "Hi, I'm Sara", "My name is Omar", "This is Nadia")
+    function extractSpokenName(spokenText) {
+      const patterns = [
+        /\b(?:my name is|name's|i am|i'm|im|this is|call me|it's|its)\s+([A-Z][a-z]{1,20})\b/,
+        /\b(?:my name is|i am|i'm|this is|call me)\s+([a-z]{2,20})\b/i
+      ];
+      const blockedWords = new Set([
+        'here', 'listening', 'ready', 'going', 'doing', 'saying', 'asking',
+        'calling', 'speaking', 'just', 'not', 'very', 'happy', 'glad', 'ok', 'okay'
+      ]);
 
-    function setNixyOrbAnimation(state) {
-      nixyHeroOrb.classList.remove('animate-nixy-listen', 'animate-nixy-think', 'bg-red-600', 'bg-codenix-purple');
-      nixyEyeLeft.classList.remove('scale-125', 'h-3', 'h-7', 'sm:h-8');
-      nixyEyeRight.classList.remove('scale-125', 'h-3', 'h-7', 'sm:h-8');
+      for (const regex of patterns) {
+        const match = spokenText.match(regex);
+        if (match && match[1]) {
+          const rawName = match[1].trim();
+          if (!blockedWords.has(rawName.toLowerCase())) {
+            return rawName.charAt(0).toUpperCase() + rawName.slice(1);
+          }
+        }
+      }
+      return null;
+    }
+
+    // Analyze voice pitch (fundamental frequency via autocorrelation) to separate Character A, Character B, etc.
+    async function extractVoicePitchHz(blob) {
+      try {
+        const buffer = await blob.arrayBuffer();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return 0;
+        const ctx = new AudioCtx();
+        const decoded = await ctx.decodeAudioData(buffer.slice(0));
+        const samples = decoded.getChannelData(0);
+        const sampleRate = decoded.sampleRate;
+
+        const minLag = Math.floor(sampleRate / 360);
+        const maxLag = Math.floor(sampleRate / 75);
+        let bestLag = -1;
+        let maxCorrelation = 0;
+
+        for (let lag = minLag; lag <= maxLag && lag < samples.length; lag++) {
+          let corr = 0;
+          for (let i = 0; i < samples.length - lag; i += 2) {
+            corr += samples[i] * samples[i + lag];
+          }
+          if (corr > maxCorrelation) {
+            maxCorrelation = corr;
+            bestLag = lag;
+          }
+        }
+
+        await ctx.close().catch(() => {});
+        return bestLag > 0 ? Math.round(sampleRate / bestLag) : 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    function resolveCharacterForVoice(spokenText, pitchHz = 0) {
+      let profile = null;
+
+      if (pitchHz > 0 && characterProfiles.length > 0) {
+        for (const p of characterProfiles) {
+          if (p.pitchHz > 0 && Math.abs(p.pitchHz - pitchHz) <= 28) {
+            profile = p;
+            break;
+          }
+        }
+      }
+
+      if (!profile) {
+        if (characterProfiles.length === 0) {
+          const letter = String.fromCharCode(65 + (characterLetterIndex++ % 26));
+          profile = { code: `Character ${letter}`, name: null, pitchHz: pitchHz || 150 };
+          characterProfiles.push(profile);
+        } else if (pitchHz > 0) {
+          const letter = String.fromCharCode(65 + (characterLetterIndex++ % 26));
+          profile = { code: `Character ${letter}`, name: null, pitchHz };
+          characterProfiles.push(profile);
+        } else {
+          profile = characterProfiles[characterProfiles.length - 1];
+        }
+      } else if (pitchHz > 0) {
+        profile.pitchHz = Math.round((profile.pitchHz + pitchHz) / 2);
+      }
+
+      const spokenName = extractSpokenName(spokenText);
+      const hadNameBefore = Boolean(profile.name);
+      if (spokenName) {
+        profile.name = spokenName;
+      }
+
+      const tag = formatCharacterTag(profile);
+      updateActiveSpeakerBadge(tag);
+      return { profile, tag, nameJustDetected: Boolean(spokenName && !hadNameBefore) };
+    }
+
+    function setNixyStateAnimation(state) {
+      nixyBot.classList.remove('animate-nixy-listen', 'animate-nixy-think', 'animate-bounce', 'bg-red-600', 'bg-codenix-purple');
+      nixyEyeLeft.classList.remove('scale-125', 'h-2', 'h-3.5');
+      nixyEyeRight.classList.remove('scale-125', 'h-2', 'h-3.5');
 
       if (state === 'listening') {
-        nixyHeroOrb.classList.add('animate-nixy-listen', 'bg-red-600');
-        nixyEyeLeft.classList.add('scale-125', 'h-7', 'sm:h-8');
-        nixyEyeRight.classList.add('scale-125', 'h-7', 'sm:h-8');
+        nixyBot.classList.add('animate-nixy-listen', 'bg-red-600');
+        nixyEyeLeft.classList.add('scale-125', 'h-3.5');
+        nixyEyeRight.classList.add('scale-125', 'h-3.5');
       } else if (state === 'thinking') {
-        nixyHeroOrb.classList.add('animate-nixy-think', 'bg-codenix-purple');
-        nixyEyeLeft.classList.add('h-3');
-        nixyEyeRight.classList.add('h-3');
+        nixyBot.classList.add('animate-nixy-think', 'bg-codenix-purple');
+        nixyEyeLeft.classList.add('h-2');
+        nixyEyeRight.classList.add('h-2');
       } else {
-        nixyHeroOrb.classList.add('bg-codenix-purple');
-        nixyEyeLeft.classList.add('h-7', 'sm:h-8');
-        nixyEyeRight.classList.add('h-7', 'sm:h-8');
+        nixyBot.classList.add('bg-codenix-purple');
+        nixyEyeLeft.classList.add('h-3.5');
+        nixyEyeRight.classList.add('h-3.5');
       }
     }
 
-    function setNixyCaption(text) {
-      nixyCaption.textContent = text;
+    function nixySpeak(message, duration = 4500) {
+      nixyText.textContent = message;
+      nixyBubble.classList.remove('opacity-0', 'scale-90');
+      nixyBubble.classList.add('opacity-100', 'scale-100');
+
+      clearTimeout(nixyBubbleTimeout);
+      nixyBubbleTimeout = setTimeout(() => {
+        nixyBubble.classList.remove('opacity-100', 'scale-100');
+        nixyBubble.classList.add('opacity-0', 'scale-90');
+      }, duration);
     }
 
-    function toggleNixyListening() {
-      if (isListening) {
-        stopListening(false);
-      } else {
-        startListening(0);
-      }
+    function nixyBounceExcited() {
+      nixyBot.classList.add('animate-bounce');
+      setTimeout(() => nixyBot.classList.remove('animate-bounce'), 1200);
     }
 
-    function startWithTimer(seconds) {
-      if (isListening) {
-        targetTimerSec = seconds;
-        elapsedSec = 0;
-        timerDisplay.textContent = seconds > 0 ? formatTime(seconds) : '00:00';
-        setNixyCaption(seconds > 0 ? `"Timer updated to ${seconds} seconds! Keep speaking..."` : `"Switched to continuous listening mode!"`);
+    // Start Voice2Nixy Ambient Microphone Listening + Puter.js Speech2Text
+    async function startVoice2Nixy(durationSec = 0) {
+      v2nPanel.classList.remove('hidden');
+      v2nPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      if (isListeningMode) {
+        if (durationSec > 0) setNixyTimer(durationSec);
         return;
       }
-      startListening(seconds);
-    }
 
-    async function startListening(durationSec = 0) {
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        isListening = true;
-        elapsedSec = 0;
-        targetTimerSec = durationSec;
+        isListeningMode = true;
+        isNixyWalking = false;
+        elapsedSeconds = 0;
+        targetTimerSeconds = durationSec;
+        characterProfiles = [];
+        characterLetterIndex = 0;
+        updateActiveSpeakerBadge('Character A :');
 
-        setNixyOrbAnimation('listening');
-        nixyStatusPill.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-red-500/15 text-red-500 border border-red-500/30';
-        nixyStatusDot.className = 'w-2 h-2 rounded-full bg-red-500 animate-ping';
-        nixyStatusText.textContent = 'Listening Live...';
+        setNixyStateAnimation('listening');
+        updateListeningUI(true);
+        nixySpeak(durationSec > 0 ? `Listening for ${durationSec}s! Speak freely...` : "I'm listening to everything around you!");
 
-        mainListenBtn.className = 'px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-red-500/30 transition';
-        mainListenBtn.innerHTML = `<i class="ph-fill ph-stop-circle text-base"></i><span>Stop Listening</span>`;
+        startChunkRecordingLoop();
 
-        setNixyCaption(durationSec > 0
-          ? `"Listening for ${durationSec}s! Speak around your device..."`
-          : `"I'm listening to everything around you! Click me again when done."`
-        );
-
-        beginSpeechToTextChunks();
-
-        clearInterval(countdownInterval);
-        countdownInterval = setInterval(() => {
-          elapsedSec++;
-          if (targetTimerSec > 0) {
-            const remaining = Math.max(0, targetTimerSec - elapsedSec);
-            timerDisplay.textContent = formatTime(remaining);
-            if (remaining === 0) {
-              stopListening(true);
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          elapsedSeconds++;
+          if (targetTimerSeconds > 0) {
+            const rem = Math.max(0, targetTimerSeconds - elapsedSeconds);
+            v2nTimerDisplay.textContent = formatTime(rem) + ' left';
+            if (rem === 0) {
+              stopVoice2Nixy(true);
             }
           } else {
-            timerDisplay.textContent = formatTime(elapsedSec);
+            v2nTimerDisplay.textContent = formatTime(elapsedSeconds);
           }
         }, 1000);
       } catch (err) {
-        console.error('Mic error:', err);
-        showToast('Microphone permission is required for Nixy to listen.', 'error');
-        setNixyCaption('"Please allow microphone access so I can hear around you!"');
+        console.error('Microphone access error:', err);
+        showToast('Microphone permission denied or unavailable.', 'error');
+        nixySpeak('I need microphone permission to hear around you!');
       }
     }
 
-    function beginSpeechToTextChunks() {
-      if (!mediaStream || !isListening) return;
+    function startChunkRecordingLoop() {
+      if (!mediaStream || !isListeningMode) return;
 
-      const captureChunk = () => {
-        if (!isListening || !mediaStream) return;
+      const recordSingleChunk = () => {
+        if (!isListeningMode || !mediaStream) return;
         const chunks = [];
         const recorder = new MediaRecorder(mediaStream);
-        activeRecorder = recorder;
+        chunkRecorder = recorder;
 
         recorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -623,8 +1498,9 @@
 
         recorder.onstop = async () => {
           if (chunks.length === 0) return;
-          const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-          await runPuterSpeech2Text(blob);
+          const audioBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+          const pitchHz = await extractVoicePitchHz(audioBlob);
+          await transcribeBlobWithPuter(audioBlob, pitchHz);
         };
 
         recorder.start();
@@ -632,204 +1508,257 @@
           if (recorder.state === 'recording') {
             recorder.stop();
           }
-        }, 4800);
+        }, 5000);
       };
 
-      captureChunk();
-      clearInterval(chunkLoopInterval);
-      chunkLoopInterval = setInterval(captureChunk, 5000);
+      recordSingleChunk();
+      clearInterval(recordingChunkInterval);
+      recordingChunkInterval = setInterval(recordSingleChunk, 5200);
     }
 
-    async function runPuterSpeech2Text(audioBlob) {
+    async function transcribeBlobWithPuter(audioBlob, pitchHz = 0) {
       if (!window.puter || !puter.ai || !puter.ai.speech2txt) return;
       try {
-        sttBadge.textContent = 'Transcribing...';
-        sttBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-purple/20 text-codenix-purple dark:text-codenix-purpleLight animate-pulse';
-
-        const result = await puter.ai.speech2txt(audioBlob);
-        const text = typeof result === 'string' ? result : (result?.text || '');
-
+        v2nStatusBadge.textContent = 'Transcribing...';
+        const res = await puter.ai.speech2txt(audioBlob);
+        const text = typeof res === 'string' ? res : (res && res.text ? res.text : '');
         if (text && text.trim()) {
-          const existing = transcriptBox.value.trim();
-          transcriptBox.value = existing ? `${existing} ${text.trim()}` : text.trim();
-          transcriptBox.scrollTop = transcriptBox.scrollHeight;
+          const cleanSpoken = text.trim();
+          const { profile, tag, nameJustDetected } = resolveCharacterForVoice(cleanSpoken, pitchHz);
+
+          let currentTranscript = v2nTranscriptBox.value.trim();
+
+          // If this character just said their name, upgrade earlier lines belonging to their base Character code
+          if (nameJustDetected && currentTranscript) {
+            const basePrefixRegex = new RegExp(`^${escapeRegExp(profile.code)}\\s*:`, 'gm');
+            currentTranscript = currentTranscript.replace(basePrefixRegex, tag);
+            nixySpeak(`Nice to meet you, ${profile.name}! Added to ${profile.code}!`);
+          }
+
+          const formattedLine = `${tag} ${cleanSpoken}`;
+          v2nTranscriptBox.value = currentTranscript ? `${currentTranscript}\n${formattedLine}` : formattedLine;
+          v2nTranscriptBox.scrollTop = v2nTranscriptBox.scrollHeight;
         }
-
-        sttBadge.textContent = 'Puter.js STT';
-        sttBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500';
+        if (isListeningMode) {
+          v2nStatusBadge.textContent = 'Listening Live';
+        }
       } catch (err) {
-        console.warn('Speech2Text chunk error:', err);
-        sttBadge.textContent = 'Puter.js STT';
+        console.warn('Puter speech2txt chunk warning:', err);
       }
     }
 
-    function stopListening(fromTimer = false) {
-      isListening = false;
-      clearInterval(chunkLoopInterval);
-      clearInterval(countdownInterval);
-
-      if (activeRecorder && activeRecorder.state === 'recording') {
-        try { activeRecorder.stop(); } catch (_) {}
+    // Auto-label pasted or existing transcript lines into Character A : / Character B : + detected names using Puter AI
+    async function detectCharactersInTranscript() {
+      const raw = v2nTranscriptBox.value.trim();
+      if (!raw) {
+        showToast('Add or record transcript text first.', 'info');
+        return;
       }
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(t => t.stop());
-        mediaStream = null;
-      }
-
-      setNixyOrbAnimation('idle');
-      nixyStatusPill.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
-      nixyStatusDot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-      nixyStatusText.textContent = 'Chat Mode Ready';
-
-      mainListenBtn.className = 'px-4 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-codenix-purple/30 transition';
-      mainListenBtn.innerHTML = `<i class="ph-fill ph-microphone text-base"></i><span>Resume Listening</span>`;
-
-      if (fromTimer) {
-        setNixyCaption('"Timer finished! Ask me for a summary, details, or export to PDF/DOC!"');
-        showToast('Nixy timer completed! Ready for chat & export.', 'success');
-      } else {
-        setNixyCaption('"Stopped listening! Ask me anything about what I heard."');
-      }
-    }
-
-    // =========================================================================
-    // 5. CHAT MODE, CHARACTER TTS REPLIES & DOCUMENT EXPORTS
-    // =========================================================================
-    const chatLog = document.getElementById('chat-log');
-    const chatForm = document.getElementById('nixy-chat-form');
-    const chatInput = document.getElementById('nixy-chat-input');
-    let chatMessages = [];
-    let latestSummaryText = '';
-
-    chatForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const q = chatInput.value.trim();
-      if (!q) return;
-      chatInput.value = '';
-      askNixyChat(q);
-    });
-
-    async function askNixyChat(userQuery) {
-      const transcript = transcriptBox.value.trim();
-      if (!transcript) {
-        showToast('Capture some speech first or type notes in the transcript box!', 'info');
-        setNixyCaption('"Click me to listen first so I have notes to analyze!"');
+      if (!window.puter || !puter.ai || !puter.ai.chat) {
+        showToast('Puter.js AI is unavailable.', 'error');
         return;
       }
 
-      if (isListening) {
-        stopListening(false);
+      setNixyStateAnimation('thinking');
+      nixySpeak('Identifying characters and names in the transcript...');
+      try {
+        const prompt = `Label each speaker turn in the transcript below using "Character A :", "Character B :", etc. Whenever a speaker says or introduces their name (for example "Hi, I'm Sara" or "My name is Tariq"), include their name automatically like "Character A (Sara) :". Return only the formatted transcript lines.\n\nTranscript:\n${raw}`;
+        const response = await puter.ai.chat(prompt);
+        const formatted = typeof response === 'string'
+          ? response
+          : (response?.message?.content || response?.text || raw);
+        v2nTranscriptBox.value = formatted.trim();
+        showToast('Characters & names labeled automatically!', 'success');
+      } catch (err) {
+        showToast('Character labeling failed: ' + err.message, 'error');
+      } finally {
+        setNixyStateAnimation(isListeningMode ? 'listening' : 'idle');
+      }
+    }
+
+    function stopVoice2Nixy(fromTimer = false) {
+      isListeningMode = false;
+      clearInterval(recordingChunkInterval);
+      clearInterval(timerInterval);
+
+      if (chunkRecorder && chunkRecorder.state === 'recording') {
+        try { chunkRecorder.stop(); } catch (_) {}
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
       }
 
-      const charKey = document.getElementById('character-select').value;
+      setNixyStateAnimation('idle');
+      updateListeningUI(false);
+      isNixyWalking = true;
+
+      if (fromTimer) {
+        nixySpeak('Timer finished! Ready for chat, summary, or PDF export!');
+        showToast('Nixy timer finished. Ready for chat mode!', 'success');
+      } else {
+        nixySpeak('Stopped listening! Ask me for a summary or details!');
+      }
+    }
+
+    function toggleVoice2NixyListening() {
+      if (isListeningMode) {
+        stopVoice2Nixy(false);
+      } else {
+        startVoice2Nixy(0);
+      }
+    }
+
+    function setNixyTimer(seconds) {
+      targetTimerSeconds = seconds;
+      elapsedSeconds = 0;
+      if (!isListeningMode) {
+        startVoice2Nixy(seconds);
+      } else {
+        v2nTimerDisplay.textContent = seconds > 0 ? formatTime(seconds) + ' left' : '00:00';
+        nixySpeak(seconds > 0 ? `Timer set to ${seconds} seconds!` : 'Timer cleared (continuous mode).');
+      }
+    }
+
+    function updateListeningUI(listening) {
+      if (listening) {
+        v2nStatusBadge.textContent = 'Listening Live';
+        v2nStatusBadge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-red-500/20 text-red-500 animate-pulse';
+        v2nToggleMicBtn.className = 'px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold flex items-center gap-2 shadow-md transition';
+        v2nToggleMicBtn.innerHTML = `<i class="ph-fill ph-stop-circle text-base"></i><span>Stop Listening</span>`;
+      } else {
+        v2nStatusBadge.textContent = 'Chat Mode Ready';
+        v2nStatusBadge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500';
+        v2nToggleMicBtn.className = 'px-4 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold flex items-center gap-2 shadow-md transition';
+        v2nToggleMicBtn.innerHTML = `<i class="ph-fill ph-microphone text-base"></i><span>Resume Listening</span>`;
+      }
+    }
+
+    function closeVoice2NixyPanel() {
+      if (isListeningMode) stopVoice2Nixy(false);
+      v2nPanel.classList.add('hidden');
+    }
+
+    function clearV2NTranscript() {
+      v2nTranscriptBox.value = '';
+      v2nMessages = [];
+      v2nChatLog.innerHTML = '';
+      lastGeneratedSummary = '';
+      characterProfiles = [];
+      characterLetterIndex = 0;
+      updateActiveSpeakerBadge('Character A :');
+      showToast('Transcript and chat cleared.', 'info');
+    }
+
+    function onCharacterChange() {
+      const charKey = v2nCharacterSelect.value;
+      const charObj = NIXY_CHARACTERS[charKey] || NIXY_CHARACTERS.nixy;
+      voiceSelect.value = charObj.voice;
+      nixySpeak(`Character switched to ${charObj.name}! (${charObj.voice} voice)`);
+    }
+
+    // Chat & Summarization Engine using Puter.js AI Chat + Character TTS
+    v2nChatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = v2nChatInput.value.trim();
+      if (!q) return;
+      v2nChatInput.value = '';
+      askNixyAI(q);
+    });
+
+    async function askNixyAI(userQuery) {
+      const transcript = v2nTranscriptBox.value.trim();
+      if (!transcript) {
+        showToast('No speech captured yet. Let Nixy listen or type text in the transcript box first!', 'info');
+        nixySpeak('Let me listen first so I have notes to analyze!');
+        return;
+      }
+
+      if (isListeningMode) {
+        stopVoice2Nixy(false);
+      }
+
+      const charKey = v2nCharacterSelect.value;
       const charObj = NIXY_CHARACTERS[charKey] || NIXY_CHARACTERS.nixy;
 
-      appendChatBubble('user', userQuery);
-      setNixyOrbAnimation('thinking');
-      setNixyCaption(`"${charObj.name} is thinking and analyzing your notes..."`);
+      appendV2NChatMessage('user', userQuery);
+      setNixyStateAnimation('thinking');
+      nixySpeak(`${charObj.name} is analyzing what I heard...`);
 
       try {
         if (!window.puter || !puter.ai || !puter.ai.chat) {
           throw new Error('Puter.js AI Chat is unavailable.');
         }
 
-        const prompt = `${charObj.prompt}\n\nCaptured Ambient Speech Transcript:\n"""\n${transcript}\n"""\n\nUser Question / Request: ${userQuery}`;
+        const prompt = `${charObj.prompt}\n\nCaptured Ambient Transcript:\n"""\n${transcript}\n"""\n\nUser Request: ${userQuery}`;
         const response = await puter.ai.chat(prompt);
         const replyText = typeof response === 'string'
           ? response
-          : (response?.message?.content || response?.text || 'Analysis complete.');
+          : (response?.message?.content || response?.text || 'Done analyzing the transcript.');
 
-        latestSummaryText = replyText;
-        appendChatBubble('ai', replyText, charObj);
-        setNixyOrbAnimation('idle');
-        setNixyCaption(`"${charObj.name} answered! Click 'Speak Reply' to hear my voice or export to PDF/DOC."`);
+        lastGeneratedSummary = replyText;
+        appendV2NChatMessage('ai', replyText, charObj);
+        setNixyStateAnimation('idle');
+        nixySpeak(`${charObj.name} finished! You can listen or export to PDF/DOC!`);
       } catch (err) {
-        console.error('AI Chat error:', err);
-        setNixyOrbAnimation('idle');
+        console.error('Voice2Nixy AI error:', err);
+        setNixyStateAnimation('idle');
         showToast('AI analysis error: ' + err.message, 'error');
       }
     }
 
-    function appendChatBubble(role, text, charObj = null) {
-      const msgId = 'msg_' + Date.now() + Math.floor(Math.random() * 1000);
-      chatMessages.push({ id: msgId, role, text, character: charObj?.name || 'You' });
+    function appendV2NChatMessage(role, text, charObj = null) {
+      const msgId = 'v2n_msg_' + Date.now() + Math.floor(Math.random() * 100);
+      v2nMessages.push({ id: msgId, role, text, character: charObj?.name || 'You' });
 
-      const div = document.createElement('div');
+      const bubble = document.createElement('div');
       if (role === 'user') {
-        div.className = 'flex justify-end';
-        div.innerHTML = `
-          <div class="max-w-[85%] rounded-2xl rounded-tr-sm bg-codenix-purple text-white px-4 py-2.5 text-xs sm:text-sm shadow">
+        bubble.className = 'flex justify-end';
+        bubble.innerHTML = `
+          <div class="max-w-[85%] rounded-2xl rounded-tr-sm bg-codenix-purple text-white px-3.5 py-2 text-xs">
             ${escapeHtml(text)}
           </div>
         `;
       } else {
-        div.className = 'flex justify-start';
-        div.innerHTML = `
-          <div class="max-w-[90%] rounded-2xl rounded-tl-sm bg-codenix-lightBg dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder px-4 py-3 text-xs sm:text-sm space-y-2">
-            <div class="flex items-center justify-between gap-3">
+        bubble.className = 'flex justify-start';
+        bubble.innerHTML = `
+          <div class="max-w-[90%] rounded-2xl rounded-tl-sm bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder px-3.5 py-2.5 text-xs space-y-2">
+            <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-codenix-purple dark:text-codenix-purpleLight">${escapeHtml(charObj.name)}</span>
-              <button type="button" onclick="speakCharacterReply('${msgId}')" class="px-2.5 py-1 rounded-lg bg-codenix-purple/15 hover:bg-codenix-purple hover:text-white text-codenix-purple dark:text-codenix-purpleLight text-[11px] font-semibold flex items-center gap-1 transition">
+              <button type="button" onclick="speakV2NReply('${msgId}')" class="px-2 py-0.5 rounded-lg bg-codenix-purple/15 hover:bg-codenix-purple hover:text-white text-codenix-purple dark:text-codenix-purpleLight text-[10px] font-semibold flex items-center gap-1 transition">
                 <i class="ph-fill ph-speaker-high"></i> Speak Reply
               </button>
             </div>
-            <p class="whitespace-pre-wrap leading-relaxed text-zinc-800 dark:text-zinc-200">${escapeHtml(text)}</p>
+            <p class="whitespace-pre-wrap leading-relaxed text-zinc-700 dark:text-zinc-200">${escapeHtml(text)}</p>
           </div>
         `;
       }
-      chatLog.appendChild(div);
-      chatLog.scrollTop = chatLog.scrollHeight;
+      v2nChatLog.appendChild(bubble);
+      v2nChatLog.scrollTop = v2nChatLog.scrollHeight;
     }
 
-    async function speakCharacterReply(msgId) {
-      const msg = chatMessages.find(m => m.id === msgId);
+    async function speakV2NReply(msgId) {
+      const msg = v2nMessages.find(m => m.id === msgId);
       if (!msg) return;
-      const charKey = document.getElementById('character-select').value;
+      const charKey = v2nCharacterSelect.value;
       const charObj = NIXY_CHARACTERS[charKey] || NIXY_CHARACTERS.nixy;
 
       try {
-        setNixyCaption(`"${charObj.name} is speaking..."`);
-        let audioEl;
-        try {
-          audioEl = await puter.ai.txt2speech(msg.text.slice(0, 700), { voice: charObj.voice, engine: charObj.engine, language: 'en-US' });
-        } catch (_) {
-          audioEl = await puter.ai.txt2speech(msg.text.slice(0, 700), charObj.voice);
-        }
-
-        if (audioEl && audioEl.src) {
-          const audio = new Audio(audioEl.src);
-          audio.playbackRate = charObj.speed || 1.0;
-
-          if (charObj.fx && charObj.fx !== 'none') {
-            try {
-              const AudioCtx = window.AudioContext || window.webkitAudioContext;
-              const ctx = new AudioCtx();
-              const src = ctx.createMediaElementSource(audio);
-              const filter = ctx.createBiquadFilter();
-              if (charObj.fx === 'radio') {
-                filter.type = 'bandpass';
-                filter.frequency.value = 1400;
-                filter.Q.value = 1.8;
-              } else if (charObj.fx === 'deep') {
-                filter.type = 'lowshelf';
-                filter.frequency.value = 220;
-                filter.gain.value = 14;
-              }
-              src.connect(filter);
-              filter.connect(ctx.destination);
-            } catch (_) {}
-          }
-
-          audio.play();
-        }
+        nixySpeak(`${charObj.name} is speaking...`);
+        const audioUrl = await synthesizeWithPuter(msg.text.slice(0, 600), charObj.voice, charObj.engine);
+        const audio = new Audio(audioUrl);
+        applyAudioEffects(audio, { speed: charObj.speed, fx: charObj.fx });
+        audio.play();
+        nixyBounceExcited();
       } catch (err) {
-        showToast('Voice playback failed: ' + err.message, 'error');
+        showToast('Could not voice reply: ' + err.message, 'error');
       }
     }
 
-    // Export Summary & Transcript to PDF, DOC, or MD
-    function exportDocument(format) {
-      const transcript = transcriptBox.value.trim();
-      const summary = latestSummaryText.trim();
+    // Export Summarization & Transcript to PDF, DOC (Word), or Markdown/TXT
+    function exportSummaryDocument(format) {
+      const transcript = v2nTranscriptBox.value.trim();
+      const summary = lastGeneratedSummary.trim();
 
       if (!transcript && !summary) {
         showToast('Nothing to export yet! Capture speech or generate a summary first.', 'info');
@@ -841,7 +1770,7 @@
 
       if (format === 'pdf') {
         if (!window.jspdf || !window.jspdf.jsPDF) {
-          showToast('PDF engine loading, please try again.', 'error');
+          showToast('PDF library still loading. Try again in a second.', 'error');
           return;
         }
         const { jsPDF } = window.jspdf;
@@ -854,62 +1783,65 @@
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text(`Generated by Voice2Nixy (Codenix) • ${dateStr}`, 14, 27);
+        doc.text(`Generated by Codenix NixVoice • ${dateStr}`, 14, 27);
 
-        let y = 38;
+        let yPos = 38;
         if (summary) {
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(12);
           doc.setTextColor(20, 20, 20);
-          doc.text('AI Summary & Key Details:', 14, y);
-          y += 7;
+          doc.text('AI Summary & Key Details:', 14, yPos);
+          yPos += 7;
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(10);
-          const lines = doc.splitTextToSize(summary, 180);
-          doc.text(lines, 14, y);
-          y += lines.length * 5 + 10;
+          const sumLines = doc.splitTextToSize(summary, 180);
+          doc.text(sumLines, 14, yPos);
+          yPos += sumLines.length * 5 + 10;
         }
 
         if (transcript) {
-          if (y > 250) { doc.addPage(); y = 20; }
+          if (yPos > 250) { doc.addPage(); yPos = 20; }
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(12);
           doc.setTextColor(20, 20, 20);
-          doc.text('Full Captured Transcript:', 14, y);
-          y += 7;
+          doc.text('Full Captured Transcript:', 14, yPos);
+          yPos += 7;
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(10);
-          const tLines = doc.splitTextToSize(transcript, 180);
-          doc.text(tLines, 14, y);
+          const transLines = doc.splitTextToSize(transcript, 180);
+          doc.text(transLines, 14, yPos);
         }
 
         doc.save(`Voice2Nixy_Report_${Date.now()}.pdf`);
-        showToast('Exported PDF document!', 'success');
+        showToast('Exported PDF report!', 'success');
+        nixySpeak('PDF report downloaded!');
       } else if (format === 'doc') {
-        const htmlDoc = `
+        const htmlContent = `
           <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
           <head><meta charset='utf-8'><title>${title}</title></head>
           <body style="font-family: Arial, sans-serif; line-height: 1.6;">
             <h1 style="color: #7c3aed;">${title}</h1>
-            <p style="color: #666; font-size: 12px;">Generated by Voice2Nixy (Codenix) • ${dateStr}</p>
+            <p style="color: #666; font-size: 12px;">Generated by Codenix NixVoice • ${dateStr}</p>
             ${summary ? `<h2>AI Summary & Key Details</h2><p>${escapeHtml(summary).replace(/\n/g, '<br>')}</p>` : ''}
             ${transcript ? `<h2>Full Captured Transcript</h2><p>${escapeHtml(transcript).replace(/\n/g, '<br>')}</p>` : ''}
           </body></html>
         `;
-        const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
-        downloadBlob(blob, `Voice2Nixy_Report_${Date.now()}.doc`);
+        const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+        triggerBlobDownload(blob, `Voice2Nixy_Report_${Date.now()}.doc`);
         showToast('Exported Word (.doc) document!', 'success');
+        nixySpeak('Word DOC file downloaded!');
       } else {
-        const md = `# ${title}\n_Generated by Voice2Nixy (Codenix) • ${dateStr}_\n\n` +
+        const mdContent = `# ${title}\n_Generated by Codenix NixVoice • ${dateStr}_\n\n` +
           (summary ? `## AI Summary & Key Details\n${summary}\n\n` : '') +
           (transcript ? `## Full Captured Transcript\n${transcript}\n` : '');
-        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-        downloadBlob(blob, `Voice2Nixy_Notes_${Date.now()}.md`);
+        const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+        triggerBlobDownload(blob, `Voice2Nixy_Notes_${Date.now()}.md`);
         showToast('Exported Markdown (.md) notes!', 'success');
+        nixySpeak('Markdown notes downloaded!');
       }
     }
 
-    function downloadBlob(blob, filename) {
+    function triggerBlobDownload(blob, filename) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -920,140 +1852,97 @@
       URL.revokeObjectURL(url);
     }
 
-    function copyTranscript() {
-      const text = transcriptBox.value.trim();
-      if (!text) return;
-      transcriptBox.select();
-      document.execCommand('copy');
-      showToast('Transcript copied to clipboard!', 'success');
-    }
-
-    function clearTranscript() {
-      transcriptBox.value = '';
-      latestSummaryText = '';
-      chatMessages = [];
-      chatLog.innerHTML = '';
-      showToast('Cleared current session.', 'info');
-    }
-
-    // =========================================================================
-    // 6. SAVED SESSIONS MANAGEMENT (LOCAL STORAGE)
-    // =========================================================================
-    let savedSessions = [];
-
-    function loadSessions() {
-      try {
-        const raw = localStorage.getItem(SESSIONS_STORAGE_KEY);
-        savedSessions = raw ? JSON.parse(raw) : [];
-      } catch (_) {
-        savedSessions = [];
-      }
-      renderSessionsList();
-    }
-
-    function saveCurrentSession() {
-      const transcript = transcriptBox.value.trim();
-      const summary = latestSummaryText.trim();
-      if (!transcript && !summary) {
-        showToast('Capture speech or generate a summary before saving.', 'info');
+    // Autonomous Rolling Ball Loop
+    setInterval(() => {
+      if (!isNixyWalking || isNixyDragging || isListeningMode) {
+        nixyBot.style.transform = `translateY(0px) rotate(0deg)`;
         return;
       }
 
-      const sessionObj = {
-        id: 'sess_' + Date.now(),
-        title: (summary || transcript).slice(0, 36) + '...',
-        transcript,
-        summary,
-        character: document.getElementById('character-select').value,
-        createdAt: new Date().toLocaleDateString()
-      };
+      const maxX = Math.max(80, window.innerWidth - 110);
+      nixyX += nixyDirection * 1.5;
+      rollPhase += 0.25;
 
-      savedSessions.unshift(sessionObj);
-      localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(savedSessions));
-      renderSessionsList();
-      showToast('Session saved to local storage!', 'success');
-    }
-
-    function loadSessionIntoWorkspace(id) {
-      const s = savedSessions.find(item => item.id === id);
-      if (!s) return;
-      transcriptBox.value = s.transcript || '';
-      latestSummaryText = s.summary || '';
-      if (s.character) document.getElementById('character-select').value = s.character;
-      chatLog.innerHTML = '';
-      if (s.summary) {
-        const charObj = NIXY_CHARACTERS[s.character] || NIXY_CHARACTERS.nixy;
-        appendChatBubble('ai', s.summary, charObj);
+      if (nixyX >= maxX) {
+        nixyX = maxX;
+        nixyDirection = -1;
+      } else if (nixyX <= 16) {
+        nixyX = 16;
+        nixyDirection = 1;
       }
-      showToast('Loaded saved session.', 'info');
-    }
 
-    function deleteSession(id, e) {
-      e.stopPropagation();
-      savedSessions = savedSessions.filter(s => s.id !== id);
-      localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(savedSessions));
-      renderSessionsList();
-      showToast('Session deleted.', 'info');
-    }
+      const bobY = Math.abs(Math.sin(rollPhase)) * -3;
+      const tiltDeg = nixyDirection * 8;
 
-    function startNewSession() {
-      if (isListening) stopListening(false);
-      clearTranscript();
-      timerDisplay.textContent = '00:00';
-      setNixyCaption('"Ready for a brand new session! Click me to start listening."');
-    }
+      nixyWrapper.style.transform = `translateX(${nixyX}px)`;
+      nixyBot.style.transform = `translateY(${bobY}px) rotate(${tiltDeg}deg)`;
 
-    function renderSessionsList() {
-      const listEl = document.getElementById('sessions-list');
-      const badgeEl = document.getElementById('saved-count-badge');
-      const q = (document.getElementById('session-search')?.value || '').toLowerCase();
+      const eyeOffset = nixyDirection * 2;
+      nixyEyeLeft.style.transform = `translateX(${eyeOffset}px)`;
+      nixyEyeRight.style.transform = `translateX(${eyeOffset}px)`;
+    }, 35);
 
-      const filtered = savedSessions.filter(s =>
-        s.title.toLowerCase().includes(q) ||
-        (s.transcript || '').toLowerCase().includes(q) ||
-        (s.summary || '').toLowerCase().includes(q)
-      );
+    // Pause rolling occasionally to look around
+    setInterval(() => {
+      if (isNixyDragging || isListeningMode) return;
+      isNixyWalking = !isNixyWalking;
+      if (!isNixyWalking && Math.random() > 0.55) {
+        const randomQuote = nixyQuotes[Math.floor(Math.random() * nixyQuotes.length)];
+        nixySpeak(randomQuote, 4000);
+      }
+    }, 5500);
 
-      badgeEl.textContent = savedSessions.length;
-
-      if (filtered.length === 0) {
-        listEl.innerHTML = `
-          <div class="text-center py-10 px-4 space-y-2">
-            <i class="ph ph-ear text-3xl text-zinc-400"></i>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400">No saved sessions yet. Click Nixy to listen and save your notes!</p>
-          </div>
-        `;
+    // Click interaction with Nixy -> Starts or toggles Voice2Nixy Listening!
+    nixyBot.addEventListener('click', () => {
+      if (wasDragged) {
+        wasDragged = false;
         return;
       }
-
-      listEl.innerHTML = filtered.map(s => `
-        <div onclick="loadSessionIntoWorkspace('${s.id}')" class="p-3 rounded-2xl bg-codenix-lightBg dark:bg-zinc-900/90 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple cursor-pointer transition group">
-          <div class="flex items-start justify-between gap-2">
-            <p class="text-xs font-semibold truncate">${escapeHtml(s.title)}</p>
-            <button onclick="deleteSession('${s.id}', event)" class="text-zinc-400 hover:text-red-500 p-0.5 rounded transition" title="Delete">
-              <i class="ph ph-trash text-xs"></i>
-            </button>
-          </div>
-          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">${escapeHtml(s.summary || s.transcript)}</p>
-          <div class="flex items-center justify-between text-[10px] font-mono text-codenix-purple dark:text-codenix-purpleLight mt-2">
-            <span>${escapeHtml(s.character || 'nixy')}</span>
-            <span>${escapeHtml(s.createdAt)}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Mobile Sidebar Toggle
-    const sidebar = document.getElementById('saved-sidebar');
-    document.getElementById('mobile-sidebar-btn').addEventListener('click', () => {
-      sidebar.classList.remove('-translate-x-full');
+      if (!isListeningMode) {
+        startVoice2Nixy(0);
+      } else {
+        stopVoice2Nixy(false);
+      }
     });
-    document.getElementById('close-sidebar-btn').addEventListener('click', () => {
-      sidebar.classList.add('-translate-x-full');
+
+    // Drag interaction (Mouse & Touch)
+    nixyBot.addEventListener('mousedown', (e) => {
+      isNixyDragging = true;
+      wasDragged = false;
+      dragStartX = e.clientX - nixyX;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isNixyDragging) return;
+      wasDragged = true;
+      const maxX = window.innerWidth - 70;
+      nixyX = Math.max(10, Math.min(maxX, e.clientX - dragStartX));
+      nixyWrapper.style.transform = `translateX(${nixyX}px)`;
+    });
+    window.addEventListener('mouseup', () => {
+      if (isNixyDragging) {
+        isNixyDragging = false;
+        if (wasDragged) nixySpeak('Wheee! Nice spot!');
+      }
+    });
+
+    nixyBot.addEventListener('touchstart', (e) => {
+      isNixyDragging = true;
+      wasDragged = false;
+      dragStartX = e.touches[0].clientX - nixyX;
+    }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (!isNixyDragging) return;
+      wasDragged = true;
+      const maxX = window.innerWidth - 70;
+      nixyX = Math.max(10, Math.min(maxX, e.touches[0].clientX - dragStartX));
+      nixyWrapper.style.transform = `translateX(${nixyX}px)`;
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+      isNixyDragging = false;
     });
 
     // =========================================================================
-    // 7. UTILITIES & INITIALIZATION
+    // 9. UTILITIES (TOASTS, FORMATTING, ESCAPING)
     // =========================================================================
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
@@ -1076,7 +1965,7 @@
     function formatTime(sec) {
       const m = Math.floor(sec / 60);
       const s = Math.floor(sec % 60);
-      return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
     function escapeHtml(str) {
@@ -1088,9 +1977,21 @@
         .replace(/'/g, '&#39;');
     }
 
+    function escapeRegExp(str) {
+      return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function scrollToBottom() {
+      const stream = document.getElementById('chat-stream');
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    // =========================================================================
+    // 10. INITIALIZATION ON WINDOW LOAD
+    // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
       initTheme();
-      loadSessions();
+      loadClipsFromStorage();
       checkSupabaseSession();
     });
   </script>
