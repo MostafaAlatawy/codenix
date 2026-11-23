@@ -1824,16 +1824,16 @@
         const nixyBubble = document.getElementById('nixy-bubble');
         const nixySkipTourBtn = document.getElementById('nixy-skip-tour-btn');
 
-        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v3';
+        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v4';
 
         const nixyState = {
             x: window.innerWidth >= 1024 ? 280 : 24,
             y: 8,
-            vx: 44,
-            vy: 28,
+            vx: 58,
+            vy: 42,
             dir: 1, // 1 = right, -1 = left
-            walkSpeed: 46,
-            roamVerticalSpeed: 32,
+            walkSpeed: 62,
+            roamVerticalSpeed: 46,
             nextRoamChangeAt: 0,
             pausedUntil: 0,
             isDragging: false,
@@ -2114,38 +2114,50 @@
                         const diffX = targetX - nixyState.x;
                         const diffY = targetY - nixyState.y;
 
-                        if (Math.abs(diffX) > 3) {
+                        if (Math.abs(diffX) > 2) {
                             const nextDir = diffX >= 0 ? 1 : -1;
                             if (nextDir !== nixyState.dir) {
                                 nixyState.dir = nextDir;
                                 renderNixyOrb();
                             }
-                            nixyState.x += Math.sign(diffX) * Math.min(Math.abs(diffX), 340 * dt);
+                            nixyState.x += Math.sign(diffX) * Math.min(Math.abs(diffX), 520 * dt);
+                        } else {
+                            nixyState.x = targetX;
                         }
-                        if (Math.abs(diffY) > 3) {
-                            nixyState.y += Math.sign(diffY) * Math.min(Math.abs(diffY), 320 * dt);
+                        if (Math.abs(diffY) > 2) {
+                            nixyState.y += Math.sign(diffY) * Math.min(Math.abs(diffY), 480 * dt);
+                        } else {
+                            nixyState.y = targetY;
                         }
                     } else if (now >= nixyState.pausedUntil && !nixyActor.matches(':hover')) {
                         if (now >= nixyState.nextRoamChangeAt) {
-                            nixyState.nextRoamChangeAt = now + 1800 + Math.random() * 2400;
-                            if (Math.random() < 0.45) {
-                                nixyState.dir = Math.random() < 0.5 ? -1 : 1;
+                            nixyState.nextRoamChangeAt = now + 1100 + Math.random() * 1500;
+                            const hDirs = [-1, 0, 1];
+                            const pickH = hDirs[Math.floor(Math.random() * hDirs.length)];
+                            if (pickH !== 0) {
+                                nixyState.dir = pickH;
+                                nixyState.vx = pickH * (nixyState.walkSpeed * (0.75 + Math.random() * 0.5));
                                 renderNixyOrb();
+                            } else {
+                                nixyState.vx = 0;
                             }
-                            const vChoices = [-nixyState.roamVerticalSpeed, 0, nixyState.roamVerticalSpeed];
-                            nixyState.vy = vChoices[Math.floor(Math.random() * vChoices.length)];
+                            const vDirs = [-1, 0, 1];
+                            const pickV = vDirs[Math.floor(Math.random() * vDirs.length)];
+                            nixyState.vy = pickV * (nixyState.roamVerticalSpeed * (0.75 + Math.random() * 0.5));
                         }
 
-                        nixyState.x += nixyState.dir * nixyState.walkSpeed * dt;
+                        nixyState.x += nixyState.vx * dt;
                         nixyState.y += nixyState.vy * dt;
 
                         if (nixyState.x >= maxX) {
                             nixyState.x = maxX;
                             nixyState.dir = -1;
+                            nixyState.vx = -nixyState.walkSpeed;
                             renderNixyOrb();
                         } else if (nixyState.x <= minX) {
                             nixyState.x = minX;
                             nixyState.dir = 1;
+                            nixyState.vx = nixyState.walkSpeed;
                             renderNixyOrb();
                         }
 
@@ -2199,39 +2211,30 @@
         });
 
         async function runFirstVisitTour() {
-            let alreadyDone = false;
-            try { alreadyDone = localStorage.getItem(TOUR_SEEN_KEY) === 'true'; } catch (_) {}
-            if (alreadyDone) return;
-
-            nixyState.tourSkipped = false;
-            nixyState.tourActive = true;
-            setNixyMood('tour', 0);
-            nixySkipTourBtn.classList.add('visible');
-
-            const minX = window.innerWidth >= 1024 ? 284 : 24;
-            const maxX = Math.max(minX + 60, window.innerWidth - 110);
-            const maxY = Math.max(40, window.innerHeight - 130);
-
-            const tourableSections = Array.from(document.querySelectorAll('main > section, #main-notifications-panel, #portal-sections, footer'));
-            tourableSections.forEach(sec => sec.classList.add('nixy-tour-dimmed'));
-            document.body.classList.add('nixy-tour-dimming');
-
-            const computeTargetXYForEl = (el, isTopControl = false) => {
+            const computeTargetXYForEl = (el, isTopControl = false, preferAbove = false) => {
                 if (!el || typeof el.getBoundingClientRect !== 'function') {
                     return {
                         x: minX + Math.round((maxX - minX) * 0.5),
-                        y: Math.min(maxY, 120)
+                        y: Math.min(maxY, 160)
                     };
                 }
                 const rect = el.getBoundingClientRect();
                 if (isTopControl) {
-                    const tx = Math.min(maxX, Math.max(minX, rect.left - 12));
-                    const ty = Math.min(maxY, Math.max(60, Math.round(window.innerHeight - rect.bottom - 76)));
+                    const tx = Math.min(maxX, Math.max(minX, rect.left + rect.width * 0.5 - 32));
+                    const ty = Math.min(maxY, Math.max(60, Math.round(window.innerHeight - rect.bottom - 78)));
                     return { x: Math.round(tx), y: ty };
                 }
 
-                const placeRightX = rect.right + 16;
-                const placeLeftX = rect.left - 80;
+                if (preferAbove) {
+                    const centerX = rect.left + rect.width * 0.5 - 32;
+                    const tx = Math.min(maxX, Math.max(minX, centerX));
+                    const aboveBottomY = window.innerHeight - rect.top + 14;
+                    const ty = Math.min(maxY, Math.max(24, Math.round(aboveBottomY)));
+                    return { x: Math.round(tx), y: ty };
+                }
+
+                const placeRightX = rect.right + 18;
+                const placeLeftX = rect.left - 82;
                 let tx;
                 if (placeRightX <= maxX) {
                     tx = placeRightX;
@@ -2241,7 +2244,7 @@
                     tx = Math.min(maxX, Math.max(minX, rect.left + rect.width * 0.5 - 32));
                 }
 
-                const sectionMidY = rect.top + Math.min(rect.height * 0.5, 160);
+                const sectionMidY = rect.top + Math.min(rect.height * 0.5, 140);
                 const rawBottomY = window.innerHeight - sectionMidY - 32;
                 const ty = Math.min(maxY, Math.max(20, Math.round(rawBottomY)));
 
@@ -2253,54 +2256,63 @@
                     el: document.querySelector('main > section:first-of-type'),
                     sayKey: 'Welcome! I am Nixy. Let me show you around each section.',
                     isTopControl: false,
+                    preferAbove: true,
                     fallback: { x: minX + 40, y: Math.min(maxY, 260) }
                 },
                 {
                     el: document.getElementById('lang-btn'),
                     sayKey: 'Language button: you can change the dashboard language from here.',
                     isTopControl: true,
+                    preferAbove: false,
                     fallback: { x: maxX - 120, y: maxY }
                 },
                 {
                     el: document.getElementById('theme-toggle'),
                     sayKey: 'Theme toggle: switch between dark mode and light mode anytime.',
                     isTopControl: true,
+                    preferAbove: false,
                     fallback: { x: maxX - 70, y: maxY }
                 },
                 {
                     el: document.getElementById('notif-btn'),
                     sayKey: 'Notifications: check live broadcasts and workspace notices here.',
                     isTopControl: true,
+                    preferAbove: false,
                     fallback: { x: maxX - 170, y: maxY }
                 },
                 {
                     el: document.getElementById('profile-btn'),
                     sayKey: 'Profile menu: view your account, profile, settings, or sign out.',
                     isTopControl: true,
+                    preferAbove: false,
                     fallback: { x: maxX, y: maxY }
                 },
                 {
                     el: document.querySelector('[aria-label="Workspace overview"]'),
                     sayKey: 'Overview strip: tracks total apps, categories, local runtime, and system status.',
                     isTopControl: false,
+                    preferAbove: true,
                     fallback: { x: minX + 120, y: Math.min(maxY, 220) }
                 },
                 {
                     el: document.getElementById('main-notifications-panel'),
                     sayKey: 'Workspace announcements: live broadcasts and platform notices appear here.',
                     isTopControl: false,
+                    preferAbove: true,
                     fallback: { x: maxX - 40, y: Math.min(maxY, 180) }
                 },
                 {
                     el: document.getElementById('portal-sections'),
                     sayKey: 'Applications: pin favorites, view most used tools, and launch your workspace apps.',
                     isTopControl: false,
+                    preferAbove: false,
                     fallback: { x: minX + Math.round((maxX - minX) * 0.5), y: Math.min(maxY, 150) }
                 },
                 {
                     el: document.querySelector('footer'),
                     sayKey: 'Footer: quick links to support, feedback, and the blog.',
                     isTopControl: false,
+                    preferAbove: true,
                     fallback: { x: maxX, y: 24 }
                 }
             ];
@@ -2343,7 +2355,7 @@
                         activeHighlightedEl = stop.el;
                     }
                 }
-                const targetPos = stop.el ? computeTargetXYForEl(stop.el, stop.isTopControl) : stop.fallback;
+                const targetPos = stop.el ? computeTargetXYForEl(stop.el, stop.isTopControl, stop.preferAbove) : stop.fallback;
                 nixyState.tourTargetX = targetPos.x;
                 nixyState.tourTargetY = targetPos.y;
                 showNixyBubble(t(stop.sayKey), 3400);
