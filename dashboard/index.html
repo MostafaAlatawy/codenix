@@ -527,8 +527,16 @@
             height: 64px;
             pointer-events: auto;
             user-select: none;
-            will-change: transform, left;
+            touch-action: none;
+            will-change: transform, left, bottom;
             transition: filter .25s ease;
+        }
+        #nixy-actor.nixy-dragging {
+            cursor: grabbing !important;
+            filter: drop-shadow(0 14px 24px rgba(139, 92, 246, .5));
+        }
+        #nixy-actor.nixy-angry {
+            filter: drop-shadow(0 0 14px rgba(239, 68, 68, .55));
         }
         @media (max-width: 1023px) {
             #nixy-actor { left: 24px; }
@@ -537,31 +545,41 @@
             0%, 100% { transform: translateY(0px) scaleY(1) scaleX(1); }
             50% { transform: translateY(-4px) scaleY(1.03) scaleX(0.98); }
         }
-        @keyframes nixyShiver {
-            0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-            25% { transform: translate(-2px, 1px) rotate(-2deg); }
-            50% { transform: translate(2px, -1px) rotate(2deg); }
-            75% { transform: translate(-2px, -1px) rotate(-1.5deg); }
+        @keyframes nixySquashBounce {
+            0% { transform: scaleX(1.22) scaleY(0.76); }
+            45% { transform: scaleX(0.9) scaleY(1.12); }
+            100% { transform: scaleX(1) scaleY(1); }
+        }
+        @keyframes nixyAngryShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-3px) rotate(-3deg); }
+            75% { transform: translateX(3px) rotate(3deg); }
         }
         .nixy-walking .nixy-body-wrap {
             animation: nixyBob .68s ease-in-out infinite;
         }
-        .nixy-cold .nixy-body-wrap {
-            animation: nixyShiver .22s linear infinite;
+        .nixy-bouncing .nixy-body-wrap {
+            animation: nixySquashBounce .35s cubic-bezier(.2,.8,.2,1);
+        }
+        .nixy-angry .nixy-body-wrap {
+            animation: nixyAngryShake .28s ease-in-out 3;
         }
         #nixy-bubble {
             position: absolute;
-            bottom: 68px;
+            bottom: 72px;
             left: 50%;
             transform: translateX(-50%) translateY(4px);
             background: var(--panel);
             border: 1px solid var(--line-strong);
             color: var(--text);
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 600;
-            white-space: nowrap;
-            padding: 5px 10px;
-            border-radius: 9999px;
+            max-width: 280px;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.35;
+            padding: 6px 12px;
+            border-radius: 14px;
             box-shadow: 0 10px 25px -8px rgba(0, 0, 0, .45);
             opacity: 0;
             pointer-events: none;
@@ -1572,196 +1590,61 @@
             const ranked = [...map.entries()]
                 .map(([k, t]) => ({ tool: t, count: toolClicks[k] || 0 }))
                 .filter(x => x.count > 0)
-                .sort((a, b) => b.count - a.count || a.tool.name.localeCompare(b.tool.name))
-                .slice(0, MOST_USED_LIMIT);
-
-            html += `
-                <section class="space-y-3.5">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-2.5">
-                            <span class="sec-ico">${TREND_SVG}</span>
-                            <h3 class="text-base font-bold tracking-tight">Most used</h3>
-                            <span class="text-xs font-mono px-2 py-0.5 rounded-full" style="background:var(--panel);border:1px solid var(--line);color:var(--muted)">${ranked.length}</span>
-                        </div>
-                        ${ranked.length > 0 ? `<button type="button" onclick="clearUsage()" class="link-btn">Clear history</button>` : ''}
-                    </div>
-                    ${ranked.length > 0
-                        ? `<div class="${gridClass}">${ranked.map(x => toolCardHTML(x.tool, isGrid, true)).join('')}</div>`
-                        : `<div class="hint-box">
-                               <span class="sec-ico">${TREND_SVG}</span>
-                               <span>The apps you open most often will show up here.</span>
-                           </div>`}
-                </section>`;
-
-            return html;
-        }
-
-        // Render Cards (Google Play App Store Sections)
-        function renderEcosystem() {
-            let categoriesHtml = '';
-            let totalRenderedTools = 0;
-            const isGrid = currentViewMode === 'grid';
-            const gridClass = isGrid
-                ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"
-                : "flex flex-col gap-2";
-
-            Object.keys(rawEcosystemData).forEach(sectionTitle => {
-                if (activeCategoryFilter !== 'all' && activeCategoryFilter.toLowerCase() !== sectionTitle.toLowerCase()) {
-                    return;
-                }
-
-                let toolsList = rawEcosystemData[sectionTitle];
-
-                if (searchQuery.trim() !== "") {
-                    const q = searchQuery.toLowerCase();
-                    toolsList = toolsList.filter(t => t.name.toLowerCase().includes(q) || t.link.toLowerCase().includes(q));
-                }
-
-                if (toolsList.length === 0) return;
-
-                totalRenderedTools += toolsList.length;
-                const catKey = sectionTitle.toLowerCase();
-
-                categoriesHtml += `
-                    <section class="space-y-3.5">
-                        <div class="flex items-center justify-between gap-3">
-                            <div class="flex items-center gap-2.5">
-                                <h3 class="text-base font-bold tracking-tight">${esc(sectionTitle)}</h3>
-                                <span class="text-xs font-mono px-2 py-0.5 rounded-full" style="background:var(--panel);border:1px solid var(--line);color:var(--muted)">${toolsList.length}</span>
-                            </div>
-                            ${activeCategoryFilter === 'all' ? `
-                                <button type="button" onclick="filterCategory(this.dataset.category)" data-category="${esc(catKey)}" class="icon-btn !w-8 !h-8 !rounded-full" aria-label="View ${esc(sectionTitle)}">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-                                </button>
-                            ` : ''}
-                        </div>
-                        <div class="${gridClass}">
-                            ${toolsList.map(tool => toolCardHTML(tool, isGrid, false)).join('')}
-                        </div>
-                    </section>
-                `;
-            });
-
-            let sectionsHtml;
-            if (totalRenderedTools === 0) {
-                sectionsHtml = `
-                    <div class="panel py-16 text-center">
-                        <svg class="h-8 w-8 mx-auto mb-3" style="color:var(--faint)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <p class="text-sm font-semibold">No apps match your search</p>
-                        <p class="text-xs mt-1" style="color:var(--muted)">Try a different name or choose another category.</p>
-                    </div>
-                `;
-            } else {
-                sectionsHtml = personalSectionsHTML(isGrid, gridClass) + categoriesHtml;
-            }
-
-            resultCount.textContent = totalRenderedTools > 0 ? `${totalRenderedTools} ${t(totalRenderedTools === 1 ? 'app' : 'apps')}` : '';
-            portalSectionsContainer.innerHTML = sectionsHtml;
-            applyHoverBindings();
-        }
-
-        // Live Search Input Handler
-        function handleToolSearch(val) {
-            searchQuery = val;
-            renderEcosystem();
-        }
-
-        // Search Focus Keyboard Shortcut (/ Key)
-        document.addEventListener('keydown', (e) => {
-            const tag = document.activeElement.tagName;
-            if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
-                e.preventDefault();
-                document.getElementById('tool-search-input').focus();
-            }
-        });
-
-        // Category navigation (sidebar on desktop, pills on smaller screens)
-        function generateCategoryTabs() {
-            const keys = Object.keys(rawEcosystemData);
-            const total = keys.reduce((sum, k) => sum + rawEcosystemData[k].length, 0);
-            const isAll = activeCategoryFilter === 'all';
-
-            statApps.textContent = total;
-            statCategories.textContent = keys.length;
-
-            let nav = `
-                <button onclick="filterCategory('all')" class="nav-item ${isAll ? 'active' : ''}" data-category="all">
-                    <span>All apps</span><span class="nav-count">${total}</span>
-                </button>`;
-            let pills = `<button onclick="filterCategory('all')" class="pill ${isAll ? 'active' : ''}" data-category="all">All apps</button>`;
-
-            keys.forEach(sectionTitle => {
-                const key = sectionTitle.toLowerCase();
-                const isActive = activeCategoryFilter.toLowerCase() === key;
-                const count = rawEcosystemData[sectionTitle].length;
-                nav += `
-                    <button onclick="filterCategory(this.dataset.category)" class="nav-item ${isActive ? 'active' : ''}" data-category="${esc(key)}">
-                        <span class="truncate">${esc(sectionTitle)}</span><span class="nav-count">${count}</span>
-                    </button>`;
-                pills += `<button onclick="filterCategory(this.dataset.category)" class="pill ${isActive ? 'active' : ''}" data-category="${esc(key)}">${esc(sectionTitle)}</button>`;
-            });
-
-            categoryTabsContainer.innerHTML = nav;
-            categoryTabsMobile.innerHTML = pills;
-        }
-
-        function filterCategory(categoryName) {
-            activeCategoryFilter = categoryName;
-            generateCategoryTabs();
-            renderEcosystem();
-        }
-
-        // Pointer Motion
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
-
-        function applyHoverBindings() {
-            document.querySelectorAll('.play-card, .app-card, .notice-card, button, a, input').forEach(el => {
-                el.removeEventListener('mouseenter', cursorIn);
-                el.removeEventListener('mouseleave', cursorOut);
-
-                el.addEventListener('mouseenter', cursorIn);
-                el.addEventListener('mouseleave', cursorOut);
-            });
-        }
-
-        function cursorIn() {
-            cursor.style.transform = 'translate(-50%, -50%) scale(1.3)';
-            cursor.style.borderBottomColor = '#a78bfa';
-        }
-
-        function cursorOut() {
-            cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-            cursor.style.borderBottomColor = '#8b5cf6';
-        }
-
-        // ---------- Nixy: Footless Purple Orb Smart Observer ----------
+        // ---------- Nixy: Footless Purple Orb Companion (Touch, Throw-Bounce, Angry Eyes & First-Visit Tour) ----------
         const nixyActor = document.getElementById('nixy-actor');
         const nixySvgContainer = document.getElementById('nixy-svg-container');
         const nixyBubble = document.getElementById('nixy-bubble');
 
+        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v1';
+
         const nixyState = {
             x: window.innerWidth >= 1024 ? 280 : 24,
+            y: 8,
+            vx: 38,
+            vy: 0,
             dir: 1, // 1 = right, -1 = left
-            speed: 38, // px per second
-            pausedUntil: 0
+            walkSpeed: 38,
+            pausedUntil: 0,
+            isDragging: false,
+            angryUntil: 0,
+            mood: 'normal', // 'normal' | 'touched' | 'angry' | 'tour'
+            tourTargetX: null,
+            tourActive: false
         };
 
-        const nixyObserverState = {
-            lastHoverLabel: '',
-            lastHoverTime: 0,
-            lastBroadcastTime: 0,
-            hoverCount: 0,
-            actionCount: 0,
-            seenBroadcastTexts: new Set()
-        };
+        let dragPointerId = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let lastPointerX = 0;
+        let lastPointerY = 0;
+        let lastPointerTime = 0;
+        let pointerMovedDist = 0;
 
-        function getNixyOrbSVG(dir) {
-            const lookOffsetX = dir === -1 ? -1.8 : 1.8;
+        function getNixyOrbSVG(dir, mood = 'normal') {
+            const lookOffsetX = mood === 'angry' ? 0 : (dir === -1 ? -2.2 : 2.2);
+            const isAngry = mood === 'angry';
+            const isTouched = mood === 'touched';
+
+            const orbFillId = isAngry ? 'nixy-orb-angry-grad' : 'nixy-orb-grad';
+            const eyeRadius = isTouched ? 4.1 : (isAngry ? 3.2 : 3.4);
+
+            const angryBrows = isAngry
+                ? `
+                    <line x1="21.5" y1="27.2" x2="29.5" y2="30.2" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" />
+                    <line x1="42.5" y1="27.2" x2="34.5" y2="30.2" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" />
+                  `
+                : '';
+
+            const eyeShape = isTouched
+                ? `
+                    <path d="M22.5 33.2 Q26.5 28.5 30.5 33.2" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" fill="none" />
+                    <path d="M33.5 33.2 Q37.5 28.5 41.5 33.2" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" fill="none" />
+                  `
+                : `
+                    <circle cx="26.5" cy="32.5" r="${eyeRadius}" fill="url(#nixy-eye-glow)" />
+                    <circle cx="37.5" cy="32.5" r="${eyeRadius}" fill="url(#nixy-eye-glow)" />
+                  `;
+
             return `
                 <svg viewBox="0 0 64 64" class="w-full h-full overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
@@ -1769,6 +1652,12 @@
                             <stop offset="0%" stop-color="#c4b5fd" />
                             <stop offset="32%" stop-color="#8b5cf6" />
                             <stop offset="78%" stop-color="#6d28d9" />
+                            <stop offset="100%" stop-color="#4c1d95" />
+                        </radialGradient>
+                        <radialGradient id="nixy-orb-angry-grad" cx="34%" cy="24%" r="72%">
+                            <stop offset="0%" stop-color="#fda4af" />
+                            <stop offset="30%" stop-color="#9333ea" />
+                            <stop offset="78%" stop-color="#6b21a8" />
                             <stop offset="100%" stop-color="#4c1d95" />
                         </radialGradient>
                         <radialGradient id="nixy-eye-glow" cx="50%" cy="50%" r="55%">
@@ -1785,178 +1674,307 @@
                         </filter>
                     </defs>
 
-                    <!-- Soft floor shadow directly beneath orb (no feet) -->
-                    <ellipse cx="32" cy="59" rx="14" ry="3" fill="rgba(139, 92, 246, 0.25)" />
+                    <ellipse cx="32" cy="59" rx="14" ry="3" fill="${isAngry ? 'rgba(239, 68, 68, 0.32)' : 'rgba(139, 92, 246, 0.25)'}" />
 
-                    <!-- Glossy Purple Sphere -->
-                    <circle cx="32" cy="32" r="22" fill="url(#nixy-orb-grad)" stroke="rgba(196, 181, 253, 0.45)" stroke-width="1.2" />
+                    <circle cx="32" cy="32" r="22" fill="url(#${orbFillId})" stroke="${isAngry ? 'rgba(248, 113, 113, 0.7)' : 'rgba(196, 181, 253, 0.45)'}" stroke-width="1.3" />
 
-                    <!-- Top-left specular highlight -->
                     <ellipse cx="24" cy="20.5" rx="6.5" ry="3.6" transform="rotate(-24 24 20.5)" fill="rgba(255, 255, 255, 0.45)" />
                     <circle cx="18.2" cy="24.5" r="1.6" fill="rgba(255, 255, 255, 0.35)" />
 
-                    <!-- Two glowing white eyes -->
                     <g filter="url(#nixy-soft-glow)" transform="translate(${lookOffsetX}, 0)">
-                        <circle cx="26.5" cy="32.5" r="3.4" fill="url(#nixy-eye-glow)" />
-                        <circle cx="37.5" cy="32.5" r="3.4" fill="url(#nixy-eye-glow)" />
+                        ${eyeShape}
+                        ${angryBrows}
                     </g>
                 </svg>
             `;
         }
 
-        function renderNixyOrb() {
-            nixySvgContainer.innerHTML = getNixyOrbSVG(nixyState.dir);
+        function setNixyMood(nextMood, durationMs = 2000) {
+            nixyState.mood = nextMood;
+            nixyActor.classList.toggle('nixy-angry', nextMood === 'angry');
+            renderNixyOrb();
+            if (durationMs > 0) {
+                clearTimeout(nixyActor._moodTimer);
+                nixyActor._moodTimer = setTimeout(() => {
+                    if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
+                        nixyState.mood = nixyState.tourActive ? 'tour' : 'normal';
+                        nixyActor.classList.remove('nixy-angry');
+                        renderNixyOrb();
+                    }
+                }, durationMs);
+            }
         }
 
-        function flashNixyStatus(label, ms = 2200) {
-            nixyBubble.textContent = label;
+        function renderNixyOrb() {
+            nixySvgContainer.innerHTML = getNixyOrbSVG(nixyState.dir, nixyState.mood);
+        }
+
+        function showNixyBubble(text, ms = 2600) {
+            nixyBubble.textContent = text;
             nixyActor.classList.add('show-bubble');
-            nixyState.pausedUntil = performance.now() + 900;
             clearTimeout(nixyActor._bubbleTimer);
             nixyActor._bubbleTimer = setTimeout(() => {
                 nixyActor.classList.remove('show-bubble');
             }, ms);
         }
 
-        // Silent smart assistant: never speaks to user, logs observations into broadcasts
-        function postNixyBroadcast(observation) {
-            const now = Date.now();
-            if (!observation || now - nixyObserverState.lastBroadcastTime < 6500) return;
-            if (nixyObserverState.seenBroadcastTexts.has(observation)) return;
-
-            nixyObserverState.lastBroadcastTime = now;
-            nixyObserverState.seenBroadcastTexts.add(observation);
-
-            parsedNotifications.unshift({
-                title: `Nixy observed: ${observation}`,
-                link: '#',
-                isBroadcast: true
-            });
-
-            if (parsedNotifications.length > 30) {
-                parsedNotifications.length = 30;
-            }
-
-            renderNotifs();
-            flashNixyStatus(`Broadcasted observation #${nixyObserverState.seenBroadcastTexts.size}`);
+        function triggerBounceSquash() {
+            nixyActor.classList.remove('nixy-bouncing');
+            void nixyActor.offsetWidth;
+            nixyActor.classList.add('nixy-bouncing');
+            setTimeout(() => nixyActor.classList.remove('nixy-bouncing'), 380);
         }
 
-        function describeHoveredElement(el) {
-            if (!el) return '';
-            const cardName = el.closest('.play-card, .app-card')?.querySelector('.play-name, .app-name')?.textContent?.trim();
-            if (cardName) return `hovering over "${cardName}"`;
-            const navLabel = el.closest('.nav-item, .pill')?.querySelector('span')?.textContent?.trim() || el.closest('.nav-item, .pill')?.textContent?.trim();
-            if (navLabel) return `inspecting category "${navLabel}"`;
-            const aria = el.getAttribute('aria-label')?.trim();
-            if (aria) return `hovering "${aria}"`;
-            return '';
+        function becomeAngry(reasonText = 'Hey! Watch the throw!') {
+            nixyState.angryUntil = performance.now() + 3400;
+            setNixyMood('angry', 3400);
+            showNixyBubble(reasonText, 2800);
         }
 
-        document.addEventListener('mouseover', (e) => {
-            const target = e.target.closest('.play-card, .app-card, .nav-item, .pill, button[aria-label], a[href]');
-            if (!target || target.closest('#nixy-actor')) return;
-            const desc = describeHoveredElement(target);
-            if (!desc) return;
+        nixyActor.addEventListener('pointerdown', (e) => {
+            if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+            e.preventDefault();
+            dragPointerId = e.pointerId;
+            nixyActor.setPointerCapture(e.pointerId);
 
-            const now = Date.now();
-            nixyObserverState.hoverCount += 1;
-            if (desc !== nixyObserverState.lastHoverLabel || now - nixyObserverState.lastHoverTime > 12000) {
-                nixyObserverState.lastHoverLabel = desc;
-                nixyObserverState.lastHoverTime = now;
-                postNixyBroadcast(desc);
-            }
+            const rect = nixyActor.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = window.innerHeight - e.clientY - nixyState.y;
+
+            nixyState.isDragging = true;
+            nixyState.vx = 0;
+            nixyState.vy = 0;
+            pointerMovedDist = 0;
+            lastPointerX = e.clientX;
+            lastPointerY = e.clientY;
+            lastPointerTime = performance.now();
+
+            nixyActor.classList.add('nixy-dragging');
+            setNixyMood('touched', 0);
+            showNixyBubble('Holding me...', 1500);
         });
 
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#nixy-actor')) return;
-            nixyObserverState.actionCount += 1;
+        nixyActor.addEventListener('pointermove', (e) => {
+            if (!nixyState.isDragging || e.pointerId !== dragPointerId) return;
+            const now = performance.now();
+            const dt = Math.max((now - lastPointerTime) / 1000, 0.008);
 
-            const favBtn = e.target.closest('[data-fav]');
-            if (favBtn) {
-                const label = favBtn.getAttribute('aria-label') || 'updated a pinned app';
-                postNixyBroadcast(label.toLowerCase());
-                return;
+            const minX = window.innerWidth >= 1024 ? 276 : 16;
+            const maxX = Math.max(minX + 40, window.innerWidth - 84);
+            const maxY = Math.max(24, window.innerHeight - 140);
+
+            const nextX = Math.min(maxX, Math.max(minX, e.clientX - dragOffsetX));
+            const nextY = Math.min(maxY, Math.max(8, window.innerHeight - e.clientY - dragOffsetY));
+
+            const dx = e.clientX - lastPointerX;
+            const dy = lastPointerY - e.clientY;
+            pointerMovedDist += Math.hypot(dx, dy);
+
+            if (Math.abs(dx) > 1.5) {
+                nixyState.dir = dx >= 0 ? 1 : -1;
+                renderNixyOrb();
             }
 
-            const appLink = e.target.closest('a[data-track]');
-            if (appLink) {
-                const name = appLink.closest('.play-card, .app-card')?.querySelector('.play-name, .app-name')?.textContent?.trim() || appLink.getAttribute('href');
-                postNixyBroadcast(`opened app "${name}"`);
-                return;
-            }
+            nixyState.vx = Math.max(-1350, Math.min(1350, (nextX - nixyState.x) / dt));
+            nixyState.vy = Math.max(-1200, Math.min(1350, (nextY - nixyState.y) / dt));
 
-            const catBtn = e.target.closest('[data-category]');
-            if (catBtn) {
-                postNixyBroadcast(`filtered by "${catBtn.dataset.category}"`);
-                return;
-            }
+            nixyState.x = nextX;
+            nixyState.y = nextY;
 
-            const viewBtn = e.target.closest('#view-grid-btn, #view-list-btn');
-            if (viewBtn) {
-                postNixyBroadcast(`switched to ${currentViewMode} view`);
-                return;
-            }
-
-            const themeBtn = e.target.closest('#theme-toggle');
-            if (themeBtn) {
-                const mode = document.documentElement.classList.contains('dark') ? 'dark mode' : 'light mode';
-                postNixyBroadcast(`switched to ${mode}`);
-            }
+            lastPointerX = e.clientX;
+            lastPointerY = e.clientY;
+            lastPointerTime = now;
         });
 
-        let _searchObsTimer;
-        document.getElementById('tool-search-input').addEventListener('input', (e) => {
-            clearTimeout(_searchObsTimer);
-            const q = e.target.value.trim();
-            if (!q) return;
-            _searchObsTimer = setTimeout(() => {
-                postNixyBroadcast(`searched for "${q}"`);
-            }, 900);
-        });
+        function finishDrag(e) {
+            if (!nixyState.isDragging || (e && e.pointerId !== dragPointerId)) return;
+            nixyState.isDragging = false;
+            nixyActor.classList.remove('nixy-dragging');
+            if (dragPointerId !== null) {
+                try { nixyActor.releasePointerCapture(dragPointerId); } catch (_) {}
+                dragPointerId = null;
+            }
 
-        nixyActor.addEventListener('click', () => {
-            postNixyBroadcast(`logged summary (${nixyObserverState.hoverCount} hovers, ${nixyObserverState.actionCount} actions)`);
-        });
+            const speed = Math.hypot(nixyState.vx, nixyState.vy);
+            if (pointerMovedDist < 8) {
+                // Simple touch / tap
+                setNixyMood('touched', 1500);
+                triggerBounceSquash();
+                showNixyBubble('Boop! Eyes on you.', 1600);
+                nixyState.pausedUntil = performance.now() + 900;
+            } else if (speed > 260 || nixyState.y > 24) {
+                // Thrown away -> bounce & get angry
+                if (Math.abs(nixyState.vx) < 140) {
+                    nixyState.vx = (Math.random() > 0.5 ? 1 : -1) * 320;
+                }
+                if (nixyState.vy < 180) {
+                    nixyState.vy = 260;
+                }
+                becomeAngry('Whoa! Why did you throw me?!');
+            } else {
+                setNixyMood('normal', 1000);
+            }
+        }
+
+        nixyActor.addEventListener('pointerup', finishDrag);
+        nixyActor.addEventListener('pointercancel', finishDrag);
 
         function startNixyWalkLoop() {
             renderNixyOrb();
             let lastTime = performance.now();
+            const gravity = 2200;
+            const restitution = 0.62;
 
             function step(now) {
-                const dt = Math.min((now - lastTime) / 1000, 0.1);
+                const dt = Math.min((now - lastTime) / 1000, 0.05);
                 lastTime = now;
 
                 const minX = window.innerWidth >= 1024 ? 276 : 16;
                 const maxX = Math.max(minX + 40, window.innerWidth - 84);
+                const maxY = Math.max(24, window.innerHeight - 140);
 
-                if (nixyState.x < minX) {
-                    nixyState.x = minX;
-                    nixyState.dir = 1;
-                    renderNixyOrb();
-                } else if (nixyState.x > maxX) {
-                    nixyState.x = maxX;
-                    nixyState.dir = -1;
-                    renderNixyOrb();
-                }
+                if (!nixyState.isDragging) {
+                    const isAirborneOrThrowing = nixyState.y > 8 || Math.abs(nixyState.vy) > 10 || Math.abs(nixyState.vx) > nixyState.walkSpeed + 20;
 
-                if (now >= nixyState.pausedUntil && !nixyActor.matches(':hover')) {
-                    nixyState.x += nixyState.dir * nixyState.speed * dt;
-                    if (nixyState.x >= maxX) {
-                        nixyState.x = maxX;
-                        nixyState.dir = -1;
-                        renderNixyOrb();
-                    } else if (nixyState.x <= minX) {
-                        nixyState.x = minX;
-                        nixyState.dir = 1;
-                        renderNixyOrb();
+                    if (isAirborneOrThrowing) {
+                        nixyState.vy -= gravity * dt;
+                        nixyState.x += nixyState.vx * dt;
+                        nixyState.y += nixyState.vy * dt;
+
+                        if (nixyState.x <= minX) {
+                            nixyState.x = minX;
+                            nixyState.vx = Math.abs(nixyState.vx) * 0.78;
+                            nixyState.dir = 1;
+                            triggerBounceSquash();
+                            renderNixyOrb();
+                        } else if (nixyState.x >= maxX) {
+                            nixyState.x = maxX;
+                            nixyState.vx = -Math.abs(nixyState.vx) * 0.78;
+                            nixyState.dir = -1;
+                            triggerBounceSquash();
+                            renderNixyOrb();
+                        }
+
+                        if (nixyState.y >= maxY) {
+                            nixyState.y = maxY;
+                            nixyState.vy = -Math.abs(nixyState.vy) * restitution;
+                        }
+
+                        if (nixyState.y <= 8) {
+                            nixyState.y = 8;
+                            if (Math.abs(nixyState.vy) > 160) {
+                                nixyState.vy = -nixyState.vy * restitution;
+                                nixyState.vx *= 0.76;
+                                triggerBounceSquash();
+                            } else {
+                                nixyState.vy = 0;
+                                nixyState.vx *= 0.82;
+                                if (Math.abs(nixyState.vx) <= nixyState.walkSpeed) {
+                                    nixyState.vx = 0;
+                                    nixyState.pausedUntil = now + 1100;
+                                }
+                            }
+                        }
+                    } else if (nixyState.tourActive && nixyState.tourTargetX !== null) {
+                        const targetX = Math.min(maxX, Math.max(minX, nixyState.tourTargetX));
+                        const diff = targetX - nixyState.x;
+                        if (Math.abs(diff) > 6) {
+                            const nextDir = diff >= 0 ? 1 : -1;
+                            if (nextDir !== nixyState.dir) {
+                                nixyState.dir = nextDir;
+                                renderNixyOrb();
+                            }
+                            const stepMove = Math.sign(diff) * Math.min(Math.abs(diff), 150 * dt);
+                            nixyState.x += stepMove;
+                        }
+                    } else if (now >= nixyState.pausedUntil && !nixyActor.matches(':hover')) {
+                        const moveDir = nixyState.dir;
+                        nixyState.x += moveDir * nixyState.walkSpeed * dt;
+                        if (nixyState.x >= maxX) {
+                            nixyState.x = maxX;
+                            nixyState.dir = -1;
+                            renderNixyOrb();
+                        } else if (nixyState.x <= minX) {
+                            nixyState.x = minX;
+                            nixyState.dir = 1;
+                            renderNixyOrb();
+                        }
                     }
                 }
 
+                if (now > nixyState.angryUntil && nixyState.mood === 'angry' && !nixyState.isDragging) {
+                    setNixyMood(nixyState.tourActive ? 'tour' : 'normal', 0);
+                }
+
                 nixyActor.style.left = `${Math.round(nixyState.x)}px`;
+                nixyActor.style.bottom = `${Math.round(nixyState.y)}px`;
                 requestAnimationFrame(step);
             }
 
             requestAnimationFrame(step);
+        }
+
+        function sleepMs(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function runFirstVisitTour() {
+            let alreadyDone = false;
+            try { alreadyDone = localStorage.getItem(TOUR_SEEN_KEY) === 'true'; } catch (_) {}
+            if (alreadyDone) return;
+
+            nixyState.tourActive = true;
+            setNixyMood('tour', 0);
+
+            const minX = window.innerWidth >= 1024 ? 284 : 24;
+            const maxX = Math.max(minX + 60, window.innerWidth - 110);
+
+            const stops = [
+                {
+                    el: document.querySelector('h1'),
+                    say: 'Welcome! I am Nixy. Let me show you around the workspace.',
+                    x: minX + 40
+                },
+                {
+                    el: document.querySelector('[aria-label="Workspace overview"]'),
+                    say: 'Overview strip: tracks total apps, categories, local time, and system status.',
+                    x: minX + Math.round((maxX - minX) * 0.25)
+                },
+                {
+                    el: document.getElementById('tool-search-input'),
+                    say: 'Search bar: press / anytime to quickly find any app by name or link.',
+                    x: minX + Math.round((maxX - minX) * 0.5)
+                },
+                {
+                    el: document.getElementById('main-notifications-panel') || document.getElementById('portal-sections'),
+                    say: 'Announcements & Apps: check notices here, star favorites, and launch your tools.',
+                    x: minX + Math.round((maxX - minX) * 0.78)
+                },
+                {
+                    el: document.querySelector('footer'),
+                    say: 'Tour complete! Drag or throw me if you dare—just watch out.',
+                    x: maxX
+                }
+            ];
+
+            for (const stop of stops) {
+                if (nixyState.isDragging) {
+                    await sleepMs(1200);
+                }
+                nixyState.tourTargetX = stop.x;
+                if (stop.el && typeof stop.el.scrollIntoView === 'function') {
+                    stop.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                showNixyBubble(stop.say, 3300);
+                await sleepMs(3600);
+            }
+
+            nixyState.tourActive = false;
+            nixyState.tourTargetX = null;
+            if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
+                setNixyMood('normal', 0);
+            }
+            try { localStorage.setItem(TOUR_SEEN_KEY, 'true'); } catch (_) {}
         }
 
         // Supabase Profile Check
@@ -2020,6 +2038,10 @@
             rawEcosystemData = await fetchSpreadsheetSections();
             generateCategoryTabs();
             renderEcosystem();
+
+            setTimeout(() => {
+                runFirstVisitTour();
+            }, 900);
         };
     </script>
 </body>
