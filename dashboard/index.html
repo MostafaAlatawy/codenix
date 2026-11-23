@@ -492,6 +492,14 @@
         .lang-opt { width: 100%; justify-content: space-between; text-align: start; }
         .lang-opt.on { background: var(--tile); color: var(--text); font-weight: 600; }
 
+        .nixy-tour-ui-highlight {
+            position: relative !important;
+            z-index: 65 !important;
+            border-radius: 12px;
+            box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px rgba(139, 92, 246, 0.25), 0 12px 28px -6px rgba(139, 92, 246, 0.55) !important;
+            transition: box-shadow .25s ease, transform .25s ease;
+        }
+
         /* ---------- RTL (Arabic) ---------- */
         html[dir="rtl"] body { font-family: 'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif; }
         html[dir="rtl"] .sidebar { left: auto; right: 0; border-right: 0; border-left: 1px solid var(--line); }
@@ -973,8 +981,14 @@
     <script>
         // ---------- Language (browser default, changeable, saved locally and in Supabase) ----------
         const LANGS = [['en','English'],['ar','العربية'],['es','Español'],['fr','Français'],['zh','中文'],['de','Deutsch']];
-        const I18N_KEYS = ["Workspace Portal", "Applications", "Cloud ecosystem connected", "All services responding", "Broadcasts and notices", "Signed in as", "My profile", "Settings", "Sign out", "Open your AI models, developer tools and connected platforms from one console.", "Apps available", "Categories", "Local runtime", "System status", "Fully operational", "Workspace announcements", "Platform notices and broadcasts", "Support", "Feedback", "Blog", "Announcement", "Got it", "All apps", "Welcome back", "Good morning", "Good afternoon", "Good evening", "Member", "Your choices", "Most used", "Clear history", "Select the star on any app to pin it here for quick access.", "The apps you open most often will show up here.", "No apps match your search", "Broadcast", "Notice", "All", "Mark all read", "No broadcasts active right now.", "Search apps", "Language", "Next", "open", "opens", "apps", "app", "active", "Notices", "Broadcasts"];
-        const I18N = {"es": ["Portal de trabajo", "Aplicaciones", "Ecosistema en la nube conectado", "Todos los servicios responden", "Difusiones y avisos", "Sesión iniciada como", "Mi perfil", "Ajustes", "Cerrar sesión", "Abre tus modelos de IA, herramientas de desarrollo y plataformas conectadas desde una sola consola.", "Apps disponibles", "Categorías", "Hora local", "Estado del sistema", "Totalmente operativo", "Anuncios del espacio de trabajo", "Avisos y difusiones de la plataforma", "Soporte", "Opiniones", "Blog", "Anuncio", "Entendido", "Todas las apps", "Bienvenido de nuevo", "Buenos días", "Buenas tardes", "Buenas noches", "Miembro", "Tus favoritas", "Más usadas", "Borrar historial", "Toca la estrella de cualquier app para fijarla aquí.", "Las apps que más abres aparecerán aquí.", "Ninguna app coincide con tu búsqueda", "Difusión", "Aviso", "Todo", "Marcar todo leído", "No hay difusiones activas ahora mismo.", "Buscar apps", "Idioma", "Siguiente", "apertura", "aperturas", "apps", "app", "activos", "Avisos", "Difusiones"], "fr": ["Portail de travail", "Applications", "Écosystème cloud connecté", "Tous les services répondent", "Diffusions et avis", "Connecté en tant que", "Mon profil", "Paramètres", "Se déconnecter", "Ouvrez vos modèles d'IA, outils de développement et plateformes connectées depuis une seule console.", "Apps disponibles", "Catégories", "Heure locale", "État du système", "Entièrement opérationnel", "Annonces de l'espace de travail", "Avis et diffusions de la plateforme", "Support", "Commentaires", "Blog", "Annonce", "Compris", "Toutes les apps", "Bon retour", "Bonjour", "Bon après-midi", "Bonsoir", "Membre", "Vos favoris", "Les plus utilisées", "Effacer l'historique", "Touchez l'étoile d'une app pour l'épingler ici.", "Les apps que vous ouvrez le plus apparaîtront ici.", "Aucune app ne correspond à votre recherche", "Diffusion", "Avis", "Tout", "Tout marquer comme lu", "Aucune diffusion active pour le moment.", "Rechercher des apps", "Langue", "Suivant", "ouverture", "ouvertures", "apps", "app", "actifs", "Avis", "Diffusions"], "ar": ["بوابة العمل", "التطبيقات", "منظومة السحابة متصلة", "جميع الخدمات تعمل", "البثوث والإشعارات", "تم تسجيل الدخول باسم", "ملفي الشخصي", "الإعدادات", "تسجيل الخروج", "افتح نماذج الذكاء الاصطناعي وأدوات المطورين والمنصات المتصلة من لوحة واحدة.", "التطبيقات المتاحة", "الفئات", "الوقت المحلي", "حالة النظام", "يعمل بالكامل", "إعلانات مساحة العمل", "إشعارات وبثوث المنصة", "الدعم", "الملاحظات", "المدونة", "إعلان", "فهمت", "كل التطبيقات", "مرحباً بعودتك", "صباح الخير", "مساء الخير", "طاب مساؤك", "عضو", "اختياراتك", "الأكثر استخداماً", "مسح السجل", "اضغط على النجمة في أي تطبيق لتثبيته هنا.", "التطبيقات التي تفتحها كثيراً ستظهر هنا.", "لا توجد تطبيقات مطابقة لبحثك", "بث", "إشعار", "الكل", "تحديد الكل كمقروء", "لا توجد بثوث نشطة حالياً.", "ابحث عن تطبيق", "اللغة", "التالي", "مرة فتح", "مرات فتح", "تطبيقات", "تطبيق", "نشط", "الإشعارات", "البثوث"], "zh": ["工作台门户", "应用", "云生态已连接", "所有服务运行正常", "广播与通知", "当前登录账号", "我的资料", "设置", "退出登录", "在一个控制台中打开你的 AI 模型、开发工具和已连接平台。", "可用应用", "分类", "本地时间", "系统状态", "运行正常", "工作区公告", "平台通知与广播", "支持", "反馈", "博客", "公告", "知道了", "全部应用", "欢迎回来", "早上好", "下午好", "晚上好", "成员", "我的收藏", "最常使用", "清除记录", "点击任意应用上的星标，即可固定在此处。", "你常打开的应用会显示在这里。", "没有匹配的应用", "广播", "通知", "全部", "全部标为已读", "目前没有进行中的广播。", "搜索应用", "语言", "下一条", "次打开", "次打开", "个应用", "个应用", "条有效", "通知", "广播"], "de": ["Arbeitsportal", "Anwendungen", "Cloud-Ökosystem verbunden", "Alle Dienste antworten", "Mitteilungen und Hinweise", "Angemeldet als", "Mein Profil", "Einstellungen", "Abmelden", "Öffne deine KI-Modelle, Entwicklertools und verbundenen Plattformen in einer Konsole.", "Verfügbare Apps", "Kategorien", "Lokale Zeit", "Systemstatus", "Voll betriebsbereit", "Workspace-Ankündigungen", "Plattformhinweise und Mitteilungen", "Support", "Feedback", "Blog", "Ankündigung", "Verstanden", "Alle Apps", "Willkommen zurück", "Guten Morgen", "Guten Tag", "Guten Abend", "Mitglied", "Deine Favoriten", "Am häufigsten genutzt", "Verlauf löschen", "Tippe auf den Stern einer App, um sie hier anzupinnen.", "Deine meistgeöffneten Apps erscheinen hier.", "Keine Apps entsprechen deiner Suche", "Mitteilung", "Hinweis", "Alle", "Alle als gelesen markieren", "Derzeit keine aktiven Mitteilungen.", "Apps suchen", "Sprache", "Weiter", "Aufruf", "Aufrufe", "Apps", "App", "aktiv", "Hinweise", "Mitteilungen"]};
+        const I18N_KEYS = ["Workspace Portal", "Applications", "Cloud ecosystem connected", "All services responding", "Broadcasts and notices", "Signed in as", "My profile", "Settings", "Sign out", "Open your AI models, developer tools and connected platforms from one console.", "Apps available", "Categories", "Local runtime", "System status", "Fully operational", "Workspace announcements", "Platform notices and broadcasts", "Support", "Feedback", "Blog", "Announcement", "Got it", "All apps", "Welcome back", "Good morning", "Good afternoon", "Good evening", "Member", "Your choices", "Most used", "Clear history", "Select the star on any app to pin it here for quick access.", "The apps you open most often will show up here.", "No apps match your search", "Broadcast", "Notice", "All", "Mark all read", "No broadcasts active right now.", "Search apps", "Language", "Next", "open", "opens", "apps", "app", "active", "Notices", "Broadcasts", "Skip tutorial", "Tour skipped! Let me know if you need me.", "Welcome! I am Nixy. Let me show you around each section.", "Language button: you can change the dashboard language from here.", "Theme toggle: switch between dark mode and light mode anytime.", "Notifications: check live broadcasts and workspace notices here.", "Profile menu: view your account, profile, settings, or sign out.", "Overview strip: tracks total apps, categories, local runtime, and system status.", "Workspace announcements: live broadcasts and platform notices appear here.", "Applications: pin favorites, view most used tools, and launch your workspace apps.", "Footer: quick links to support, feedback, and the blog."];
+        const I18N = {
+            "es": ["Portal de trabajo", "Aplicaciones", "Ecosistema en la nube conectado", "Todos los servicios responden", "Difusiones y avisos", "Sesión iniciada como", "Mi perfil", "Ajustes", "Cerrar sesión", "Abre tus modelos de IA, herramientas de desarrollo y plataformas conectadas desde una sola consola.", "Apps disponibles", "Categorías", "Hora local", "Estado del sistema", "Totalmente operativo", "Anuncios del espacio de trabajo", "Avisos y difusiones de la plataforma", "Soporte", "Opiniones", "Blog", "Anuncio", "Entendido", "Todas las apps", "Bienvenido de nuevo", "Buenos días", "Buenas tardes", "Buenas noches", "Miembro", "Tus favoritas", "Más usadas", "Borrar historial", "Toca la estrella de cualquier app para fijarla aquí.", "Las apps que más abres aparecerán aquí.", "Ninguna app coincide con tu búsqueda", "Difusión", "Aviso", "Todo", "Marcar todo leído", "No hay difusiones activas ahora mismo.", "Buscar apps", "Idioma", "Siguiente", "apertura", "aperturas", "apps", "app", "activos", "Avisos", "Difusiones", "Omitir tutorial", "¡Tutorial omitido! Avísame si me necesitas.", "¡Bienvenido! Soy Nixy. Te mostraré cada sección.", "Botón de idioma: puedes cambiar el idioma del panel desde aquí.", "Cambio de tema: alterna entre modo oscuro y modo claro cuando quieras.", "Notificaciones: revisa aquí las difusiones en vivo y los avisos del espacio.", "Menú de perfil: consulta tu cuenta, perfil, ajustes o cierra sesión.", "Panel de resumen: muestra el total de apps, categorías, hora local y estado.", "Anuncios del espacio: aquí aparecen las difusiones y avisos de la plataforma.", "Aplicaciones: fija favoritos, ve las más usadas y abre tus herramientas.", "Pie de página: enlaces rápidos a soporte, opiniones y el blog."],
+            "fr": ["Portail de travail", "Applications", "Écosystème cloud connecté", "Tous les services répondent", "Diffusions et avis", "Connecté en tant que", "Mon profil", "Paramètres", "Se déconnecter", "Ouvrez vos modèles d'IA, outils de développement et plateformes connectées depuis une seule console.", "Apps disponibles", "Catégories", "Heure locale", "État du système", "Entièrement opérationnel", "Annonces de l'espace de travail", "Avis et diffusions de la plateforme", "Support", "Commentaires", "Blog", "Annonce", "Compris", "Toutes les apps", "Bon retour", "Bonjour", "Bon après-midi", "Bonsoir", "Membre", "Vos favoris", "Les plus utilisées", "Effacer l'historique", "Touchez l'étoile d'une app pour l'épingler ici.", "Les apps que vous ouvrez le plus apparaîtront ici.", "Aucune app ne correspond à votre recherche", "Diffusion", "Avis", "Tout", "Tout marquer comme lu", "Aucune diffusion active pour le moment.", "Rechercher des apps", "Langue", "Suivant", "ouverture", "ouvertures", "apps", "app", "actifs", "Avis", "Diffusions", "Passer le tutoriel", "Tutoriel ignoré ! Fais-moi signe si tu as besoin.", "Bienvenue ! Je suis Nixy. Je vais te faire découvrir chaque section.", "Bouton de langue : tu peux changer la langue du tableau de bord ici.", "Mode sombre / clair : bascule entre les deux thèmes à tout moment.", "Notifications : consulte ici les diffusions en direct et les avis.", "Menu profil : accède à ton compte, ton profil, tes réglages ou déconnecte-toi.", "Aperçu : affiche le nombre d'apps, catégories, heure locale et statut.", "Annonces : les diffusions et avis de la plateforme s'affichent ici.", "Applications : épingle tes favoris, vois les plus utilisées et lance tes apps.", "Pied de page : liens rapides vers le support, les avis et le blog."],
+            "ar": ["بوابة العمل", "التطبيقات", "منظومة السحابة متصلة", "جميع الخدمات تعمل", "البثوث والإشعارات", "تم تسجيل الدخول باسم", "ملفي الشخصي", "الإعدادات", "تسجيل الخروج", "افتح نماذج الذكاء الاصطناعي وأدوات المطورين والمنصات المتصلة من لوحة واحدة.", "التطبيقات المتاحة", "الفئات", "الوقت المحلي", "حالة النظام", "يعمل بالكامل", "إعلانات مساحة العمل", "إشعارات وبثوث المنصة", "الدعم", "الملاحظات", "المدونة", "إعلان", "فهمت", "كل التطبيقات", "مرحباً بعودتك", "صباح الخير", "مساء الخير", "طاب مساؤك", "عضو", "اختياراتك", "الأكثر استخداماً", "مسح السجل", "اضغط على النجمة في أي تطبيق لتثبيته هنا.", "التطبيقات التي تفتحها كثيراً ستظهر هنا.", "لا توجد تطبيقات مطابقة لبحثك", "بث", "إشعار", "الكل", "تحديد الكل كمقروء", "لا توجد بثوث نشطة حالياً.", "ابحث عن تطبيق", "اللغة", "التالي", "مرة فتح", "مرات فتح", "تطبيقات", "تطبيق", "نشط", "الإشعارات", "البثوث", "تخطي الجولة", "تم تخطي الجولة! أخبرني إذا احتجتني.", "أهلاً بك! أنا نيكسي. سأعرّفك على كل قسم في اللوحة.", "زر اللغة: يمكنك تغيير لغة اللوحة من هنا.", "الوضع الليلي والنهاري: بدّل بين الوضع الداكن والفاتح في أي وقت.", "الإشعارات: تابع البثوث المباشرة وإشعارات المنصة من هنا.", "القائمة الشخصية: اعرض حسابك وملفك والإعدادات أو سجل الخروج.", "شريط النظرة العامة: يعرض عدد التطبيقات والفئات والوقت وحالة النظام.", "إعلانات المساحة: تظهر هنا بثوث وإشعارات المنصة.", "التطبيقات: ثبّت مفضلاتك وتابع الأكثر استخداماً وافتح أدواتك.", "التذييل: روابط سريعة للدعم والملاحظات والمدونة."],
+            "zh": ["工作台门户", "应用", "云生态已连接", "所有服务运行正常", "广播与通知", "当前登录账号", "我的资料", "设置", "退出登录", "在一个控制台中打开你的 AI 模型、开发工具和已连接平台。", "可用应用", "分类", "本地时间", "系统状态", "运行正常", "工作区公告", "平台通知与广播", "支持", "反馈", "博客", "公告", "知道了", "全部应用", "欢迎回来", "早上好", "下午好", "晚上好", "成员", "我的收藏", "最常使用", "清除记录", "点击任意应用上的星标，即可固定在此处。", "你常打开的应用会显示在这里。", "没有匹配的应用", "广播", "通知", "全部", "全部标为已读", "目前没有进行中的广播。", "搜索应用", "语言", "下一条", "次打开", "次打开", "个应用", "个应用", "条有效", "通知", "广播", "跳过教程", "已跳过教程！需要我时随时叫我。", "欢迎！我是 Nixy，让我带你逛逛各个版块。", "语言按钮：你可以在这里切换控制面板的语言。", "深色/浅色模式：随时在深色和浅色主题之间切换。", "通知中心：在这里查看实时广播和工作区通知。", "个人菜单：查看账号、个人资料、设置或退出登录。", "概览栏：显示应用总数、分类数、本地时间和系统状态。", "工作区公告：平台广播和通知会显示在这里。", "应用区：收藏常用工具、查看最常使用并启动应用。", "页脚：快速访问支持、反馈和博客。"],
+            "de": ["Arbeitsportal", "Anwendungen", "Cloud-Ökosystem verbunden", "Alle Dienste antworten", "Mitteilungen und Hinweise", "Angemeldet als", "Mein Profil", "Einstellungen", "Abmelden", "Öffne deine KI-Modelle, Entwicklertools und verbundenen Plattformen in einer Konsole.", "Verfügbare Apps", "Kategorien", "Lokale Zeit", "Systemstatus", "Voll betriebsbereit", "Workspace-Ankündigungen", "Plattformhinweise und Mitteilungen", "Support", "Feedback", "Blog", "Ankündigung", "Verstanden", "Alle Apps", "Willkommen zurück", "Guten Morgen", "Guten Tag", "Guten Abend", "Mitglied", "Deine Favoriten", "Am häufigsten genutzt", "Verlauf löschen", "Tippe auf den Stern einer App, um sie hier anzupinnen.", "Deine meistgeöffneten Apps erscheinen hier.", "Keine Apps entsprechen deiner Suche", "Mitteilung", "Hinweis", "Alle", "Alle als gelesen markieren", "Derzeit keine aktiven Mitteilungen.", "Apps suchen", "Sprache", "Weiter", "Aufruf", "Aufrufe", "Apps", "App", "aktiv", "Hinweise", "Mitteilungen", "Tutorial überspringen", "Tutorial übersprungen! Sag Bescheid, wenn du mich brauchst.", "Willkommen! Ich bin Nixy. Ich zeige dir jeden Bereich.", "Sprach-Button: Hier kannst du die Sprache des Dashboards ändern.", "Dark/Light-Mode: Wechsle jederzeit zwischen Dunkel- und Hellmodus.", "Benachrichtigungen: Hier siehst du Live-Mitteilungen und Hinweise.", "Profilmenü: Öffne Konto, Profil, Einstellungen oder melde dich ab.", "Übersicht: Zeigt Apps, Kategorien, Ortszeit und Systemstatus.", "Workspace-Ankündigungen: Hier erscheinen Plattform-Mitteilungen.", "Anwendungen: Pinne Favoriten, sieh Meistgenutztes und starte Apps.", "Fußzeile: Schnelle Links zu Support, Feedback und Blog."]
+        };
         const KMAP = new Map(I18N_KEYS.map((k, i) => [k, i]));
         const detectLang = () => {
             let saved = null; try { saved = localStorage.getItem('codenix_lang'); } catch (e) {}
@@ -1810,15 +1824,17 @@
         const nixyBubble = document.getElementById('nixy-bubble');
         const nixySkipTourBtn = document.getElementById('nixy-skip-tour-btn');
 
-        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v2';
+        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v3';
 
         const nixyState = {
             x: window.innerWidth >= 1024 ? 280 : 24,
             y: 8,
-            vx: 38,
-            vy: 0,
+            vx: 44,
+            vy: 28,
             dir: 1, // 1 = right, -1 = left
-            walkSpeed: 38,
+            walkSpeed: 46,
+            roamVerticalSpeed: 32,
+            nextRoamChangeAt: 0,
             pausedUntil: 0,
             isDragging: false,
             angryUntil: 0,
@@ -2098,20 +2114,31 @@
                         const diffX = targetX - nixyState.x;
                         const diffY = targetY - nixyState.y;
 
-                        if (Math.abs(diffX) > 4) {
+                        if (Math.abs(diffX) > 3) {
                             const nextDir = diffX >= 0 ? 1 : -1;
                             if (nextDir !== nixyState.dir) {
                                 nixyState.dir = nextDir;
                                 renderNixyOrb();
                             }
-                            nixyState.x += Math.sign(diffX) * Math.min(Math.abs(diffX), 260 * dt);
+                            nixyState.x += Math.sign(diffX) * Math.min(Math.abs(diffX), 340 * dt);
                         }
-                        if (Math.abs(diffY) > 4) {
-                            nixyState.y += Math.sign(diffY) * Math.min(Math.abs(diffY), 240 * dt);
+                        if (Math.abs(diffY) > 3) {
+                            nixyState.y += Math.sign(diffY) * Math.min(Math.abs(diffY), 320 * dt);
                         }
                     } else if (now >= nixyState.pausedUntil && !nixyActor.matches(':hover')) {
-                        const moveDir = nixyState.dir;
-                        nixyState.x += moveDir * nixyState.walkSpeed * dt;
+                        if (now >= nixyState.nextRoamChangeAt) {
+                            nixyState.nextRoamChangeAt = now + 1800 + Math.random() * 2400;
+                            if (Math.random() < 0.45) {
+                                nixyState.dir = Math.random() < 0.5 ? -1 : 1;
+                                renderNixyOrb();
+                            }
+                            const vChoices = [-nixyState.roamVerticalSpeed, 0, nixyState.roamVerticalSpeed];
+                            nixyState.vy = vChoices[Math.floor(Math.random() * vChoices.length)];
+                        }
+
+                        nixyState.x += nixyState.dir * nixyState.walkSpeed * dt;
+                        nixyState.y += nixyState.vy * dt;
+
                         if (nixyState.x >= maxX) {
                             nixyState.x = maxX;
                             nixyState.dir = -1;
@@ -2120,6 +2147,14 @@
                             nixyState.x = minX;
                             nixyState.dir = 1;
                             renderNixyOrb();
+                        }
+
+                        if (nixyState.y <= 8) {
+                            nixyState.y = 8;
+                            nixyState.vy = Math.abs(nixyState.roamVerticalSpeed);
+                        } else if (nixyState.y >= maxY) {
+                            nixyState.y = maxY;
+                            nixyState.vy = -Math.abs(nixyState.roamVerticalSpeed);
                         }
                     }
                 }
@@ -2148,6 +2183,7 @@
             nixySkipTourBtn.classList.remove('visible');
             document.body.classList.remove('nixy-tour-dimming');
             document.querySelectorAll('.nixy-tour-highlight').forEach(el => el.classList.remove('nixy-tour-highlight'));
+            document.querySelectorAll('.nixy-tour-ui-highlight').forEach(el => el.classList.remove('nixy-tour-ui-highlight'));
             document.querySelectorAll('.nixy-tour-dimmed').forEach(el => el.classList.remove('nixy-tour-dimmed'));
             if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
                 setNixyMood('normal', 0);
@@ -2159,7 +2195,7 @@
 
         nixySkipTourBtn.addEventListener('click', () => {
             endNixyTour(true);
-            showNixyBubble('Tour skipped! Let me know if you need me.', 2200);
+            showNixyBubble(t('Tour skipped! Let me know if you need me.'), 2200);
         });
 
         async function runFirstVisitTour() {
@@ -2174,13 +2210,13 @@
 
             const minX = window.innerWidth >= 1024 ? 284 : 24;
             const maxX = Math.max(minX + 60, window.innerWidth - 110);
-            const maxY = Math.max(40, window.innerHeight - 140);
+            const maxY = Math.max(40, window.innerHeight - 130);
 
             const tourableSections = Array.from(document.querySelectorAll('main > section, #main-notifications-panel, #portal-sections, footer'));
             tourableSections.forEach(sec => sec.classList.add('nixy-tour-dimmed'));
             document.body.classList.add('nixy-tour-dimming');
 
-            const computeTargetXYForEl = (el) => {
+            const computeTargetXYForEl = (el, isTopControl = false) => {
                 if (!el || typeof el.getBoundingClientRect !== 'function') {
                     return {
                         x: minX + Math.round((maxX - minX) * 0.5),
@@ -2188,7 +2224,12 @@
                     };
                 }
                 const rect = el.getBoundingClientRect();
-                // Place Nixy next to the section (prefer right side if space allows, otherwise left side)
+                if (isTopControl) {
+                    const tx = Math.min(maxX, Math.max(minX, rect.left - 12));
+                    const ty = Math.min(maxY, Math.max(60, Math.round(window.innerHeight - rect.bottom - 76)));
+                    return { x: Math.round(tx), y: ty };
+                }
+
                 const placeRightX = rect.right + 16;
                 const placeLeftX = rect.left - 80;
                 let tx;
@@ -2200,7 +2241,6 @@
                     tx = Math.min(maxX, Math.max(minX, rect.left + rect.width * 0.5 - 32));
                 }
 
-                // Vertical position next to the vertical middle of the section in viewport
                 const sectionMidY = rect.top + Math.min(rect.height * 0.5, 160);
                 const rawBottomY = window.innerHeight - sectionMidY - 32;
                 const ty = Math.min(maxY, Math.max(20, Math.round(rawBottomY)));
@@ -2211,37 +2251,71 @@
             const stops = [
                 {
                     el: document.querySelector('main > section:first-of-type'),
-                    say: 'Welcome! I am Nixy. Let me show you around each section.',
+                    sayKey: 'Welcome! I am Nixy. Let me show you around each section.',
+                    isTopControl: false,
                     fallback: { x: minX + 40, y: Math.min(maxY, 260) }
                 },
                 {
+                    el: document.getElementById('lang-btn'),
+                    sayKey: 'Language button: you can change the dashboard language from here.',
+                    isTopControl: true,
+                    fallback: { x: maxX - 120, y: maxY }
+                },
+                {
+                    el: document.getElementById('theme-toggle'),
+                    sayKey: 'Theme toggle: switch between dark mode and light mode anytime.',
+                    isTopControl: true,
+                    fallback: { x: maxX - 70, y: maxY }
+                },
+                {
+                    el: document.getElementById('notif-btn'),
+                    sayKey: 'Notifications: check live broadcasts and workspace notices here.',
+                    isTopControl: true,
+                    fallback: { x: maxX - 170, y: maxY }
+                },
+                {
+                    el: document.getElementById('profile-btn'),
+                    sayKey: 'Profile menu: view your account, profile, settings, or sign out.',
+                    isTopControl: true,
+                    fallback: { x: maxX, y: maxY }
+                },
+                {
                     el: document.querySelector('[aria-label="Workspace overview"]'),
-                    say: 'Overview strip: tracks total apps, categories, local runtime, and system status.',
+                    sayKey: 'Overview strip: tracks total apps, categories, local runtime, and system status.',
+                    isTopControl: false,
                     fallback: { x: minX + 120, y: Math.min(maxY, 220) }
                 },
                 {
                     el: document.getElementById('main-notifications-panel'),
-                    say: 'Workspace announcements: live broadcasts and platform notices appear here.',
+                    sayKey: 'Workspace announcements: live broadcasts and platform notices appear here.',
+                    isTopControl: false,
                     fallback: { x: maxX - 40, y: Math.min(maxY, 180) }
                 },
                 {
                     el: document.getElementById('portal-sections'),
-                    say: 'Applications: pin favorites, view most used tools, and launch your workspace apps.',
+                    sayKey: 'Applications: pin favorites, view most used tools, and launch your workspace apps.',
+                    isTopControl: false,
                     fallback: { x: minX + Math.round((maxX - minX) * 0.5), y: Math.min(maxY, 150) }
                 },
                 {
                     el: document.querySelector('footer'),
-                    say: 'Footer: quick links to support, feedback, and the blog.',
+                    sayKey: 'Footer: quick links to support, feedback, and the blog.',
+                    isTopControl: false,
                     fallback: { x: maxX, y: 24 }
                 }
             ];
 
             let activeHighlightedEl = null;
+            let activeUiHighlightedEl = null;
             const clearHighlight = () => {
                 if (activeHighlightedEl) {
                     activeHighlightedEl.classList.remove('nixy-tour-highlight');
                     activeHighlightedEl.classList.add('nixy-tour-dimmed');
                     activeHighlightedEl = null;
+                }
+                if (activeUiHighlightedEl) {
+                    activeUiHighlightedEl.classList.remove('nixy-tour-ui-highlight');
+                    activeUiHighlightedEl = null;
                 }
             };
 
@@ -2253,21 +2327,30 @@
                     await sleepMs(1200);
                 }
                 clearHighlight();
-                if (stop.el && typeof stop.el.scrollIntoView === 'function') {
-                    stop.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    await sleepMs(420);
-                    if (nixyState.tourSkipped || !nixyState.tourActive) break;
-                    stop.el.classList.remove('nixy-tour-dimmed');
-                    stop.el.classList.add('nixy-tour-highlight');
-                    activeHighlightedEl = stop.el;
+                if (stop.el) {
+                    if (stop.isTopControl) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        await sleepMs(300);
+                        if (nixyState.tourSkipped || !nixyState.tourActive) break;
+                        stop.el.classList.add('nixy-tour-ui-highlight');
+                        activeUiHighlightedEl = stop.el;
+                    } else if (typeof stop.el.scrollIntoView === 'function') {
+                        stop.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        await sleepMs(420);
+                        if (nixyState.tourSkipped || !nixyState.tourActive) break;
+                        stop.el.classList.remove('nixy-tour-dimmed');
+                        stop.el.classList.add('nixy-tour-highlight');
+                        activeHighlightedEl = stop.el;
+                    }
                 }
-                const targetPos = stop.el ? computeTargetXYForEl(stop.el) : stop.fallback;
+                const targetPos = stop.el ? computeTargetXYForEl(stop.el, stop.isTopControl) : stop.fallback;
                 nixyState.tourTargetX = targetPos.x;
                 nixyState.tourTargetY = targetPos.y;
-                showNixyBubble(stop.say, 3400);
+                showNixyBubble(t(stop.sayKey), 3400);
                 await sleepMs(3700);
             }
 
+            clearHighlight();
             if (!nixyState.tourSkipped) {
                 endNixyTour(true);
             }
