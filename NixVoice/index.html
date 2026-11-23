@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NixVoice | Codenix AI Voice Studio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <!-- Puter.js SDK -->
+  <script src="https://js.puter.com/v2/"></script>
+  
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            codenix: {
+              purple: '#7c3aed',
+              purpleHover: '#6d28d9',
+              purpleLight: '#a855f7',
+              purpleGlow: 'rgba(124, 58, 237, 0.35)',
+              darkBg: '#09090b',
+              darkSurface: '#121216',
+              darkBorder: '#27272a',
+              lightBg: '#ffffff',
+              lightSurface: '#f8f7ff',
+              lightBorder: '#e4e4e7'
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'blink': 'blink 4s infinite',
+          },
+          keyframes: {
+            blink: {
+              '0%, 94%, 98%, 100%': { transform: 'scaleY(1)' },
+              '96%': { transform: 'scaleY(0.1)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for Codenix Theme */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(124, 58, 237, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(124, 58, 237, 0.7);
+    }
+
+    /* Range Slider Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #7c3aed;
+      cursor: pointer;
+      margin-top: -6px;
+      box-shadow: 0 0 10px rgba(124, 58, 237, 0.6);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: rgba(124, 58, 237, 0.3);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-codenix-lightBg text-zinc-900 dark:bg-codenix-darkBg dark:text-zinc-100 font-sans antialiased selection:bg-codenix-purple selection:text-white transition-colors duration-300 overflow-hidden h-screen flex flex-col">
+
+  <!-- ===================================================================== -->
+  <!-- SUPABASE AUTH GATE OVERLAY                                            -->
+  <!-- ===================================================================== -->
+  <div id="auth-gate" class="fixed inset-0 z-50 bg-codenix-darkBg flex flex-col items-center justify-center p-6 text-center transition-opacity duration-300">
+    <div class="w-16 h-16 rounded-full bg-codenix-purple flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(124,58,237,0.6)] mb-5 animate-bounce">
+      <div class="w-2.5 h-3.5 rounded-full bg-white"></div>
+      <div class="w-2.5 h-3.5 rounded-full bg-white"></div>
+    </div>
+    <h2 id="auth-gate-title" class="text-xl font-bold text-white tracking-tight">Verifying Codenix Session...</h2>
+    <p id="auth-gate-desc" class="text-sm text-zinc-400 mt-1 max-w-sm">Checking your authentication state before launching NixVoice Studio.</p>
+    <a id="auth-redirect-fallback" href="/Start?redirect=%2FNixVoice" class="hidden mt-5 px-5 py-2.5 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-sm font-medium transition shadow-lg shadow-codenix-purple/30">
+      Go to Codenix Sign In
+    </a>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION BAR                                                    -->
+  <!-- ===================================================================== -->
+  <header class="h-16 border-b border-codenix-lightBorder dark:border-codenix-darkBorder bg-codenix-lightSurface/80 dark:bg-codenix-darkSurface/80 backdrop-blur-md px-4 lg:px-6 flex items-center justify-between shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <!-- Mobile Sidebar Toggle -->
+      <button id="sidebar-toggle-btn" class="lg:hidden p-2 rounded-xl hover:bg-purple-500/10 text-zinc-600 dark:text-zinc-300 transition" aria-label="Toggle Saved Voices">
+        <i class="ph ph-list text-xl"></i>
+      </button>
+
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-codenix-purple to-purple-800 flex items-center justify-center shadow-lg shadow-codenix-purple/30">
+          <i class="ph-fill ph-waveform text-white text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-lg tracking-tight">NixVoice</span>
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight border border-codenix-purple/30">Codenix</span>
+          </div>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 hidden sm:block">Puter.js Neural Voice & Audio Studio</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- User Badge -->
+      <div id="user-badge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="user-email-label" class="font-mono text-zinc-600 dark:text-zinc-300 max-w-[140px] truncate">Authenticated</span>
+      </div>
+
+      <!-- Sync with Puter Cloud KV -->
+      <button id="sync-puter-kv-btn" title="Backup Saves to Puter Cloud KV" class="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-zinc-700 dark:text-zinc-300 transition flex items-center gap-1.5 text-xs font-medium">
+        <i class="ph ph-cloud-arrow-up text-base text-codenix-purple"></i>
+        <span class="hidden md:inline">Cloud Sync</span>
+      </button>
+
+      <!-- Dark / Light Theme Toggle -->
+      <button id="theme-toggle" title="Toggle Codenix Theme (Purple/Black & Purple/White)" class="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-zinc-700 dark:text-zinc-300 transition">
+        <i id="theme-icon" class="ph-fill ph-sun text-lg text-amber-400"></i>
+      </button>
+
+      <!-- Sign Out Button -->
+      <button id="signout-btn" title="Sign Out" class="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 border border-codenix-lightBorder dark:border-codenix-darkBorder text-zinc-600 dark:text-zinc-400 transition">
+        <i class="ph ph-sign-out text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN WORKSPACE (SIDEBAR + CHAT STUDIO)                                -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- Mobile Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-20 hidden lg:hidden"></div>
+
+    <!-- LEFT SIDEBAR: LOCAL STORAGE SAVED VOICES -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-72 sm:w-80 bg-codenix-lightSurface dark:bg-codenix-darkSurface border-r border-codenix-lightBorder dark:border-codenix-darkBorder flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+      <div class="p-4 border-b border-codenix-lightBorder dark:border-codenix-darkBorder flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="ph-fill ph-folder-star text-codenix-purple text-lg"></i>
+          <h2 class="font-semibold text-sm">Saved Voices</h2>
+        </div>
+        <button id="clear-history-btn" class="text-xs text-zinc-500 hover:text-red-500 transition px-2 py-1 rounded-lg hover:bg-red-500/10">
+          Clear All
+        </button>
+      </div>
+
+      <!-- Saved Clips Container -->
+      <div id="saved-clips-list" class="flex-1 overflow-y-auto p-3 space-y-2.5">
+        <!-- Populated dynamically from localStorage -->
+      </div>
+
+      <!-- Storage Info Footer -->
+      <div class="p-3.5 border-t border-codenix-lightBorder dark:border-codenix-darkBorder text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <i class="ph-fill ph-hard-drives text-codenix-purple"></i>
+          LocalStorage Active
+        </span>
+        <span id="saved-count-badge" class="font-mono text-codenix-purple dark:text-codenix-purpleLight font-semibold">0 clips</span>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: CHAT VOICE STUDIO -->
+    <main class="flex-1 flex flex-col min-w-0 bg-codenix-lightBg dark:bg-codenix-darkBg relative">
+
+      <!-- Chat Stream -->
+      <div id="chat-stream" class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 pb-36">
+        <!-- Welcome Banner -->
+        <div class="max-w-2xl mx-auto rounded-3xl p-6 bg-gradient-to-br from-codenix-purple/15 via-purple-500/5 to-transparent border border-codenix-purple/30 text-center space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-codenix-purple/20 text-codenix-purple dark:text-codenix-purpleLight text-xs font-medium">
+            <i class="ph-fill ph-sparkle"></i> Powered by Puter.js Neural TTS
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Welcome to <span class="text-codenix-purple dark:text-codenix-purpleLight">NixVoice</span></h1>
+          <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto leading-relaxed">
+            Type any script below, pick a voice persona, and generate studio-grade speech. Edit pitch/speed, apply Web Audio FX, and download or auto-save clips locally.
+          </p>
+          <!-- Quick Prompt Chips -->
+          <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <button type="button" onclick="usePromptPreset('Welcome to Codenix! Building the future of web tools with elegance and speed.')" class="text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition">
+              "Welcome to Codenix..."
+            </button>
+            <button type="button" onclick="usePromptPreset('System online. All neural voice modules operating at peak efficiency.')" class="text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition">
+              "System online..."
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Chat Messages & Generated Voice Cards -->
+        <div id="messages-container" class="max-w-3xl mx-auto space-y-5"></div>
+      </div>
+
+      <!-- Bottom Input Dock -->
+      <div class="border-t border-codenix-lightBorder dark:border-codenix-darkBorder bg-codenix-lightSurface/90 dark:bg-codenix-darkSurface/90 backdrop-blur-xl p-3 sm:p-4 z-20">
+        <form id="voice-chat-form" class="max-w-3xl mx-auto space-y-3">
+          
+          <!-- Voice Controls Toolbar -->
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <!-- Voice Persona Selector -->
+            <div class="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1.5">
+              <i class="ph-fill ph-user-sound text-codenix-purple"></i>
+              <label for="voice-select" class="text-zinc-500 dark:text-zinc-400">Voice:</label>
+              <select id="voice-select" class="bg-transparent font-medium focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
+                <option value="Joanna" class="dark:bg-zinc-900">Joanna (US Female)</option>
+                <option value="Matthew" class="dark:bg-zinc-900">Matthew (US Male)</option>
+                <option value="Salli" class="dark:bg-zinc-900">Salli (US Soft)</option>
+                <option value="Joey" class="dark:bg-zinc-900">Joey (US Casual)</option>
+                <option value="Amy" class="dark:bg-zinc-900">Amy (UK Female)</option>
+                <option value="Brian" class="dark:bg-zinc-900">Brian (UK Narrator)</option>
+                <option value="Aria" class="dark:bg-zinc-900">Aria (Expressive)</option>
+              </select>
+            </div>
+
+            <!-- Engine Selector -->
+            <div class="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1.5">
+              <i class="ph-fill ph-cpu text-codenix-purple"></i>
+              <label for="engine-select" class="text-zinc-500 dark:text-zinc-400">Engine:</label>
+              <select id="engine-select" class="bg-transparent font-medium focus:outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer">
+                <option value="neural" class="dark:bg-zinc-900">Neural</option>
+                <option value="generative" class="dark:bg-zinc-900">Generative</option>
+                <option value="standard" class="dark:bg-zinc-900">Standard</option>
+              </select>
+            </div>
+
+            <!-- Default Speed -->
+            <div class="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl px-2.5 py-1.5">
+              <i class="ph-fill ph-gauge text-codenix-purple"></i>
+              <span class="text-zinc-500 dark:text-zinc-400">Speed:</span>
+              <input id="input-speed-range" type="range" min="0.6" max="1.6" step="0.1" value="1.0" class="w-16" />
+              <span id="input-speed-label" class="font-mono font-semibold text-codenix-purple dark:text-codenix-purpleLight w-8">1.0x</span>
+            </div>
+          </div>
+
+          <!-- Text Input & Submit Button -->
+          <div class="flex items-end gap-2.5">
+            <div class="flex-1 relative">
+              <textarea id="script-input" rows="1" placeholder="Type what you want NixVoice to say..." class="w-full resize-none rounded-2xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:border-codenix-purple focus:ring-2 focus:ring-codenix-purple/20 px-4 py-3 text-sm focus:outline-none transition max-h-32"></textarea>
+            </div>
+            <button id="generate-btn" type="submit" class="px-5 py-3 rounded-2xl bg-codenix-purple hover:bg-codenix-purpleHover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-codenix-purple/30 transition shrink-0">
+              <i class="ph-fill ph-waveform text-lg"></i>
+              <span class="hidden sm:inline">Generate</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VOICE EDITOR MODAL (EDIT SCRIPT, VOICE, SPEED & AUDIO FX)             -->
+  <!-- ===================================================================== -->
+  <div id="editor-modal" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-3xl bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder shadow-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+      <div class="px-6 py-4 border-b border-codenix-lightBorder dark:border-codenix-darkBorder flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="ph-fill ph-sliders-horizontal text-codenix-purple text-xl"></i>
+          <h3 class="font-bold text-base">Edit Voice Clip</h3>
+        </div>
+        <button onclick="closeEditorModal()" class="p-1.5 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 transition">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Edit Script Text -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Script Text</label>
+          <textarea id="edit-script-text" rows="3" class="w-full rounded-2xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder focus:border-codenix-purple px-3.5 py-2.5 text-sm focus:outline-none"></textarea>
+        </div>
+
+        <!-- Edit Voice & Speed -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Voice Persona</label>
+            <select id="edit-voice-select" class="w-full rounded-xl bg-white dark:bg-zinc-900 border border-codenix-lightBorder dark:border-codenix-darkBorder px-3 py-2 text-sm focus:outline-none focus:border-codenix-purple">
+              <option value="Joanna">Joanna (US Female)</option>
+              <option value="Matthew">Matthew (US Male)</option>
+              <option value="Salli">Salli (US Soft)</option>
+              <option value="Joey">Joey (US Casual)</option>
+              <option value="Amy">Amy (UK Female)</option>
+              <option value="Brian">Brian (UK Narrator)</option>
+              <option value="Aria">Aria (Expressive)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">
+              Playback Speed: <span id="edit-speed-val" class="text-codenix-purple font-mono">1.0x</span>
+            </label>
+            <div class="pt-2">
+              <input id="edit-speed-range" type="range" min="0.5" max="1.8" step="0.05" value="1.0" class="w-full" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Studio Audio Filter FX -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Studio Filter FX</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-fx="none" class="fx-btn px-3 py-2 rounded-xl border border-codenix-purple bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight text-xs font-semibold transition">
+              Clean Studio
+            </button>
+            <button type="button" data-fx="radio" class="fx-btn px-3 py-2 rounded-xl border border-codenix-lightBorder dark:border-codenix-darkBorder bg-white dark:bg-zinc-900 text-xs font-medium hover:border-codenix-purple transition">
+              Comms Radio
+            </button>
+            <button type="button" data-fx="deep" class="fx-btn px-3 py-2 rounded-xl border border-codenix-lightBorder dark:border-codenix-darkBorder bg-white dark:bg-zinc-900 text-xs font-medium hover:border-codenix-purple transition">
+              Deep Bass
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-zinc-100/70 dark:bg-zinc-900/70 border-t border-codenix-lightBorder dark:border-codenix-darkBorder flex items-center justify-end gap-2.5">
+        <button type="button" onclick="closeEditorModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition">
+          Cancel
+        </button>
+        <button id="save-edit-btn" type="button" class="px-5 py-2 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white text-xs font-semibold shadow-lg shadow-codenix-purple/25 flex items-center gap-1.5 transition">
+          <i class="ph-fill ph-check-circle"></i>
+          <span>Apply & Save Changes</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION CONTAINER                                          -->
+  <!-- ===================================================================== -->
+  <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- NIXY: PURPLE BALL WITH TWO WHITE EYES ONLY                            -->
+  <!-- ===================================================================== -->
+  <div id="nixy-wrapper" class="fixed bottom-24 left-6 z-30 select-none pointer-events-auto transition-transform duration-100 ease-linear" style="transform: translateX(0px);">
+    <!-- Nixy Speech Bubble -->
+    <div id="nixy-bubble" class="mb-2 max-w-[210px] bg-zinc-900 text-white border border-codenix-purple/60 rounded-2xl rounded-bl-sm px-3 py-2 text-xs shadow-xl shadow-codenix-purple/20 opacity-0 scale-90 transition-all duration-300 pointer-events-none">
+      <p id="nixy-text" class="leading-snug">Hi! I'm Nixy! Click me or generate a voice!</p>
+    </div>
+
+    <!-- Pure Purple Ball with Two White Eyes Only -->
+    <div id="nixy-bot" title="Click or drag Nixy!" class="w-11 h-11 rounded-full bg-codenix-purple shadow-[0_6px_20px_rgba(124,58,237,0.65)] flex items-center justify-center gap-2 cursor-pointer hover:scale-105 transition-transform">
+      <div id="nixy-eye-left" class="w-2 h-3 rounded-full bg-white animate-blink transition-transform duration-150"></div>
+      <div id="nixy-eye-right" class="w-2 h-3 rounded-full bg-white animate-blink transition-transform duration-150"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT LOGIC                                          -->
+  <!-- ===================================================================== -->
+  <script>
+    // =========================================================================
+    // 1. SUPABASE AUTHENTICATION CHECK & REDIRECT GUARD
+    // =========================================================================
+    const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+    let supabaseClient = null;
+
+    async function checkSupabaseSession() {
+      const authGate = document.getElementById('auth-gate');
+      const authTitle = document.getElementById('auth-gate-title');
+      const authDesc = document.getElementById('auth-gate-desc');
+      const fallbackLink = document.getElementById('auth-redirect-fallback');
+      const userEmailLabel = document.getElementById('user-email-label');
+
+      // Construct redirect URL back to /NixVoice on the current domain
+      const returnPath = '/NixVoice';
+      const signInUrl = `${window.location.origin}/Start?redirect=${encodeURIComponent(returnPath)}`;
+      fallbackLink.href = signInUrl;
+
+      try {
+        if (!window.supabase) {
+          throw new Error('Supabase SDK unavailable.');
+        }
+
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+        if (error || !session) {
+          // User is NOT signed in -> Redirect to /Start with redirect link to /NixVoice
+          authTitle.textContent = 'Sign In Required';
+          authDesc.textContent = 'Redirecting you to Codenix Sign In (/Start) so you can return to /NixVoice...';
+          fallbackLink.classList.remove('hidden');
+
+          setTimeout(() => {
+            if (window.location.protocol.startsWith('http')) {
+              window.location.href = signInUrl;
+            }
+          }, 900);
+          return;
+        }
+
+        // User IS signed in -> Unlock NixVoice Studio
+        if (session.user && session.user.email) {
+          userEmailLabel.textContent = session.user.email;
+        }
+        authGate.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => authGate.remove(), 350);
+        nixySpeak('Welcome back! Ready to synthesize some voices?');
+
+      } catch (err) {
+        console.warn('Supabase auth check warning:', err);
+        authTitle.textContent = 'Authentication Check';
+        authDesc.textContent = 'Please sign in at /Start to continue to /NixVoice.';
+        fallbackLink.classList.remove('hidden');
+
+        if (window.location.protocol.startsWith('http')) {
+          setTimeout(() => {
+            window.location.href = signInUrl;
+          }, 1200);
+        } else {
+          // Allow local preview mode if opened as a standalone file:// preview
+          authGate.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => authGate.remove(), 350);
+        }
+      }
+    }
+
+    document.getElementById('signout-btn').addEventListener('click', async () => {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      const signInUrl = `${window.location.origin}/Start?redirect=${encodeURIComponent('/NixVoice')}`;
+      showToast('Signed out. Redirecting to /Start...', 'info');
+      setTimeout(() => {
+        if (window.location.protocol.startsWith('http')) {
+          window.location.href = signInUrl;
+        } else {
+          location.reload();
+        }
+      }, 800);
+    });
+
+    // =========================================================================
+    // 2. THEME MANAGEMENT (Purple & Black Dark / Purple & White Light)
+    // =========================================================================
+    const htmlEl = document.documentElement;
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        htmlEl.classList.remove('dark');
+        themeIcon.className = 'ph-fill ph-moon text-lg text-codenix-purple';
+      } else {
+        htmlEl.classList.add('dark');
+        themeIcon.className = 'ph-fill ph-sun text-lg text-amber-400';
+      }
+      localStorage.setItem('nixvoice_theme', theme);
+    }
+
+    const savedTheme = localStorage.getItem('nixvoice_theme') || 'dark';
+    applyTheme(savedTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = htmlEl.classList.contains('dark');
+      const nextTheme = isDark ? 'light' : 'dark';
+      applyTheme(nextTheme);
+      nixySpeak(nextTheme === 'dark' ? 'Oooh, sleek Purple & Black mode!' : 'Bright Purple & White mode activated!');
+    });
+
+    // =========================================================================
+    // 3. STATE & LOCALSTORAGE PERSISTENCE (Puter.js Voice Saves)
+    // =========================================================================
+    const STORAGE_KEY = 'nixvoice_puter_saves_v1';
+    let voiceClips = [];
+    let currentEditingId = null;
+    let selectedFx = 'none';
+
+    function loadSavesFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        voiceClips = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error('Failed to load local saves:', e);
+        voiceClips = [];
+      }
+      renderAll();
+    }
+
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(voiceClips));
+      } catch (e) {
+        console.error('Failed to save to localStorage:', e);
+        showToast('Storage warning: Oldest items may not persist if storage is full.', 'error');
+      }
+      renderSidebarList();
+    }
+
+    // Optional Puter Cloud KV Backup
+    document.getElementById('sync-puter-kv-btn').addEventListener('click', async () => {
+      try {
+        if (window.puter && puter.kv) {
+          showToast('Syncing saves to Puter Cloud KV...', 'info');
+          const lightweightData = voiceClips.map(({ id, text, voice, engine, speed, fx, timestamp }) => ({
+            id, text, voice, engine, speed, fx, timestamp
+          }));
+          await puter.kv.set('nixvoice_saved_clips', JSON.stringify(lightweightData));
+          showToast('Backed up to Puter Cloud successfully!', 'success');
+          nixySpeak('Your voice scripts are safely backed up in Puter Cloud!');
+        } else {
+          showToast('Puter SDK not ready yet.', 'error');
+        }
+      } catch (err) {
+        console.error('Puter KV error:', err);
+        showToast('Sign in to Puter when prompted to sync cloud KV.', 'info');
+      }
+    });
+
+    // =========================================================================
+    // 4. PUTER.JS TEXT-TO-SPEECH GENERATION & AUDIO HANDLING
+    // =========================================================================
+    async function synthesizeWithPuter(text, voice = 'Joanna', engine = 'neural') {
+      if (!window.puter || !puter.ai || !puter.ai.txt2speech) {
+        throw new Error('Puter.js SDK is still loading. Please try again in a moment.');
+      }
+
+      const audioObj = await puter.ai.txt2speech(text, {
+        voice: voice,
+        engine: engine
+      });
+
+      let audioSrc = audioObj.src || '';
+      
+      if (audioSrc.startsWith('blob:')) {
+        try {
+          const resp = await fetch(audioSrc);
+          const blob = await resp.blob();
+          audioSrc = await blobToDataURL(blob);
+        } catch (convErr) {
+          console.warn('Could not convert blob to DataURL, keeping blob URL:', convErr);
+        }
+      }
+
+      return audioSrc;
+    }
+
+    function blobToDataURL(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    const chatForm = document.getElementById('voice-chat-form');
+    const scriptInput = document.getElementById('script-input');
+    const voiceSelect = document.getElementById('voice-select');
+    const engineSelect = document.getElementById('engine-select');
+    const inputSpeedRange = document.getElementById('input-speed-range');
+    const inputSpeedLabel = document.getElementById('input-speed-label');
+    const generateBtn = document.getElementById('generate-btn');
+
+    inputSpeedRange.addEventListener('input', (e) => {
+      inputSpeedLabel.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+    });
+
+    scriptInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 128) + 'px';
+    });
+
+    scriptInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = scriptInput.value.trim();
+      if (!text) {
+        showToast('Please enter some text first.', 'info');
+        nixySpeak('Type something in the box so I can hear it!');
+        return;
+      }
+
+      const voice = voiceSelect.value;
+      const engine = engineSelect.value;
+      const speed = parseFloat(inputSpeedRange.value);
+
+      scriptInput.value = '';
+      scriptInput.style.height = 'auto';
+
+      const clipId = 'nix_' + Date.now();
+      const newClip = {
+        id: clipId,
+        text,
+        voice,
+        engine,
+        speed,
+        fx: 'none',
+        audioUrl: null,
+        status: 'generating',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      voiceClips.push(newClip);
+      renderAll();
+      scrollToBottom();
+
+      setGeneratingState(true);
+      nixySpeak(`Synthesizing with ${voice}'s voice...`);
+
+      try {
+        const audioUrl = await synthesizeWithPuter(text, voice, engine);
+        newClip.audioUrl = audioUrl;
+        newClip.status = 'ready';
+        saveToLocalStorage();
+        renderAll();
+        scrollToBottom();
+        nixySpeak('Voice ready! Hit play, edit it, or download!');
+      } catch (err) {
+        console.error('TTS Generation Error:', err);
+        newClip.status = 'error';
+        newClip.errorMsg = err.message || 'Voice synthesis failed.';
+        renderAll();
+        showToast(newClip.errorMsg, 'error');
+        nixySpeak('Oops! Something went wrong with Puter TTS.');
+      } finally {
+        setGeneratingState(false);
+      }
+    });
+
+    function setGeneratingState(isLoading) {
+      generateBtn.disabled = isLoading;
+      if (isLoading) {
+        generateBtn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i><span class="hidden sm:inline">Working...</span>`;
+      } else {
+        generateBtn.innerHTML = `<i class="ph-fill ph-waveform text-lg"></i><span class="hidden sm:inline">Generate</span>`;
+      }
+    }
+
+    function usePromptPreset(text) {
+      scriptInput.value = text;
+      scriptInput.focus();
+      nixySpeak('Great script choice! Press Generate!');
+    }
+
+    // =========================================================================
+    // 5. RENDERING CHAT STREAM & SIDEBAR SAVES
+    // =========================================================================
+    const messagesContainer = document.getElementById('messages-container');
+    const savedClipsList = document.getElementById('saved-clips-list');
+    const savedCountBadge = document.getElementById('saved-count-badge');
+
+    function renderAll() {
+      renderChatMessages();
+      renderSidebarList();
+    }
+
+    function renderChatMessages() {
+      messagesContainer.innerHTML = '';
+
+      voiceClips.forEach((clip) => {
+        const itemWrapper = document.createElement('div');
+        itemWrapper.className = 'space-y-3';
+
+        const userBubble = `
+          <div class="flex justify-end">
+            <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm bg-codenix-purple text-white px-4 py-3 shadow-md shadow-codenix-purple/20">
+              <p class="text-sm whitespace-pre-wrap leading-relaxed">${escapeHtml(clip.text)}</p>
+              <div class="flex items-center justify-end gap-2 mt-1.5 text-[10px] text-purple-200 font-mono">
+                <span>${clip.voice}</span>
+                <span>•</span>
+                <span>${clip.timestamp}</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        let botBubble = '';
+        if (clip.status === 'generating') {
+          botBubble = `
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-codenix-purple/20 border border-codenix-purple/40 flex items-center justify-center shrink-0 mt-1">
+                <i class="ph-fill ph-waveform text-codenix-purple animate-pulse"></i>
+              </div>
+              <div class="rounded-2xl rounded-tl-sm bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder p-4 flex items-center gap-3">
+                <i class="ph ph-spinner animate-spin text-codenix-purple text-lg"></i>
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Synthesizing neural audio via Puter.js...</span>
+              </div>
+            </div>
+          `;
+        } else if (clip.status === 'error') {
+          botBubble = `
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0 mt-1">
+                <i class="ph-fill ph-warning-circle text-red-500"></i>
+              </div>
+              <div class="rounded-2xl rounded-tl-sm bg-red-500/10 border border-red-500/30 p-3.5 text-xs text-red-600 dark:text-red-300">
+                <p class="font-semibold">Generation Failed</p>
+                <p class="mt-0.5">${escapeHtml(clip.errorMsg || 'Unknown error')}</p>
+                <button onclick="retryClip('${clip.id}')" class="mt-2 px-3 py-1 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition">Retry</button>
+              </div>
+            </div>
+          `;
+        } else {
+          botBubble = `
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-codenix-purple to-purple-800 text-white flex items-center justify-center shrink-0 mt-1 shadow-md">
+                <i class="ph-fill ph-speaker-high text-sm"></i>
+              </div>
+              <div class="flex-1 max-w-[90%] sm:max-w-[80%] rounded-2xl rounded-tl-sm bg-codenix-lightSurface dark:bg-codenix-darkSurface border border-codenix-lightBorder dark:border-codenix-darkBorder p-4 shadow-sm space-y-3">
+                
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-codenix-purple dark:text-codenix-purpleLight">${clip.voice}</span>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">${clip.engine}</span>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-purple/10 text-codenix-purple dark:text-codenix-purpleLight">${clip.speed}x</span>
+                    ${clip.fx && clip.fx !== 'none' ? `<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500">FX: ${clip.fx}</span>` : ''}
+                  </div>
+                  <span class="text-[10px] text-zinc-400 flex items-center gap-1">
+                    <i class="ph-fill ph-check-circle text-emerald-500"></i> Saved Locally
+                  </span>
+                </div>
+
+                <div class="bg-white dark:bg-zinc-900/90 border border-codenix-lightBorder dark:border-codenix-darkBorder rounded-xl p-2.5 flex items-center gap-3">
+                  <button onclick="togglePlayAudio('${clip.id}')" id="play-btn-${clip.id}" class="w-9 h-9 rounded-xl bg-codenix-purple hover:bg-codenix-purpleHover text-white flex items-center justify-center shrink-0 transition shadow-md shadow-codenix-purple/25">
+                    <i class="ph-fill ph-play text-base"></i>
+                  </button>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden cursor-pointer" onclick="seekAudio(event, '${clip.id}')">
+                      <div id="progress-${clip.id}" class="h-full bg-codenix-purple w-0 transition-all duration-100"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-mono text-zinc-400 mt-1">
+                      <span id="time-cur-${clip.id}">0:00</span>
+                      <span id="time-dur-${clip.id}">Ready</span>
+                    </div>
+                  </div>
+
+                  <audio id="audio-${clip.id}" src="${clip.audioUrl}" preload="metadata" onloadedmetadata="initAudioMeta('${clip.id}')" ontimeupdate="updateAudioProgress('${clip.id}')" onended="resetAudioUI('${clip.id}')"></audio>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                  <button onclick="openEditorModal('${clip.id}')" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:border-codenix-purple border border-codenix-lightBorder dark:border-codenix-darkBorder text-xs font-medium flex items-center gap-1.5 transition">
+                    <i class="ph ph-sliders-horizontal text-codenix-purple"></i>
+                    <span>Edit Voice</span>
+                  </button>
+
+                  <button onclick="downloadClip('${clip.id}')" class="px-3 py-1.5 rounded-xl bg-codenix-purple/15 hover:bg-codenix-purple/25 border border-codenix-purple/30 text-codenix-purple dark:text-codenix-purpleLight text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i class="ph ph-download-simple"></i>
+                    <span>Download</span>
+                  </button>
+
+                  <button onclick="copyScript('${clip.id}')" class="px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 text-xs transition" title="Copy Script">
+                    <i class="ph ph-copy"></i>
+                  </button>
+
+                  <button onclick="deleteClip('${clip.id}')" class="ml-auto px-2.5 py-1.5 rounded-xl hover:bg-red-500/15 text-zinc-400 hover:text-red-500 text-xs transition" title="Delete Clip">
+                    <i class="ph ph-trash"></i>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          `;
+        }
+
+        itemWrapper.innerHTML = userBubble + botBubble;
+        messagesContainer.appendChild(itemWrapper);
+      });
+    }
+
+    function renderSidebarList() {
+      savedClipsList.innerHTML = '';
+      savedCountBadge.textContent = `${voiceClips.length} ${voiceClips.length === 1 ? 'clip' : 'clips'}`;
+
+      if (voiceClips.length === 0) {
+        savedClipsList.innerHTML = `
+          <div class="text-center py-10 px-4">
+            <i class="ph ph-waveform text-3xl text-zinc-400 dark:text-zinc-600 mb-2"></i>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">No saved voice clips yet. Generate one in the chat!</p>
+          </div>
+        `;
+        return;
+      }
+
+      [...voiceClips].reverse().forEach((clip) => {
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-2xl bg-white dark:bg-zinc-900/80 border border-codenix-lightBorder dark:border-codenix-darkBorder hover:border-codenix-purple transition group cursor-pointer';
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-[11px] font-bold text-codenix-purple dark:text-codenix-purpleLight flex items-center gap-1">
+              <i class="ph-fill ph-speaker-simple-high"></i> ${clip.voice}
+            </span>
+            <span class="text-[10px] font-mono text-zinc-400">${clip.timestamp}</span>
+          </div>
+          <p class="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2 mb-2">${escapeHtml(clip.text)}</p>
+          <div class="flex items-center gap-1.5">
+            <button onclick="event.stopPropagation(); togglePlayAudio('${clip.id}')" class="px-2 py-1 rounded-lg bg-codenix-purple/15 text-codenix-purple dark:text-codenix-purpleLight text-[11px] font-medium hover:bg-codenix-purple hover:text-white transition">
+              Play
+            </button>
+            <button onclick="event.stopPropagation(); openEditorModal('${clip.id}')" class="px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[11px] hover:text-codenix-purple transition">
+              Edit
+            </button>
+            <button onclick="event.stopPropagation(); downloadClip('${clip.id}')" class="px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[11px] hover:text-codenix-purple transition ml-auto">
+              <i class="ph ph-download-simple"></i>
+            </button>
+          </div>
+        `;
+        savedClipsList.appendChild(card);
+      });
+    }
+
+    // =========================================================================
+    // 6. AUDIO PLAYBACK, WEB AUDIO FX & DOWNLOADING
+    // =========================================================================
+    let audioCtx = null;
+    const connectedAudioNodes = new WeakMap();
+
+    function applyAudioEffects(audioEl, clip) {
+      audioEl.playbackRate = clip.speed || 1.0;
+
+      if (!clip.fx || clip.fx === 'none') return;
+
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        if (!connectedAudioNodes.has(audioEl)) {
+          const source = audioCtx.createMediaElementSource(audioEl);
+          const filter = audioCtx.createBiquadFilter();
+
+          if (clip.fx === 'radio') {
+            filter.type = 'bandpass';
+            filter.frequency.value = 1400;
+            filter.Q.value = 1.5;
+          } else if (clip.fx === 'deep') {
+            filter.type = 'lowshelf';
+            filter.frequency.value = 250;
+            filter.gain.value = 12;
+          }
+
+          source.connect(filter);
+          filter.connect(audioCtx.destination);
+          connectedAudioNodes.set(audioEl, { source, filter });
+        } else {
+          const { filter } = connectedAudioNodes.get(audioEl);
+          if (clip.fx === 'radio') {
+            filter.type = 'bandpass';
+            filter.frequency.value = 1400;
+            filter.Q.value = 1.5;
+          } else if (clip.fx === 'deep') {
+            filter.type = 'lowshelf';
+            filter.frequency.value = 250;
+            filter.gain.value = 12;
+          }
+        }
+      } catch (e) {
+        console.warn('Web Audio FX fallback:', e);
+      }
+    }
+
+    function togglePlayAudio(id) {
+      const clip = voiceClips.find(c => c.id === id);
+      const audioEl = document.getElementById(`audio-${id}`);
+      const btn = document.getElementById(`play-btn-${id}`);
+      if (!audioEl || !clip) return;
+
+      document.querySelectorAll('audio').forEach(a => {
+        if (a.id !== `audio-${id}` && !a.paused) {
+          a.pause();
+          const otherId = a.id.replace('audio-', '');
+          resetAudioUI(otherId);
+        }
+      });
+
+      if (audioEl.paused) {
+        applyAudioEffects(audioEl, clip);
+        audioEl.play().then(() => {
+          if (btn) btn.innerHTML = `<i class="ph-fill ph-pause text-base"></i>`;
+          nixyBounceExcited();
+        }).catch(err => {
+          showToast('Playback error: ' + err.message, 'error');
+        });
+      } else {
+        audioEl.pause();
+        if (btn) btn.innerHTML = `<i class="ph-fill ph-play text-base"></i>`;
+      }
+    }
+
+    function initAudioMeta(id) {
+      const audioEl = document.getElementById(`audio-${id}`);
+      const durEl = document.getElementById(`time-dur-${id}`);
+      if (audioEl && durEl && !isNaN(audioEl.duration)) {
+        durEl.textContent = formatTime(audioEl.duration);
+      }
+    }
+
+    function updateAudioProgress(id) {
+      const audioEl = document.getElementById(`audio-${id}`);
+      const progEl = document.getElementById(`progress-${id}`);
+      const curEl = document.getElementById(`time-cur-${id}`);
+      if (!audioEl || !progEl) return;
+
+      const pct = (audioEl.currentTime / (audioEl.duration || 1)) * 100;
+      progEl.style.width = `${pct}%`;
+      if (curEl) curEl.textContent = formatTime(audioEl.currentTime);
+    }
+
+    function resetAudioUI(id) {
+      const btn = document.getElementById(`play-btn-${id}`);
+      const progEl = document.getElementById(`progress-${id}`);
+      if (btn) btn.innerHTML = `<i class="ph-fill ph-play text-base"></i>`;
+      if (progEl) progEl.style.width = '0%';
+    }
+
+    function seekAudio(event, id) {
+      const audioEl = document.getElementById(`audio-${id}`);
+      if (!audioEl || !audioEl.duration) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      audioEl.currentTime = (clickX / rect.width) * audioEl.duration;
+    }
+
+    function downloadClip(id) {
+      const clip = voiceClips.find(c => c.id === id);
+      if (!clip || !clip.audioUrl) {
+        showToast('Audio file not ready for download.', 'error');
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = clip.audioUrl;
+      const safeName = clip.text.slice(0, 20).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = `NixVoice_${clip.voice}_${safeName || 'clip'}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('Downloading voice clip...', 'success');
+      nixySpeak('Downloaded! Ready for your project!');
+    }
+
+    function copyScript(id) {
+      const clip = voiceClips.find(c => c.id === id);
+      if (!clip) return;
+      const temp = document.createElement('textarea');
+      temp.value = clip.text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showToast('Script copied to clipboard!', 'success');
+    }
+
+    function deleteClip(id) {
+      voiceClips = voiceClips.filter(c => c.id !== id);
+      saveToLocalStorage();
+      renderAll();
+      showToast('Voice clip removed.', 'info');
+    }
+
+    async function retryClip(id) {
+      const clip = voiceClips.find(c => c.id === id);
+      if (!clip) return;
+      clip.status = 'generating';
+      renderAll();
+      try {
+        clip.audioUrl = await synthesizeWithPuter(clip.text, clip.voice, clip.engine);
+        clip.status = 'ready';
+        saveToLocalStorage();
+        renderAll();
+      } catch (err) {
+        clip.status = 'error';
+        clip.errorMsg = err.message;
+        renderAll();
+      }
+    }
+
+    document.getElementById('clear-history-btn').addEventListener('click', () => {
+      if (voiceClips.length === 0) return;
+      voiceClips = [];
+      saveToLocalStorage();
+      renderAll();
+      showToast('All local saved clips cleared.', 'info');
+      nixySpeak('Fresh slate! Ready for new voices!');
+    });
+
+    // =========================================================================
+    // 7. VOICE EDITOR MODAL LOGIC
+    // =========================================================================
+    const editorModal = document.getElementById('editor-modal');
+    const editScriptText = document.getElementById('edit-script-text');
+    const editVoiceSelect = document.getElementById('edit-voice-select');
+    const editSpeedRange = document.getElementById('edit-speed-range');
+    const editSpeedVal = document.getElementById('edit-speed-val');
+    const saveEditBtn = document.getElementById('save-edit-btn');
+
+    editSpeedRange.addEventListener('input', (e) => {
+      editSpeedVal.textContent = `${parseFloat(e.target.value).toFixed(2)}x`;
+    });
+
+    document.querySelectorAll('.fx-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.fx-btn').forEach(b => {
+          b.classList.remove('border-codenix-purple', 'bg-codenix-purple/15', 'text-codenix-purple', 'dark:text-codenix-purpleLight', 'font-semibold');
+          b.classList.add('border-codenix-lightBorder', 'dark:border-codenix-darkBorder', 'bg-white', 'dark:bg-zinc-900');
+        });
+        btn.classList.remove('border-codenix-lightBorder', 'dark:border-codenix-darkBorder', 'bg-white', 'dark:bg-zinc-900');
+        btn.classList.add('border-codenix-purple', 'bg-codenix-purple/15', 'text-codenix-purple', 'dark:text-codenix-purpleLight', 'font-semibold');
+        selectedFx = btn.dataset.fx;
+      });
+    });
+
+    function openEditorModal(id) {
+      const clip = voiceClips.find(c => c.id === id);
+      if (!clip) return;
+      currentEditingId = id;
+      editScriptText.value = clip.text;
+      editVoiceSelect.value = clip.voice;
+      editSpeedRange.value = clip.speed || 1.0;
+      editSpeedVal.textContent = `${parseFloat(clip.speed || 1.0).toFixed(2)}x`;
+      selectedFx = clip.fx || 'none';
+
+      document.querySelectorAll('.fx-btn').forEach(b => {
+        if (b.dataset.fx === selectedFx) {
+          b.click();
+        }
+      });
+
+      editorModal.classList.remove('hidden');
+      editorModal.classList.add('flex');
+      nixySpeak('Editing mode! Tweak the script, speed, or audio filter!');
+    }
+
+    function closeEditorModal() {
+      editorModal.classList.add('hidden');
+      editorModal.classList.remove('flex');
+      currentEditingId = null;
+    }
+
+    saveEditBtn.addEventListener('click', async () => {
+      const clip = voiceClips.find(c => c.id === currentEditingId);
+      if (!clip) return;
+
+      const updatedText = editScriptText.value.trim();
+      const updatedVoice = editVoiceSelect.value;
+      const updatedSpeed = parseFloat(editSpeedRange.value);
+
+      if (!updatedText) {
+        showToast('Script text cannot be empty.', 'error');
+        return;
+      }
+
+      const needsResynth = (updatedText !== clip.text) || (updatedVoice !== clip.voice);
+      clip.text = updatedText;
+      clip.voice = updatedVoice;
+      clip.speed = updatedSpeed;
+      clip.fx = selectedFx;
+      clip.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' (Edited)';
+
+      closeEditorModal();
+
+      if (needsResynth) {
+        clip.status = 'generating';
+        renderAll();
+        try {
+          clip.audioUrl = await synthesizeWithPuter(clip.text, clip.voice, clip.engine);
+          clip.status = 'ready';
+          saveToLocalStorage();
+          renderAll();
+          showToast('Voice updated & re-synthesized!', 'success');
+          nixySpeak('Updated and saved! Listen to the new version!');
+        } catch (err) {
+          clip.status = 'error';
+          clip.errorMsg = err.message;
+          renderAll();
+        }
+      } else {
+        saveToLocalStorage();
+        renderAll();
+        showToast('Playback speed & studio FX updated!', 'success');
+        nixySpeak('Applied your new speed and audio FX!');
+      }
+    });
+
+    // =========================================================================
+    // 8. NIXY: PURPLE BALL WITH TWO WHITE EYES ONLY
+    // =========================================================================
+    const nixyWrapper = document.getElementById('nixy-wrapper');
+    const nixyBot = document.getElementById('nixy-bot');
+    const nixyBubble = document.getElementById('nixy-bubble');
+    const nixyText = document.getElementById('nixy-text');
+    const nixyEyeLeft = document.getElementById('nixy-eye-left');
+    const nixyEyeRight = document.getElementById('nixy-eye-right');
+
+    let nixyX = 24;
+    let nixyDirection = 1; // 1 = right, -1 = left
+    let isNixyWalking = true;
+    let isNixyDragging = false;
+    let dragStartX = 0;
+    let nixyBubbleTimeout = null;
+    let rollPhase = 0;
+
+    const nixyQuotes = [
+      "Beep boop! I'm Nixy, your Codenix studio ball!",
+      "Tip: Click 'Edit Voice' on any clip to add Comms Radio or Deep Bass FX!",
+      "All your voices are saved locally in your browser automatically!",
+      "Try switching between Joanna, Matthew, and Brian for cool dialogues!",
+      "Rolling around in purple & black Codenix style!",
+      "Need to move me? Drag me anywhere along the bottom bar!"
+    ];
+
+    function nixySpeak(message, duration = 4500) {
+      nixyText.textContent = message;
+      nixyBubble.classList.remove('opacity-0', 'scale-90');
+      nixyBubble.classList.add('opacity-100', 'scale-100');
+
+      clearTimeout(nixyBubbleTimeout);
+      nixyBubbleTimeout = setTimeout(() => {
+        nixyBubble.classList.remove('opacity-100', 'scale-100');
+        nixyBubble.classList.add('opacity-0', 'scale-90');
+      }, duration);
+    }
+
+    function nixyBounceExcited() {
+      nixyBot.classList.add('animate-bounce');
+      setTimeout(() => nixyBot.classList.remove('animate-bounce'), 1200);
+    }
+
+    // Autonomous Rolling Ball Loop
+    setInterval(() => {
+      if (!isNixyWalking || isNixyDragging) {
+        nixyBot.style.transform = `translateY(0px) rotate(0deg)`;
+        return;
+      }
+
+      const maxX = Math.max(80, window.innerWidth - 110);
+      nixyX += nixyDirection * 1.5;
+      rollPhase += 0.25;
+
+      if (nixyX >= maxX) {
+        nixyX = maxX;
+        nixyDirection = -1;
+      } else if (nixyX <= 16) {
+        nixyX = 16;
+        nixyDirection = 1;
+      }
+
+      const bobY = Math.abs(Math.sin(rollPhase)) * -3;
+      const tiltDeg = nixyDirection * 8;
+
+      nixyWrapper.style.transform = `translateX(${nixyX}px)`;
+      nixyBot.style.transform = `translateY(${bobY}px) rotate(${tiltDeg}deg)`;
+
+      // Subtle eye look direction
+      const eyeOffset = nixyDirection * 2;
+      nixyEyeLeft.style.transform = `translateX(${eyeOffset}px)`;
+      nixyEyeRight.style.transform = `translateX(${eyeOffset}px)`;
+    }, 35);
+
+    // Pause rolling occasionally to look around
+    setInterval(() => {
+      if (isNixyDragging) return;
+      isNixyWalking = !isNixyWalking;
+      if (!isNixyWalking && Math.random() > 0.55) {
+        const randomQuote = nixyQuotes[Math.floor(Math.random() * nixyQuotes.length)];
+        nixySpeak(randomQuote, 4000);
+      }
+    }, 5500);
+
+    // Click interaction with Nixy
+    nixyBot.addEventListener('click', () => {
+      nixyBounceExcited();
+      const randomQuote = nixyQuotes[Math.floor(Math.random() * nixyQuotes.length)];
+      nixySpeak(randomQuote, 4500);
+    });
+
+    // Drag interaction (Mouse & Touch)
+    nixyBot.addEventListener('mousedown', (e) => {
+      isNixyDragging = true;
+      dragStartX = e.clientX - nixyX;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isNixyDragging) return;
+      const maxX = window.innerWidth - 70;
+      nixyX = Math.max(10, Math.min(maxX, e.clientX - dragStartX));
+      nixyWrapper.style.transform = `translateX(${nixyX}px)`;
+    });
+    window.addEventListener('mouseup', () => {
+      if (isNixyDragging) {
+        isNixyDragging = false;
+        nixySpeak('Wheee! Nice spot!');
+      }
+    });
+
+    nixyBot.addEventListener('touchstart', (e) => {
+      isNixyDragging = true;
+      dragStartX = e.touches[0].clientX - nixyX;
+    }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (!isNixyDragging) return;
+      const maxX = window.innerWidth - 70;
+      nixyX = Math.max(10, Math.min(maxX, e.touches[0].clientX - dragStartX));
+      nixyWrapper.style.transform = `translateX(${nixyX}px)`;
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+      isNixyDragging = false;
+    });
+
+    // =========================================================================
+    // 9. MOBILE SIDEBAR & UTILITIES
+    // =========================================================================
+    const sidebar = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    document.getElementById('sidebar-toggle-btn').addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+      sidebarBackdrop.classList.toggle('hidden');
+    });
+    sidebarBackdrop.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
+      sidebarBackdrop.classList.add('hidden');
+    });
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const borderCol = type === 'error' ? 'border-red-500/50' : type === 'success' ? 'border-emerald-500/50' : 'border-codenix-purple/50';
+      const iconClass = type === 'error' ? 'ph-warning-circle text-red-400' : type === 'success' ? 'ph-check-circle text-emerald-400' : 'ph-sparkle text-codenix-purpleLight';
+
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-zinc-900/95 text-white border ${borderCol} shadow-xl text-xs backdrop-blur-md transition-all duration-300`;
+      toast.innerHTML = `<i class="ph-fill ${iconClass} text-base shrink-0"></i><span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function scrollToBottom() {
+      const stream = document.getElementById('chat-stream');
+      stream.scrollTo({ top: stream.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Initialize App on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavesFromLocalStorage();
+      checkSupabaseSession();
+    });
+  </script>
+</body>
+</html>
