@@ -546,6 +546,9 @@
         #nixy-actor.nixy-angry {
             filter: drop-shadow(0 0 14px rgba(239, 68, 68, .55));
         }
+        #nixy-actor.nixy-dizzy {
+            filter: drop-shadow(0 0 14px rgba(167, 139, 250, .55));
+        }
         .nixy-tour-highlight {
             position: relative;
             z-index: 35;
@@ -606,6 +609,13 @@
             25% { transform: translateX(-3px) rotate(-3deg); }
             75% { transform: translateX(3px) rotate(3deg); }
         }
+        @keyframes nixyDizzyWobble {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(9deg) scale(1.04, 0.96); }
+            45% { transform: rotate(-10deg) scale(0.96, 1.04); }
+            70% { transform: rotate(7deg) scale(1.02, 0.98); }
+            88% { transform: rotate(-5deg) scale(0.99, 1.01); }
+        }
         .nixy-walking .nixy-body-wrap {
             animation: nixyBob .68s ease-in-out infinite;
         }
@@ -614,6 +624,9 @@
         }
         .nixy-angry .nixy-body-wrap {
             animation: nixyAngryShake .28s ease-in-out 3;
+        }
+        .nixy-dizzy .nixy-body-wrap {
+            animation: nixyDizzyWobble .55s ease-in-out 4;
         }
         #nixy-bubble {
             position: absolute;
@@ -981,13 +994,13 @@
     <script>
         // ---------- Language (browser default, changeable, saved locally and in Supabase) ----------
         const LANGS = [['en','English'],['ar','العربية'],['es','Español'],['fr','Français'],['zh','中文'],['de','Deutsch']];
-        const I18N_KEYS = ["Workspace Portal", "Applications", "Cloud ecosystem connected", "All services responding", "Broadcasts and notices", "Signed in as", "My profile", "Settings", "Sign out", "Open your AI models, developer tools and connected platforms from one console.", "Apps available", "Categories", "Local runtime", "System status", "Fully operational", "Workspace announcements", "Platform notices and broadcasts", "Support", "Feedback", "Blog", "Announcement", "Got it", "All apps", "Welcome back", "Good morning", "Good afternoon", "Good evening", "Member", "Your choices", "Most used", "Clear history", "Select the star on any app to pin it here for quick access.", "The apps you open most often will show up here.", "No apps match your search", "Broadcast", "Notice", "All", "Mark all read", "No broadcasts active right now.", "Search apps", "Language", "Next", "open", "opens", "apps", "app", "active", "Notices", "Broadcasts", "Skip tutorial", "Tour skipped! Let me know if you need me.", "Welcome! I am Nixy. Let me show you around each section.", "Language button: you can change the dashboard language from here.", "Theme toggle: switch between dark mode and light mode anytime.", "Notifications: check live broadcasts and workspace notices here.", "Profile menu: view your account, profile, settings, or sign out.", "Overview strip: tracks total apps, categories, local runtime, and system status.", "Workspace announcements: live broadcasts and platform notices appear here.", "Applications: pin favorites, view most used tools, and launch your workspace apps.", "Footer: quick links to support, feedback, and the blog."];
+        const I18N_KEYS = ["Workspace Portal", "Applications", "Cloud ecosystem connected", "All services responding", "Broadcasts and notices", "Signed in as", "My profile", "Settings", "Sign out", "Open your AI models, developer tools and connected platforms from one console.", "Apps available", "Categories", "Local runtime", "System status", "Fully operational", "Workspace announcements", "Platform notices and broadcasts", "Support", "Feedback", "Blog", "Announcement", "Got it", "All apps", "Welcome back", "Good morning", "Good afternoon", "Good evening", "Member", "Your choices", "Most used", "Clear history", "Select the star on any app to pin it here for quick access.", "The apps you open most often will show up here.", "No apps match your search", "Broadcast", "Notice", "All", "Mark all read", "No broadcasts active right now.", "Search apps", "Language", "Next", "open", "opens", "apps", "app", "active", "Notices", "Broadcasts", "Skip tutorial", "Tour skipped! Let me know if you need me.", "Welcome! I am Nixy. Let me show you around each section.", "Language button: you can change the dashboard language from here.", "Theme toggle: switch between dark mode and light mode anytime.", "Notifications: check live broadcasts and workspace notices here.", "Profile menu: view your account, profile, settings, or sign out.", "Overview strip: tracks total apps, categories, local runtime, and system status.", "Workspace announcements: live broadcasts and platform notices appear here.", "Applications: pin favorites, view most used tools, and launch your workspace apps.", "Footer: quick links to support, feedback, and the blog.", "Whoa... too much shaking, I'm dizzy (دايخ)!"];
         const I18N = {
-            "es": ["Portal de trabajo", "Aplicaciones", "Ecosistema en la nube conectado", "Todos los servicios responden", "Difusiones y avisos", "Sesión iniciada como", "Mi perfil", "Ajustes", "Cerrar sesión", "Abre tus modelos de IA, herramientas de desarrollo y plataformas conectadas desde una sola consola.", "Apps disponibles", "Categorías", "Hora local", "Estado del sistema", "Totalmente operativo", "Anuncios del espacio de trabajo", "Avisos y difusiones de la plataforma", "Soporte", "Opiniones", "Blog", "Anuncio", "Entendido", "Todas las apps", "Bienvenido de nuevo", "Buenos días", "Buenas tardes", "Buenas noches", "Miembro", "Tus favoritas", "Más usadas", "Borrar historial", "Toca la estrella de cualquier app para fijarla aquí.", "Las apps que más abres aparecerán aquí.", "Ninguna app coincide con tu búsqueda", "Difusión", "Aviso", "Todo", "Marcar todo leído", "No hay difusiones activas ahora mismo.", "Buscar apps", "Idioma", "Siguiente", "apertura", "aperturas", "apps", "app", "activos", "Avisos", "Difusiones", "Omitir tutorial", "¡Tutorial omitido! Avísame si me necesitas.", "¡Bienvenido! Soy Nixy. Te mostraré cada sección.", "Botón de idioma: puedes cambiar el idioma del panel desde aquí.", "Cambio de tema: alterna entre modo oscuro y modo claro cuando quieras.", "Notificaciones: revisa aquí las difusiones en vivo y los avisos del espacio.", "Menú de perfil: consulta tu cuenta, perfil, ajustes o cierra sesión.", "Panel de resumen: muestra el total de apps, categorías, hora local y estado.", "Anuncios del espacio: aquí aparecen las difusiones y avisos de la plataforma.", "Aplicaciones: fija favoritos, ve las más usadas y abre tus herramientas.", "Pie de página: enlaces rápidos a soporte, opiniones y el blog."],
-            "fr": ["Portail de travail", "Applications", "Écosystème cloud connecté", "Tous les services répondent", "Diffusions et avis", "Connecté en tant que", "Mon profil", "Paramètres", "Se déconnecter", "Ouvrez vos modèles d'IA, outils de développement et plateformes connectées depuis une seule console.", "Apps disponibles", "Catégories", "Heure locale", "État du système", "Entièrement opérationnel", "Annonces de l'espace de travail", "Avis et diffusions de la plateforme", "Support", "Commentaires", "Blog", "Annonce", "Compris", "Toutes les apps", "Bon retour", "Bonjour", "Bon après-midi", "Bonsoir", "Membre", "Vos favoris", "Les plus utilisées", "Effacer l'historique", "Touchez l'étoile d'une app pour l'épingler ici.", "Les apps que vous ouvrez le plus apparaîtront ici.", "Aucune app ne correspond à votre recherche", "Diffusion", "Avis", "Tout", "Tout marquer comme lu", "Aucune diffusion active pour le moment.", "Rechercher des apps", "Langue", "Suivant", "ouverture", "ouvertures", "apps", "app", "actifs", "Avis", "Diffusions", "Passer le tutoriel", "Tutoriel ignoré ! Fais-moi signe si tu as besoin.", "Bienvenue ! Je suis Nixy. Je vais te faire découvrir chaque section.", "Bouton de langue : tu peux changer la langue du tableau de bord ici.", "Mode sombre / clair : bascule entre les deux thèmes à tout moment.", "Notifications : consulte ici les diffusions en direct et les avis.", "Menu profil : accède à ton compte, ton profil, tes réglages ou déconnecte-toi.", "Aperçu : affiche le nombre d'apps, catégories, heure locale et statut.", "Annonces : les diffusions et avis de la plateforme s'affichent ici.", "Applications : épingle tes favoris, vois les plus utilisées et lance tes apps.", "Pied de page : liens rapides vers le support, les avis et le blog."],
-            "ar": ["بوابة العمل", "التطبيقات", "منظومة السحابة متصلة", "جميع الخدمات تعمل", "البثوث والإشعارات", "تم تسجيل الدخول باسم", "ملفي الشخصي", "الإعدادات", "تسجيل الخروج", "افتح نماذج الذكاء الاصطناعي وأدوات المطورين والمنصات المتصلة من لوحة واحدة.", "التطبيقات المتاحة", "الفئات", "الوقت المحلي", "حالة النظام", "يعمل بالكامل", "إعلانات مساحة العمل", "إشعارات وبثوث المنصة", "الدعم", "الملاحظات", "المدونة", "إعلان", "فهمت", "كل التطبيقات", "مرحباً بعودتك", "صباح الخير", "مساء الخير", "طاب مساؤك", "عضو", "اختياراتك", "الأكثر استخداماً", "مسح السجل", "اضغط على النجمة في أي تطبيق لتثبيته هنا.", "التطبيقات التي تفتحها كثيراً ستظهر هنا.", "لا توجد تطبيقات مطابقة لبحثك", "بث", "إشعار", "الكل", "تحديد الكل كمقروء", "لا توجد بثوث نشطة حالياً.", "ابحث عن تطبيق", "اللغة", "التالي", "مرة فتح", "مرات فتح", "تطبيقات", "تطبيق", "نشط", "الإشعارات", "البثوث", "تخطي الجولة", "تم تخطي الجولة! أخبرني إذا احتجتني.", "أهلاً بك! أنا نيكسي. سأعرّفك على كل قسم في اللوحة.", "زر اللغة: يمكنك تغيير لغة اللوحة من هنا.", "الوضع الليلي والنهاري: بدّل بين الوضع الداكن والفاتح في أي وقت.", "الإشعارات: تابع البثوث المباشرة وإشعارات المنصة من هنا.", "القائمة الشخصية: اعرض حسابك وملفك والإعدادات أو سجل الخروج.", "شريط النظرة العامة: يعرض عدد التطبيقات والفئات والوقت وحالة النظام.", "إعلانات المساحة: تظهر هنا بثوث وإشعارات المنصة.", "التطبيقات: ثبّت مفضلاتك وتابع الأكثر استخداماً وافتح أدواتك.", "التذييل: روابط سريعة للدعم والملاحظات والمدونة."],
-            "zh": ["工作台门户", "应用", "云生态已连接", "所有服务运行正常", "广播与通知", "当前登录账号", "我的资料", "设置", "退出登录", "在一个控制台中打开你的 AI 模型、开发工具和已连接平台。", "可用应用", "分类", "本地时间", "系统状态", "运行正常", "工作区公告", "平台通知与广播", "支持", "反馈", "博客", "公告", "知道了", "全部应用", "欢迎回来", "早上好", "下午好", "晚上好", "成员", "我的收藏", "最常使用", "清除记录", "点击任意应用上的星标，即可固定在此处。", "你常打开的应用会显示在这里。", "没有匹配的应用", "广播", "通知", "全部", "全部标为已读", "目前没有进行中的广播。", "搜索应用", "语言", "下一条", "次打开", "次打开", "个应用", "个应用", "条有效", "通知", "广播", "跳过教程", "已跳过教程！需要我时随时叫我。", "欢迎！我是 Nixy，让我带你逛逛各个版块。", "语言按钮：你可以在这里切换控制面板的语言。", "深色/浅色模式：随时在深色和浅色主题之间切换。", "通知中心：在这里查看实时广播和工作区通知。", "个人菜单：查看账号、个人资料、设置或退出登录。", "概览栏：显示应用总数、分类数、本地时间和系统状态。", "工作区公告：平台广播和通知会显示在这里。", "应用区：收藏常用工具、查看最常使用并启动应用。", "页脚：快速访问支持、反馈和博客。"],
-            "de": ["Arbeitsportal", "Anwendungen", "Cloud-Ökosystem verbunden", "Alle Dienste antworten", "Mitteilungen und Hinweise", "Angemeldet als", "Mein Profil", "Einstellungen", "Abmelden", "Öffne deine KI-Modelle, Entwicklertools und verbundenen Plattformen in einer Konsole.", "Verfügbare Apps", "Kategorien", "Lokale Zeit", "Systemstatus", "Voll betriebsbereit", "Workspace-Ankündigungen", "Plattformhinweise und Mitteilungen", "Support", "Feedback", "Blog", "Ankündigung", "Verstanden", "Alle Apps", "Willkommen zurück", "Guten Morgen", "Guten Tag", "Guten Abend", "Mitglied", "Deine Favoriten", "Am häufigsten genutzt", "Verlauf löschen", "Tippe auf den Stern einer App, um sie hier anzupinnen.", "Deine meistgeöffneten Apps erscheinen hier.", "Keine Apps entsprechen deiner Suche", "Mitteilung", "Hinweis", "Alle", "Alle als gelesen markieren", "Derzeit keine aktiven Mitteilungen.", "Apps suchen", "Sprache", "Weiter", "Aufruf", "Aufrufe", "Apps", "App", "aktiv", "Hinweise", "Mitteilungen", "Tutorial überspringen", "Tutorial übersprungen! Sag Bescheid, wenn du mich brauchst.", "Willkommen! Ich bin Nixy. Ich zeige dir jeden Bereich.", "Sprach-Button: Hier kannst du die Sprache des Dashboards ändern.", "Dark/Light-Mode: Wechsle jederzeit zwischen Dunkel- und Hellmodus.", "Benachrichtigungen: Hier siehst du Live-Mitteilungen und Hinweise.", "Profilmenü: Öffne Konto, Profil, Einstellungen oder melde dich ab.", "Übersicht: Zeigt Apps, Kategorien, Ortszeit und Systemstatus.", "Workspace-Ankündigungen: Hier erscheinen Plattform-Mitteilungen.", "Anwendungen: Pinne Favoriten, sieh Meistgenutztes und starte Apps.", "Fußzeile: Schnelle Links zu Support, Feedback und Blog."]
+            "es": ["Portal de trabajo", "Aplicaciones", "Ecosistema en la nube conectado", "Todos los servicios responden", "Difusiones y avisos", "Sesión iniciada como", "Mi perfil", "Ajustes", "Cerrar sesión", "Abre tus modelos de IA, herramientas de desarrollo y plataformas conectadas desde una sola consola.", "Apps disponibles", "Categorías", "Hora local", "Estado del sistema", "Totalmente operativo", "Anuncios del espacio de trabajo", "Avisos y difusiones de la plataforma", "Soporte", "Opiniones", "Blog", "Anuncio", "Entendido", "Todas las apps", "Bienvenido de nuevo", "Buenos días", "Buenas tardes", "Buenas noches", "Miembro", "Tus favoritas", "Más usadas", "Borrar historial", "Toca la estrella de cualquier app para fijarla aquí.", "Las apps que más abres aparecerán aquí.", "Ninguna app coincide con tu búsqueda", "Difusión", "Aviso", "Todo", "Marcar todo leído", "No hay difusiones activas ahora mismo.", "Buscar apps", "Idioma", "Siguiente", "apertura", "aperturas", "apps", "app", "activos", "Avisos", "Difusiones", "Omitir tutorial", "¡Tutorial omitido! Avísame si me necesitas.", "¡Bienvenido! Soy Nixy. Te mostraré cada sección.", "Botón de idioma: puedes cambiar el idioma del panel desde aquí.", "Cambio de tema: alterna entre modo oscuro y modo claro cuando quieras.", "Notificaciones: revisa aquí las difusiones en vivo y los avisos del espacio.", "Menú de perfil: consulta tu cuenta, perfil, ajustes o cierra sesión.", "Panel de resumen: muestra el total de apps, categorías, hora local y estado.", "Anuncios del espacio: aquí aparecen las difusiones y avisos de la plataforma.", "Aplicaciones: fija favoritos, ve las más usadas y abre tus herramientas.", "Pie de página: enlaces rápidos a soporte, opiniones y el blog.", "¡Uf... tanto movimiento me dejó mareado!"],
+            "fr": ["Portail de travail", "Applications", "Écosystème cloud connecté", "Tous les services répondent", "Diffusions et avis", "Connecté en tant que", "Mon profil", "Paramètres", "Se déconnecter", "Ouvrez vos modèles d'IA, outils de développement et plateformes connectées depuis une seule console.", "Apps disponibles", "Catégories", "Heure locale", "État du système", "Entièrement opérationnel", "Annonces de l'espace de travail", "Avis et diffusions de la plateforme", "Support", "Commentaires", "Blog", "Annonce", "Compris", "Toutes les apps", "Bon retour", "Bonjour", "Bon après-midi", "Bonsoir", "Membre", "Vos favoris", "Les plus utilisées", "Effacer l'historique", "Touchez l'étoile d'une app pour l'épingler ici.", "Les apps que vous ouvrez le plus apparaîtront ici.", "Aucune app ne correspond à votre recherche", "Diffusion", "Avis", "Tout", "Tout marquer comme lu", "Aucune diffusion active pour le moment.", "Rechercher des apps", "Langue", "Suivant", "ouverture", "ouvertures", "apps", "app", "actifs", "Avis", "Diffusions", "Passer le tutoriel", "Tutoriel ignoré ! Fais-moi signe si tu as besoin.", "Bienvenue ! Je suis Nixy. Je vais te faire découvrir chaque section.", "Bouton de langue : tu peux changer la langue du tableau de bord ici.", "Mode sombre / clair : bascule entre les deux thèmes à tout moment.", "Notifications : consulte ici les diffusions en direct et les avis.", "Menu profil : accède à ton compte, ton profil, tes réglages ou déconnecte-toi.", "Aperçu : affiche le nombre d'apps, catégories, heure locale et statut.", "Annonces : les diffusions et avis de la plateforme s'affichent ici.", "Applications : épingle tes favoris, vois les plus utilisées et lance tes apps.", "Pied de page : liens rapides vers le support, les avis et le blog.", "Oups... trop secoué, j'ai la tête qui tourne !"],
+            "ar": ["بوابة العمل", "التطبيقات", "منظومة السحابة متصلة", "جميع الخدمات تعمل", "البثوث والإشعارات", "تم تسجيل الدخول باسم", "ملفي الشخصي", "الإعدادات", "تسجيل الخروج", "افتح نماذج الذكاء الاصطناعي وأدوات المطورين والمنصات المتصلة من لوحة واحدة.", "التطبيقات المتاحة", "الفئات", "الوقت المحلي", "حالة النظام", "يعمل بالكامل", "إعلانات مساحة العمل", "إشعارات وبثوث المنصة", "الدعم", "الملاحظات", "المدونة", "إعلان", "فهمت", "كل التطبيقات", "مرحباً بعودتك", "صباح الخير", "مساء الخير", "طاب مساؤك", "عضو", "اختياراتك", "الأكثر استخداماً", "مسح السجل", "اضغط على النجمة في أي تطبيق لتثبيته هنا.", "التطبيقات التي تفتحها كثيراً ستظهر هنا.", "لا توجد تطبيقات مطابقة لبحثك", "بث", "إشعار", "الكل", "تحديد الكل كمقروء", "لا توجد بثوث نشطة حالياً.", "ابحث عن تطبيق", "اللغة", "التالي", "مرة فتح", "مرات فتح", "تطبيقات", "تطبيق", "نشط", "الإشعارات", "البثوث", "تخطي الجولة", "تم تخطي الجولة! أخبرني إذا احتجتني.", "أهلاً بك! أنا نيكسي. سأعرّفك على كل قسم في اللوحة.", "زر اللغة: يمكنك تغيير لغة اللوحة من هنا.", "الوضع الليلي والنهاري: بدّل بين الوضع الداكن والفاتح في أي وقت.", "الإشعارات: تابع البثوث المباشرة وإشعارات المنصة من هنا.", "القائمة الشخصية: اعرض حسابك وملفك والإعدادات أو سجل الخروج.", "شريط النظرة العامة: يعرض عدد التطبيقات والفئات والوقت وحالة النظام.", "إعلانات المساحة: تظهر هنا بثوث وإشعارات المنصة.", "التطبيقات: ثبّت مفضلاتك وتابع الأكثر استخداماً وافتح أدواتك.", "التذييل: روابط سريعة للدعم والملاحظات والمدونة.", "أوه... هزيتني كتير، أنا دايخ!"],
+            "zh": ["工作台门户", "应用", "云生态已连接", "所有服务运行正常", "广播与通知", "当前登录账号", "我的资料", "设置", "退出登录", "在一个控制台中打开你的 AI 模型、开发工具和已连接平台。", "可用应用", "分类", "本地时间", "系统状态", "运行正常", "工作区公告", "平台通知与广播", "支持", "反馈", "博客", "公告", "知道了", "全部应用", "欢迎回来", "早上好", "下午好", "晚上好", "成员", "我的收藏", "最常使用", "清除记录", "点击任意应用上的星标，即可固定在此处。", "你常打开的应用会显示在这里。", "没有匹配的应用", "广播", "通知", "全部", "全部标为读", "目前没有进行中的广播。", "搜索应用", "语言", "下一条", "次打开", "次打开", "个应用", "个应用", "条有效", "通知", "广播", "跳过教程", "已跳过教程！需要我时随时叫我。", "欢迎！我是 Nixy，让我带你逛逛各个版块。", "语言按钮：你可以在这里切换控制面板的语言。", "深色/浅色模式：随时在深色和浅色主题之间切换。", "通知中心：在这里查看实时广播和工作区通知。", "个人菜单：查看账号、个人资料、设置或退出登录。", "概览栏：显示应用总数、分类数、本地时间和系统状态。", "工作区公告：平台广播和通知会显示在这里。", "应用区：收藏常用工具、查看最常使用并启动应用。", "页脚：快速访问支持、反馈和博客。", "哎呀……晃得我头晕眼花了！"],
+            "de": ["Arbeitsportal", "Anwendungen", "Cloud-Ökosystem verbunden", "Alle Dienste antworten", "Mitteilungen und Hinweise", "Angemeldet als", "Mein Profil", "Einstellungen", "Abmelden", "Öffne deine KI-Modelle, Entwicklertools und verbundenen Plattformen in einer Konsole.", "Verfügbare Apps", "Kategorien", "Lokale Zeit", "Systemstatus", "Voll betriebsbereit", "Workspace-Ankündigungen", "Plattformhinweise und Mitteilungen", "Support", "Feedback", "Blog", "Ankündigung", "Verstanden", "Alle Apps", "Willkommen zurück", "Guten Morgen", "Guten Tag", "Guten Abend", "Mitglied", "Deine Favoriten", "Am häufigsten genutzt", "Verlauf löschen", "Tippe auf den Stern einer App, um sie hier anzupinnen.", "Deine meistgeöffneten Apps erscheinen hier.", "Keine Apps entsprechen deiner Suche", "Mitteilung", "Hinweis", "Alle", "Alle als gelesen markieren", "Derzeit keine aktiven Mitteilungen.", "Apps suchen", "Sprache", "Weiter", "Aufruf", "Aufrufe", "Apps", "App", "aktiv", "Hinweise", "Mitteilungen", "Tutorial überspringen", "Tutorial übersprungen! Sag Bescheid, wenn du mich brauchst.", "Willkommen! Ich bin Nixy. Ich zeige dir jeden Bereich.", "Sprach-Button: Hier kannst du die Sprache des Dashboards ändern.", "Dark/Light-Mode: Wechsle jederzeit zwischen Dunkel- und Hellmodus.", "Benachrichtigungen: Hier siehst du Live-Mitteilungen und Hinweise.", "Profilmenü: Öffne Konto, Profil, Einstellungen oder melde dich ab.", "Übersicht: Zeigt Apps, Kategorien, Ortszeit und Systemstatus.", "Workspace-Ankündigungen: Hier erscheinen Plattform-Mitteilungen.", "Anwendungen: Pinne Favoriten, sieh Meistgenutztes und starte Apps.", "Fußzeile: Schnelle Links zu Support, Feedback und Blog.", "Uff... zu viel geschüttelt, mir ist ganz schwindelig!"]
         };
         const KMAP = new Map(I18N_KEYS.map((k, i) => [k, i]));
         const detectLang = () => {
@@ -1824,7 +1837,7 @@
         const nixyBubble = document.getElementById('nixy-bubble');
         const nixySkipTourBtn = document.getElementById('nixy-skip-tour-btn');
 
-        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v4';
+        const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v5';
 
         const nixyState = {
             x: window.innerWidth >= 1024 ? 280 : 24,
@@ -1838,7 +1851,10 @@
             pausedUntil: 0,
             isDragging: false,
             angryUntil: 0,
-            mood: 'normal', // 'normal' | 'touched' | 'angry' | 'tour'
+            dizzyUntil: 0,
+            shakeAccum: 0,
+            lastShakeTime: 0,
+            mood: 'normal', // 'normal' | 'touched' | 'angry' | 'dizzy' | 'tour'
             tourTargetX: null,
             tourTargetY: null,
             tourActive: false,
@@ -1854,9 +1870,10 @@
         let pointerMovedDist = 0;
 
         function getNixyOrbSVG(dir, mood = 'normal') {
-            const lookOffsetX = mood === 'angry' ? 0 : (dir === -1 ? -2.2 : 2.2);
+            const lookOffsetX = (mood === 'angry' || mood === 'dizzy') ? 0 : (dir === -1 ? -2.2 : 2.2);
             const isAngry = mood === 'angry';
             const isTouched = mood === 'touched';
+            const isDizzy = mood === 'dizzy';
 
             const orbFillId = isAngry ? 'nixy-orb-angry-grad' : 'nixy-orb-grad';
             const eyeRadius = isTouched ? 4.1 : (isAngry ? 3.2 : 3.4);
@@ -1868,15 +1885,25 @@
                   `
                 : '';
 
-            const eyeShape = isTouched
-                ? `
+            let eyeShape;
+            if (isDizzy) {
+                eyeShape = `
+                    <circle cx="26.5" cy="32.5" r="4.3" stroke="#ffffff" stroke-width="2" fill="none" stroke-dasharray="15 5" />
+                    <circle cx="26.5" cy="32.5" r="1.4" fill="#ffffff" />
+                    <circle cx="37.5" cy="32.5" r="2.7" stroke="#ffffff" stroke-width="2" fill="none" stroke-dasharray="10 4" />
+                    <circle cx="37.5" cy="32.5" r="1.1" fill="#ffffff" />
+                  `;
+            } else if (isTouched) {
+                eyeShape = `
                     <path d="M22.5 33.2 Q26.5 28.5 30.5 33.2" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" fill="none" />
                     <path d="M33.5 33.2 Q37.5 28.5 41.5 33.2" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" fill="none" />
-                  `
-                : `
+                  `;
+            } else {
+                eyeShape = `
                     <circle cx="26.5" cy="32.5" r="${eyeRadius}" fill="url(#nixy-eye-glow)" />
                     <circle cx="37.5" cy="32.5" r="${eyeRadius}" fill="url(#nixy-eye-glow)" />
                   `;
+            }
 
             return `
                 <svg viewBox="0 0 64 64" class="w-full h-full overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1925,13 +1952,15 @@
         function setNixyMood(nextMood, durationMs = 2000) {
             nixyState.mood = nextMood;
             nixyActor.classList.toggle('nixy-angry', nextMood === 'angry');
+            nixyActor.classList.toggle('nixy-dizzy', nextMood === 'dizzy');
             renderNixyOrb();
             if (durationMs > 0) {
                 clearTimeout(nixyActor._moodTimer);
                 nixyActor._moodTimer = setTimeout(() => {
-                    if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
+                    const now = performance.now();
+                    if (!nixyState.isDragging && now > nixyState.angryUntil && now > nixyState.dizzyUntil) {
                         nixyState.mood = nixyState.tourActive ? 'tour' : 'normal';
-                        nixyActor.classList.remove('nixy-angry');
+                        nixyActor.classList.remove('nixy-angry', 'nixy-dizzy');
                         renderNixyOrb();
                     }
                 }, durationMs);
@@ -1960,8 +1989,16 @@
 
         function becomeAngry(reasonText = 'Hey! Watch the throw!') {
             nixyState.angryUntil = performance.now() + 3400;
+            nixyState.dizzyUntil = 0;
             setNixyMood('angry', 3400);
             showNixyBubble(reasonText, 2800);
+        }
+
+        function becomeDizzy() {
+            nixyState.dizzyUntil = performance.now() + 2600;
+            nixyState.shakeAccum = 0;
+            setNixyMood('dizzy', 2600);
+            showNixyBubble(t("Whoa... too much shaking, I'm dizzy (دايخ)!"), 2600);
         }
 
         nixyActor.addEventListener('pointerdown', (e) => {
@@ -1977,6 +2014,8 @@
             nixyState.isDragging = true;
             nixyState.vx = 0;
             nixyState.vy = 0;
+            nixyState.shakeAccum = 0;
+            nixyState.lastShakeTime = performance.now();
             pointerMovedDist = 0;
             lastPointerX = e.clientX;
             lastPointerY = e.clientY;
@@ -2001,11 +2040,23 @@
 
             const dx = e.clientX - lastPointerX;
             const dy = lastPointerY - e.clientY;
-            pointerMovedDist += Math.hypot(dx, dy);
+            const stepDist = Math.hypot(dx, dy);
+            pointerMovedDist += stepDist;
+
+            if (now - nixyState.lastShakeTime > 550) {
+                nixyState.shakeAccum = 0;
+            }
+            if (stepDist > 12) {
+                nixyState.shakeAccum += stepDist;
+                nixyState.lastShakeTime = now;
+                if (nixyState.shakeAccum >= 260 && now > nixyState.angryUntil) {
+                    becomeDizzy();
+                }
+            }
 
             if (Math.abs(dx) > 1.5) {
                 nixyState.dir = dx >= 0 ? 1 : -1;
-                renderNixyOrb();
+                if (nixyState.mood !== 'dizzy') renderNixyOrb();
             }
 
             nixyState.vx = Math.max(-1350, Math.min(1350, (nextX - nixyState.x) / dt));
@@ -2028,13 +2079,20 @@
                 dragPointerId = null;
             }
 
+            const now = performance.now();
             const speed = Math.hypot(nixyState.vx, nixyState.vy);
             if (pointerMovedDist < 8) {
                 // Simple touch / tap
                 setNixyMood('touched', 1500);
                 triggerBounceSquash();
                 showNixyBubble('Boop! Eyes on you.', 1600);
-                nixyState.pausedUntil = performance.now() + 900;
+                nixyState.pausedUntil = now + 900;
+            } else if (now <= nixyState.dizzyUntil) {
+                // Shaken while held -> dizzy only (not angry)
+                nixyState.vx *= 0.25;
+                nixyState.vy = 0;
+                nixyState.y = 8;
+                nixyState.pausedUntil = now + 1800;
             } else if (speed > 260 || nixyState.y > 24) {
                 // Thrown away -> bounce & get angry
                 if (Math.abs(nixyState.vx) < 140) {
@@ -2171,7 +2229,7 @@
                     }
                 }
 
-                if (now > nixyState.angryUntil && nixyState.mood === 'angry' && !nixyState.isDragging) {
+                if (now > nixyState.angryUntil && now > nixyState.dizzyUntil && (nixyState.mood === 'angry' || nixyState.mood === 'dizzy') && !nixyState.isDragging) {
                     setNixyMood(nixyState.tourActive ? 'tour' : 'normal', 0);
                 }
 
