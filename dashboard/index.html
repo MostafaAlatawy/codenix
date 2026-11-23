@@ -542,8 +542,44 @@
             position: relative;
             z-index: 35;
             border-radius: 16px;
+            filter: none !important;
+            opacity: 1 !important;
             box-shadow: 0 0 0 2px var(--accent), 0 0 0 8px rgba(139, 92, 246, 0.16), 0 20px 40px -15px rgba(139, 92, 246, 0.35);
-            transition: box-shadow .3s cubic-bezier(.2, .8, .2, 1), transform .3s cubic-bezier(.2, .8, .2, 1);
+            transition: box-shadow .3s cubic-bezier(.2, .8, .2, 1), transform .3s cubic-bezier(.2, .8, .2, 1), filter .25s ease;
+        }
+        body.nixy-tour-dimming .nixy-tour-dimmed {
+            filter: blur(3.5px) saturate(0.75);
+            opacity: 0.45;
+            transition: filter .25s ease, opacity .25s ease;
+        }
+        #nixy-skip-tour-btn {
+            position: fixed;
+            bottom: 84px;
+            right: 24px;
+            z-index: 60;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--accent-3);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 12px 28px -8px rgba(124, 58, 237, 0.75);
+            cursor: pointer;
+            transition: transform .15s ease, background-color .15s ease, opacity .2s ease;
+        }
+        #nixy-skip-tour-btn.visible {
+            display: inline-flex;
+        }
+        #nixy-skip-tour-btn:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
+        }
+        #nixy-skip-tour-btn:active {
+            transform: scale(0.96);
         }
         @media (max-width: 1023px) {
             #nixy-actor { left: 24px; }
@@ -904,6 +940,10 @@
             <div id="nixy-svg-container" class="nixy-body-wrap w-full h-full"></div>
         </div>
     </div>
+    <button type="button" id="nixy-skip-tour-btn" aria-label="Skip tutorial">
+        <span>Skip tutorial</span>
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
 
     <!-- Broadcast / Alert Modal Overlay -->
     <div id="system-alert-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="alert-title">
@@ -1768,6 +1808,7 @@
         const nixyActor = document.getElementById('nixy-actor');
         const nixySvgContainer = document.getElementById('nixy-svg-container');
         const nixyBubble = document.getElementById('nixy-bubble');
+        const nixySkipTourBtn = document.getElementById('nixy-skip-tour-btn');
 
         const TOUR_SEEN_KEY = 'codenix_nixy_tour_done_v2';
 
@@ -1783,7 +1824,9 @@
             angryUntil: 0,
             mood: 'normal', // 'normal' | 'touched' | 'angry' | 'tour'
             tourTargetX: null,
-            tourActive: false
+            tourTargetY: null,
+            tourActive: false,
+            tourSkipped: false
         };
 
         let dragPointerId = null;
@@ -2051,15 +2094,20 @@
                         }
                     } else if (nixyState.tourActive && nixyState.tourTargetX !== null) {
                         const targetX = Math.min(maxX, Math.max(minX, nixyState.tourTargetX));
-                        const diff = targetX - nixyState.x;
-                        if (Math.abs(diff) > 6) {
-                            const nextDir = diff >= 0 ? 1 : -1;
+                        const targetY = Math.min(maxY, Math.max(12, nixyState.tourTargetY ?? 8));
+                        const diffX = targetX - nixyState.x;
+                        const diffY = targetY - nixyState.y;
+
+                        if (Math.abs(diffX) > 4) {
+                            const nextDir = diffX >= 0 ? 1 : -1;
                             if (nextDir !== nixyState.dir) {
                                 nixyState.dir = nextDir;
                                 renderNixyOrb();
                             }
-                            const stepMove = Math.sign(diff) * Math.min(Math.abs(diff), 150 * dt);
-                            nixyState.x += stepMove;
+                            nixyState.x += Math.sign(diffX) * Math.min(Math.abs(diffX), 260 * dt);
+                        }
+                        if (Math.abs(diffY) > 4) {
+                            nixyState.y += Math.sign(diffY) * Math.min(Math.abs(diffY), 240 * dt);
                         }
                     } else if (now >= nixyState.pausedUntil && !nixyActor.matches(':hover')) {
                         const moveDir = nixyState.dir;
@@ -2092,51 +2140,99 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
+        function endNixyTour(markAsSeen = true) {
+            nixyState.tourSkipped = true;
+            nixyState.tourActive = false;
+            nixyState.tourTargetX = null;
+            nixyState.tourTargetY = null;
+            nixySkipTourBtn.classList.remove('visible');
+            document.body.classList.remove('nixy-tour-dimming');
+            document.querySelectorAll('.nixy-tour-highlight').forEach(el => el.classList.remove('nixy-tour-highlight'));
+            document.querySelectorAll('.nixy-tour-dimmed').forEach(el => el.classList.remove('nixy-tour-dimmed'));
+            if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
+                setNixyMood('normal', 0);
+            }
+            if (markAsSeen) {
+                try { localStorage.setItem(TOUR_SEEN_KEY, 'true'); } catch (_) {}
+            }
+        }
+
+        nixySkipTourBtn.addEventListener('click', () => {
+            endNixyTour(true);
+            showNixyBubble('Tour skipped! Let me know if you need me.', 2200);
+        });
+
         async function runFirstVisitTour() {
             let alreadyDone = false;
             try { alreadyDone = localStorage.getItem(TOUR_SEEN_KEY) === 'true'; } catch (_) {}
             if (alreadyDone) return;
 
+            nixyState.tourSkipped = false;
             nixyState.tourActive = true;
             setNixyMood('tour', 0);
+            nixySkipTourBtn.classList.add('visible');
 
             const minX = window.innerWidth >= 1024 ? 284 : 24;
             const maxX = Math.max(minX + 60, window.innerWidth - 110);
+            const maxY = Math.max(40, window.innerHeight - 140);
 
-            const computeTargetXForEl = (el) => {
+            const tourableSections = Array.from(document.querySelectorAll('main > section, #main-notifications-panel, #portal-sections, footer'));
+            tourableSections.forEach(sec => sec.classList.add('nixy-tour-dimmed'));
+            document.body.classList.add('nixy-tour-dimming');
+
+            const computeTargetXYForEl = (el) => {
                 if (!el || typeof el.getBoundingClientRect !== 'function') {
-                    return minX + Math.round((maxX - minX) * 0.5);
+                    return {
+                        x: minX + Math.round((maxX - minX) * 0.5),
+                        y: Math.min(maxY, 120)
+                    };
                 }
                 const rect = el.getBoundingClientRect();
-                const center = rect.left + rect.width * 0.5 - 32;
-                return Math.min(maxX, Math.max(minX, Math.round(center)));
+                // Place Nixy next to the section (prefer right side if space allows, otherwise left side)
+                const placeRightX = rect.right + 16;
+                const placeLeftX = rect.left - 80;
+                let tx;
+                if (placeRightX <= maxX) {
+                    tx = placeRightX;
+                } else if (placeLeftX >= minX) {
+                    tx = placeLeftX;
+                } else {
+                    tx = Math.min(maxX, Math.max(minX, rect.left + rect.width * 0.5 - 32));
+                }
+
+                // Vertical position next to the vertical middle of the section in viewport
+                const sectionMidY = rect.top + Math.min(rect.height * 0.5, 160);
+                const rawBottomY = window.innerHeight - sectionMidY - 32;
+                const ty = Math.min(maxY, Math.max(20, Math.round(rawBottomY)));
+
+                return { x: Math.round(tx), y: ty };
             };
 
             const stops = [
                 {
-                    el: document.querySelector('h1'),
-                    say: 'Welcome! I am Nixy. Let me show you around the workspace.',
-                    fallbackX: minX + 40
+                    el: document.querySelector('main > section:first-of-type'),
+                    say: 'Welcome! I am Nixy. Let me show you around each section.',
+                    fallback: { x: minX + 40, y: Math.min(maxY, 260) }
                 },
                 {
                     el: document.querySelector('[aria-label="Workspace overview"]'),
-                    say: 'Overview strip: tracks total apps, categories, local time, and system status.',
-                    fallbackX: minX + Math.round((maxX - minX) * 0.25)
+                    say: 'Overview strip: tracks total apps, categories, local runtime, and system status.',
+                    fallback: { x: minX + 120, y: Math.min(maxY, 220) }
                 },
                 {
-                    el: document.getElementById('tool-search-input')?.closest('.relative') || document.getElementById('tool-search-input'),
-                    say: 'Search bar: press / anytime to quickly find any app by name or link.',
-                    fallbackX: minX + Math.round((maxX - minX) * 0.5)
+                    el: document.getElementById('main-notifications-panel'),
+                    say: 'Workspace announcements: live broadcasts and platform notices appear here.',
+                    fallback: { x: maxX - 40, y: Math.min(maxY, 180) }
                 },
                 {
-                    el: document.getElementById('main-notifications-panel') || document.getElementById('portal-sections'),
-                    say: 'Announcements & Apps: check notices here, star favorites, and launch your tools.',
-                    fallbackX: minX + Math.round((maxX - minX) * 0.78)
+                    el: document.getElementById('portal-sections'),
+                    say: 'Applications: pin favorites, view most used tools, and launch your workspace apps.',
+                    fallback: { x: minX + Math.round((maxX - minX) * 0.5), y: Math.min(maxY, 150) }
                 },
                 {
                     el: document.querySelector('footer'),
-                    say: 'Tour complete! Drag or throw me if you dare—just watch out.',
-                    fallbackX: maxX
+                    say: 'Footer: quick links to support, feedback, and the blog.',
+                    fallback: { x: maxX, y: 24 }
                 }
             ];
 
@@ -2144,33 +2240,37 @@
             const clearHighlight = () => {
                 if (activeHighlightedEl) {
                     activeHighlightedEl.classList.remove('nixy-tour-highlight');
+                    activeHighlightedEl.classList.add('nixy-tour-dimmed');
                     activeHighlightedEl = null;
                 }
             };
 
             for (const stop of stops) {
+                if (nixyState.tourSkipped || !nixyState.tourActive) break;
+                if (stop.el && stop.el.classList.contains('hidden')) continue;
+
                 if (nixyState.isDragging) {
                     await sleepMs(1200);
                 }
                 clearHighlight();
                 if (stop.el && typeof stop.el.scrollIntoView === 'function') {
                     stop.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    await sleepMs(380);
+                    await sleepMs(420);
+                    if (nixyState.tourSkipped || !nixyState.tourActive) break;
+                    stop.el.classList.remove('nixy-tour-dimmed');
                     stop.el.classList.add('nixy-tour-highlight');
                     activeHighlightedEl = stop.el;
                 }
-                nixyState.tourTargetX = stop.el ? computeTargetXForEl(stop.el) : stop.fallbackX;
-                showNixyBubble(stop.say, 3300);
-                await sleepMs(3600);
+                const targetPos = stop.el ? computeTargetXYForEl(stop.el) : stop.fallback;
+                nixyState.tourTargetX = targetPos.x;
+                nixyState.tourTargetY = targetPos.y;
+                showNixyBubble(stop.say, 3400);
+                await sleepMs(3700);
             }
 
-            clearHighlight();
-            nixyState.tourActive = false;
-            nixyState.tourTargetX = null;
-            if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
-                setNixyMood('normal', 0);
+            if (!nixyState.tourSkipped) {
+                endNixyTour(true);
             }
-            try { localStorage.setItem(TOUR_SEEN_KEY, 'true'); } catch (_) {}
         }
 
         // Supabase Profile Check
