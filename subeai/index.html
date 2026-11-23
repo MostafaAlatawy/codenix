@@ -145,13 +145,10 @@
                 <div id="redirectProgressBar" class="bg-brand-500 h-full w-1/3 transition-all duration-1000"></div>
             </div>
             <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                <a id="manualRedirectBtn" href="/Start?redirect=/subeai" class="flex-1 py-3 px-4 btn-primary text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2">
+                <a id="manualRedirectBtn" href="/Start?redirect=/subeai" class="w-full py-3 px-4 btn-primary text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2">
                     <i class="ph ph-sign-in"></i>
                     <span>Go to /Start Now</span>
                 </a>
-                <button onclick="bypassAuthForPreview()" class="py-3 px-4 rounded-xl border border-purple-500/30 hover:bg-purple-500/10 text-xs font-medium text-purple-300 transition-colors">
-                    Continue in Preview
-                </button>
             </div>
         </div>
     </div>
@@ -660,14 +657,6 @@
                     window.location.href = '/Start?redirect=/subeai';
                 }
             }, 2600);
-        }
-
-        function bypassAuthForPreview() {
-            if (redirectTimer) clearTimeout(redirectTimer);
-            document.getElementById('supabaseAuthGuard').classList.add('hidden');
-            document.getElementById('authUsername').textContent = 'Guest Preview';
-            document.getElementById('authDropdownEmail').textContent = 'Preview Session Active';
-            checkFirstTimeModeSelection();
         }
 
         async function handleFullSignOut() {
