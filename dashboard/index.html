@@ -538,6 +538,13 @@
         #nixy-actor.nixy-angry {
             filter: drop-shadow(0 0 14px rgba(239, 68, 68, .55));
         }
+        .nixy-tour-highlight {
+            position: relative;
+            z-index: 35;
+            border-radius: 16px;
+            box-shadow: 0 0 0 2px var(--accent), 0 0 0 8px rgba(139, 92, 246, 0.16), 0 20px 40px -15px rgba(139, 92, 246, 0.35);
+            transition: box-shadow .3s cubic-bezier(.2, .8, .2, 1), transform .3s cubic-bezier(.2, .8, .2, 1);
+        }
         @media (max-width: 1023px) {
             #nixy-actor { left: 24px; }
         }
@@ -2096,46 +2103,68 @@
             const minX = window.innerWidth >= 1024 ? 284 : 24;
             const maxX = Math.max(minX + 60, window.innerWidth - 110);
 
+            const computeTargetXForEl = (el) => {
+                if (!el || typeof el.getBoundingClientRect !== 'function') {
+                    return minX + Math.round((maxX - minX) * 0.5);
+                }
+                const rect = el.getBoundingClientRect();
+                const center = rect.left + rect.width * 0.5 - 32;
+                return Math.min(maxX, Math.max(minX, Math.round(center)));
+            };
+
             const stops = [
                 {
                     el: document.querySelector('h1'),
                     say: 'Welcome! I am Nixy. Let me show you around the workspace.',
-                    x: minX + 40
+                    fallbackX: minX + 40
                 },
                 {
                     el: document.querySelector('[aria-label="Workspace overview"]'),
                     say: 'Overview strip: tracks total apps, categories, local time, and system status.',
-                    x: minX + Math.round((maxX - minX) * 0.25)
+                    fallbackX: minX + Math.round((maxX - minX) * 0.25)
                 },
                 {
-                    el: document.getElementById('tool-search-input'),
+                    el: document.getElementById('tool-search-input')?.closest('.relative') || document.getElementById('tool-search-input'),
                     say: 'Search bar: press / anytime to quickly find any app by name or link.',
-                    x: minX + Math.round((maxX - minX) * 0.5)
+                    fallbackX: minX + Math.round((maxX - minX) * 0.5)
                 },
                 {
                     el: document.getElementById('main-notifications-panel') || document.getElementById('portal-sections'),
                     say: 'Announcements & Apps: check notices here, star favorites, and launch your tools.',
-                    x: minX + Math.round((maxX - minX) * 0.78)
+                    fallbackX: minX + Math.round((maxX - minX) * 0.78)
                 },
                 {
                     el: document.querySelector('footer'),
                     say: 'Tour complete! Drag or throw me if you dare—just watch out.',
-                    x: maxX
+                    fallbackX: maxX
                 }
             ];
+
+            let activeHighlightedEl = null;
+            const clearHighlight = () => {
+                if (activeHighlightedEl) {
+                    activeHighlightedEl.classList.remove('nixy-tour-highlight');
+                    activeHighlightedEl = null;
+                }
+            };
 
             for (const stop of stops) {
                 if (nixyState.isDragging) {
                     await sleepMs(1200);
                 }
-                nixyState.tourTargetX = stop.x;
+                clearHighlight();
                 if (stop.el && typeof stop.el.scrollIntoView === 'function') {
                     stop.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    await sleepMs(380);
+                    stop.el.classList.add('nixy-tour-highlight');
+                    activeHighlightedEl = stop.el;
                 }
+                nixyState.tourTargetX = stop.el ? computeTargetXForEl(stop.el) : stop.fallbackX;
                 showNixyBubble(stop.say, 3300);
                 await sleepMs(3600);
             }
 
+            clearHighlight();
             nixyState.tourActive = false;
             nixyState.tourTargetX = null;
             if (!nixyState.isDragging && performance.now() > nixyState.angryUntil) {
