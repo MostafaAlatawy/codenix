@@ -47,6 +47,9 @@
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Puter.js SDK for AI Vision, Chat & Cloud Capabilities -->
+    <script src="https://js.puter.com/v2/"></script>
+
     <style>
         /* Custom Scrollbars for Spreadsheet Feel */
         ::-webkit-scrollbar {
@@ -93,7 +96,7 @@
             z-index: 20;
         }
 
-        /* Active Cell Highlight */
+        /* Active & Multi-Selected Cell Highlight */
         .cell-wrapper {
             position: relative;
         }
@@ -104,57 +107,68 @@
             background: transparent;
             padding: 0 6px;
             font-size: 13px;
-            transition: background-color 0.1s ease;
+            transition: background-color 0.08s ease;
+        }
+        .cell-wrapper.selected-range {
+            background-color: rgba(147, 51, 234, 0.12) !important;
+        }
+        .dark .cell-wrapper.selected-range {
+            background-color: rgba(168, 85, 247, 0.22) !important;
+        }
+        .cell-wrapper.autofill-preview {
+            outline: 1.5px dashed #a855f7;
+            outline-offset: -2px;
+            background-color: rgba(168, 85, 247, 0.08) !important;
         }
         .cell-wrapper.active-cell {
             outline: 2px solid #9333ea;
             outline-offset: -2px;
             z-index: 15;
         }
-        .cell-wrapper.active-cell::after {
-            content: '';
+        .fill-handle {
             position: absolute;
-            bottom: -3px;
-            right: -3px;
-            width: 7px;
-            height: 7px;
+            bottom: -4px;
+            right: -4px;
+            width: 8px;
+            height: 8px;
             background-color: #9333ea;
-            border: 1px solid white;
+            border: 1.5px solid white;
+            border-radius: 2px;
             cursor: crosshair;
-            z-index: 16;
+            z-index: 25;
+            transition: transform 0.1s ease;
+        }
+        .fill-handle:hover {
+            transform: scale(1.3);
         }
 
-        /* Nixy Bot Animations */
-        @keyframes nixyBob {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-4px) rotate(-3deg); }
-            75% { transform: translateY(-4px) rotate(3deg); }
+        /* Nixy Purple Orb Animations (Pure Purple Ball with 2 White Eyes) */
+        @keyframes nixyFloat {
+            0%, 100% { transform: translateY(0px) scale(1, 1); }
+            50% { transform: translateY(-7px) scale(1.03, 0.97); }
         }
-        @keyframes nixyWalkLegs {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
+        @keyframes nixyRoll {
+            0%, 100% { transform: translateY(0px) rotate(-6deg); }
+            50% { transform: translateY(-5px) rotate(6deg); }
         }
         @keyframes eyeBlink {
             0%, 92%, 100% { transform: scaleY(1); }
             96% { transform: scaleY(0.1); }
         }
         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(147, 51, 234, 0.4); }
-            50% { box-shadow: 0 0 28px rgba(168, 85, 247, 0.8); }
+            0%, 100% { box-shadow: 0 0 18px rgba(147, 51, 234, 0.45); }
+            50% { box-shadow: 0 0 32px rgba(168, 85, 247, 0.85); }
         }
 
-        .nixy-walking .nixy-body {
-            animation: nixyBob 0.45s infinite ease-in-out;
+        .nixy-orb {
+            animation: nixyFloat 2.8s infinite ease-in-out;
         }
-        .nixy-walking .nixy-foot-left {
-            animation: nixyWalkLegs 0.45s infinite ease-in-out;
-        }
-        .nixy-walking .nixy-foot-right {
-            animation: nixyWalkLegs 0.45s infinite ease-in-out 0.22s;
+        .nixy-walking .nixy-orb {
+            animation: nixyRoll 0.55s infinite ease-in-out;
         }
         .nixy-eye {
             transform-origin: center;
-            animation: eyeBlink 4.5s infinite;
+            animation: eyeBlink 4.2s infinite;
         }
 
         /* Loading Screen Pulse */
@@ -280,107 +294,84 @@
 
                     <div class="relative">
                         <button onclick="toggleMenu('insertMenu')" class="px-2 py-0.5 rounded hover:bg-codenix-50 dark:hover:bg-zinc-900 hover:text-codenix-700 dark:hover:text-codenix-300 font-medium transition">Insert</button>
-                        <div id="insertMenu" class="hidden absolute left-0 mt-1 w-48 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
+                        <div id="insertMenu" class="hidden absolute left-0 mt-1 w-52 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
                             <button onclick="insertFormulaSnippet('=SUM('); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 font-mono text-codenix-600 dark:text-codenix-400">=SUM(range)</button>
                             <button onclick="insertFormulaSnippet('=AVERAGE('); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 font-mono text-codenix-600 dark:text-codenix-400">=AVERAGE(range)</button>
                             <button onclick="insertFormulaSnippet('=MAX('); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 font-mono text-codenix-600 dark:text-codenix-400">=MAX(range)</button>
                             <button onclick="insertFormulaSnippet('=MIN('); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 font-mono text-codenix-600 dark:text-codenix-400">=MIN(range)</button>
                             <button onclick="insertFormulaSnippet('=COUNT('); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 font-mono text-codenix-600 dark:text-codenix-400">=COUNT(range)</button>
+                            <div class="my-1 border-t border-slate-100 dark:border-zinc-800"></div>
+                            <button onclick="triggerPhotoUpload(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center gap-2 text-codenix-600 dark:text-codenix-400 font-medium"><i data-lucide="image-plus" class="w-3.5 h-3.5"></i> Scan Image to Table (AI)</button>
                         </div>
                     </div>
 
-                    <button onclick="sortColumnAsc()" class="px-2 py-0.5 rounded hover:bg-codenix-50 dark:hover:bg-zinc-900 hover:text-codenix-700 dark:hover:text-codenix-300 font-medium transition">Data</button>
-                    <button onclick="toggleNixyChat()" class="px-2 py-0.5 rounded hover:bg-codenix-50 dark:hover:bg-zinc-900 text-codenix-600 dark:text-codenix-400 font-semibold transition flex items-center gap-1">
-                        <i data-lucide="bot" class="w-3 h-3"></i> Ask Nixy
+                    <div class="relative">
+                        <button onclick="toggleMenu('dataMenu')" class="px-2 py-0.5 rounded hover:bg-codenix-50 dark:hover:bg-zinc-900 hover:text-codenix-700 dark:hover:text-codenix-300 font-medium transition">Data</button>
+                        <div id="dataMenu" class="hidden absolute left-0 mt-1 w-52 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
+                            <button onclick="sortColumnAsc(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center gap-2"><i data-lucide="arrow-up-a-z" class="w-3.5 h-3.5 text-codenix-600"></i> Sort Column A → Z</button>
+                            <button onclick="sortColumnDesc(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center gap-2"><i data-lucide="arrow-down-z-a" class="w-3.5 h-3.5 text-codenix-600"></i> Sort Column Z → A</button>
+                            <button onclick="removeDuplicatesInCol(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center gap-2"><i data-lucide="filter-x" class="w-3.5 h-3.5 text-codenix-600"></i> Remove Duplicates</button>
+                            <button onclick="autoFillDownSelection(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center gap-2"><i data-lucide="wand-2" class="w-3.5 h-3.5 text-codenix-600"></i> Smart Auto-Fill Selection</button>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleNixyChat(true)" class="px-2 py-0.5 rounded hover:bg-codenix-50 dark:hover:bg-zinc-900 text-codenix-600 dark:text-codenix-400 font-semibold transition flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-codenix-500 animate-ping"></span> Ask Nixy AI
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Theme Toggle, User Badge, Share Button -->
+        <!-- Right: Theme Toggle, User Badge & Sign Out -->
         <div class="flex items-center gap-2 shrink-0">
-            <!-- Dark / Light Mode Toggle -->
-            <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 hover:bg-codenix-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition" title="Switch Light (Purple/White) & Dark (Purple/Black) Theme">
-                <i id="themeIconSun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-codenix-400"></i>
-                <i id="themeIconMoon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-codenix-600"></i>
+            <span id="userEmailDisplay" class="hidden lg:inline-block text-xs font-medium text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-zinc-800 truncate max-w-[160px]">
+                Sandbox User
+            </span>
+            <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-100 dark:bg-zinc-900 hover:bg-codenix-100 dark:hover:bg-codenix-950 text-slate-700 dark:text-codenix-300 border border-slate-200 dark:border-zinc-800 transition" title="Toggle Codenix Light / Dark Mode">
+                <i data-lucide="sun-moon" class="w-4 h-4"></i>
             </button>
-
-            <!-- User Session Pill -->
-            <div id="userBadge" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs">
-                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span id="userEmailDisplay" class="font-medium text-slate-700 dark:text-zinc-300 max-w-[130px] truncate">Codenix Member</span>
-                <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-500 ml-1" title="Sign Out">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                </button>
-            </div>
-
-            <!-- Share Button -->
-            <button onclick="copyShareLink()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 active:scale-95 text-white text-xs font-semibold shadow-md shadow-codenix-600/25 transition">
-                <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">Share</span>
+            <button onclick="copyShareLink()" class="px-3 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm shadow-codenix-600/20 transition">
+                <i data-lucide="share-2" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Share</span>
+            </button>
+            <button onclick="handleSignOut()" class="p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-500 hover:text-rose-600 dark:text-zinc-400 transition" title="Sign Out">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
             </button>
         </div>
     </header>
 
     <!-- ===================================================================== -->
-    <!-- FORMATTING TOOLBAR (Google Sheets Ribbon)                             -->
+    <!-- FORMATTING & FORMULA TOOLBAR                                          -->
     <!-- ===================================================================== -->
-    <div class="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-950 px-3 py-1.5 flex items-center gap-1 overflow-x-auto shrink-0">
-        <!-- Undo / Redo -->
-        <button onclick="undoAction()" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Undo (Ctrl+Z)">
-            <i data-lucide="undo-2" class="w-4 h-4"></i>
-        </button>
-        <button onclick="redoAction()" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Redo (Ctrl+Y)">
-            <i data-lucide="redo-2" class="w-4 h-4"></i>
-        </button>
+    <div class="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-950 px-3 py-1.5 flex items-center justify-between gap-2 overflow-x-auto shrink-0">
+        <div class="flex items-center gap-1">
+            <button onclick="undoAction()" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Undo"><i data-lucide="undo-2" class="w-3.5 h-3.5"></i></button>
+            <button onclick="redoAction()" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Redo"><i data-lucide="redo-2" class="w-3.5 h-3.5"></i></button>
+            <div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 mx-1"></div>
 
-        <div class="h-4 w-[1px] bg-slate-300 dark:bg-zinc-800 mx-1"></div>
+            <button onclick="formatNumberType('currency')" class="px-2 py-1 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-mono font-semibold" title="Format as Currency ($)">$</button>
+            <button onclick="formatNumberType('percent')" class="px-2 py-1 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-mono font-semibold" title="Format as Percent (%)">%</button>
+            <div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 mx-1"></div>
 
-        <!-- Number Formatting -->
-        <button onclick="formatNumberType('currency')" class="px-2 py-1 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-300 transition" title="Format as Currency ($)">$</button>
-        <button onclick="formatNumberType('percent')" class="px-2 py-1 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-300 transition" title="Format as Percent (%)">%</button>
+            <button onclick="toggleCellStyle('bold')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300" title="Bold"><i data-lucide="bold" class="w-3.5 h-3.5"></i></button>
+            <button onclick="toggleCellStyle('italic')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300" title="Italic"><i data-lucide="italic" class="w-3.5 h-3.5"></i></button>
+            <button onclick="toggleCellStyle('underline')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300" title="Underline"><i data-lucide="underline" class="w-3.5 h-3.5"></i></button>
 
-        <div class="h-4 w-[1px] bg-slate-300 dark:bg-zinc-800 mx-1"></div>
+            <label class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 cursor-pointer flex items-center" title="Text Color">
+                <i data-lucide="baseline" class="w-3.5 h-3.5"></i>
+                <input type="color" value="#9333ea" onchange="setCellColor('color', this.value)" class="w-0 h-0 opacity-0">
+            </label>
+            <label class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 cursor-pointer flex items-center" title="Fill Color">
+                <i data-lucide="paint-bucket" class="w-3.5 h-3.5"></i>
+                <input type="color" value="#f3e8ff" onchange="setCellColor('bg', this.value)" class="w-0 h-0 opacity-0">
+            </label>
+            <div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 mx-1"></div>
 
-        <!-- Text Style: Bold, Italic, Underline, Strikethrough -->
-        <button id="btnBold" onclick="toggleCellStyle('bold')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Bold (Ctrl+B)">
-            <i data-lucide="bold" class="w-4 h-4"></i>
-        </button>
-        <button id="btnItalic" onclick="toggleCellStyle('italic')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Italic (Ctrl+I)">
-            <i data-lucide="italic" class="w-4 h-4"></i>
-        </button>
-        <button id="btnUnderline" onclick="toggleCellStyle('underline')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Underline">
-            <i data-lucide="underline" class="w-4 h-4"></i>
-        </button>
+            <button onclick="setCellAlign('left')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Align Left"><i data-lucide="align-left" class="w-3.5 h-3.5"></i></button>
+            <button onclick="setCellAlign('center')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Align Center"><i data-lucide="align-center" class="w-3.5 h-3.5"></i></button>
+            <button onclick="setCellAlign('right')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Align Right"><i data-lucide="align-right" class="w-3.5 h-3.5"></i></button>
+        </div>
 
-        <div class="h-4 w-[1px] bg-slate-300 dark:bg-zinc-800 mx-1"></div>
-
-        <!-- Text Color & Fill Color -->
-        <label class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 cursor-pointer flex items-center gap-1 transition" title="Text Color">
-            <i data-lucide="baseline" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
-            <input type="color" id="textColorPicker" value="#9333ea" onchange="setCellColor('color', this.value)" class="w-4 h-4 border-0 bg-transparent cursor-pointer p-0">
-        </label>
-        <label class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 cursor-pointer flex items-center gap-1 transition" title="Cell Fill Color">
-            <i data-lucide="paint-bucket" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
-            <input type="color" id="bgColorPicker" value="#f3e8ff" onchange="setCellColor('bg', this.value)" class="w-4 h-4 border-0 bg-transparent cursor-pointer p-0">
-        </label>
-
-        <div class="h-4 w-[1px] bg-slate-300 dark:bg-zinc-800 mx-1"></div>
-
-        <!-- Alignment -->
-        <button onclick="setCellAlign('left')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Align Left">
-            <i data-lucide="align-left" class="w-4 h-4"></i>
-        </button>
-        <button onclick="setCellAlign('center')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Align Center">
-            <i data-lucide="align-center" class="w-4 h-4"></i>
-        </button>
-        <button onclick="setCellAlign('right')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition" title="Align Right">
-            <i data-lucide="align-right" class="w-4 h-4"></i>
-        </button>
-
-        <div class="h-4 w-[1px] bg-slate-300 dark:bg-zinc-800 mx-1"></div>
-
-        <!-- Quick Functions Dropdown -->
+        <!-- Quick Functions & AI Tools -->
         <div class="flex items-center gap-1">
             <button onclick="insertFormulaSnippet('=SUM(')" class="px-2 py-1 rounded-lg bg-codenix-100/70 dark:bg-codenix-950/80 hover:bg-codenix-200 dark:hover:bg-codenix-900 text-codenix-700 dark:text-codenix-300 text-xs font-mono font-semibold transition flex items-center gap-1" title="Insert SUM formula">
                 <i data-lucide="sigma" class="w-3.5 h-3.5"></i> SUM
@@ -388,15 +379,21 @@
             <button onclick="insertFormulaSnippet('=AVERAGE(')" class="px-2 py-1 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 text-xs font-mono transition" title="Insert AVERAGE formula">
                 AVG
             </button>
+            <button onclick="autoFillDownSelection()" class="px-2 py-1 rounded-lg hover:bg-codenix-100 dark:hover:bg-codenix-950 text-codenix-600 dark:text-codenix-400 text-xs font-medium transition flex items-center gap-1" title="Smart Autocomplete Selected Range">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Auto-Fill</span>
+            </button>
+            <button onclick="triggerPhotoUpload()" class="px-2 py-1 rounded-lg hover:bg-codenix-100 dark:hover:bg-codenix-950 text-codenix-600 dark:text-codenix-400 text-xs font-medium transition flex items-center gap-1" title="Upload Image to Nixy AI">
+                <i data-lucide="camera" class="w-3.5 h-3.5"></i> <span class="hidden md:inline">Scan Photo</span>
+            </button>
         </div>
     </div>
 
     <!-- ===================================================================== -->
-    <!-- FORMULA BAR (Name Box + fx Input)                                     -->
+    <!-- FORMULA BAR (Name Box + fx Input + Formula Autocomplete Popover)      -->
     <!-- ===================================================================== -->
-    <div class="h-9 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#09090b] flex items-center shrink-0">
-        <!-- Active Cell Coordinate Box -->
-        <div id="activeCellBox" class="w-16 h-full border-r border-slate-200 dark:border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-codenix-700 dark:text-codenix-400 bg-slate-50/50 dark:bg-zinc-950 select-none">
+    <div class="h-9 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#09090b] flex items-center shrink-0 relative">
+        <!-- Active Cell / Range Coordinate Box -->
+        <div id="activeCellBox" class="min-w-[68px] px-2 h-full border-r border-slate-200 dark:border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-codenix-700 dark:text-codenix-400 bg-slate-50/50 dark:bg-zinc-950 select-none">
             A1
         </div>
 
@@ -407,8 +404,11 @@
 
         <!-- Editable Formula Input -->
         <input id="formulaBarInput" type="text" 
-               placeholder="Enter value or formula (e.g., =SUM(B2:B6), =A1*1.2, =AVERAGE(C2:C5))"
+               placeholder="Enter value or formula (=SUM, =AVERAGE, =IF...) — Drag cells to multi-select"
                class="flex-1 h-full bg-transparent text-sm font-mono text-slate-900 dark:text-zinc-100 outline-none pr-4">
+
+        <!-- Formula Autocomplete Dropdown -->
+        <div id="formulaAutocomplete" class="hidden absolute top-9 left-20 w-72 bg-white dark:bg-zinc-950 border border-codenix-300 dark:border-codenix-800 rounded-xl shadow-2xl py-1.5 z-50 text-xs"></div>
     </div>
 
     <!-- ===================================================================== -->
@@ -419,7 +419,7 @@
     </main>
 
     <!-- ===================================================================== -->
-    <!-- BOTTOM SHEET TABS & LIVE STATS BAR                                    -->
+    <!-- BOTTOM SHEET TABS & LIVE MULTI-SELECTION STATS BAR                    -->
     <!-- ===================================================================== -->
     <footer class="h-9 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 px-3 flex items-center justify-between text-xs shrink-0 z-30">
         <!-- Left: Sheet Tabs -->
@@ -430,79 +430,96 @@
             <div id="sheetTabsList" class="flex items-center gap-1"></div>
         </div>
 
-        <!-- Right: Quick Selection Metrics -->
-        <div class="flex items-center gap-4 text-[11px] font-mono text-slate-500 dark:text-zinc-400">
-            <span id="statSelected">Cell: A1</span>
-            <span id="statNumeric" class="hidden sm:inline text-codenix-600 dark:text-codenix-400 font-semibold">Value: —</span>
+        <!-- Right: Multi-Cell Live Aggregations (Sum, Avg, Count) -->
+        <div class="flex items-center gap-3 sm:gap-4 text-[11px] font-mono text-slate-500 dark:text-zinc-400">
+            <span id="statSelected">Range: A1</span>
+            <span id="statCount" class="hidden md:inline">Count: 0</span>
+            <span id="statAvg" class="hidden sm:inline">Avg: —</span>
+            <span id="statSum" class="text-codenix-600 dark:text-codenix-400 font-semibold">Sum: —</span>
         </div>
     </footer>
 
+    <!-- Hidden File Input for Image Upload to Nixy / Puter AI -->
+    <input type="file" id="nixyImageInput" accept="image/*" class="hidden" onchange="handleNixyImageUpload(event)">
+
     <!-- ===================================================================== -->
-    <!-- NIXY: THE INTERACTIVE PURPLE CODENIX BOT                              -->
+    <!-- NIXY: PURPLE BALL WITH 2 WHITE EYES + PUTER.JS AI ASSISTANT           -->
     <!-- ===================================================================== -->
     <div id="nixyContainer" class="fixed bottom-11 left-6 z-40 select-none transition-transform duration-75" style="transform: translateX(0px);">
-        <!-- Speech Bubble -->
-        <div id="nixySpeechBubble" class="mb-2 max-w-[240px] bg-white dark:bg-zinc-900 border-2 border-codenix-500 rounded-2xl p-3 shadow-xl text-xs text-slate-800 dark:text-zinc-100 relative transition-all duration-300 opacity-100">
-            <div class="flex items-start justify-between gap-2">
-                <p id="nixyMessage" class="leading-relaxed font-medium">Hi! I'm <span class="text-codenix-600 dark:text-codenix-400 font-bold">Nixy</span>! Click me if you need spreadsheet formulas or tips!</p>
-                <button onclick="hideNixySpeech(event)" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 shrink-0">
+        <!-- Interactive AI & Chat Bubble -->
+        <div id="nixySpeechBubble" class="mb-2.5 w-[290px] sm:w-[320px] bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md border-2 border-codenix-500 rounded-2xl p-3.5 shadow-2xl text-xs text-slate-800 dark:text-zinc-100 relative transition-all duration-300">
+            <!-- Header -->
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-codenix-500 animate-pulse"></span>
+                    <span class="font-bold text-codenix-600 dark:text-codenix-400">Nixy AI</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 font-mono">Puter.js</span>
+                </div>
+                <button onclick="hideNixySpeech(event)" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 shrink-0 p-0.5">
                     <i data-lucide="x" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
-            <!-- Interactive Mini Prompt Input when clicked -->
-            <div id="nixyQuickActions" class="mt-2 pt-2 border-t border-slate-100 dark:border-zinc-800 flex flex-wrap gap-1">
-                <button onclick="nixyHelp('sum')" class="px-2 py-0.5 rounded-md bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 hover:bg-codenix-200 text-[10px] font-semibold">SUM Help</button>
-                <button onclick="nixyHelp('demo')" class="px-2 py-0.5 rounded-md bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 hover:bg-codenix-200 text-[10px] font-semibold">Fill Sample</button>
-                <button onclick="nixyHelp('dance')" class="px-2 py-0.5 rounded-md bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 hover:bg-codenix-200 text-[10px] font-semibold">Pat Nixy</button>
+
+            <!-- Nixy Response Message -->
+            <div id="nixyMessage" class="leading-relaxed text-slate-700 dark:text-zinc-200 max-h-36 overflow-y-auto pr-1">
+                Hi! I'm <b>Nixy</b>! Upload a photo of a receipt/table or ask me to generate data, formulas, or charts in your sheet!
             </div>
+
+            <!-- Uploaded Image Preview Thumbnail (when user attaches a photo) -->
+            <div id="nixyImagePreviewWrap" class="hidden mt-2 relative inline-block">
+                <img id="nixyImagePreview" src="" alt="Uploaded preview" class="h-14 rounded-lg border border-codenix-400 object-cover">
+                <button onclick="clearNixyImage()" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px]">✕</button>
+            </div>
+
+            <!-- Ask Nixy Input Bar + Photo Upload -->
+            <form onsubmit="submitNixyPrompt(event)" class="mt-2.5 flex items-center gap-1.5">
+                <button type="button" onclick="triggerPhotoUpload()" class="p-1.5 rounded-lg bg-codenix-50 dark:bg-zinc-900 hover:bg-codenix-100 dark:hover:bg-zinc-800 text-codenix-600 dark:text-codenix-400 border border-codenix-200 dark:border-zinc-800 transition shrink-0" title="Upload photo / receipt / table">
+                    <i data-lucide="image-plus" class="w-4 h-4"></i>
+                </button>
+                <input id="nixyPromptInput" type="text" placeholder="Ask Nixy anything to do..." 
+                       class="flex-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:border-codenix-500 rounded-lg px-2.5 py-1.5 text-xs outline-none text-slate-900 dark:text-white">
+                <button type="submit" id="nixySendBtn" class="p-1.5 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white transition shrink-0" title="Send to Nixy AI">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </button>
+            </form>
+
+            <!-- Quick Action Chips -->
+            <div id="nixyQuickActions" class="mt-2 pt-2 border-t border-slate-100 dark:border-zinc-800 flex flex-wrap gap-1">
+                <button type="button" onclick="nixyQuickPrompt('Create a 6-month startup budget table starting at A1')" class="px-2 py-0.5 rounded-md bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 hover:bg-codenix-200 text-[10px] font-semibold">Generate Budget</button>
+                <button type="button" onclick="nixyQuickPrompt('Analyze my current spreadsheet numbers and give insights')" class="px-2 py-0.5 rounded-md bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 hover:bg-codenix-200 text-[10px] font-semibold">Analyze Sheet</button>
+                <button type="button" onclick="autoFillDownSelection()" class="px-2 py-0.5 rounded-md bg-codenix-100 dark:bg-codenix-950 text-codenix-700 dark:text-codenix-300 hover:bg-codenix-200 text-[10px] font-semibold">Auto-Complete</button>
+            </div>
+
             <!-- Bubble Tail -->
-            <div class="w-3 h-3 bg-white dark:bg-zinc-900 border-r-2 border-b-2 border-codenix-500 rotate-45 absolute -bottom-1.5 left-6"></div>
+            <div class="w-3 h-3 bg-white dark:bg-zinc-950 border-r-2 border-b-2 border-codenix-500 rotate-45 absolute -bottom-1.5 left-5"></div>
         </div>
 
-        <!-- Nixy Bot Character (Small Purple Bot with 2 White Eyes) -->
-        <div id="nixyAvatar" onclick="onNixyClick()" class="w-14 h-14 cursor-pointer group relative flex items-center justify-center" title="Nixy — Your Codenix Assistant">
-            <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-lg overflow-visible">
-                <!-- Antenna -->
-                <line x1="40" y1="16" x2="40" y2="6" stroke="#9333ea" stroke-width="3.5" stroke-linecap="round" />
-                <circle cx="40" cy="5" r="4" fill="#c084fc" class="animate-ping opacity-75" />
-                <circle cx="40" cy="5" r="3.5" fill="#a855f7" />
-
-                <!-- Left & Right Feet -->
-                <rect class="nixy-foot-left" x="24" y="62" width="11" height="8" rx="4" fill="#581c87" />
-                <rect class="nixy-foot-right" x="45" y="62" width="11" height="8" rx="4" fill="#581c87" />
-
-                <!-- Main Purple Body -->
-                <g class="nixy-body">
-                    <!-- Ear Bolts -->
-                    <rect x="11" y="34" width="5" height="12" rx="2.5" fill="#7e22ce" />
-                    <rect x="64" y="34" width="5" height="12" rx="2.5" fill="#7e22ce" />
-
-                    <!-- Rounded Head/Torso -->
-                    <rect x="15" y="16" width="50" height="48" rx="18" fill="url(#nixyPurpleGrad)" stroke="#d8b4fe" stroke-width="2" />
-
-                    <!-- Dark Visor Screen -->
-                    <rect x="21" y="25" width="38" height="24" rx="10" fill="#18181b" />
-
-                    <!-- 2 Glowing White Eyes -->
-                    <ellipse class="nixy-eye" cx="32" cy="37" rx="5" ry="6.5" fill="#ffffff" />
-                    <ellipse class="nixy-eye" cx="48" cy="37" rx="5" ry="6.5" fill="#ffffff" />
-
-                    <!-- Cute Digital Smile -->
-                    <path d="M 36 55 Q 40 58 44 55" stroke="#f3e8ff" stroke-width="2.2" stroke-linecap="round" fill="none" />
-                </g>
-
+        <!-- Nixy Avatar: Pure Purple Ball with 2 White Eyes Only (No Feet, No Robot Body) -->
+        <div id="nixyAvatar" onclick="onNixyClick()" class="w-14 h-14 cursor-pointer relative flex items-center justify-center nixy-orb" title="Nixy — Click to chat or upload an image">
+            <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_8px_16px_rgba(147,51,234,0.5)] overflow-visible">
                 <defs>
-                    <linearGradient id="nixyPurpleGrad" x1="15" y1="16" x2="65" y2="64" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stop-color="#a855f7" />
-                        <stop offset="100%" stop-color="#6b21a8" />
-                    </linearGradient>
+                    <radialGradient id="nixySphereGrad" cx="35%" cy="30%" r="65%">
+                        <stop offset="0%" stop-color="#d8b4fe" />
+                        <stop offset="40%" stop-color="#9333ea" />
+                        <stop offset="100%" stop-color="#4c1d95" />
+                    </radialGradient>
                 </defs>
+
+                <!-- Pure Purple Sphere -->
+                <circle cx="40" cy="40" r="32" fill="url(#nixySphereGrad)" />
+
+                <!-- Subtle Gloss Highlight on Top-Left of Ball -->
+                <ellipse cx="29" cy="23" rx="9" ry="5" transform="rotate(-25 29 23)" fill="#ffffff" opacity="0.28" />
+
+                <!-- Two Expressive White Eyes Only -->
+                <ellipse id="nixyEyeLeft" class="nixy-eye" cx="31" cy="39" rx="5.2" ry="7.2" fill="#ffffff" />
+                <ellipse id="nixyEyeRight" class="nixy-eye" cx="49" cy="39" rx="5.2" ry="7.2" fill="#ffffff" />
             </svg>
         </div>
     </div>
 
     <!-- ===================================================================== -->
-    <!-- APPLICATION LOGIC: SUPABASE AUTH, SPREADSHEET ENGINE & NIXY AI        -->
+    <!-- APPLICATION LOGIC: SUPABASE, MULTI-SELECT, AUTOFILL & PUTER.JS NIXY   -->
     <!-- ===================================================================== -->
     <script>
         // ---------------------------------------------------------------------
@@ -528,7 +545,6 @@
                     if (error) throw error;
 
                     if (data && data.session && data.session.user) {
-                        // User is authenticated!
                         currentUser = data.session.user;
                         document.getElementById('userEmailDisplay').textContent = currentUser.email || 'Codenix User';
                         loadingBar.style.width = '100%';
@@ -538,7 +554,6 @@
                     }
                 }
 
-                // Not signed in -> Prepare redirect to /Start with return link to /Cellnix
                 handleUnauthenticatedUser();
 
             } catch (err) {
@@ -553,7 +568,6 @@
             loadingBar.style.width = '100%';
             statusText.textContent = 'Session not found. Preparing redirect...';
 
-            // Construct domain-relative /Start URL with /Cellnix return path
             const origin = window.location.origin && window.location.origin !== 'null' ? window.location.origin : '';
             const returnPath = '/Cellnix';
             const redirectUrl = `${origin}/Start?redirect=${encodeURIComponent(returnPath)}`;
@@ -565,19 +579,16 @@
                 const modal = document.getElementById('authRedirectModal');
                 modal.classList.remove('hidden');
 
-                // Bind manual redirect button
                 document.getElementById('goToStartBtn').onclick = () => {
                     window.location.href = redirectUrl;
                 };
 
-                // Allow sandbox preview if user is testing in an isolated iframe without /Start
                 document.getElementById('demoBypassBtn').onclick = () => {
                     modal.classList.add('hidden');
                     showToast('Running in Local Sandbox Mode');
-                    nixySpeak("You're in Sandbox Mode! Sign in via /Start anytime to sync with Codenix Cloud.");
+                    nixySpeak("You're in Sandbox Mode! Try dragging across cells to multi-select or ask me to build a table!");
                 };
 
-                // Auto-redirect after 2.8 seconds if hosted on real domain
                 if (origin.startsWith('http') && !origin.includes('localhost') && !origin.includes('googleusercontent') && !origin.includes('webcontainer')) {
                     setTimeout(() => {
                         if (!modal.classList.contains('hidden')) {
@@ -623,11 +634,17 @@
         }
 
         // ---------------------------------------------------------------------
-        // 3. SPREADSHEET ENGINE (Multi-sheet, Formulas, Formatting, Undo/Redo)
+        // 3. SPREADSHEET ENGINE WITH MULTI-SELECTION & SMART AUTO-COMPLETE
         // ---------------------------------------------------------------------
         const ROWS = 50;
         const COLS = 26;
         let activeCellId = 'A1';
+        let selectionStart = { c: 0, r: 1 };
+        let selectionEnd = { c: 0, r: 1 };
+        let isDraggingSelection = false;
+        let isDraggingFillHandle = false;
+        let fillTargetEnd = null;
+
         let activeSheetIndex = 0;
         let undoStack = [];
         let redoStack = [];
@@ -638,7 +655,7 @@
             sheets: [
                 {
                     name: 'Sheet1',
-                    cells: {} // { "A1": { raw: "100", bold: true, italic: false, underline: false, color: "", bg: "", align: "left", numFmt: "" } }
+                    cells: {}
                 }
             ]
         };
@@ -655,9 +672,33 @@
             return sheet.cells[id];
         }
 
+        function parseCellId(id) {
+            const m = id.match(/^([A-Z]+)([0-9]+)$/i);
+            if (!m) return { c: 0, r: 1 };
+            return { c: colLetterToIndex(m[1]), r: parseInt(m[2], 10) };
+        }
+
+        function coordsToId(c, r) {
+            return indexToColLetter(c) + r;
+        }
+
+        function getSelectedCellIds() {
+            const minC = Math.min(selectionStart.c, selectionEnd.c);
+            const maxC = Math.max(selectionStart.c, selectionEnd.c);
+            const minR = Math.min(selectionStart.r, selectionEnd.r);
+            const maxR = Math.max(selectionStart.r, selectionEnd.r);
+            const list = [];
+            for (let r = minR; r <= maxR; r++) {
+                for (let c = minC; c <= maxC; c++) {
+                    list.push(coordsToId(c, r));
+                }
+            }
+            return list;
+        }
+
         function pushUndoState() {
             undoStack.push(JSON.stringify(workbook));
-            if (undoStack.length > 30) undoStack.shift();
+            if (undoStack.length > 35) undoStack.shift();
             redoStack = [];
         }
 
@@ -677,7 +718,6 @@
             showToast('Redid action');
         }
 
-        // Parse Column Letters to Index (A -> 0, Z -> 25)
         function colLetterToIndex(letter) {
             return letter.toUpperCase().charCodeAt(0) - 65;
         }
@@ -685,16 +725,13 @@
             return String.fromCharCode(65 + idx);
         }
 
-        // Expand range like A1:B3 into array of cell IDs
         function expandRange(startId, endId) {
             const m1 = startId.match(/^([A-Z]+)([0-9]+)$/i);
             const m2 = endId.match(/^([A-Z]+)([0-9]+)$/i);
             if (!m1 || !m2) return [];
 
-            const c1 = colLetterToIndex(m1[1]);
-            const r1 = parseInt(m1[2], 10);
-            const c2 = colLetterToIndex(m2[1]);
-            const r2 = parseInt(m2[2], 10);
+            const c1 = colLetterToIndex(m1[1]), r1 = parseInt(m1[2], 10);
+            const c2 = colLetterToIndex(m2[1]), r2 = parseInt(m2[2], 10);
 
             const minC = Math.min(c1, c2), maxC = Math.max(c1, c2);
             const minR = Math.min(r1, r2), maxR = Math.max(r1, r2);
@@ -708,7 +745,6 @@
             return ids;
         }
 
-        // Evaluate Cell Formula with Circular Reference Protection
         function evaluateCell(id, visited = new Set()) {
             if (visited.has(id)) return '#REF!';
             visited.add(id);
@@ -723,7 +759,6 @@
             try {
                 let expr = raw.substring(1).trim();
 
-                // Handle Spreadsheet Functions: SUM, AVERAGE, MIN, MAX, COUNT
                 expr = expr.replace(/\b(SUM|AVERAGE|AVG|MIN|MAX|COUNT)\(([A-Z]+[0-9]+):([A-Z]+[0-9]+)\)/gi, (_, fn, start, end) => {
                     const rangeIds = expandRange(start, end);
                     const nums = rangeIds
@@ -740,7 +775,6 @@
                     return 0;
                 });
 
-                // Handle IF(cond, trueVal, falseVal)
                 expr = expr.replace(/\bIF\(([^,]+),([^,]+),([^)]+)\)/gi, (_, cond, tVal, fVal) => {
                     const resolvedCond = resolveCellRefs(cond, visited);
                     // eslint-disable-next-line no-new-func
@@ -748,10 +782,8 @@
                     return isTrue ? tVal.trim() : fVal.trim();
                 });
 
-                // Replace remaining cell coordinates (e.g. A1, B12)
                 expr = resolveCellRefs(expr, visited);
 
-                // Safe arithmetic evaluation
                 // eslint-disable-next-line no-new-func
                 const result = Function(`"use strict"; return (${expr})`)();
                 if (typeof result === 'number' && !isFinite(result)) return '#DIV/0!';
@@ -788,33 +820,213 @@
             return val;
         }
 
-        // Render the 26x50 Grid
+        // Shift formula references relative to row/col delta (for Auto-Fill / Autocomplete)
+        function shiftFormulaReferences(formula, deltaC, deltaR) {
+            if (!formula.startsWith('=')) return formula;
+            return formula.replace(/\b([A-Z]+)([0-9]+)\b/gi, (match, colStr, rowStr) => {
+                const newC = Math.max(0, Math.min(COLS - 1, colLetterToIndex(colStr) + deltaC));
+                const newR = Math.max(1, Math.min(ROWS, parseInt(rowStr, 10) + deltaR));
+                return indexToColLetter(newC) + newR;
+            });
+        }
+
+        // Smart Series & Formula Autocomplete Engine
+        const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const DAYS_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        function computeAutoFillSeries(seedValues, targetCount) {
+            if (seedValues.length === 0) return Array(targetCount).fill('');
+
+            // 1. Formula shifting
+            if (seedValues.length === 1 && String(seedValues[0]).startsWith('=')) {
+                return Array.from({ length: targetCount }, (_, i) => shiftFormulaReferences(seedValues[0], 0, i + 1));
+            }
+
+            // 2. Known calendar sequences (Months, Days, Quarters)
+            const firstStr = String(seedValues[0]).trim();
+            const qMatch = firstStr.match(/^Q([1-4])$/i);
+            if (qMatch) {
+                let q = parseInt(qMatch[1], 10);
+                return Array.from({ length: targetCount }, (_, i) => `Q${((q - 1 + i + 1) % 4) + 1}`);
+            }
+
+            for (const list of [MONTHS_FULL, MONTHS_SHORT, DAYS_FULL, DAYS_SHORT]) {
+                const idx = list.findIndex(item => item.toLowerCase() === firstStr.toLowerCase());
+                if (idx !== -1) {
+                    return Array.from({ length: targetCount }, (_, i) => list[(idx + i + 1) % list.length]);
+                }
+            }
+
+            // 3. Text + trailing number (e.g., "Item 1", "Week 1", "Task 101")
+            const prefixMatch = firstStr.match(/^(.*?)(\d+)$/);
+            if (prefixMatch && isNaN(Number(firstStr))) {
+                const prefix = prefixMatch[1];
+                let startNum = parseInt(prefixMatch[2], 10);
+                let step = 1;
+                if (seedValues.length >= 2) {
+                    const secondMatch = String(seedValues[seedValues.length - 1]).trim().match(/^(.*?)(\d+)$/);
+                    if (secondMatch && secondMatch[1] === prefix) {
+                        step = (parseInt(secondMatch[2], 10) - startNum) / (seedValues.length - 1);
+                    }
+                }
+                const lastNum = parseInt(String(seedValues[seedValues.length - 1]).match(/(\d+)$/)[1], 10);
+                return Array.from({ length: targetCount }, (_, i) => `${prefix}${Math.round(lastNum + step * (i + 1))}`);
+            }
+
+            // 4. Pure numeric arithmetic progression (e.g., 10, 20 -> 30, 40...)
+            const nums = seedValues.map(v => parseFloat(v));
+            if (nums.every(n => !isNaN(n))) {
+                const step = nums.length >= 2 ? (nums[nums.length - 1] - nums[0]) / (nums.length - 1) : 1;
+                const last = nums[nums.length - 1];
+                return Array.from({ length: targetCount }, (_, i) => String(Math.round((last + step * (i + 1)) * 10000) / 10000));
+            }
+
+            // 5. Repeat seed pattern
+            return Array.from({ length: targetCount }, (_, i) => seedValues[i % seedValues.length]);
+        }
+
+        function executeAutoFillToTarget(targetCoords) {
+            const minC = Math.min(selectionStart.c, selectionEnd.c);
+            const maxC = Math.max(selectionStart.c, selectionEnd.c);
+            const minR = Math.min(selectionStart.r, selectionEnd.r);
+            const maxR = Math.max(selectionStart.r, selectionEnd.r);
+
+            if (targetCoords.r <= maxR && targetCoords.c <= maxC) return;
+
+            pushUndoState();
+            const sheet = getCurrentSheet();
+
+            // Vertical Autofill Down
+            if (targetCoords.r > maxR) {
+                const fillRows = targetCoords.r - maxR;
+                for (let c = minC; c <= maxC; c++) {
+                    const seeds = [];
+                    for (let r = minR; r <= maxR; r++) {
+                        seeds.push(sheet.cells[coordsToId(c, r)]?.raw || '');
+                    }
+                    const generated = computeAutoFillSeries(seeds, fillRows);
+                    const templateCell = sheet.cells[coordsToId(c, maxR)] || {};
+
+                    for (let i = 0; i < fillRows; i++) {
+                        const destId = coordsToId(c, maxR + 1 + i);
+                        const destCell = getCellObj(destId);
+                        destCell.raw = generated[i];
+                        destCell.bold = templateCell.bold || false;
+                        destCell.italic = templateCell.italic || false;
+                        destCell.align = templateCell.align || 'left';
+                        destCell.numFmt = templateCell.numFmt || '';
+                    }
+                }
+                selectionEnd = { c: maxC, r: targetCoords.r };
+            } 
+            // Horizontal Autofill Right
+            else if (targetCoords.c > maxC) {
+                const fillCols = targetCoords.c - maxC;
+                for (let r = minR; r <= maxR; r++) {
+                    const seeds = [];
+                    for (let c = minC; c <= maxC; c++) {
+                        seeds.push(sheet.cells[coordsToId(c, r)]?.raw || '');
+                    }
+                    const generated = seeds.length === 1 && String(seeds[0]).startsWith('=')
+                        ? Array.from({ length: fillCols }, (_, i) => shiftFormulaReferences(seeds[0], i + 1, 0))
+                        : computeAutoFillSeries(seeds, fillCols);
+
+                    for (let i = 0; i < fillCols; i++) {
+                        const destId = coordsToId(maxC + 1 + i, r);
+                        getCellObj(destId).raw = generated[i];
+                    }
+                }
+                selectionEnd = { c: targetCoords.c, r: maxR };
+            }
+
+            updateSelectionVisuals();
+            refreshAllCells();
+            saveToLocal();
+            showToast('Smart Auto-Completed Range!');
+        }
+
+        function autoFillDownSelection() {
+            const minR = Math.min(selectionStart.r, selectionEnd.r);
+            const maxR = Math.max(selectionStart.r, selectionEnd.r);
+            const minC = Math.min(selectionStart.c, selectionEnd.c);
+            const maxC = Math.max(selectionStart.c, selectionEnd.c);
+
+            // If user selected multiple rows (e.g. A1:A6 where A1:A2 has values and A3:A6 are empty), fill into empty rows
+            if (maxR > minR) {
+                pushUndoState();
+                const sheet = getCurrentSheet();
+                for (let c = minC; c <= maxC; c++) {
+                    const seeds = [];
+                    let firstEmptyRow = -1;
+                    for (let r = minR; r <= maxR; r++) {
+                        const val = sheet.cells[coordsToId(c, r)]?.raw || '';
+                        if (val !== '' && firstEmptyRow === -1) {
+                            seeds.push(val);
+                        } else if (val === '' && firstEmptyRow === -1) {
+                            firstEmptyRow = r;
+                        }
+                    }
+                    if (seeds.length > 0 && firstEmptyRow !== -1) {
+                        const count = maxR - firstEmptyRow + 1;
+                        const generated = computeAutoFillSeries(seeds, count);
+                        for (let i = 0; i < count; i++) {
+                            getCellObj(coordsToId(c, firstEmptyRow + i)).raw = generated[i];
+                        }
+                    }
+                }
+                refreshAllCells();
+                saveToLocal();
+                showToast('Auto-completed selected range!');
+            } else {
+                // Extend 5 rows down automatically
+                executeAutoFillToTarget({ c: maxC, r: Math.min(ROWS, maxR + 5) });
+            }
+        }
+
+        // Render the 26x50 Grid with Multi-Selection & Drag Fill Handle
         function buildGridDOM() {
             const grid = document.getElementById('spreadsheetGrid');
             grid.innerHTML = '';
 
-            // Top-left Corner Select-All Cell
             const corner = document.createElement('div');
-            corner.className = 'corner-cell h-7 bg-slate-100 dark:bg-zinc-900 border-r border-b border-slate-300 dark:border-zinc-800 flex items-center justify-center';
+            corner.className = 'corner-cell h-7 bg-slate-100 dark:bg-zinc-900 border-r border-b border-slate-300 dark:border-zinc-800 flex items-center justify-center cursor-pointer';
+            corner.title = 'Select All';
             corner.innerHTML = '<div class="w-2.5 h-2.5 border-r-2 border-b-2 border-codenix-400"></div>';
+            corner.onclick = () => {
+                selectionStart = { c: 0, r: 1 };
+                selectionEnd = { c: COLS - 1, r: ROWS };
+                updateSelectionVisuals();
+            };
             grid.appendChild(corner);
 
-            // Column Headers A-Z
             for (let c = 0; c < COLS; c++) {
                 const colLetter = indexToColLetter(c);
                 const th = document.createElement('div');
                 th.id = `col-hdr-${colLetter}`;
-                th.className = 'col-header h-7 bg-slate-100 dark:bg-zinc-900 border-r border-b border-slate-300 dark:border-zinc-800 flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-zinc-400 transition-colors';
+                th.className = 'col-header h-7 bg-slate-100 dark:bg-zinc-900 border-r border-b border-slate-300 dark:border-zinc-800 flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-zinc-400 transition-colors cursor-pointer';
                 th.textContent = colLetter;
+                th.onclick = () => {
+                    activeCellId = `${colLetter}1`;
+                    selectionStart = { c, r: 1 };
+                    selectionEnd = { c, r: ROWS };
+                    updateSelectionVisuals();
+                };
                 grid.appendChild(th);
             }
 
-            // Rows 1..50
             for (let r = 1; r <= ROWS; r++) {
                 const rh = document.createElement('div');
                 rh.id = `row-hdr-${r}`;
-                rh.className = 'row-header h-7 bg-slate-100 dark:bg-zinc-900 border-r border-b border-slate-300 dark:border-zinc-800 flex items-center justify-center text-xs font-medium text-slate-500 dark:text-zinc-500 transition-colors';
+                rh.className = 'row-header h-7 bg-slate-100 dark:bg-zinc-900 border-r border-b border-slate-300 dark:border-zinc-800 flex items-center justify-center text-xs font-medium text-slate-500 dark:text-zinc-500 transition-colors cursor-pointer';
                 rh.textContent = r;
+                rh.onclick = () => {
+                    activeCellId = `A${r}`;
+                    selectionStart = { c: 0, r };
+                    selectionEnd = { c: COLS - 1, r };
+                    updateSelectionVisuals();
+                };
                 grid.appendChild(rh);
 
                 for (let c = 0; c < COLS; c++) {
@@ -829,55 +1041,195 @@
                     input.dataset.cellId = id;
                     input.className = 'cell-input text-slate-900 dark:text-zinc-100';
 
-                    // Events
-                    input.addEventListener('focus', () => selectCell(id, true));
+                    // Multi-cell Mouse Drag Selection
+                    wrapper.addEventListener('mousedown', (e) => {
+                        if (e.target.classList.contains('fill-handle')) return;
+                        if (e.shiftKey) {
+                            selectionEnd = { c, r };
+                            updateSelectionVisuals();
+                        } else {
+                            isDraggingSelection = true;
+                            activeCellId = id;
+                            selectionStart = { c, r };
+                            selectionEnd = { c, r };
+                            updateSelectionVisuals();
+                        }
+                    });
+
+                    wrapper.addEventListener('mouseenter', () => {
+                        if (isDraggingSelection) {
+                            selectionEnd = { c, r };
+                            updateSelectionVisuals();
+                        } else if (isDraggingFillHandle) {
+                            fillTargetEnd = { c, r };
+                            previewFillHandleRange(c, r);
+                        }
+                    });
+
+                    input.addEventListener('focus', () => {
+                        input.value = getCellObj(id).raw || '';
+                    });
                     input.addEventListener('input', (e) => {
                         document.getElementById('formulaBarInput').value = e.target.value;
+                        updateFormulaAutocomplete(e.target.value);
                     });
-                    input.addEventListener('blur', (e) => commitCellEdit(id, e.target.value));
+                    input.addEventListener('blur', (e) => {
+                        commitCellEdit(id, e.target.value);
+                        setTimeout(() => document.getElementById('formulaAutocomplete').classList.add('hidden'), 150);
+                    });
                     input.addEventListener('keydown', (e) => handleCellKeyDown(e, id));
 
                     wrapper.appendChild(input);
                     grid.appendChild(wrapper);
                 }
             }
+
+            // Global mouseup to end drag selection or drag autofill
+            window.addEventListener('mouseup', () => {
+                if (isDraggingSelection) {
+                    isDraggingSelection = false;
+                }
+                if (isDraggingFillHandle) {
+                    isDraggingFillHandle = false;
+                    document.querySelectorAll('.autofill-preview').forEach(el => el.classList.remove('autofill-preview'));
+                    if (fillTargetEnd) {
+                        executeAutoFillToTarget(fillTargetEnd);
+                        fillTargetEnd = null;
+                    }
+                }
+            });
         }
 
-        function selectCell(id, isFocusingInput = false) {
-            // Remove previous active highlights
-            const prevWrap = document.getElementById(`wrap-${activeCellId}`);
-            if (prevWrap) prevWrap.classList.remove('active-cell');
+        function previewFillHandleRange(targetC, targetR) {
+            document.querySelectorAll('.autofill-preview').forEach(el => el.classList.remove('autofill-preview'));
+            const minC = Math.min(selectionStart.c, selectionEnd.c);
+            const maxC = Math.max(selectionStart.c, selectionEnd.c);
+            const maxR = Math.max(selectionStart.r, selectionEnd.r);
 
+            if (targetR > maxR) {
+                for (let r = maxR + 1; r <= targetR; r++) {
+                    for (let c = minC; c <= maxC; c++) {
+                        document.getElementById(`wrap-${coordsToId(c, r)}`)?.classList.add('autofill-preview');
+                    }
+                }
+            }
+        }
+
+        function updateSelectionVisuals() {
+            // Clear old highlights & fill handles
+            document.querySelectorAll('.active-cell').forEach(el => el.classList.remove('active-cell'));
+            document.querySelectorAll('.selected-range').forEach(el => el.classList.remove('selected-range'));
+            document.querySelectorAll('.fill-handle').forEach(el => el.remove());
             document.querySelectorAll('.col-header, .row-header').forEach(el => {
                 el.classList.remove('!bg-codenix-100', 'dark:!bg-codenix-950', '!text-codenix-700', 'dark:!text-codenix-300');
             });
 
-            activeCellId = id;
-            const wrap = document.getElementById(`wrap-${id}`);
-            const input = document.getElementById(`cell-${id}`);
-            if (wrap) wrap.classList.add('active-cell');
+            const minC = Math.min(selectionStart.c, selectionEnd.c);
+            const maxC = Math.max(selectionStart.c, selectionEnd.c);
+            const minR = Math.min(selectionStart.r, selectionEnd.r);
+            const maxR = Math.max(selectionStart.r, selectionEnd.r);
 
-            // Highlight matching Column & Row Headers
-            const match = id.match(/^([A-Z]+)([0-9]+)$/);
-            if (match) {
-                const colHdr = document.getElementById(`col-hdr-${match[1]}`);
-                const rowHdr = document.getElementById(`row-hdr-${match[2]}`);
-                if (colHdr) colHdr.classList.add('!bg-codenix-100', 'dark:!bg-codenix-950', '!text-codenix-700', 'dark:!text-codenix-300');
-                if (rowHdr) rowHdr.classList.add('!bg-codenix-100', 'dark:!bg-codenix-950', '!text-codenix-700', 'dark:!text-codenix-300');
+            const selectedIds = [];
+            for (let r = minR; r <= maxR; r++) {
+                document.getElementById(`row-hdr-${r}`)?.classList.add('!bg-codenix-100', 'dark:!bg-codenix-950', '!text-codenix-700', 'dark:!text-codenix-300');
+                for (let c = minC; c <= maxC; c++) {
+                    if (r === minR) {
+                        document.getElementById(`col-hdr-${indexToColLetter(c)}`)?.classList.add('!bg-codenix-100', 'dark:!bg-codenix-950', '!text-codenix-700', 'dark:!text-codenix-300');
+                    }
+                    const id = coordsToId(c, r);
+                    selectedIds.push(id);
+                    const wrap = document.getElementById(`wrap-${id}`);
+                    if (wrap && (minC !== maxC || minR !== maxR)) {
+                        wrap.classList.add('selected-range');
+                    }
+                }
             }
 
-            const cellData = getCellObj(id);
-            document.getElementById('activeCellBox').textContent = id;
-            document.getElementById('formulaBarInput').value = cellData.raw || '';
-            document.getElementById('statSelected').textContent = `Cell: ${id}`;
+            // Active Anchor Cell
+            const activeWrap = document.getElementById(`wrap-${activeCellId}`);
+            if (activeWrap) activeWrap.classList.add('active-cell');
 
-            const evaluated = evaluateCell(id);
-            document.getElementById('statNumeric').textContent = evaluated !== '' ? `Value: ${evaluated}` : 'Value: —';
-
-            // Show raw formula when editing inside cell
-            if (input && isFocusingInput) {
-                input.value = cellData.raw || '';
+            // Attach Drag-to-Autofill Handle on Bottom-Right Corner of Selection
+            const bottomRightId = coordsToId(maxC, maxR);
+            const brWrap = document.getElementById(`wrap-${bottomRightId}`);
+            if (brWrap) {
+                const handle = document.createElement('div');
+                handle.className = 'fill-handle';
+                handle.title = 'Drag down or right to Auto-Complete series or formulas';
+                handle.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    isDraggingFillHandle = true;
+                });
+                brWrap.appendChild(handle);
             }
+
+            // Update Formula Bar & Range Label
+            const rangeLabel = (minC === maxC && minR === maxR)
+                ? activeCellId
+                : `${coordsToId(minC, minR)}:${coordsToId(maxC, maxR)}`;
+            document.getElementById('activeCellBox').textContent = rangeLabel;
+            document.getElementById('formulaBarInput').value = getCellObj(activeCellId).raw || '';
+            document.getElementById('statSelected').textContent = `Range: ${rangeLabel}`;
+
+            // Calculate Live Multi-Cell Stats (Count, Average, Sum)
+            const numericVals = selectedIds
+                .map(id => parseFloat(evaluateCell(id)))
+                .filter(n => !isNaN(n));
+
+            const nonEmptyCount = selectedIds.filter(id => String(evaluateCell(id)).trim() !== '').length;
+            document.getElementById('statCount').textContent = `Count: ${nonEmptyCount}`;
+
+            if (numericVals.length > 0) {
+                const sum = numericVals.reduce((a, b) => a + b, 0);
+                const avg = sum / numericVals.length;
+                document.getElementById('statSum').textContent = `Sum: ${Math.round(sum * 100) / 100}`;
+                document.getElementById('statAvg').textContent = `Avg: ${Math.round(avg * 100) / 100}`;
+            } else {
+                document.getElementById('statSum').textContent = 'Sum: —';
+                document.getElementById('statAvg').textContent = 'Avg: —';
+            }
+        }
+
+        // Formula Autocomplete Suggestions
+        const FORMULA_CATALOG = [
+            { sig: '=SUM(', desc: 'Sum of a range of numbers, e.g. =SUM(B4:B6)' },
+            { sig: '=AVERAGE(', desc: 'Arithmetic mean of a range, e.g. =AVERAGE(B4:D4)' },
+            { sig: '=MAX(', desc: 'Largest value in a range, e.g. =MAX(B4:B6)' },
+            { sig: '=MIN(', desc: 'Smallest value in a range, e.g. =MIN(B4:B6)' },
+            { sig: '=COUNT(', desc: 'Count numeric cells in range, e.g. =COUNT(B4:B6)' },
+            { sig: '=IF(', desc: 'Conditional check, e.g. =IF(E7>10000,"Yes","No")' }
+        ];
+
+        function updateFormulaAutocomplete(val) {
+            const box = document.getElementById('formulaAutocomplete');
+            if (!val || !val.startsWith('=')) {
+                box.classList.add('hidden');
+                return;
+            }
+            const query = val.toUpperCase();
+            const matches = FORMULA_CATALOG.filter(f => f.sig.startsWith(query) || query === '=');
+            if (matches.length === 0) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            box.innerHTML = matches.map(m => `
+                <button type="button" onmousedown="applyFormulaSuggestion('${m.sig}')" class="w-full text-left px-3 py-1.5 hover:bg-codenix-50 dark:hover:bg-zinc-900 flex flex-col">
+                    <span class="font-mono font-bold text-codenix-600 dark:text-codenix-400">${m.sig})</span>
+                    <span class="text-[11px] text-slate-500 dark:text-zinc-400">${m.desc}</span>
+                </button>
+            `).join('');
+            box.classList.remove('hidden');
+        }
+
+        function applyFormulaSuggestion(sig) {
+            const input = document.getElementById(`cell-${activeCellId}`);
+            if (input) {
+                input.value = sig;
+                input.focus();
+            }
+            document.getElementById('formulaBarInput').value = sig;
+            document.getElementById('formulaAutocomplete').classList.add('hidden');
         }
 
         function commitCellEdit(id, newValue) {
@@ -888,6 +1240,7 @@
                 saveToLocal();
             }
             refreshAllCells();
+            updateSelectionVisuals();
         }
 
         function refreshAllCells() {
@@ -902,7 +1255,6 @@
                     const cell = sheet.cells[id];
                     if (cell) {
                         const evalVal = evaluateCell(id);
-                        // Don't overwrite if user is currently typing in this exact input
                         if (document.activeElement !== input) {
                             input.value = formatDisplayValue(evalVal, cell.numFmt);
                         }
@@ -921,33 +1273,31 @@
             }
         }
 
-        // Keyboard Navigation (Arrows, Enter, Tab)
         function handleCellKeyDown(e, id) {
-            const match = id.match(/^([A-Z]+)([0-9]+)$/);
-            if (!match) return;
-            let colIdx = colLetterToIndex(match[1]);
-            let rowIdx = parseInt(match[2], 10);
+            const { c: colIdx, r: rowIdx } = parseCellId(id);
 
             if (e.key === 'Enter') {
                 e.preventDefault();
                 commitCellEdit(id, e.target.value);
                 const nextRow = Math.min(ROWS, rowIdx + 1);
-                const nextId = indexToColLetter(colIdx) + nextRow;
+                const nextId = coordsToId(colIdx, nextRow);
+                activeCellId = nextId;
+                selectionStart = { c: colIdx, r: nextRow };
+                selectionEnd = { c: colIdx, r: nextRow };
+                updateSelectionVisuals();
                 document.getElementById(`cell-${nextId}`)?.focus();
             } else if (e.key === 'Tab') {
                 e.preventDefault();
                 commitCellEdit(id, e.target.value);
                 const nextCol = (colIdx + 1) % COLS;
-                const nextId = indexToColLetter(nextCol) + rowIdx;
+                const nextId = coordsToId(nextCol, rowIdx);
+                activeCellId = nextId;
+                selectionStart = { c: nextCol, r: rowIdx };
+                selectionEnd = { c: nextCol, r: rowIdx };
+                updateSelectionVisuals();
                 document.getElementById(`cell-${nextId}`)?.focus();
-            } else if (e.key === 'ArrowDown' && e.altKey) {
-                e.preventDefault();
-                const nextId = indexToColLetter(colIdx) + Math.min(ROWS, rowIdx + 1);
-                document.getElementById(`cell-${nextId}`)?.focus();
-            } else if (e.key === 'ArrowUp' && e.altKey) {
-                e.preventDefault();
-                const nextId = indexToColLetter(colIdx) + Math.max(1, rowIdx - 1);
-                document.getElementById(`cell-${nextId}`)?.focus();
+            } else if ((e.key === 'Delete' || e.key === 'Backspace') && document.activeElement !== e.target) {
+                clearSelectedCell();
             }
         }
 
@@ -956,49 +1306,72 @@
         formulaBar.addEventListener('input', (e) => {
             const cellInput = document.getElementById(`cell-${activeCellId}`);
             if (cellInput) cellInput.value = e.target.value;
+            updateFormulaAutocomplete(e.target.value);
         });
         formulaBar.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 commitCellEdit(activeCellId, formulaBar.value);
+                document.getElementById('formulaAutocomplete').classList.add('hidden');
                 document.getElementById(`cell-${activeCellId}`)?.focus();
             }
         });
 
-        // Formatting Controls
+        // Multi-Cell Formatting Controls (Applies to ALL selected cells!)
         function toggleCellStyle(prop) {
             pushUndoState();
-            const cell = getCellObj(activeCellId);
-            cell[prop] = !cell[prop];
+            const ids = getSelectedCellIds();
+            const targetState = !getCellObj(activeCellId)[prop];
+            ids.forEach(id => { getCellObj(id)[prop] = targetState; });
             refreshAllCells();
             saveToLocal();
         }
 
         function setCellColor(type, hex) {
             pushUndoState();
-            const cell = getCellObj(activeCellId);
-            cell[type] = hex;
+            getSelectedCellIds().forEach(id => { getCellObj(id)[type] = hex; });
             refreshAllCells();
             saveToLocal();
         }
 
         function setCellAlign(align) {
             pushUndoState();
-            const cell = getCellObj(activeCellId);
-            cell.align = align;
+            getSelectedCellIds().forEach(id => { getCellObj(id).align = align; });
             refreshAllCells();
             saveToLocal();
         }
 
         function formatNumberType(fmt) {
             pushUndoState();
-            const cell = getCellObj(activeCellId);
-            cell.numFmt = cell.numFmt === fmt ? '' : fmt;
+            const targetFmt = getCellObj(activeCellId).numFmt === fmt ? '' : fmt;
+            getSelectedCellIds().forEach(id => { getCellObj(id).numFmt = targetFmt; });
             refreshAllCells();
             saveToLocal();
         }
 
         function insertFormulaSnippet(snippet) {
+            const ids = getSelectedCellIds();
+            if (ids.length > 1) {
+                // Auto-wrap selected range into the formula!
+                const minC = Math.min(selectionStart.c, selectionEnd.c);
+                const maxC = Math.max(selectionStart.c, selectionEnd.c);
+                const minR = Math.min(selectionStart.r, selectionEnd.r);
+                const maxR = Math.max(selectionStart.r, selectionEnd.r);
+                const rangeStr = `${coordsToId(minC, minR)}:${coordsToId(maxC, maxR)}`;
+                const targetId = coordsToId(minC, Math.min(ROWS, maxR + 1));
+
+                pushUndoState();
+                getCellObj(targetId).raw = `${snippet}${rangeStr})`;
+                activeCellId = targetId;
+                selectionStart = { c: minC, r: Math.min(ROWS, maxR + 1) };
+                selectionEnd = { ...selectionStart };
+                refreshAllCells();
+                updateSelectionVisuals();
+                saveToLocal();
+                showToast(`Inserted ${snippet}${rangeStr}) in ${targetId}`);
+                return;
+            }
+
             const input = document.getElementById(`cell-${activeCellId}`);
             if (input) {
                 input.focus();
@@ -1009,15 +1382,16 @@
 
         function clearSelectedCell() {
             pushUndoState();
-            delete getCurrentSheet().cells[activeCellId];
+            const sheet = getCurrentSheet();
+            getSelectedCellIds().forEach(id => { delete sheet.cells[id]; });
             refreshAllCells();
+            updateSelectionVisuals();
             saveToLocal();
         }
 
         function sortColumnAsc() {
-            const match = activeCellId.match(/^([A-Z]+)([0-9]+)$/);
-            if (!match) return;
-            const col = match[1];
+            const { c } = parseCellId(activeCellId);
+            const col = indexToColLetter(c);
             pushUndoState();
 
             const sheet = getCurrentSheet();
@@ -1041,7 +1415,61 @@
             }
             refreshAllCells();
             saveToLocal();
-            showToast(`Sorted Column ${col} (Rows 2–50)`);
+            showToast(`Sorted Column ${col} Ascending`);
+        }
+
+        function sortColumnDesc() {
+            const { c } = parseCellId(activeCellId);
+            const col = indexToColLetter(c);
+            pushUndoState();
+
+            const sheet = getCurrentSheet();
+            const values = [];
+            for (let r = 2; r <= ROWS; r++) {
+                const val = sheet.cells[col + r]?.raw;
+                if (val !== undefined && val !== '') values.push(val);
+            }
+            values.sort((a, b) => {
+                const na = parseFloat(a), nb = parseFloat(b);
+                if (!isNaN(na) && !isNaN(nb)) return nb - na;
+                return String(b).localeCompare(String(a));
+            });
+
+            for (let r = 2; r <= ROWS; r++) {
+                if (values[r - 2] !== undefined) {
+                    getCellObj(col + r).raw = values[r - 2];
+                } else if (sheet.cells[col + r]) {
+                    sheet.cells[col + r].raw = '';
+                }
+            }
+            refreshAllCells();
+            saveToLocal();
+            showToast(`Sorted Column ${col} Descending`);
+        }
+
+        function removeDuplicatesInCol() {
+            const { c } = parseCellId(activeCellId);
+            const col = indexToColLetter(c);
+            pushUndoState();
+            const sheet = getCurrentSheet();
+            const seen = new Set();
+            let removed = 0;
+
+            for (let r = 1; r <= ROWS; r++) {
+                const id = col + r;
+                const val = sheet.cells[id]?.raw;
+                if (val !== undefined && val !== '') {
+                    if (seen.has(val)) {
+                        sheet.cells[id].raw = '';
+                        removed++;
+                    } else {
+                        seen.add(val);
+                    }
+                }
+            }
+            refreshAllCells();
+            saveToLocal();
+            showToast(`Removed ${removed} duplicate(s) in Column ${col}`);
         }
 
         // Sheet Tabs Management
@@ -1114,7 +1542,7 @@
             };
             renderAll();
             saveToLocal();
-            nixySpeak("I've populated a Q4 Revenue Model with live =SUM() and =AVERAGE() formulas! Click cell E7 to inspect it.");
+            nixySpeak("I've populated a Q4 Revenue Model with live =SUM() and =AVERAGE() formulas! Drag across cells to multi-select.");
         }
 
         function newSpreadsheet() {
@@ -1190,7 +1618,7 @@
         function renderAll() {
             renderSheetTabs();
             refreshAllCells();
-            selectCell(activeCellId, false);
+            updateSelectionVisuals();
         }
 
         // UI Helpers: Menus, Share, Star, Toasts
@@ -1202,7 +1630,7 @@
         }
 
         function closeMenus() {
-            ['fileMenu', 'editMenu', 'insertMenu'].forEach(id => {
+            ['fileMenu', 'editMenu', 'insertMenu', 'dataMenu'].forEach(id => {
                 document.getElementById(id)?.classList.add('hidden');
             });
         }
@@ -1243,36 +1671,34 @@
         }
 
         // ---------------------------------------------------------------------
-        // 4. NIXY: WALKING & INTERACTIVE PURPLE BOT COMPANION
+        // 4. NIXY: PURPLE ORB WITH 2 WHITE EYES + PUTER.JS AI & VISION ENGINE
         // ---------------------------------------------------------------------
         let nixyX = 24;
-        let nixyDirection = 1; // 1 = right, -1 = left
+        let nixyDirection = 1;
         let nixyIsWalking = true;
-        let nixyInteractCount = 0;
+        let nixyAttachedImageDataUrl = null;
 
         const nixyTips = [
-            "Tip: Type =SUM(B4:B6) in any cell to auto-total a column!",
-            "Did you know? Press Alt + Arrow Keys to jump between cells rapidly.",
-            "Need percentages? Click the % icon in the purple toolbar!",
-            "I'm Nixy, Codenix's spreadsheet guardian. Everything auto-saves locally!",
-            "Try =IF(E7>50000, \"Target Hit!\", \"Keep Pushing\") for smart logic!"
+            "Tip: Drag across multiple cells to see live Sum, Average, and Count at the bottom!",
+            "Try dragging the small purple square at the bottom-right of a cell to Auto-Complete!",
+            "Click the image icon in my chat bubble to upload a receipt or table photo!",
+            "Ask me anything! Example: 'Fill A1:D5 with a weekly workout plan'."
         ];
 
         function startNixyWalker() {
             const container = document.getElementById('nixyContainer');
-            const avatar = document.getElementById('nixyAvatar');
 
             setInterval(() => {
                 if (!nixyIsWalking) {
-                    avatar.classList.remove('nixy-walking');
+                    container.classList.remove('nixy-walking');
                     return;
                 }
 
-                avatar.classList.add('nixy-walking');
-                const maxWalkX = Math.min(window.innerWidth - 280, 420);
-                if (maxWalkX <= 40) return; // Don't walk off tiny mobile screens
+                container.classList.add('nixy-walking');
+                const maxWalkX = Math.min(window.innerWidth - 340, 380);
+                if (maxWalkX <= 40) return;
 
-                nixyX += nixyDirection * 1.4;
+                nixyX += nixyDirection * 1.2;
                 if (nixyX >= maxWalkX) {
                     nixyDirection = -1;
                 } else if (nixyX <= 16) {
@@ -1282,62 +1708,183 @@
                 container.style.transform = `translateX(${nixyX}px)`;
             }, 40);
 
-            // Pause occasionally to look around & share a tip
             setInterval(() => {
-                if (Math.random() > 0.45) {
+                if (document.activeElement === document.getElementById('nixyPromptInput')) return;
+                if (Math.random() > 0.5) {
                     nixyIsWalking = !nixyIsWalking;
-                    if (!nixyIsWalking && Math.random() > 0.5) {
+                    if (!nixyIsWalking && Math.random() > 0.6) {
                         const randomTip = nixyTips[Math.floor(Math.random() * nixyTips.length)];
                         nixySpeak(randomTip, false);
                     }
                 }
-            }, 5500);
+            }, 6500);
         }
 
-        function nixySpeak(text, pauseWalk = true) {
+        function nixySpeak(htmlText, pauseWalk = true) {
             const bubble = document.getElementById('nixySpeechBubble');
             const msgEl = document.getElementById('nixyMessage');
-            msgEl.innerHTML = text;
+            msgEl.innerHTML = htmlText;
             bubble.classList.remove('hidden', 'opacity-0');
             if (pauseWalk) {
                 nixyIsWalking = false;
-                setTimeout(() => { nixyIsWalking = true; }, 5000);
             }
         }
 
         function hideNixySpeech(e) {
             if (e) e.stopPropagation();
             document.getElementById('nixySpeechBubble').classList.add('hidden');
+            nixyIsWalking = true;
         }
 
-        function toggleNixyChat() {
+        function toggleNixyChat(focusInput = false) {
             const bubble = document.getElementById('nixySpeechBubble');
             if (bubble.classList.contains('hidden')) {
-                nixySpeak("How can I help with your Codenix sheet today?");
-            } else {
-                hideNixySpeech();
+                bubble.classList.remove('hidden');
+                nixyIsWalking = false;
+            }
+            if (focusInput) {
+                document.getElementById('nixyPromptInput')?.focus();
             }
         }
 
         function onNixyClick() {
-            nixyInteractCount++;
-            const responses = [
-                "Beep boop! Ready to crunch numbers! Select a cell and click SUM or AVG.",
-                "Purple is power! Toggle Dark Mode in the top-right to see my neon visor glow.",
-                "Want to test formulas? Click 'Fill Sample' below to load a full financial sheet!"
-            ];
-            nixySpeak(responses[nixyInteractCount % responses.length]);
+            toggleNixyChat(true);
         }
 
-        function nixyHelp(topic) {
-            if (topic === 'sum') {
-                insertFormulaSnippet('=SUM(');
-                nixySpeak("I've started <b>=SUM(</b> in cell <b>" + activeCellId + "</b>! Type a range like <code>B4:B6)</code> and press Enter.");
-            } else if (topic === 'demo') {
-                loadSampleData();
-            } else if (topic === 'dance') {
-                nixyIsWalking = true;
-                nixySpeak("Wheee! Walking across your Codenix workspace! 💜🤖");
+        // Photo Upload Handling for Nixy Vision
+        function triggerPhotoUpload() {
+            toggleNixyChat(false);
+            document.getElementById('nixyImageInput').click();
+        }
+
+        function handleNixyImageUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                nixyAttachedImageDataUrl = e.target.result;
+                const previewImg = document.getElementById('nixyImagePreview');
+                const previewWrap = document.getElementById('nixyImagePreviewWrap');
+                previewImg.src = nixyAttachedImageDataUrl;
+                previewWrap.classList.remove('hidden');
+                nixySpeak("Photo attached! Press Send or tell me what to extract into your sheet!");
+                document.getElementById('nixyPromptInput').focus();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearNixyImage() {
+            nixyAttachedImageDataUrl = null;
+            document.getElementById('nixyImageInput').value = '';
+            document.getElementById('nixyImagePreviewWrap').classList.add('hidden');
+        }
+
+        function nixyQuickPrompt(text) {
+            document.getElementById('nixyPromptInput').value = text;
+            submitNixyPrompt(new Event('submit'));
+        }
+
+        // Serialize non-empty cells so Nixy AI understands current sheet context
+        function getSheetContextSummary() {
+            const sheet = getCurrentSheet();
+            const entries = Object.entries(sheet.cells)
+                .filter(([_, cell]) => cell && cell.raw !== '')
+                .slice(0, 80)
+                .map(([id, cell]) => `${id}: ${cell.raw} (val: ${evaluateCell(id)})`);
+            return entries.length > 0 ? entries.join('\n') : 'Sheet is currently empty.';
+        }
+
+        // Submit Prompt + Optional Image to Puter.js AI
+        async function submitNixyPrompt(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('nixyPromptInput');
+            const sendBtn = document.getElementById('nixySendBtn');
+            const userText = inputEl.value.trim();
+
+            if (!userText && !nixyAttachedImageDataUrl) return;
+
+            const promptToSend = userText || "Extract all data, items, and numbers from this image into spreadsheet cells starting at A1.";
+            inputEl.value = '';
+            sendBtn.disabled = true;
+
+            nixySpeak(`<span class="inline-flex items-center gap-1.5 text-codenix-600 dark:text-codenix-400 font-semibold"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Nixy is thinking with Puter AI...</span>`);
+            if (window.lucide) lucide.createIcons();
+
+            const systemInstructions = `You are Nixy, a friendly purple orb AI assistant inside Cellnix (a Google Sheets clone by Codenix).
+Current active cell: ${activeCellId}.
+Current sheet cells:
+${getSheetContextSummary()}
+
+If the user asks you to create, edit, extract from an image, populate, or calculate spreadsheet cells, include a JSON block in your response formatted EXACTLY like this:
+\`\`\`json
+{
+  "message": "Short friendly explanation of what you did",
+  "cells": {
+    "A1": { "raw": "Header", "bold": true, "bg": "#f3e8ff" },
+    "A2": { "raw": "100", "numFmt": "currency" },
+    "A3": { "raw": "=SUM(A2:A2)", "bold": true }
+  }
+}
+\`\`\`
+If the user is just asking a question or wants analysis without editing cells, respond with a helpful concise answer (no JSON needed).`;
+
+            try {
+                if (typeof puter === 'undefined' || !puter.ai) {
+                    throw new Error('Puter.js SDK is still initializing or unavailable.');
+                }
+
+                const fullPrompt = `${systemInstructions}\n\nUser request: ${promptToSend}`;
+                let aiResponse;
+
+                if (nixyAttachedImageDataUrl) {
+                    aiResponse = await puter.ai.chat(fullPrompt, nixyAttachedImageDataUrl);
+                    clearNixyImage();
+                } else {
+                    aiResponse = await puter.ai.chat(fullPrompt);
+                }
+
+                const responseText = typeof aiResponse === 'string'
+                    ? aiResponse
+                    : (aiResponse?.message?.content || aiResponse?.text || JSON.stringify(aiResponse));
+
+                // Check if Nixy returned structured cell updates
+                const jsonMatch = responseText.match(/```json\s*([\s\S]*?)```/i);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[1]);
+                    if (parsed.cells && typeof parsed.cells === 'object') {
+                        pushUndoState();
+                        Object.entries(parsed.cells).forEach(([cellId, spec]) => {
+                            const cleanId = cellId.toUpperCase();
+                            const cellObj = getCellObj(cleanId);
+                            if (typeof spec === 'string' || typeof spec === 'number') {
+                                cellObj.raw = String(spec);
+                            } else {
+                                if (spec.raw !== undefined) cellObj.raw = String(spec.raw);
+                                if (spec.bold !== undefined) cellObj.bold = !!spec.bold;
+                                if (spec.italic !== undefined) cellObj.italic = !!spec.italic;
+                                if (spec.color) cellObj.color = spec.color;
+                                if (spec.bg) cellObj.bg = spec.bg;
+                                if (spec.align) cellObj.align = spec.align;
+                                if (spec.numFmt) cellObj.numFmt = spec.numFmt;
+                            }
+                        });
+                        refreshAllCells();
+                        updateSelectionVisuals();
+                        saveToLocal();
+                        showToast('Nixy updated your spreadsheet!');
+                    }
+                    nixySpeak(parsed.message || "Done! I've updated the cells in your spreadsheet.");
+                } else {
+                    nixySpeak(responseText.replace(/\n/g, '<br>'));
+                }
+
+            } catch (err) {
+                console.error('Nixy Puter AI Error:', err);
+                nixySpeak(`Oops! Couldn't reach Puter AI right now (${err.message}). Make sure popups/Puter auth are allowed!`);
+            } finally {
+                sendBtn.disabled = false;
+                if (window.lucide) lucide.createIcons();
             }
         }
 
