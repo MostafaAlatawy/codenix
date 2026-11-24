@@ -42,7 +42,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Lucide Icons -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -170,6 +170,13 @@
             transform-origin: center;
             animation: eyeBlink 4.2s infinite;
         }
+        .nixy-dizzy .nixy-eye {
+            animation: none;
+            transform: scale(1.25, 0.55);
+        }
+        #nixyAvatar {
+            touch-action: none;
+        }
 
         /* Loading Screen Pulse */
         .loader-ring {
@@ -284,11 +291,11 @@
 
                     <div class="relative">
                         <button onclick="toggleMenu('editMenu')" class="px-2 py-0.5 rounded hover:bg-codenix-50 dark:hover:bg-zinc-900 hover:text-codenix-700 dark:hover:text-codenix-300 font-medium transition">Edit</button>
-                        <div id="editMenu" class="hidden absolute left-0 mt-1 w-44 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
+                        <div id="editMenu" class="hidden absolute left-0 mt-1 w-48 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
                             <button onclick="undoAction(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center justify-between"><span>Undo</span><span class="text-slate-400">Ctrl+Z</span></button>
                             <button onclick="redoAction(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 flex items-center justify-between"><span>Redo</span><span class="text-slate-400">Ctrl+Y</span></button>
                             <div class="my-1 border-t border-slate-100 dark:border-zinc-800"></div>
-                            <button onclick="clearSelectedCell(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 text-rose-600">Clear Active Cell</button>
+                            <button onclick="clearSelectedCell(); closeMenus()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-codenix-50 dark:hover:bg-zinc-900 text-rose-600 flex items-center justify-between"><span>Delete Selected Cells</span><span class="text-slate-400">Del</span></button>
                         </div>
                     </div>
 
@@ -369,6 +376,9 @@
             <button onclick="setCellAlign('left')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Align Left"><i data-lucide="align-left" class="w-3.5 h-3.5"></i></button>
             <button onclick="setCellAlign('center')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Align Center"><i data-lucide="align-center" class="w-3.5 h-3.5"></i></button>
             <button onclick="setCellAlign('right')" class="p-1.5 rounded-lg hover:bg-slate-200/70 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400" title="Align Right"><i data-lucide="align-right" class="w-3.5 h-3.5"></i></button>
+            <div class="h-4 w-px bg-slate-200 dark:bg-zinc-800 mx-1"></div>
+
+            <button onclick="clearSelectedCell()" class="p-1.5 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 transition" title="Delete Selected Cells (Del / Backspace)"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
         </div>
 
         <!-- Quick Functions & AI Tools -->
@@ -494,9 +504,9 @@
             <div class="w-3 h-3 bg-white dark:bg-zinc-950 border-r-2 border-b-2 border-codenix-500 rotate-45 absolute -bottom-1.5 left-5"></div>
         </div>
 
-        <!-- Nixy Avatar: Pure Purple Ball with 2 White Eyes Only (No Feet, No Robot Body) -->
-        <div id="nixyAvatar" onclick="onNixyClick()" class="w-14 h-14 cursor-pointer relative flex items-center justify-center nixy-orb" title="Nixy — Click to chat or upload an image">
-            <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_8px_16px_rgba(147,51,234,0.5)] overflow-visible">
+        <!-- Nixy Avatar: Pure Purple Ball with 2 White Eyes Only (Throwable & Bouncy) -->
+        <div id="nixyAvatar" class="w-14 h-14 cursor-grab active:cursor-grabbing relative flex items-center justify-center nixy-orb" title="Click to toggle chat, or grab & throw Nixy!">
+            <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_8px_16px_rgba(147,51,234,0.5)] overflow-visible pointer-events-none">
                 <defs>
                     <radialGradient id="nixySphereGrad" cx="35%" cy="30%" r="65%">
                         <stop offset="0%" stop-color="#d8b4fe" />
@@ -1297,9 +1307,33 @@
                 updateSelectionVisuals();
                 document.getElementById(`cell-${nextId}`)?.focus();
             } else if ((e.key === 'Delete' || e.key === 'Backspace') && document.activeElement !== e.target) {
+                e.preventDefault();
                 clearSelectedCell();
             }
         }
+
+        // Global Delete/Backspace shortcut for multi-selected cells when not actively typing inside an input
+        document.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement?.tagName;
+            const isTypingInBar = document.activeElement?.id === 'formulaBarInput' ||
+                                  document.activeElement?.id === 'docTitle' ||
+                                  document.activeElement?.id === 'nixyPromptInput';
+            if (isTypingInBar) return;
+
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                const selectedIds = getSelectedCellIds();
+                // If multiple cells are selected, delete all of them even if anchor cell has focus
+                if (selectedIds.length > 1) {
+                    e.preventDefault();
+                    document.activeElement?.blur();
+                    clearSelectedCell();
+                    showToast(`Cleared ${selectedIds.length} cells`);
+                } else if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA') {
+                    e.preventDefault();
+                    clearSelectedCell();
+                }
+            }
+        });
 
         // Formula Bar Synchronization
         const formulaBar = document.getElementById('formulaBarInput');
@@ -1674,28 +1708,222 @@
         // 4. NIXY: PURPLE ORB WITH 2 WHITE EYES + PUTER.JS AI & VISION ENGINE
         // ---------------------------------------------------------------------
         let nixyX = 24;
+        let nixyY = 0; // Offset upward from bottom-11 (0 = resting on floor, negative = in the air)
+        let nixyVx = 0;
+        let nixyVy = 0;
         let nixyDirection = 1;
         let nixyIsWalking = true;
+        let nixyIsDragging = false;
+        let nixyIsBouncing = false;
+        let nixyDragMoved = false;
         let nixyAttachedImageDataUrl = null;
 
         const nixyTips = [
-            "Tip: Drag across multiple cells to see live Sum, Average, and Count at the bottom!",
+            "Tip: Drag across multiple cells and press Delete to wipe them all at once!",
             "Try dragging the small purple square at the bottom-right of a cell to Auto-Complete!",
-            "Click the image icon in my chat bubble to upload a receipt or table photo!",
-            "Ask me anything! Example: 'Fill A1:D5 with a weekly workout plan'."
+            "Grab me and throw me across the screen! I'm 100% bouncy purple rubber!",
+            "Click me to open or close my AI chat anytime!"
         ];
+
+        const nixyThrowQuotes = [
+            "WEEEEEEE! 🚀",
+            "I'm a purple cannonball!!",
+            "Whew! That tickled my pixels!",
+            "10/10 landing! Do it again!",
+            "My two white eyes are spinning! 😵‍💫",
+            "Parkour!! *boing boing*",
+            "Hey! Watch the spreadsheet formulas!"
+        ];
+
+        const nixyBounceQuotes = [
+            "*BOING!* 🟣",
+            "*SQUISH!* That floor is hard!",
+            "Bounce check: PASSED!",
+            "Oof! Right on my purple curve!"
+        ];
+
+        function applyNixyTransform(scaleX = 1, scaleY = 1, rotateDeg = 0) {
+            const container = document.getElementById('nixyContainer');
+            if (container) {
+                container.style.transform = `translate(${nixyX}px, ${nixyY}px)`;
+            }
+            const avatar = document.getElementById('nixyAvatar');
+            if (avatar) {
+                avatar.style.transform = `scale(${scaleX}, ${scaleY}) rotate(${rotateDeg}deg)`;
+            }
+        }
+
+        function initNixyPhysicsAndDrag() {
+            const avatar = document.getElementById('nixyAvatar');
+            let startPointerX = 0;
+            let startPointerY = 0;
+            let startNixyX = 0;
+            let startNixyY = 0;
+            let lastPointerX = 0;
+            let lastPointerY = 0;
+            let lastMoveTime = 0;
+
+            avatar.addEventListener('pointerdown', (e) => {
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+                avatar.setPointerCapture(e.pointerId);
+                nixyIsDragging = true;
+                nixyIsBouncing = false;
+                nixyIsWalking = false;
+                nixyDragMoved = false;
+
+                startPointerX = e.clientX;
+                startPointerY = e.clientY;
+                startNixyX = nixyX;
+                startNixyY = nixyY;
+                lastPointerX = e.clientX;
+                lastPointerY = e.clientY;
+                lastMoveTime = performance.now();
+                nixyVx = 0;
+                nixyVy = 0;
+
+                applyNixyTransform(1.12, 0.9, 0);
+            });
+
+            avatar.addEventListener('pointermove', (e) => {
+                if (!nixyIsDragging) return;
+                const dx = e.clientX - startPointerX;
+                const dy = e.clientY - startPointerY;
+                if (Math.hypot(dx, dy) > 6) {
+                    nixyDragMoved = true;
+                }
+
+                const now = performance.now();
+                const dt = Math.max(8, now - lastMoveTime);
+                nixyVx = ((e.clientX - lastPointerX) / dt) * 16;
+                nixyVy = ((e.clientY - lastPointerY) / dt) * 16;
+                lastPointerX = e.clientX;
+                lastPointerY = e.clientY;
+                lastMoveTime = now;
+
+                const minX = -16;
+                const maxX = window.innerWidth - 76;
+                const minY = -(window.innerHeight - 115);
+                const maxY = 0;
+
+                nixyX = Math.max(minX, Math.min(maxX, startNixyX + dx));
+                nixyY = Math.max(minY, Math.min(maxY, startNixyY + dy));
+                applyNixyTransform(1.08, 0.94, nixyVx * 1.4);
+            });
+
+            const endDrag = (e) => {
+                if (!nixyIsDragging) return;
+                nixyIsDragging = false;
+                try { avatar.releasePointerCapture(e.pointerId); } catch (_) {}
+
+                if (!nixyDragMoved) {
+                    // It was a clean click -> toggle Nixy chat!
+                    applyNixyTransform(1, 1, 0);
+                    toggleNixyChat();
+                    return;
+                }
+
+                // Launch throw physics!
+                nixyIsBouncing = true;
+                const quote = nixyThrowQuotes[Math.floor(Math.random() * nixyThrowQuotes.length)];
+                nixySpeak(quote, true);
+                runBouncePhysicsLoop();
+            };
+
+            avatar.addEventListener('pointerup', endDrag);
+            avatar.addEventListener('pointercancel', endDrag);
+        }
+
+        function runBouncePhysicsLoop() {
+            const avatar = document.getElementById('nixyAvatar');
+            const gravity = 0.85;
+            const restitution = 0.72;
+            const friction = 0.96;
+            let bounceCount = 0;
+
+            function step() {
+                if (!nixyIsBouncing || nixyIsDragging) return;
+
+                nixyVy += gravity;
+                nixyX += nixyVx;
+                nixyY += nixyVy;
+
+                const minX = -16;
+                const maxX = window.innerWidth - 76;
+                const minY = -(window.innerHeight - 115);
+                const floorY = 0;
+
+                let squashed = false;
+
+                // Wall bounces
+                if (nixyX <= minX) {
+                    nixyX = minX;
+                    nixyVx = -nixyVx * restitution;
+                    squashed = true;
+                } else if (nixyX >= maxX) {
+                    nixyX = maxX;
+                    nixyVx = -nixyVx * restitution;
+                    squashed = true;
+                }
+
+                // Ceiling bounce
+                if (nixyY <= minY) {
+                    nixyY = minY;
+                    nixyVy = -nixyVy * restitution;
+                    squashed = true;
+                }
+
+                // Floor bounce
+                if (nixyY >= floorY) {
+                    nixyY = floorY;
+                    if (Math.abs(nixyVy) > 2.4) {
+                        nixyVy = -nixyVy * restitution;
+                        nixyVx *= friction;
+                        squashed = true;
+                        bounceCount++;
+                        if (bounceCount === 1) {
+                            const bQuote = nixyBounceQuotes[Math.floor(Math.random() * nixyBounceQuotes.length)];
+                            nixySpeak(bQuote, true);
+                        }
+                    } else {
+                        nixyVy = 0;
+                        nixyVx *= 0.85;
+                    }
+                }
+
+                if (squashed) {
+                    avatar.classList.add('nixy-dizzy');
+                    applyNixyTransform(1.26, 0.74, nixyVx * 2);
+                    setTimeout(() => avatar.classList.remove('nixy-dizzy'), 260);
+                } else {
+                    applyNixyTransform(0.95, 1.05, nixyVx * 2.5);
+                }
+
+                // Stop physics when settled on floor
+                if (nixyY === floorY && Math.abs(nixyVy) < 0.2 && Math.abs(nixyVx) < 0.25) {
+                    nixyIsBouncing = false;
+                    nixyX = Math.max(12, Math.min(window.innerWidth - 90, nixyX));
+                    applyNixyTransform(1, 1, 0);
+                    return;
+                }
+
+                requestAnimationFrame(step);
+            }
+
+            requestAnimationFrame(step);
+        }
 
         function startNixyWalker() {
             const container = document.getElementById('nixyContainer');
+            initNixyPhysicsAndDrag();
 
             setInterval(() => {
-                if (!nixyIsWalking) {
+                if (!nixyIsWalking || nixyIsDragging || nixyIsBouncing) {
                     container.classList.remove('nixy-walking');
                     return;
                 }
 
                 container.classList.add('nixy-walking');
-                const maxWalkX = Math.min(window.innerWidth - 340, 380);
+                const maxWalkX = Math.min(window.innerWidth - 90, 420);
                 if (maxWalkX <= 40) return;
 
                 nixyX += nixyDirection * 1.2;
@@ -1705,14 +1933,15 @@
                     nixyDirection = 1;
                 }
 
-                container.style.transform = `translateX(${nixyX}px)`;
+                applyNixyTransform(1, 1, 0);
             }, 40);
 
             setInterval(() => {
+                if (nixyIsDragging || nixyIsBouncing) return;
                 if (document.activeElement === document.getElementById('nixyPromptInput')) return;
                 if (Math.random() > 0.5) {
                     nixyIsWalking = !nixyIsWalking;
-                    if (!nixyIsWalking && Math.random() > 0.6) {
+                    if (!nixyIsWalking && Math.random() > 0.65 && !document.getElementById('nixySpeechBubble').classList.contains('hidden')) {
                         const randomTip = nixyTips[Math.floor(Math.random() * nixyTips.length)];
                         nixySpeak(randomTip, false);
                     }
@@ -1736,24 +1965,26 @@
             nixyIsWalking = true;
         }
 
-        function toggleNixyChat(focusInput = false) {
+        function toggleNixyChat(forceState) {
             const bubble = document.getElementById('nixySpeechBubble');
-            if (bubble.classList.contains('hidden')) {
+            const shouldOpen = typeof forceState === 'boolean' ? forceState : bubble.classList.contains('hidden');
+            if (shouldOpen) {
                 bubble.classList.remove('hidden');
                 nixyIsWalking = false;
-            }
-            if (focusInput) {
                 document.getElementById('nixyPromptInput')?.focus();
+            } else {
+                bubble.classList.add('hidden');
+                nixyIsWalking = true;
             }
         }
 
         function onNixyClick() {
-            toggleNixyChat(true);
+            toggleNixyChat();
         }
 
         // Photo Upload Handling for Nixy Vision
         function triggerPhotoUpload() {
-            toggleNixyChat(false);
+            toggleNixyChat(true);
             document.getElementById('nixyImageInput').click();
         }
 
