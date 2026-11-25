@@ -981,28 +981,62 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
         const CLOUDFLARE_PROXY_URL = '/api/nixy';
         const GOOGLE_SHEET_ID = '12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         const STORAGE_KEYS = {
-            THEME: 'codenix_nixy_theme',
-            PUTER_LINKED: 'codenix_nixy_puter_linked',
-            PREFERRED_PROVIDER: 'codenix_nixy_preferred_provider',
-            LOCAL_USAGE: 'codenix_nixy_usage_v1',
-            LOCAL_CHATS: 'codenix_nixy_chats_v1',
-            LANG: 'codenix_nixy_lang',
-            OUTFIT: 'codenix_nixy_outfit',
-            SLEEPING: 'codenix_nixy_sleeping',
-            TOUR_DONE: 'codenix_nixy_tour_done_v6'
+            THEME: 'nixy_theme',
+            LANG: 'nixy_lang',
+            OUTFIT: 'nixy_outfit',
+            SLEEPING: 'nixy_sleeping',
+            PREFERRED_PROVIDER: 'nixy_preferred_provider',
+            PUTER_LINKED: 'nixy_puter_linked',
+            LOCAL_USAGE: 'nixy_local_usage',
+            TOUR_DONE: 'nixy_tour_done'
         };
+        const state = {
+            user: null,
+            userIp: '',
+            conversations: [],
+            activeConversationId: null
+        };
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        });
 
-        const UI_TRANSLATIONS = {
+        function renderLangDropdownMenu(activeCode) {
+            const dd = document.getElementById('lang-dropdown');
+            if (!dd) return;
+            const items = [
+                ['en', 'English'],
+                ['ar', 'العربية'],
+                ['es', 'Español'],
+                ['fr', 'Français'],
+                ['de', 'Deutsch'],
+                ['zh', '中文']
+            ];
+            dd.innerHTML = items.map(([c, label]) => `
+                <button type="button" onclick="applyLanguage('${c}'); document.getElementById('lang-dropdown').classList.add('hidden');" class="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between ${c === activeCode ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300' : 'hover:bg-codenix-50 dark:hover:bg-codenix-black'}">
+                    <span>${label}</span>
+                    <span class="font-mono text-[10px] uppercase opacity-70">${c}</span>
+                </button>
+            `).join('');
+        }
+
+        function toggleLangDropdown(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('lang-dropdown')?.classList.toggle('hidden');
+        }
+
+        const NIXY_TRANSLATIONS = {
             en: {
                 feedbackBtn: 'Feedback',
                 usageBtn: 'Usage & Puter',
                 shareBtn: 'Share (PIN)'
             },
             ar: {
-                feedbackBtn: 'آراء سريعة',
+                feedbackBtn: 'التقييم',
                 usageBtn: 'الاستخدام و Puter',
                 shareBtn: 'مشاركة (PIN)'
             },
@@ -1029,53 +1063,33 @@
         };
 
         function detectPreferredLanguage() {
-            const saved = localStorage.getItem(STORAGE_KEYS.LANG);
-            if (saved && UI_TRANSLATIONS[saved]) return saved;
-            const candidates = navigator.languages || [navigator.language || 'en'];
-            for (const c of candidates) {
-                const code = String(c).toLowerCase().split('-')[0];
-                if (UI_TRANSLATIONS[code]) return code;
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.LANG);
+                if (saved && NIXY_TRANSLATIONS[saved]) return saved;
+            } catch (_) {}
+            const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+                ? navigator.languages
+                : [navigator.language || 'en'];
+            for (const cand of candidates) {
+                const code = String(cand || '').toLowerCase().split('-')[0];
+                if (NIXY_TRANSLATIONS[code]) return code;
             }
             return 'en';
         }
 
-        function applyLanguage(langCode) {
-            const code = UI_TRANSLATIONS[langCode] ? langCode : 'en';
-            localStorage.setItem(STORAGE_KEYS.LANG, code);
-            document.documentElement.lang = code;
-            document.documentElement.dir = code === 'ar' ? 'rtl' : 'ltr';
-            const codeBadge = document.getElementById('current-lang-code');
-            if (codeBadge) codeBadge.textContent = code.toUpperCase();
-            const dict = UI_TRANSLATIONS[code] || UI_TRANSLATIONS.en;
+        function applyLanguage(code) {
+            const langCode = NIXY_TRANSLATIONS[code] ? code : 'en';
+            try { localStorage.setItem(STORAGE_KEYS.LANG, langCode); } catch (_) {}
+            document.documentElement.lang = langCode;
+            document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
+            const badge = document.getElementById('current-lang-code');
+            if (badge) badge.textContent = langCode.toUpperCase();
+            const dict = NIXY_TRANSLATIONS[langCode] || NIXY_TRANSLATIONS.en;
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.textContent = dict[key];
+                if (key && dict[key]) el.textContent = dict[key];
             });
-            renderLangDropdownMenu(code);
-        }
-
-        function renderLangDropdownMenu(activeCode) {
-            const dd = document.getElementById('lang-dropdown');
-            if (!dd) return;
-            const items = [
-                ['en', 'English'],
-                ['ar', 'العربية'],
-                ['es', 'Español'],
-                ['fr', 'Français'],
-                ['de', 'Deutsch'],
-                ['zh', '中文']
-            ];
-            dd.innerHTML = items.map(([c, label]) => `
-                <button type="button" onclick="applyLanguage('${c}'); document.getElementById('lang-dropdown').classList.add('hidden');" class="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between ${c === activeCode ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300' : 'hover:bg-codenix-50 dark:hover:bg-codenix-black'}">
-                    <span>${label}</span>
-                    <span class="font-mono text-[10px] uppercase opacity-70">${c}</span>
-                </button>
-            `).join('');
-        }
-
-        function toggleLangDropdown(e) {
-            if (e) e.stopPropagation();
-            document.getElementById('lang-dropdown')?.classList.toggle('hidden');
+            renderLangDropdownMenu(langCode);
         }
 
         document.addEventListener('click', () => {
@@ -1337,11 +1351,53 @@
 
         async function verifySupabaseSession() {
             try {
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error || !session || !session.user) {
+                let session = null;
+
+                // Give Supabase a brief moment on load to restore a persisted session from storage/URL
+                const initialRes = await supabaseClient.auth.getSession();
+                session = initialRes?.data?.session || null;
+
+                if (!session) {
+                    session = await new Promise((resolve) => {
+                        let resolved = false;
+                        const { data: listener } = supabaseClient.auth.onAuthStateChange((event, nextSession) => {
+                            if (nextSession && !resolved) {
+                                resolved = true;
+                                listener?.subscription?.unsubscribe();
+                                resolve(nextSession);
+                            }
+                        });
+                        setTimeout(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                listener?.subscription?.unsubscribe();
+                                resolve(null);
+                            }
+                        }, 1200);
+                    });
+                }
+
+                // Fallback check of Supabase localStorage session token if present
+                if (!session) {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i);
+                        if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+                            try {
+                                const parsed = JSON.parse(localStorage.getItem(k) || 'null');
+                                if (parsed?.user || parsed?.currentSession?.user) {
+                                    session = parsed.currentSession || parsed;
+                                    break;
+                                }
+                            } catch (_) {}
+                        }
+                    }
+                }
+
+                if (!session || !session.user) {
                     window.location.replace('/Start');
                     return false;
                 }
+
                 state.user = session.user;
                 const displayName = session.user.user_metadata?.full_name || session.user.email || 'Codenix Member';
                 const nameEl = document.getElementById('user-display-name');
@@ -1350,12 +1406,15 @@
                 if (avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase();
 
                 supabaseClient.auth.onAuthStateChange((event, nextSession) => {
-                    if (event === 'SIGNED_OUT' || !nextSession) {
+                    if (event === 'SIGNED_OUT') {
                         window.location.replace('/Start');
+                    } else if (nextSession?.user) {
+                        state.user = nextSession.user;
                     }
                 });
                 return true;
             } catch (err) {
+                console.warn('Session check warning:', err);
                 window.location.replace('/Start');
                 return false;
             }
