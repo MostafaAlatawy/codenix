@@ -1443,6 +1443,183 @@
             } catch (_) {}
         }
 
+        async function loadUserLimitsFromSupabase() {
+            if (!state.user || !supabaseClient) return;
+            try {
+                const { data } = await supabaseClient
+                    .from('nixy_user_limits')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .maybeSingle();
+
+                if (data) {
+                    const usage = {
+                        dailyChats: Number(data.daily_chat_count || 0),
+                        dailyImages: Number(data.daily_image_count || 0),
+                        tokensUsed: Number(data.codenix_tokens_used || 0)
+                    };
+                    localStorage.setItem(STORAGE_KEYS.LOCAL_USAGE, JSON.stringify(usage));
+                    if (data.puter_linked) {
+                        localStorage.setItem(STORAGE_KEYS.PUTER_LINKED, 'true');
+                    }
+                } else {
+                    await supabaseClient.from('nixy_user_limits').upsert({
+                        user_id: state.user.id,
+                        email: state.user.email || '',
+                        ip_address: state.userIp || ''
+                    }, { onConflict: 'user_id' });
+                }
+            } catch (_) {}
+        }
+
+        async function loadConversationsFromSupabase(preferredChatId = null) {
+            if (!state.user || !supabaseClient) {
+                renderConversationList();
+                renderMessages();
+                return;
+            }
+            try {
+                const { data: convRows } = await supabaseClient
+                    .from('nixy_conversations')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('updated_at', { ascending: false })
+                    .limit(40);
+
+                const conversations = Array.isArray(convRows) ? convRows.map(c => ({
+                    id: c.id,
+                    title: c.title || 'New Conversation',
+                    messages: []
+                })) : [];
+
+                if (conversations.length > 0) {
+                    const activeConv = conversations.find(c => c.id === preferredChatId) || conversations[0];
+                    const { data: msgRows } = await supabaseClient
+                        .from('nixy_messages')
+                        .select('*')
+                        .eq('conversation_id', activeConv.id)
+                        .order('created_at', { ascending: true });
+
+                    activeConv.messages = Array.isArray(msgRows)
+                        ? msgRows.map(m => ({
+                            role: m.role,
+                            content: m.content,
+                            toolUsed: m.tool_used || '',
+                            providerUsed: m.provider_used || ''
+                        }))
+                        : [];
+
+                    state.conversations = conversations;
+                    state.activeConversationId = activeConv.id;
+                } else {
+                    const newId = (window.crypto && typeof window.crypto.randomUUID === 'function')
+                        ? window.crypto.randomUUID()
+                        : 'conv-' + Date.now();
+                    await supabaseClient.from('nixy_conversations').insert({
+                        id: newId,
+                        user_id: state.user.id,
+                        title: 'New Conversation'
+                    });
+                    state.conversations = [{ id: newId, title: 'New Conversation', messages: [] }];
+                    state.activeConversationId = newId;
+                }
+            } catch (_) {
+                if (!state.conversations.length) {
+                    state.conversations = [{ id: 'local-default', title: 'New Conversation', messages: [] }];
+                    state.activeConversationId = 'local-default';
+                }
+            }
+            renderConversationList();
+            renderMessages();
+        }
+
+        function renderConversationList() {
+            const listEl = document.getElementById('conversation-list');
+            if (!listEl) return;
+            const filterText = (document.getElementById('chat-search')?.value || '').trim().toLowerCase();
+            const items = state.conversations.filter(c => !filterText || (c.title || '').toLowerCase().includes(filterText));
+
+            if (items.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No conversations yet.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = items.map(c => {
+                const active = c.id === state.activeConversationId;
+                return `
+                    <button type="button" onclick="selectConversation('${escapeHtml(c.id)}')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium truncate transition ${active ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 font-semibold border border-codenix-500/30' : 'hover:bg-white dark:hover:bg-codenix-black text-zinc-700 dark:text-zinc-300'}">
+                        ${escapeHtml(c.title || 'New Conversation')}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        async function selectConversation(convId) {
+            state.activeConversationId = convId;
+            const conv = state.conversations.find(c => c.id === convId);
+            if (conv && (!conv.messages || conv.messages.length === 0) && state.user && supabaseClient) {
+                try {
+                    const { data: msgRows } = await supabaseClient
+                        .from('nixy_messages')
+                        .select('*')
+                        .eq('conversation_id', convId)
+                        .order('created_at', { ascending: true });
+                    conv.messages = Array.isArray(msgRows)
+                        ? msgRows.map(m => ({
+                            role: m.role,
+                            content: m.content,
+                            toolUsed: m.tool_used || '',
+                            providerUsed: m.provider_used || ''
+                        }))
+                        : [];
+                } catch (_) {}
+            }
+            renderConversationList();
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const feedEl = document.getElementById('messages-feed');
+            const heroEl = document.getElementById('nixy-hero');
+            if (!feedEl) return;
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            const msgs = conv?.messages || [];
+
+            if (heroEl) {
+                heroEl.classList.toggle('hidden', msgs.length > 0);
+            }
+
+            if (msgs.length === 0) {
+                feedEl.innerHTML = '';
+                return;
+            }
+
+            feedEl.innerHTML = msgs.map(m => {
+                const isUser = m.role === 'user';
+                const bodyHtml = window.marked && typeof window.marked.parse === 'function'
+                    ? window.marked.parse(String(m.content || ''))
+                    : `<p>${escapeHtml(m.content || '')}</p>`;
+                return `
+                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm prose dark:prose-invert ${isUser ? 'bg-codenix-600 text-white rounded-br-sm' : 'bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-bl-sm'}">
+                            ${bodyHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            if (!box) return;
+            box.textContent = String(msg || '');
+            box.classList.remove('hidden');
+            clearTimeout(window.__nixyToastTimer);
+            window.__nixyToastTimer = setTimeout(() => {
+                box.classList.add('hidden');
+            }, 2800);
+        }
+
         // ==========================================
         // 9. GOOGLE SHEET TOOL LIBRARY, NIX WATCHES & FEEDBACK
         // ==========================================
