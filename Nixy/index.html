@@ -1391,27 +1391,67 @@
         // ==========================================
         // 6. INTENT ROUTING, MULTIMODAL AI & TOOLS
         // ==========================================
+        const ALLOWED_NIXY_TOOLS = [
+            { id: 'chat', name: 'General Reasoning & Tables/Docs', desc: 'Answer questions, explain concepts, analyze uploaded files or shared screens, and create structured Markdown tables or documents.' },
+            { id: 'image', name: 'SubeAI', desc: 'Generate AI images, illustrations, artwork, or visual concepts when the user wants a picture or visual created.' },
+            { id: 'qr', name: 'NixQR', desc: 'Generate a scannable QR code for a URL, link, or text value.' },
+            { id: 'voice', name: 'NixVoice', desc: 'Generate a clean spoken script and play text-to-speech audio when the user asks to speak or hear something aloud.' },
+            { id: 'vidy', name: 'Vidy', desc: 'Render an animated 60fps HTML5 canvas motion graphic loop.' },
+            { id: 'pomodory', name: 'Pomodory', desc: 'Start or configure a focus countdown timer.' },
+            { id: 'cody', name: 'Cody', desc: 'Build a complete interactive single-file web app or UI component with live preview.' }
+        ];
+
+        function buildAllowedToolsSystemPrompt() {
+            const list = ALLOWED_NIXY_TOOLS
+                .map(t => `- ${t.name} (tool_id: "${t.id}"): ${t.desc}`)
+                .join('\n');
+            return `You are Nixy, the intelligent Codenix AI Agent.
+ALLOWED TOOLS YOU ARE PERMITTED TO USE:
+${list}
+
+TOOL SELECTION RULES:
+- Choose the most appropriate tool based on the user's intent and context anywhere in the prompt—do NOT require the message to start with a specific trigger word or phrase.
+- You are strictly limited to the allowed tools listed above; never invent external or unapproved tools.`;
+        }
+
+        function planToolSelection(text, attachments = [], hasScreen = false) {
+            const lower = String(text || '').toLowerCase();
+            let chosen = 'chat';
+            let reason = 'General conversation, analysis, or structured document/table response';
+
+            if (/\b(generate|create|draw|paint|render|design|illustrate)\b.{0,45}\b(image|picture|photo|art|artwork|illustration|avatar|wallpaper|logo|scene)\b|\bsubeai\b/i.test(lower)) {
+                chosen = 'image';
+                reason = 'User requested generating or creating an image/visual -> selecting SubeAI';
+            } else if (/\b(qr\s*code|nixqr|barcode)\b/i.test(lower)) {
+                chosen = 'qr';
+                reason = 'User requested a QR code -> selecting NixQR';
+            } else if (/\b(speak|say\s+aloud|read\s+(it|this|that)\s+aloud|voice\s+over|tts|nixvoice)\b/i.test(lower)) {
+                chosen = 'voice';
+                reason = 'User wants spoken audio / TTS output -> selecting NixVoice';
+            } else if (/\b(vidy|motion\s+graphic|animation\s+loop|60fps)\b/i.test(lower)) {
+                chosen = 'vidy';
+                reason = 'User requested an animated motion graphic -> selecting Vidy';
+            } else if (/\b(pomodory|pomodoro|focus\s+timer|countdown\s+timer)\b/i.test(lower)) {
+                chosen = 'pomodory';
+                reason = 'User requested a focus timer -> selecting Pomodory';
+            } else if (/\b(cody|web\s*app|website|landing\s+page|interactive\s+app|html\s*app|dashboard\s+app)\b/i.test(lower) && /\b(build|create|make|generate|code)\b/i.test(lower)) {
+                chosen = 'cody';
+                reason = 'User asked to build an interactive web app/page -> selecting Cody';
+            } else if (hasScreen || attachments.length > 0) {
+                chosen = 'chat';
+                reason = 'Analyzing attached files or live shared screen context -> selecting General Reasoning & Analysis';
+            }
+
+            const meta = ALLOWED_NIXY_TOOLS.find(t => t.id === chosen) || ALLOWED_NIXY_TOOLS[0];
+            return {
+                tool: chosen,
+                toolName: meta.name,
+                thought: `Thinking: ${reason}.`
+            };
+        }
+
         function detectPromptIntent(text) {
-            const lower = text.toLowerCase();
-            if (/(generate|create|draw|make|paint|render)\s+(an?\s+)?(image|picture|photo|art|artwork|illustration|logo|wallpaper)/i.test(lower) || lower.includes('subeai')) {
-                return 'image';
-            }
-            if (/(qr\s*code|nixqr|barcode)/i.test(lower)) {
-                return 'qr';
-            }
-            if (/(speak|say aloud|voice|tts|nixvoice|read this out)/i.test(lower)) {
-                return 'voice';
-            }
-            if (/(vidy|motion graphic|animation loop|60fps)/i.test(lower)) {
-                return 'vidy';
-            }
-            if (/(pomodory|pomodoro|focus timer|start a \d+ min)/i.test(lower)) {
-                return 'pomodory';
-            }
-            if (/(cody|hostnix|build a .*app|build an .*app|create a website|landing page|interactive web)/i.test(lower)) {
-                return 'cody';
-            }
-            return 'chat';
+            return planToolSelection(text).tool;
         }
 
         function handlePromptKeydown(e) {
@@ -1472,10 +1512,12 @@
             state.isGenerating = true;
             const sendBtn = document.getElementById('send-prompt-btn');
             if (sendBtn) sendBtn.disabled = true;
-            setLoadingIndicator(true, 'Nixy is thinking & routing to AI models...');
-            setNixyMood('thinking', 'Thinking & routing to the best AI model...');
 
-            const tool = detectPromptIntent(rawText);
+            const plan = planToolSelection(rawText, attachedFiles, Boolean(screenSnapshot));
+            setLoadingIndicator(true, `${plan.thought} Using ${plan.toolName}...`);
+            setNixyMood('thinking', `${plan.thought}`);
+
+            const tool = plan.tool;
             const isImageTool = tool === 'image';
             const usePuter = checkShouldUsePuterFallback(isImageTool);
 
@@ -1494,7 +1536,13 @@
                     .map(f => f.dataUrl);
                 if (screenSnapshot) imageAttachments.push(screenSnapshot);
 
-                const systemPrompt = `You are Nixy, the intelligent Codenix AI Agent. You can generate rich Markdown tables, structured documents, code, explanations, and analyze uploaded files or live shared screens. Always format tables in clean GitHub-Flavored Markdown so the user can export them to CSV, DOC, or PDF.${buildCrossConversationMemory()}`;
+                const systemPrompt = `${buildAllowedToolsSystemPrompt()}
+
+Pre-response tool plan for this turn:
+- Selected Tool: ${plan.toolName} (${plan.tool})
+- Reasoning: ${plan.thought}
+
+You can generate rich Markdown tables, structured documents, code, explanations, and analyze uploaded files or live shared screens. Always format tables in clean GitHub-Flavored Markdown.${buildCrossConversationMemory()}`;
 
                 const history = [
                     { role: 'system', content: systemPrompt },
@@ -1575,6 +1623,7 @@
                     role: 'assistant',
                     content: assistantMarkdown,
                     tool_used: tool,
+                    tool_thought: plan.thought,
                     provider_used: providerUsed
                 });
                 renderMessages();
@@ -1721,6 +1770,9 @@
                 }
 
                 const renderedHtml = renderRichAssistantContent(m.content, idx);
+                const thoughtLine = m.tool_thought
+                    ? `<p class="text-[11px] italic text-zinc-500 dark:text-zinc-400 mb-2">${escapeHtml(m.tool_thought)}</p>`
+                    : '';
                 return `
                     <div class="flex items-start gap-3">
                         <div class="nixy-orb w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">
@@ -1731,8 +1783,9 @@
                         </div>
                         <div class="flex-1 min-w-0 bg-codenix-50/80 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-2xl rounded-tl-sm p-4 shadow-xs">
                             <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-codenix-200/70 dark:border-codenix-border">
-                                <span class="text-[11px] font-bold text-codenix-700 dark:text-codenix-300">Nixy • ${escapeHtml(m.provider_used || 'AI')}</span>
+                                <span class="text-[11px] font-bold text-codenix-700 dark:text-codenix-300">Nixy • ${escapeHtml(m.provider_used || 'AI')} • ${escapeHtml(m.tool_used || 'chat')}</span>
                             </div>
+                            ${thoughtLine}
                             <div id="assistant-msg-body-${idx}" class="prose dark:prose-invert max-w-none text-sm">
                                 ${renderedHtml}
                             </div>
