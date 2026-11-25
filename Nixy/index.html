@@ -478,6 +478,15 @@
                     <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
                     <input type="file" id="nixy-file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql,.xml" onchange="handleFileUploadSelection(event)" class="hidden">
 
+                    <!-- Quick Tool Chips for Voice, Image, Code, Table & Docs -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 mb-1.5 text-[11px]">
+                        <button type="button" onclick="quickInsertPrompt('generate image of ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">Image</button>
+                        <button type="button" onclick="quickInsertPrompt('say in voice: ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">Voice</button>
+                        <button type="button" onclick="quickInsertPrompt('build an interactive html page for ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">Code</button>
+                        <button type="button" onclick="quickInsertPrompt('create a markdown table comparing ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">Table</button>
+                        <button type="button" onclick="quickInsertPrompt('write a structured document report on ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">Document</button>
+                    </div>
+
                     <div class="flex items-end gap-1.5 sm:gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 shadow-sm transition">
                         <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Upload Files or Images" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
@@ -1467,15 +1476,70 @@
                 return;
             }
 
-            feedEl.innerHTML = msgs.map(m => {
+            window.__nixySnippetStore = [];
+            window.__nixyAssistantStore = [];
+
+            feedEl.innerHTML = msgs.map((m, msgIdx) => {
                 const isUser = m.role === 'user';
-                const bodyHtml = window.marked && typeof window.marked.parse === 'function'
-                    ? window.marked.parse(String(m.content || ''))
-                    : `<p>${escapeHtml(m.content || '')}</p>`;
+                if (isUser) {
+                    return `
+                        <div class="flex justify-end">
+                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-xs sm:text-sm bg-codenix-600 text-white prose dark:prose-invert">
+                                <p>${escapeHtml(m.content || '')}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const assistantIdx = window.__nixyAssistantStore.push(String(m.content || '')) - 1;
+                const toolBadge = m.toolUsed
+                    ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 border border-codenix-500/25">Tool: ${escapeHtml(m.toolUsed)}</span>`
+                    : '';
+                const providerBadge = m.providerUsed
+                    ? `<span class="text-[10px] font-mono text-zinc-400">${escapeHtml(m.providerUsed)}</span>`
+                    : '';
+
+                let attachmentsHtml = '';
+                if (m.imageUrl) {
+                    const imgId = `nix-gen-img-${msgIdx}`;
+                    attachmentsHtml += `
+                        <div class="nix-generated-img-wrap mt-3 p-2.5 rounded-xl bg-white/70 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border space-y-2">
+                            <img id="${imgId}" src="${escapeHtml(m.imageUrl)}" alt="Generated Image" loading="lazy">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 truncate">SubeAI / Puter Image</span>
+                                <button type="button" onclick="downloadGeneratedImage('${escapeHtml(m.imageUrl)}')" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download Image</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                if (m.audioUrl) {
+                    attachmentsHtml += `
+                        <div class="mt-3 p-2.5 rounded-xl bg-white/70 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border space-y-2">
+                            <audio controls preload="metadata" src="${escapeHtml(m.audioUrl)}" class="w-full h-9"></audio>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">Puter Voice Audio</span>
+                                <a href="${escapeHtml(m.audioUrl)}" download="nixy-voice.mp3" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download Audio</a>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const renderedBody = renderAssistantRichContent(String(m.content || ''));
+
                 return `
-                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-                        <div class="max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm prose dark:prose-invert ${isUser ? 'bg-codenix-600 text-white rounded-br-sm' : 'bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-bl-sm'}">
-                            ${bodyHtml}
+                    <div class="flex justify-start">
+                        <div class="max-w-[90%] w-full sm:w-auto rounded-2xl rounded-bl-sm px-4 py-3 text-xs sm:text-sm bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border space-y-2.5">
+                            ${(toolBadge || providerBadge) ? `<div class="flex items-center justify-between gap-2 pb-1 border-b border-codenix-200/70 dark:border-codenix-border/70">${toolBadge}${providerBadge}</div>` : ''}
+                            <div class="prose dark:prose-invert max-w-none">${renderedBody}</div>
+                            ${attachmentsHtml}
+                            <div class="pt-2 border-t border-codenix-200/70 dark:border-codenix-border/70 flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'doc')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">DOC</button>
+                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'pdf')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">PDF</button>
+                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'csv')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">CSV</button>
+                                </div>
+                                <button type="button" onclick="copyAssistantMessage(${assistantIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold transition">Copy Message</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1488,68 +1552,264 @@
             if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
-        // ==========================================
-        // COMPOSER, FILE UPLOADS & AI ROUTING
-        // ==========================================
-        function handlePromptKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendPrompt();
-            }
-        }
-
-        function autoResizeTextarea(el) {
-            if (!el) return;
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
-        }
-
-        function handleFileUploadSelection(event) {
-            const files = Array.from(event.target?.files || []);
-            if (!files.length) return;
-            files.forEach(file => {
-                state.uploadedFiles.push({
-                    name: file.name,
-                    type: file.type || 'file',
-                    size: file.size
-                });
+        function renderAssistantRichContent(rawMarkdown) {
+            const codeBlocks = [];
+            const protectedMd = String(rawMarkdown || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+                const cleanLang = (lang || 'code').trim().toLowerCase();
+                const snippetIdx = window.__nixySnippetStore.push({ lang: cleanLang, code: String(code || '').replace(/\n$/, '') }) - 1;
+                const token = `@@NIXY_CODE_BLOCK_${codeBlocks.length}@@`;
+                codeBlocks.push({ token, snippetIdx, lang: cleanLang, lineCount: String(code || '').trimEnd().split('\n').length });
+                return token;
             });
-            renderUploadedFilesStrip();
-            event.target.value = '';
+
+            let html = window.marked && typeof window.marked.parse === 'function'
+                ? window.marked.parse(protectedMd)
+                : `<p>${escapeHtml(protectedMd)}</p>`;
+
+            codeBlocks.forEach(blk => {
+                const extMap = { html: 'HTML', htm: 'HTML', js: 'JS', javascript: 'JS', ts: 'TS', py: 'PY', python: 'PY', css: 'CSS', json: 'JSON', sql: 'SQL' };
+                const badge = extMap[blk.lang] || blk.lang.slice(0, 4).toUpperCase() || 'FILE';
+                const fileName = `snippet.${blk.lang === 'javascript' ? 'js' : (blk.lang === 'python' ? 'py' : blk.lang)}`;
+                const bodyId = `nix-code-body-${blk.snippetIdx}`;
+                const cardHtml = `
+                    <div class="nix-code-card not-prose">
+                        <div class="nix-file-graphic" onclick="toggleCodeBlockVisibility('${bodyId}')">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="nix-file-icon-badge">${escapeHtml(badge)}</div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-white truncate">${escapeHtml(fileName)}</p>
+                                    <p class="text-[10px] font-mono text-purple-300">${blk.lineCount} lines • Click to toggle file</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-purple-200">FILE</span>
+                        </div>
+                        <div class="nix-code-header">
+                            <span>${escapeHtml(blk.lang)}</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="toggleCodeBlockVisibility('${bodyId}')" class="nix-code-btn">Hide / Show</button>
+                                <button type="button" onclick="previewCodeSnippet(${blk.snippetIdx})" class="nix-code-btn">Preview</button>
+                                <button type="button" onclick="copyCodeSnippet(${blk.snippetIdx})" class="nix-code-btn">Copy</button>
+                                <button type="button" onclick="downloadCodeSnippet(${blk.snippetIdx})" class="nix-code-btn">Download</button>
+                            </div>
+                        </div>
+                        <div id="${bodyId}">
+                            <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(blk.lang)}">${escapeHtml(window.__nixySnippetStore[blk.snippetIdx].code)}</code></pre>
+                        </div>
+                    </div>
+                `;
+                html = html.replace(new RegExp(`<p>\\s*${blk.token}\\s*</p>|${blk.token}`), cardHtml);
+            });
+
+            return html;
         }
 
-        function renderUploadedFilesStrip() {
-            const strip = document.getElementById('uploaded-files-strip');
-            if (!strip) return;
-            if (!state.uploadedFiles.length) {
-                strip.classList.add('hidden');
-                strip.classList.remove('flex');
-                strip.innerHTML = '';
+        function toggleCodeBlockVisibility(bodyId) {
+            document.getElementById(bodyId)?.classList.toggle('hidden');
+        }
+
+        function previewCodeSnippet(idx) {
+            const item = window.__nixySnippetStore?.[idx];
+            if (!item) return;
+            const pane = document.getElementById('cody-canvas-pane');
+            const frame = document.getElementById('cody-preview-frame');
+            const editor = document.getElementById('cody-code-editor');
+            if (!pane || !frame) return;
+
+            pane.classList.remove('hidden');
+            pane.classList.add('flex');
+            if (editor) editor.value = item.code;
+            switchCodyTab('preview');
+
+            const storageShim = `<script>(function(){try{window.localStorage;window.sessionStorage;}catch(_){const m={};const s={getItem:k=>m[k]??null,setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];},clear:()=>{for(const k in m)delete m[k];}};try{Object.defineProperty(window,'localStorage',{value:s});}catch(_2){}try{Object.defineProperty(window,'sessionStorage',{value:s});}catch(_3){}}})();<\/script>`;
+            const rawCode = item.code;
+            const docHtml = /<html[\s>]|<!doctype html/i.test(rawCode)
+                ? rawCode.replace(/<head(\s[^>]*)?>/i, m => `${m}${storageShim}`)
+                : `<!DOCTYPE html><html><head><meta charset="UTF-8">${storageShim}<style>body{font-family:system-ui,sans-serif;padding:16px;}</style></head><body>${rawCode}</body></html>`;
+
+            frame.srcdoc = docHtml;
+        }
+
+        function copyCodeSnippet(idx) {
+            const item = window.__nixySnippetStore?.[idx];
+            if (!item) return;
+            navigator.clipboard?.writeText(item.code).then(() => showToast('Code copied to clipboard!')).catch(() => showToast('Copy failed.'));
+        }
+
+        function downloadCodeSnippet(idx) {
+            const item = window.__nixySnippetStore?.[idx];
+            if (!item) return;
+            const extMap = { html: 'html', htm: 'html', js: 'js', javascript: 'js', ts: 'ts', py: 'py', python: 'py', css: 'css', json: 'json', sql: 'sql' };
+            const ext = extMap[item.lang] || 'txt';
+            const blob = new Blob([item.code], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nixy-snippet.${ext}`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function copyAssistantMessage(idx) {
+            const text = window.__nixyAssistantStore?.[idx] || '';
+            navigator.clipboard?.writeText(text).then(() => showToast('Message copied!')).catch(() => showToast('Copy failed.'));
+        }
+
+        function exportAssistantDoc(idx, format) {
+            const text = window.__nixyAssistantStore?.[idx] || '';
+            if (!text) return;
+            if (format === 'csv') {
+                const lines = text.split('\n').filter(l => l.includes('|') && !/^\s*\|?[\s:-]+\|[\s|:-]*$/.test(l));
+                const csv = (lines.length ? lines : text.split('\n'))
+                    .map(line => line.replace(/^\||\|$/g, '').split('|').map(cell => `"${cell.trim().replace(/"/g, '""')}"`).join(','))
+                    .join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'nixy-export.csv';
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
                 return;
             }
-            strip.classList.remove('hidden');
-            strip.classList.add('flex');
-            strip.innerHTML = state.uploadedFiles.map((f, idx) => `
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-[11px] font-medium">
-                    <span class="truncate max-w-[140px]">${escapeHtml(f.name)}</span>
-                    <button type="button" onclick="removeUploadedFile(${idx})" class="text-zinc-400 hover:text-rose-500">×</button>
-                </span>
-            `).join('');
+            if (format === 'pdf' && window.jspdf?.jsPDF) {
+                const doc = new window.jspdf.jsPDF();
+                const wrapped = doc.splitTextToSize(text.replace(/[#*`]/g, ''), 180);
+                doc.text(wrapped, 14, 18);
+                doc.save('nixy-document.pdf');
+                return;
+            }
+            const docBlob = new Blob([`<html><head><meta charset="UTF-8"><title>Nixy Document</title></head><body><pre style="white-space:pre-wrap;font-family:sans-serif;">${escapeHtml(text)}</pre></body></html>`], { type: 'application/msword' });
+            const url = URL.createObjectURL(docBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nixy-document.doc';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
-        function removeUploadedFile(index) {
-            state.uploadedFiles.splice(index, 1);
-            renderUploadedFilesStrip();
+        function downloadGeneratedImage(imgUrl) {
+            if (!imgUrl) return;
+            const a = document.createElement('a');
+            a.href = imgUrl;
+            a.download = `nixy-image-${Date.now()}.png`;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.click();
         }
 
-        async function callNixyChatEngine(messages) {
+        function quickInsertPrompt(prefix) {
+            const input = document.getElementById('prompt-input');
+            if (!input) return;
+            input.value = prefix;
+            input.focus();
+            autoResizeTextarea(input);
+        }
+
+        // ==========================================
+        // PRE-RESPONSE TOOL THINKING & EXECUTION
+        // ==========================================
+        const NIXY_SYSTEM_PROMPT = [
+            'You are Nixy, the Codenix AI Agent.',
+            'Allowed tools you can invoke based on user intent: [image_generator, puter_voice, code_canvas, data_table, document_writer, general_chat].',
+            'Select the best allowed tool from the user\'s request anywhere in the prompt without requiring a specific starting prefix.'
+        ].join(' ');
+
+        function decideAllowedTool(promptText) {
+            const q = String(promptText || '').toLowerCase();
+            if (/\b(generate image|create image|draw an image|make an image|image of|picture of|artwork|illustration|صورة|ارسم)\b/.test(q)) {
+                return 'image_generator';
+            }
+            if (/\b(say in voice|speak this|read aloud|generate voice|voice of|text to speech|tts|audio of|بصوت|انطق)\b/.test(q)) {
+                return 'puter_voice';
+            }
+            if (/\b(html|css|javascript|react|code|component|landing page|calculator|game|كود|صفحة)\b/.test(q)) {
+                return 'code_canvas';
+            }
+            if (/\b(table|spreadsheet|csv|compare|comparison|matrix|جدول)\b/.test(q)) {
+                return 'data_table';
+            }
+            if (/\b(document|report|article|essay|guide|documentation|pdf|doc|تقرير|مقال)\b/.test(q)) {
+                return 'document_writer';
+            }
+            return 'general_chat';
+        }
+
+        async function generateImageWithTools(promptText) {
+            const cleanPrompt = String(promptText || '').replace(/^(generate image|create image|draw an image|make an image|image of|picture of)\s*(of|for)?\s*/i, '').trim() || promptText;
+            if (getPreferredProviderMode() !== 'puter') {
+                try {
+                    const res = await fetch(CLOUDFLARE_PROXY_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'image', prompt: cleanPrompt })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data?.url) return { url: data.url, provider: data.provider || 'Cloudflare Image' };
+                    }
+                } catch (_) {}
+            }
+            if (window.puter?.ai?.txt2img) {
+                try {
+                    const imgEl = await window.puter.ai.txt2img(cleanPrompt, { testMode: false });
+                    if (imgEl?.src) return { url: imgEl.src, provider: 'Puter.js Image' };
+                } catch (_) {}
+            }
+            return {
+                url: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=768&height=512&nologo=true&seed=${Date.now()}`,
+                provider: 'SubeAI Pollinations'
+            };
+        }
+
+        let lastSpokenVoiceSignature = '';
+        async function generateVoiceWithPuter(promptText) {
+            const spokenText = String(promptText || '')
+                .replace(/^(say in voice|speak this|read aloud|generate voice|voice of|text to speech|tts|audio of)\s*:?\s*/i, '')
+                .replace(/<[^>]*>/g, '')
+                .trim() || 'Hello from Nixy AI!';
+
+            let audioUrl = '';
+            if (window.puter?.ai?.txt2speech) {
+                try {
+                    const audioObj = await window.puter.ai.txt2speech(spokenText);
+                    if (typeof audioObj === 'string') {
+                        audioUrl = audioObj;
+                    } else if (audioObj?.src) {
+                        audioUrl = audioObj.src;
+                    } else if (audioObj && typeof audioObj.play === 'function') {
+                        const sig = `${spokenText.slice(0, 80)}::${Date.now()}`;
+                        if (lastSpokenVoiceSignature !== sig) {
+                            lastSpokenVoiceSignature = sig;
+                            audioObj.play();
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            if (!audioUrl && 'speechSynthesis' in window) {
+                const sig = spokenText.slice(0, 100);
+                if (lastSpokenVoiceSignature !== sig) {
+                    lastSpokenVoiceSignature = sig;
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(spokenText);
+                    utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
+                    window.speechSynthesis.speak(utter);
+                }
+            }
+
+            return { spokenText, audioUrl, provider: 'Puter.js TTS' };
+        }
+
+        async function callNixyChatEngine(messages, selectedTool = 'general_chat') {
             const preferred = getPreferredProviderMode();
+            const payloadMessages = [{ role: 'system', content: `${NIXY_SYSTEM_PROMPT} Selected tool: ${selectedTool}.` }, ...messages];
+
             if (preferred !== 'puter') {
                 try {
                     const res = await fetch(CLOUDFLARE_PROXY_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'chat', messages })
+                        body: JSON.stringify({ action: 'chat', messages: payloadMessages })
                     });
                     if (res.ok) {
                         const data = await res.json();
@@ -1562,7 +1822,7 @@
 
             if (window.puter?.ai?.chat) {
                 try {
-                    const puterRes = await window.puter.ai.chat(messages);
+                    const puterRes = await window.puter.ai.chat(payloadMessages);
                     const text = typeof puterRes === 'string'
                         ? puterRes
                         : (puterRes?.message?.content || puterRes?.result?.content || puterRes?.text || '');
@@ -1571,8 +1831,20 @@
             }
 
             const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+            if (selectedTool === 'data_table') {
+                return {
+                    text: `| Topic | Summary | Status |\n| --- | --- | --- |\n| ${lastUser.slice(0, 32) || 'Request'} | Generated table view | Ready |`,
+                    provider: 'Nixy Table Engine'
+                };
+            }
+            if (selectedTool === 'code_canvas') {
+                return {
+                    text: `Here is a starter HTML page for your request:\n\n\`\`\`html\n<!DOCTYPE html>\n<html><head><meta charset="UTF-8"><title>Nixy Preview</title></head><body><h1>${escapeHtml(lastUser.slice(0, 48) || 'Nixy App')}</h1><p>Click Preview above to run live.</p></body></html>\n\`\`\``,
+                    provider: 'Nixy Cody Engine'
+                };
+            }
             return {
-                text: `I received your message: "${lastUser}". Connect your /api/nixy worker or Puter.js session for live model completions.`,
+                text: `I received your request: "${lastUser}". Connect your /api/nixy worker or Puter.js session for live model completions.`,
                 provider: 'Nixy Local'
             };
         }
@@ -1599,6 +1871,7 @@
                 renderConversationList();
             }
 
+            const selectedTool = decideAllowedTool(promptText);
             conv.messages.push({ role: 'user', content: promptText });
             state.uploadedFiles = [];
             renderUploadedFilesStrip();
@@ -1611,6 +1884,10 @@
             state.isSending = true;
             setNixyMood('thinking');
             const loadingEl = document.getElementById('nixy-loading-indicator');
+            const loadingTextEl = document.getElementById('nixy-loading-text');
+            const imgGenCard = document.getElementById('nixy-image-generating-card');
+            if (loadingTextEl) loadingTextEl.textContent = `Nixy thought: using ${selectedTool}...`;
+            if (imgGenCard) imgGenCard.classList.toggle('hidden', selectedTool !== 'image_generator');
             if (loadingEl) {
                 loadingEl.classList.remove('hidden');
                 loadingEl.classList.add('flex');
@@ -1631,22 +1908,49 @@
                     } catch (_) {}
                 }
 
-                const reply = await callNixyChatEngine(conv.messages);
-                conv.messages.push({
-                    role: 'assistant',
-                    content: reply.text,
-                    providerUsed: reply.provider
-                });
-                recordLocalUsage(1, 0, Math.max(25, Math.round(reply.text.length / 4)));
+                if (selectedTool === 'image_generator') {
+                    const imgRes = await generateImageWithTools(promptText);
+                    const replyText = `Generated image for: **${promptText}**`;
+                    conv.messages.push({
+                        role: 'assistant',
+                        content: replyText,
+                        imageUrl: imgRes.url,
+                        toolUsed: selectedTool,
+                        providerUsed: imgRes.provider
+                    });
+                    recordLocalUsage(0, 1, 150);
+                } else if (selectedTool === 'puter_voice') {
+                    const voiceRes = await generateVoiceWithPuter(promptText);
+                    const replyText = `Voice ready: "${voiceRes.spokenText}"`;
+                    conv.messages.push({
+                        role: 'assistant',
+                        content: replyText,
+                        audioUrl: voiceRes.audioUrl || '',
+                        toolUsed: selectedTool,
+                        providerUsed: voiceRes.provider
+                    });
+                    recordLocalUsage(1, 0, 80);
+                } else {
+                    const reply = await callNixyChatEngine(conv.messages, selectedTool);
+                    conv.messages.push({
+                        role: 'assistant',
+                        content: reply.text,
+                        toolUsed: selectedTool,
+                        providerUsed: reply.provider
+                    });
+                    recordLocalUsage(1, 0, Math.max(25, Math.round(reply.text.length / 4)));
+                }
 
-                if (state.user) {
+                const latestAssistant = conv.messages[conv.messages.length - 1];
+                if (state.user && latestAssistant?.role === 'assistant') {
                     try {
                         await supabaseClient.from('nixy_messages').insert({
                             conversation_id: conv.id,
                             user_id: state.user.id,
                             role: 'assistant',
-                            content: reply.text,
-                            provider_used: reply.provider
+                            content: latestAssistant.content,
+                            tool_used: latestAssistant.toolUsed || '',
+                            provider_used: latestAssistant.providerUsed || ''
                         });
                     } catch (_) {}
                 }
@@ -1663,6 +1967,7 @@
                 });
             } finally {
                 state.isSending = false;
+                if (imgGenCard) imgGenCard.classList.add('hidden');
                 if (loadingEl) {
                     loadingEl.classList.add('hidden');
                     loadingEl.classList.remove('flex');
