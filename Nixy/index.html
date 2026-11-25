@@ -1701,6 +1701,30 @@ You can generate rich Markdown tables, structured documents, code, explanations,
         async function generateSubeAIImage(prompt, forcePuter = false) {
             const cleanPrompt = String(prompt || 'futuristic purple abstract art').trim();
 
+            const tryPuterImage = async () => {
+                if (!window.puter?.ai?.txt2img) return null;
+                try {
+                    const result = await window.puter.ai.txt2img(cleanPrompt, { model: 'gpt-image-1' }).catch(() => window.puter.ai.txt2img(cleanPrompt));
+                    if (!result) return null;
+                    if (typeof result === 'string' && (result.startsWith('http') || result.startsWith('data:'))) {
+                        return { url: result, provider: 'Puter.js' };
+                    }
+                    if (result?.src) {
+                        return { url: result.src, provider: 'Puter.js' };
+                    }
+                    if (result instanceof Blob || (typeof Blob !== 'undefined' && result?.arrayBuffer)) {
+                        const url = URL.createObjectURL(result);
+                        return { url, provider: 'Puter.js' };
+                    }
+                } catch (_) {}
+                return null;
+            };
+
+            if (forcePuter) {
+                const puterImg = await tryPuterImage();
+                if (puterImg) return puterImg;
+            }
+
             if (!forcePuter) {
                 try {
                     const res = await fetch(CLOUDFLARE_PROXY_URL, {
@@ -1715,15 +1739,9 @@ You can generate rich Markdown tables, structured documents, code, explanations,
                         }
                     }
                 } catch (_) {}
-            }
 
-            if (window.puter?.ai?.txt2img) {
-                try {
-                    const imgEl = await window.puter.ai.txt2img(cleanPrompt);
-                    if (imgEl?.src) {
-                        return { url: imgEl.src, provider: 'Puter.js' };
-                    }
-                } catch (_) {}
+                const puterFallback = await tryPuterImage();
+                if (puterFallback) return puterFallback;
             }
 
             const encoded = encodeURIComponent(cleanPrompt);
