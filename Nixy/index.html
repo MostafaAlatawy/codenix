@@ -184,6 +184,32 @@
         }
         .nix-code-btn:hover { background: rgba(139, 92, 246, 0.38); }
 
+        .nix-file-graphic {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(37, 31, 56, 0.75));
+            border-bottom: 1px solid #251f38;
+            cursor: pointer;
+        }
+        .nix-file-icon-badge {
+            width: 2rem;
+            height: 2.25rem;
+            border-radius: 0.5rem;
+            background: rgba(139, 92, 246, 0.25);
+            border: 1px solid rgba(167, 139, 250, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #ede9fe;
+            font-family: 'JetBrains Mono', monospace;
+            flex-shrink: 0;
+        }
+
         /* Rich Markdown Tables & Document Cards */
         .prose table {
             width: 100%;
@@ -476,16 +502,12 @@
                         <div class="flex items-center gap-1.5">
                             <button onclick="switchCodyTab('preview')" id="cody-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
                             <button onclick="switchCodyTab('code')" id="cody-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 dark:text-zinc-400 text-[11px] font-semibold">Code</button>
-                            <button onclick="publishCodyToHostNix()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold flex items-center gap-1">
-                                <i data-lucide="rocket" class="w-3 h-3"></i>
-                                <span>HostNix</span>
-                            </button>
                             <button onclick="closeCodyCanvas()" class="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
-                    <iframe id="cody-preview-frame" sandbox="allow-scripts allow-forms" class="flex-1 w-full bg-white border-none"></iframe>
+                    <iframe id="cody-preview-frame" sandbox="allow-scripts allow-forms allow-modals allow-popups" class="flex-1 w-full bg-white border-none"></iframe>
                     <textarea id="cody-code-editor" spellcheck="false" class="hidden flex-1 w-full bg-codenix-black text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
                 </aside>
             </div>
@@ -1740,9 +1762,22 @@
 
         window.__nixyCodeBlocks = [];
 
+        function buildSandboxSafePreviewHtml(rawCode) {
+            // Wrap preview HTML with a safe storage shim so sandboxed iframes without allow-same-origin never throw localStorage SecurityError
+            const storageShim = `<script>(function(){try{window.localStorage.getItem('__test');}catch(_){const mem={};const shim={getItem:k=>Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null,setItem:(k,v)=>{mem[k]=String(v);},removeItem:k=>{delete mem[k];},clear:()=>{for(const k in mem)delete mem[k];}};try{Object.defineProperty(window,'localStorage',{get:()=>shim});}catch(__){}try{Object.defineProperty(window,'sessionStorage',{get:()=>shim});}catch(__){}}})();<\/script>`;
+            if (/<html|<body|<!doctype/i.test(rawCode)) {
+                return rawCode.includes('<head>')
+                    ? rawCode.replace('<head>', '<head>' + storageShim)
+                    : storageShim + rawCode;
+            }
+            return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${storageShim}<script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4 bg-white text-zinc-900">${rawCode}</body></html>`;
+        }
+
         function enhanceGeneratedCodeBlocks() {
             const feed = document.getElementById('messages-feed');
             if (!feed) return;
+            const extMap = { html: 'html', javascript: 'js', js: 'js', python: 'py', py: 'py', css: 'css', json: 'json', sql: 'sql', typescript: 'ts', ts: 'ts' };
+
             feed.querySelectorAll('pre').forEach(pre => {
                 if (pre.dataset.enhanced === 'true') return;
                 pre.dataset.enhanced = 'true';
@@ -1751,41 +1786,63 @@
                 const rawCode = codeEl ? codeEl.innerText : pre.innerText;
                 const langMatch = (codeEl?.className || '').match(/language-([a-zA-Z0-9_-]+)/);
                 const lang = (langMatch ? langMatch[1] : 'code').toLowerCase();
+                const ext = extMap[lang] || lang || 'txt';
+                const fileName = `snippet.${ext}`;
 
                 const blockId = window.__nixyCodeBlocks.length;
-                window.__nixyCodeBlocks.push({ code: rawCode, lang });
+                window.__nixyCodeBlocks.push({ code: rawCode, lang, fileName });
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'nix-code-card';
 
-                const header = document.createElement('div');
-                header.className = 'nix-code-header';
-                header.innerHTML = `
-                    <span class="uppercase font-bold tracking-wider">${escapeHtml(lang)}</span>
+                // File graphic header: clicking toggles file visibility; buttons trigger Preview, Copy, Download, Toggle
+                const fileBar = document.createElement('div');
+                fileBar.className = 'nix-file-graphic';
+                fileBar.title = 'Click to show or hide file contents';
+                fileBar.onclick = (e) => {
+                    if (e.target.closest('button')) return;
+                    toggleCodeBlockVisibility(blockId);
+                };
+                fileBar.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="nix-file-icon-badge">${escapeHtml(ext.slice(0, 4).toUpperCase())}</div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold font-mono text-purple-100 truncate">${escapeHtml(fileName)}</p>
+                            <p class="text-[10px] text-purple-300/80">${rawCode.split('\n').length} lines • ${escapeHtml(lang)} • Click to toggle</p>
+                        </div>
+                    </div>
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <button type="button" onclick="previewCodeBlock(${blockId})" class="nix-code-btn">Preview</button>
                         <button type="button" onclick="copyCodeBlock(${blockId}, this)" class="nix-code-btn">Copy</button>
-                        <button type="button" onclick="publishCodeBlock(${blockId})" class="nix-code-btn">Publish</button>
                         <button type="button" onclick="downloadCodeBlock(${blockId})" class="nix-code-btn">Download</button>
+                        <button type="button" id="toggle-file-btn-${blockId}" onclick="toggleCodeBlockVisibility(${blockId})" class="nix-code-btn">Hide</button>
                     </div>
                 `;
 
+                pre.id = `nix-code-pre-${blockId}`;
                 pre.style.margin = '0';
                 pre.style.border = 'none';
                 pre.style.borderRadius = '0';
 
                 pre.parentNode.insertBefore(wrapper, pre);
-                wrapper.appendChild(header);
+                wrapper.appendChild(fileBar);
                 wrapper.appendChild(pre);
             });
+        }
+
+        function toggleCodeBlockVisibility(blockId) {
+            const pre = document.getElementById(`nix-code-pre-${blockId}`);
+            const btn = document.getElementById(`toggle-file-btn-${blockId}`);
+            if (!pre) return;
+            const isHidden = pre.style.display === 'none';
+            pre.style.display = isHidden ? 'block' : 'none';
+            if (btn) btn.textContent = isHidden ? 'Hide' : 'Show';
         }
 
         function previewCodeBlock(blockId) {
             const item = window.__nixyCodeBlocks[blockId];
             if (!item) return;
-            const htmlDoc = /<html|<body|<!doctype/i.test(item.code)
-                ? item.code
-                : `<!DOCTYPE html><html><head><meta charset="utf-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4">${item.code}</body></html>`;
+            const htmlDoc = buildSandboxSafePreviewHtml(item.code);
             openCodyCanvas(htmlDoc);
         }
 
@@ -1806,27 +1863,15 @@
             showToast('Code copied to clipboard!');
         }
 
-        async function publishCodeBlock(blockId) {
-            const item = window.__nixyCodeBlocks[blockId];
-            if (!item) return;
-            const htmlDoc = /<html|<body|<!doctype/i.test(item.code)
-                ? item.code
-                : `<!DOCTYPE html><html><head><meta charset="utf-8"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4">${item.code}</body></html>`;
-            openCodyCanvas(htmlDoc);
-            await publishCodyToHostNix();
-        }
-
         function downloadCodeBlock(blockId) {
             const item = window.__nixyCodeBlocks[blockId];
             if (!item) return;
-            const extMap = { html: 'html', javascript: 'js', js: 'js', python: 'py', py: 'py', css: 'css', json: 'json', sql: 'sql', typescript: 'ts', ts: 'ts' };
-            const ext = extMap[item.lang] || 'txt';
             const blob = new Blob([item.code], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `nixy-code-${Date.now()}.${ext}`;
+            a.download = item.fileName || `nixy-code-${Date.now()}.txt`;
             a.click();
-            showToast(`Downloaded nixy-code.${ext}`);
+            showToast(`Downloaded ${item.fileName || 'file'}`);
         }
 
         function hydrateSpecialWidgets() {
@@ -1949,22 +1994,6 @@
                 editor?.classList.remove('hidden');
                 btnCode?.classList.add('bg-codenix-600', 'text-white');
                 btnPrev?.classList.remove('bg-codenix-600', 'text-white');
-            }
-        }
-
-        async function publishCodyToHostNix() {
-            const html = document.getElementById('cody-code-editor')?.value || state.latestCodyHtml;
-            if (!html || !state.user) return;
-            const slug = 'app-' + Math.random().toString(36).slice(2, 8);
-            try {
-                await supabaseClient.from('nixy_hostnix_apps').insert({
-                    slug,
-                    owner_id: state.user.id,
-                    html_content: html
-                });
-                showToast(`Published to HostNix! Slug: ${slug}`);
-            } catch (_) {
-                showToast('Saved locally (run SQL schema for HostNix cloud hosting).');
             }
         }
 
