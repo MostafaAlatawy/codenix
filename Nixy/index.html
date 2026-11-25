@@ -1520,14 +1520,18 @@
                     assistantMarkdown = `### NixQR Instant Code\n\nTarget: \`${qrTarget}\`\n\n\`\`\`nixqr\n${qrTarget}\n\`\`\``;
                 } else if (tool === 'voice') {
                     const scriptRes = await callCascadingChatAI([
-                        { role: 'system', content: 'Extract or write ONLY the exact natural spoken script requested by the user. Do not include stage directions or commentary.' },
+                        { role: 'system', content: 'Write ONLY plain spoken text for text-to-speech. Never use HTML tags, markdown code blocks, or stage directions.' },
                         { role: 'user', content: rawText }
                     ], usePuter);
                     providerUsed = scriptRes.provider;
                     usedPuterFallback = /puter/i.test(providerUsed);
-                    const spokenText = scriptRes.text.trim();
-                    speakWithBrowserTTS(spokenText);
-                    assistantMarkdown = `### NixVoice Spoken Output\n\n> "${spokenText}"\n\n\`\`\`nixvoice\n${spokenText}\n\`\`\``;
+                    const spokenText = String(scriptRes.text || rawText)
+                        .replace(/<[^>]*>?/g, ' ')
+                        .replace(/```[\s\S]*?```/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    speakWithBrowserTTS(spokenText, true);
+                    assistantMarkdown = `### NixVoice Spoken Output\n\n> "${escapeHtml(spokenText)}"\n\n\`\`\`nixvoice\n${spokenText}\n\`\`\``;
                     if (!usedPuterFallback) state.usage.dailyChats += 1;
                 } else if (tool === 'vidy') {
                     assistantMarkdown = `### Vidy 60fps Motion Graphic\n\n\`\`\`vidy\n${rawText}\n\`\`\``;
@@ -1646,34 +1650,42 @@
         }
 
         async function generateSubeAIImage(prompt, forcePuter = false) {
+            const cleanPrompt = String(prompt || 'futuristic purple abstract art').trim();
+
             if (!forcePuter) {
                 try {
                     const res = await fetch(CLOUDFLARE_PROXY_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'image', prompt })
+                        body: JSON.stringify({ action: 'image', prompt: cleanPrompt })
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        if (data?.url) return { url: data.url, provider: data.provider || 'SubeAI API' };
+                        if (data?.url) {
+                            return { url: data.url, provider: data.provider || 'SubeAI API' };
+                        }
                     }
                 } catch (_) {}
             }
 
             if (window.puter?.ai?.txt2img) {
-                const imgEl = await window.puter.ai.txt2img(prompt);
-                if (imgEl?.src) return { url: imgEl.src, provider: 'Puter.js' };
+                try {
+                    const imgEl = await window.puter.ai.txt2img(cleanPrompt);
+                    if (imgEl?.src) {
+                        return { url: imgEl.src, provider: 'Puter.js' };
+                    }
+                } catch (_) {}
             }
 
-            const encoded = encodeURIComponent(prompt);
+            const encoded = encodeURIComponent(cleanPrompt);
             return {
-                url: `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true`,
+                url: `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`,
                 provider: 'Pollinations'
             };
         }
 
         // ==========================================
-        // 7. MESSAGE RENDERING + PDF / DOC / CSV EXPORT
+        // 7. MESSAGE RENDERING + END-OF-MESSAGE COPY
         // ==========================================
         function renderMessages() {
             const hero = document.getElementById('nixy-hero');
@@ -1720,14 +1732,15 @@
                         <div class="flex-1 min-w-0 bg-codenix-50/80 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-2xl rounded-tl-sm p-4 shadow-xs">
                             <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-codenix-200/70 dark:border-codenix-border">
                                 <span class="text-[11px] font-bold text-codenix-700 dark:text-codenix-300">Nixy • ${escapeHtml(m.provider_used || 'AI')}</span>
-                                <div class="flex items-center gap-1.5">
-                                    <button onclick="exportMessageAsPDF(${idx})" class="px-2 py-0.5 rounded bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[10px] font-bold">PDF</button>
-                                    <button onclick="exportMessageAsDOC(${idx})" class="px-2 py-0.5 rounded bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[10px] font-bold">DOC</button>
-                                    <button onclick="exportMessageTableCSV(${idx})" class="px-2 py-0.5 rounded bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[10px] font-bold">CSV</button>
-                                </div>
                             </div>
                             <div id="assistant-msg-body-${idx}" class="prose dark:prose-invert max-w-none text-sm">
                                 ${renderedHtml}
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-codenix-200/60 dark:border-codenix-border/70 flex items-center justify-end">
+                                <button type="button" onclick="copyAssistantMessage(${idx}, this)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                    <span>Copy Message</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1739,36 +1752,65 @@
             if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
+        function copyAssistantMessage(idx, btn) {
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            const msg = conv?.messages?.[idx];
+            if (!msg) return;
+            const textToCopy = String(msg.content || '');
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(textToCopy).catch(() => {});
+            }
+            const ta = document.createElement('textarea');
+            ta.value = textToCopy;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (_) {}
+            document.body.removeChild(ta);
+            if (btn) {
+                const span = btn.querySelector('span');
+                const prev = span ? span.textContent : 'Copy Message';
+                if (span) span.textContent = 'Copied!';
+                setTimeout(() => { if (span) span.textContent = prev; }, 1500);
+            }
+            showToast('Message copied!');
+        }
+
         function renderRichAssistantContent(markdown, msgIdx) {
             let text = String(markdown || '');
+            window.__nixyRawCodeMap = window.__nixyRawCodeMap || [];
 
-            text = text.replace(/```nixqr\s*([\s\S]*?)```/gi, (_, target) => {
-                const clean = target.trim();
-                return `<div class="nixqr-mount my-3 p-4 rounded-2xl bg-white inline-flex flex-col items-center gap-2 border border-codenix-300" data-qr="${escapeHtml(clean)}"></div>`;
+            // Extract fenced code blocks first so marked doesn't strip or escape previewable HTML
+            text = text.replace(/```([a-zA-Z0-9_-]*)\s*([\s\S]*?)```/g, (fullMatch, langRaw, bodyRaw) => {
+                const lang = (langRaw || 'code').toLowerCase();
+                const content = String(bodyRaw || '').replace(/^\n+|\n+$/g, '');
+                if (lang === 'nixqr') {
+                    return `<div class="nixqr-mount my-3 p-4 rounded-2xl bg-white inline-flex flex-col items-center gap-2 border border-codenix-300" data-qr="${escapeHtml(content)}"></div>`;
+                }
+                if (lang === 'nixvoice') {
+                    return `<button type="button" onclick="speakWithBrowserTTS(${JSON.stringify(content)}, false)" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenix-600 text-white text-xs font-bold">Play Voice</button>`;
+                }
+                if (lang === 'vidy') {
+                    return `<canvas class="vidy-canvas w-full h-48 rounded-2xl my-2 border border-codenix-500/30" data-prompt="${escapeHtml(content)}"></canvas>`;
+                }
+                const codeIdx = window.__nixyRawCodeMap.length;
+                window.__nixyRawCodeMap.push({ code: content, lang });
+                return `\n<div class="nix-code-placeholder" data-code-idx="${codeIdx}"></div>\n`;
             });
 
-            text = text.replace(/```nixvoice\s*([\s\S]*?)```/gi, (_, script) => {
-                const clean = script.trim();
-                return `<button onclick="speakWithBrowserTTS(${JSON.stringify(clean)})" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenix-600 text-white text-xs font-bold">Replay Voice</button>`;
-            });
-
-            text = text.replace(/```vidy\s*([\s\S]*?)```/gi, (_, prompt) => {
-                return `<canvas class="vidy-canvas w-full h-48 rounded-2xl my-2 border border-codenix-500/30" data-prompt="${escapeHtml(prompt.trim())}"></canvas>`;
-            });
-
-            const parsed = window.marked ? window.marked.parse(text) : escapeHtml(text);
-            return parsed;
+            return window.marked ? window.marked.parse(text) : escapeHtml(text);
         }
 
         window.__nixyCodeBlocks = [];
 
         function buildSandboxSafePreviewHtml(rawCode) {
-            // Wrap preview HTML with a safe storage shim so sandboxed iframes without allow-same-origin never throw localStorage SecurityError
             const storageShim = `<script>(function(){try{window.localStorage.getItem('__test');}catch(_){const mem={};const shim={getItem:k=>Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null,setItem:(k,v)=>{mem[k]=String(v);},removeItem:k=>{delete mem[k];},clear:()=>{for(const k in mem)delete mem[k];}};try{Object.defineProperty(window,'localStorage',{get:()=>shim});}catch(__){}try{Object.defineProperty(window,'sessionStorage',{get:()=>shim});}catch(__){}}})();<\/script>`;
             if (/<html|<body|<!doctype/i.test(rawCode)) {
                 return rawCode.includes('<head>')
                     ? rawCode.replace('<head>', '<head>' + storageShim)
                     : storageShim + rawCode;
+            }
+            if (/^\s*(const|let|var|function|class|document\.|window\.)/m.test(rawCode) && !/<[a-z][\s\S]*>/i.test(rawCode)) {
+                return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${storageShim}<script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4 bg-white text-zinc-900"><div id="app"></div><script>${rawCode}<\/script></body></html>`;
             }
             return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${storageShim}<script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4 bg-white text-zinc-900">${rawCode}</body></html>`;
         }
@@ -1778,14 +1820,14 @@
             if (!feed) return;
             const extMap = { html: 'html', javascript: 'js', js: 'js', python: 'py', py: 'py', css: 'css', json: 'json', sql: 'sql', typescript: 'ts', ts: 'ts' };
 
-            feed.querySelectorAll('pre').forEach(pre => {
-                if (pre.dataset.enhanced === 'true') return;
-                pre.dataset.enhanced = 'true';
+            feed.querySelectorAll('.nix-code-placeholder').forEach(placeholder => {
+                if (placeholder.dataset.enhanced === 'true') return;
+                placeholder.dataset.enhanced = 'true';
 
-                const codeEl = pre.querySelector('code');
-                const rawCode = codeEl ? codeEl.innerText : pre.innerText;
-                const langMatch = (codeEl?.className || '').match(/language-([a-zA-Z0-9_-]+)/);
-                const lang = (langMatch ? langMatch[1] : 'code').toLowerCase();
+                const rawIdx = Number(placeholder.dataset.codeIdx);
+                const rawEntry = (window.__nixyRawCodeMap || [])[rawIdx] || { code: '', lang: 'code' };
+                const rawCode = rawEntry.code;
+                const lang = (rawEntry.lang || 'code').toLowerCase();
                 const ext = extMap[lang] || lang || 'txt';
                 const fileName = `snippet.${ext}`;
 
@@ -1795,7 +1837,6 @@
                 const wrapper = document.createElement('div');
                 wrapper.className = 'nix-code-card';
 
-                // File graphic header: clicking toggles file visibility; buttons trigger Preview, Copy, Download, Toggle
                 const fileBar = document.createElement('div');
                 fileBar.className = 'nix-file-graphic';
                 fileBar.title = 'Click to show or hide file contents';
@@ -1819,14 +1860,23 @@
                     </div>
                 `;
 
+                const pre = document.createElement('pre');
                 pre.id = `nix-code-pre-${blockId}`;
                 pre.style.margin = '0';
                 pre.style.border = 'none';
                 pre.style.borderRadius = '0';
 
-                pre.parentNode.insertBefore(wrapper, pre);
+                const codeEl = document.createElement('code');
+                codeEl.className = `language-${lang}`;
+                codeEl.textContent = rawCode;
+                if (window.hljs?.highlightElement) {
+                    try { window.hljs.highlightElement(codeEl); } catch (_) {}
+                }
+
+                pre.appendChild(codeEl);
                 wrapper.appendChild(fileBar);
                 wrapper.appendChild(pre);
+                placeholder.replaceWith(wrapper);
             });
         }
 
@@ -1965,7 +2015,17 @@
                 pane.classList.remove('hidden');
                 pane.classList.add('flex');
             }
-            if (frame) frame.srcdoc = htmlCode;
+            if (frame) {
+                try {
+                    const blob = new Blob([htmlCode], { type: 'text/html' });
+                    if (window.__codyBlobUrl) URL.revokeObjectURL(window.__codyBlobUrl);
+                    window.__codyBlobUrl = URL.createObjectURL(blob);
+                    frame.removeAttribute('srcdoc');
+                    frame.src = window.__codyBlobUrl;
+                } catch (_) {
+                    frame.srcdoc = htmlCode;
+                }
+            }
             if (editor) editor.value = htmlCode;
             switchCodyTab('preview');
         }
@@ -2056,17 +2116,33 @@
 
         function stopShareNix() {
             if (state.shareNixStream) {
-                state.shareNixStream.getTracks().forEach(t => t.stop());
+                try {
+                    state.shareNixStream.getTracks().forEach(track => track.stop());
+                } catch (_) {}
                 state.shareNixStream = null;
             }
-            document.getElementById('sharenix-live-banner')?.classList.add('hidden');
-            document.getElementById('sharenix-live-banner')?.classList.remove('flex');
+            const video = document.getElementById('sharenix-video');
+            if (video) video.srcObject = null;
+            const banner = document.getElementById('sharenix-live-banner');
+            if (banner) {
+                banner.classList.add('hidden');
+                banner.classList.remove('flex');
+            }
+            showToast('ShareNix screen sharing stopped.');
         }
 
-        function speakWithBrowserTTS(text) {
+        let lastSpokenSignature = '';
+        let lastSpokenAt = 0;
+        function speakWithBrowserTTS(text, onceGuard = false) {
             if (!window.speechSynthesis) return;
+            const clean = String(text || '').replace(/<[^>]*>?/g, ' ').replace(/\s+/g, ' ').trim();
+            if (!clean) return;
+            const now = Date.now();
+            if (onceGuard && clean === lastSpokenSignature && now - lastSpokenAt < 5000) return;
+            lastSpokenSignature = clean;
+            lastSpokenAt = now;
             window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
+            const utter = new SpeechSynthesisUtterance(clean);
             window.speechSynthesis.speak(utter);
         }
 
