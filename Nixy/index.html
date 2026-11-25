@@ -455,21 +455,11 @@
                             </div>
 
                             <!-- Nixy: Purple Ball with 2 White Ball Eyes -->
-                            <div id="nixy-main-orb" class="nixy-orb w-24 h-24 rounded-full flex items-center justify-center mb-5 cursor-pointer" onclick="pingNixyGreeting()">
+                            <div id="nixy-main-orb" class="nixy-orb w-24 h-24 rounded-full flex items-center justify-center mb-5 cursor-pointer" title="Click Nixy to cycle mood, outfit & animations!" onclick="handleNixyCharacterClick(event)">
                                 <div id="nixy-eyes" class="flex items-center justify-center gap-3.5 pointer-events-none">
                                     <span class="nixy-eye w-4 h-4 block"></span>
                                     <span class="nixy-eye w-4 h-4 block"></span>
                                 </div>
-                            </div>
-
-                            <!-- Duolingo-Style Nixy Outfit & Sleep Controls -->
-                            <div class="flex flex-wrap items-center justify-center gap-1.5 mb-4 text-[11px]">
-                                <button type="button" onclick="setNixyOutfit('none')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">Orb</button>
-                                <button type="button" onclick="setNixyOutfit('jacket')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">🧥 Jacket</button>
-                                <button type="button" onclick="setNixyOutfit('wizard')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">🧙 Wizard</button>
-                                <button type="button" onclick="setNixyOutfit('shades')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">🕶️ Shades</button>
-                                <button type="button" onclick="toggleNixySleep()" id="nixy-sleep-btn" class="px-2.5 py-1 rounded-full bg-codenix-600/15 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 font-bold hover:bg-codenix-600/25">😴 Sleep</button>
-                                <button type="button" onclick="triggerNixyDance()" class="px-2.5 py-1 rounded-full bg-codenix-600/15 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 font-bold hover:bg-codenix-600/25">✨ Dance</button>
                             </div>
                         </div>
 
@@ -843,7 +833,7 @@
     <!-- Draggable & Interactive Nixy Companion Bubble -->
     <div id="nixy-companion-floater" onpointerdown="startDraggingNixyCompanion(event)" class="fixed bottom-24 right-5 z-40 cursor-grab active:cursor-grabbing select-none flex flex-col items-center gap-1.5">
         <div id="nixy-companion-bubble" class="hidden max-w-[230px] px-3 py-1.5 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-500/40 text-[11px] font-semibold text-zinc-800 dark:text-zinc-100 shadow-lg text-center"></div>
-        <div class="nixy-orb w-12 h-12 rounded-full flex items-center justify-center">
+        <div onclick="handleNixyCharacterClick(event)" class="nixy-orb w-12 h-12 rounded-full flex items-center justify-center cursor-pointer">
             <div class="flex items-center gap-2 pointer-events-none">
                 <span class="nixy-eye w-2.5 h-2.5 block"></span>
                 <span class="nixy-eye w-2.5 h-2.5 block"></span>
@@ -982,6 +972,7 @@
 
         let nixyOutfit = localStorage.getItem(STORAGE_KEYS.OUTFIT) || 'none';
         let nixySleeping = localStorage.getItem(STORAGE_KEYS.SLEEPING) === 'true';
+        let nixyClickCycleIndex = 0;
 
         function applyNixyAppearance() {
             const orbs = document.querySelectorAll('.nixy-orb');
@@ -1003,8 +994,87 @@
                     orb.classList.remove('opacity-80');
                 }
             });
-            const sleepBtn = document.getElementById('nixy-sleep-btn');
-            if (sleepBtn) sleepBtn.textContent = nixySleeping ? '☀️ Wake Up' : '😴 Sleep';
+        }
+
+        function setNixyOutfit(outfit) {
+            nixyOutfit = outfit;
+            localStorage.setItem(STORAGE_KEYS.OUTFIT, outfit);
+            applyNixyAppearance();
+        }
+
+        function toggleNixySleep(forceSleep) {
+            nixySleeping = typeof forceSleep === 'boolean' ? forceSleep : !nixySleeping;
+            localStorage.setItem(STORAGE_KEYS.SLEEPING, String(nixySleeping));
+            applyNixyAppearance();
+            if (nixySleeping) {
+                setNixyMood('idle', 'Zzz... Nixy is taking an automatic power nap. Click me to wake up!');
+                showCompanionBubble('Zzz... Nixy napping automatically!', 2800);
+            } else {
+                setNixyMood('happy', 'Wide awake and ready to help!');
+                showCompanionBubble('I am awake! Let us build!', 2800);
+            }
+        }
+
+        function triggerNixyDance() {
+            if (nixySleeping) toggleNixySleep(false);
+            setNixyMood('speaking', 'Woop woop! Nixy automatic dance!');
+            showCompanionBubble('✨ Nixy happy dance! ✨', 2600);
+            setTimeout(() => setNixyMood('idle'), 1800);
+        }
+
+        function handleNixyCharacterClick(e) {
+            if (e) e.stopPropagation();
+            if (nixySleeping) {
+                toggleNixySleep(false);
+                return;
+            }
+            const outfits = ['none', 'jacket', 'wizard', 'shades'];
+            const nextOutfit = outfits[nixyClickCycleIndex % outfits.length];
+            nixyClickCycleIndex++;
+            setNixyOutfit(nextOutfit);
+
+            const reactions = [
+                { mood: 'happy', text: 'Click! Cozy jacket & happy mood activated!' },
+                { mood: 'thinking', text: 'Click! Wizard mode engaged — scanning ideas!' },
+                { mood: 'speaking', text: 'Click! Shades on — Nixy dance groove!' },
+                { mood: 'happy', text: 'Click! Classic purple orb & cheerful eyes!' }
+            ];
+            const reaction = reactions[(nixyClickCycleIndex - 1) % reactions.length];
+            setNixyMood(reaction.mood, reaction.text);
+            showCompanionBubble(reaction.text, 2800);
+            setTimeout(() => {
+                if (!nixySleeping) setNixyMood('idle');
+            }, 2200);
+        }
+
+        function startAutomaticNixyBehavior() {
+            if (window.__nixyAutoBehaviorStarted) return;
+            window.__nixyAutoBehaviorStarted = true;
+            const autoOutfits = ['none', 'jacket', 'wizard', 'shades'];
+            let autoStep = 0;
+
+            setInterval(() => {
+                if (nixySleeping) {
+                    if (autoStep % 4 === 0) {
+                        toggleNixySleep(false);
+                    }
+                    return;
+                }
+                autoStep++;
+                if (autoStep % 5 === 0) {
+                    toggleNixySleep(true);
+                    return;
+                }
+                const chosenOutfit = autoOutfits[autoStep % autoOutfits.length];
+                setNixyOutfit(chosenOutfit);
+                if (autoStep % 2 === 0) {
+                    setNixyMood('happy');
+                    showCompanionBubble('Nixy automatically switched style & mood!', 2400);
+                    setTimeout(() => {
+                        if (!nixySleeping) setNixyMood('idle');
+                    }, 1800);
+                }
+            }, 14000);
         }
 
         function setNixyOutfit(outfit) {
@@ -1229,6 +1299,7 @@
             await loadConversationsFromSupabase(params.get('chat'));
             await loadGoogleSheetWorkspaceData();
             updateQuotaUI();
+            startAutomaticNixyBehavior();
             hideAuthGate();
             runWorkspaceTourIfNeeded();
         });
