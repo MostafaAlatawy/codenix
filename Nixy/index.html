@@ -410,18 +410,67 @@
 
                 <!-- Header Right Controls -->
                 <div class="flex items-center gap-1.5 sm:gap-2">
-                    <!-- Sheet Notifications Bell -->
+                    <!-- Language Selector -->
                     <div class="relative">
-                        <button onclick="toggleSheetNotifDropdown(event)" id="sheet-notif-btn" aria-label="Notifications" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition relative">
-                            <i data-lucide="bell" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
-                            <span id="sheet-notif-badge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-codenix-500"></span>
+                        <button type="button" onclick="toggleLangDropdown(event)" id="lang-btn" title="Language" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition flex items-center gap-1 text-xs font-bold">
+                            <i data-lucide="globe" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                            <span id="current-lang-code" class="uppercase text-[10px] font-mono">EN</span>
                         </button>
-                        <div id="sheet-notif-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-2xl p-3.5 z-50 text-left space-y-2.5">
-                            <div class="flex items-center justify-between pb-2 border-b border-codenix-200 dark:border-codenix-border">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold">Notifications & Notices</span>
-                                    <span id="sheet-notif-count" class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0</span>
+                        <div id="lang-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-40 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-2xl p-1.5 z-50 space-y-0.5"></div>
+                    </div>
+
+                    <!-- Quick Feedback & Nix Watches -->
+                    <button type="button" onclick="openFeedbackModal()" title="Quick Feedback & Nix Watches" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold hover:border-codenix-500 transition">
+                        <i data-lucide="message-circle-heart" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
+                        <span class="hidden sm:inline" data-i18n="feedbackBtn">Feedback</span>
+                    </button>
+
+                    <button onclick="openUsageModal()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-medium hover:border-codenix-500 transition">
+                        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
+                        <span data-i18n="usageBtn">Usage & Puter</span>
+                    </button>
+
+                    <button onclick="openShareModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-xs font-semibold transition">
+                        <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                        <span class="hidden sm:inline" data-i18n="shareBtn">Share (PIN)</span>
+                    </button>
+
+                    <button onclick="toggleTheme()" title="Toggle Purple/White & Purple/Black Mode" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
+                        <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Workspace Split: Chat + Optional Cody Live Canvas -->
+            <div class="flex-1 flex overflow-hidden min-h-0">
+
+                <!-- CHAT STREAM AREA -->
+                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth">
+                    <div class="max-w-3xl mx-auto space-y-6">
+
+                        <!-- Dashboard Introduction Hero with Nixy Orb -->
+                        <div id="nixy-hero" class="flex flex-col items-center justify-center text-center py-8 sm:py-12">
+                            <div id="nixy-hero-speech" class="mb-4 px-4 py-2 rounded-2xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 shadow-lg max-w-md">
+                                Hi! I'm <span class="font-bold text-codenix-600 dark:text-codenix-400">Nixy</span> — your Codenix AI Agent. Ask anything or invoke my tools below!
+                            </div>
+
+                            <!-- Nixy: Purple Ball with 2 White Ball Eyes -->
+                            <div id="nixy-main-orb" class="nixy-orb w-24 h-24 rounded-full flex items-center justify-center mb-5 cursor-pointer" onclick="pingNixyGreeting()">
+                                <div id="nixy-eyes" class="flex items-center justify-center gap-3.5 pointer-events-none">
+                                    <span class="nixy-eye w-4 h-4 block"></span>
+                                    <span class="nixy-eye w-4 h-4 block"></span>
                                 </div>
+                            </div>
+
+                            <!-- Duolingo-Style Nixy Outfit & Sleep Controls -->
+                            <div class="flex flex-wrap items-center justify-center gap-1.5 mb-4 text-[11px]">
+                                <button type="button" onclick="setNixyOutfit('none')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">Orb</button>
+                                <button type="button" onclick="setNixyOutfit('jacket')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">🧥 Jacket</button>
+                                <button type="button" onclick="setNixyOutfit('wizard')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">🧙 Wizard</button>
+                                <button type="button" onclick="setNixyOutfit('shades')" class="px-2.5 py-1 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border font-semibold hover:border-codenix-500">🕶️ Shades</button>
+                                <button type="button" onclick="toggleNixySleep()" id="nixy-sleep-btn" class="px-2.5 py-1 rounded-full bg-codenix-600/15 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 font-bold hover:bg-codenix-600/25">😴 Sleep</button>
+                                <button type="button" onclick="triggerNixyDance()" class="px-2.5 py-1 rounded-full bg-codenix-600/15 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 font-bold hover:bg-codenix-600/25">✨ Dance</button>
+                            </div>
                                 <button type="button" onclick="markAllSheetNotifsRead()" class="text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline">Mark all read</button>
                             </div>
                             <div id="sheet-notif-list" class="max-h-64 overflow-y-auto space-y-1.5">
@@ -814,19 +863,96 @@
     <!-- Toast Notification -->
     <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-xl"></div>
 
-    <!-- Sheet Broadcast / Announcement Modal -->
-    <div id="sheet-broadcast-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
-            <button type="button" onclick="closeSheetBroadcastModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+    <!-- TOOL LIBRARY POP MODAL -->
+    <div id="tool-library-modal" onclick="if(event.target===this) toggleToolLibrarySection(false)" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between gap-2 pb-3 border-b border-codenix-200 dark:border-codenix-border">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center">
+                        <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold">Tool Library</h3>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Apps synced from your Codenix Google Sheet</p>
+                    </div>
+                </div>
+                <button type="button" onclick="toggleToolLibrarySection(false)" class="p-1.5 rounded-xl text-zinc-400 hover:text-codenix-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="tool-library-grid" class="overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- PROFESSIONAL QUICK FEEDBACK & NIX WATCHES MODAL -->
+    <div id="feedback-modal" onclick="if(event.target===this) closeFeedbackModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-xl w-full max-h-[88vh] overflow-y-auto shadow-2xl relative space-y-4">
+            <button type="button" onclick="closeFeedbackModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <p class="text-[11px] font-extrabold uppercase tracking-wider text-codenix-600 dark:text-codenix-400">Codenix Announcement</p>
-            <h3 id="sheet-broadcast-title" class="text-lg font-extrabold">Announcement</h3>
-            <div id="sheet-broadcast-media" class="hidden rounded-xl overflow-hidden bg-black aspect-video"></div>
-            <p id="sheet-broadcast-body" class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed"></p>
-            <div class="flex justify-end pt-1">
-                <button type="button" onclick="advanceSheetBroadcastModal()" id="sheet-broadcast-next-btn" class="px-5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Got it</button>
+
+            <div class="flex items-center gap-3">
+                <div id="feedback-nixy-avatar" class="nixy-orb mood-happy w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="nixy-eye w-2.5 h-2.5 block"></span>
+                        <span class="nixy-eye w-2.5 h-2.5 block"></span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold">Quick Feedback & Nix Watches</h3>
+                    <p id="feedback-duo-line" class="text-xs text-codenix-600 dark:text-codenix-300 font-semibold">Nixy says: Tell me how you found us and pick a Nix Watch!</p>
+                </div>
             </div>
+
+            <!-- Nix Watches Strip -->
+            <div class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-codenix-700 dark:text-codenix-300">Nix Watches (Live Watchlist)</span>
+                    <span id="nix-watches-count" class="text-[10px] font-mono text-zinc-400">0</span>
+                </div>
+                <div id="nix-watches-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
+
+            <!-- How did you know us? Visual Cards -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold">How did you know us?</label>
+                <div id="discovery-cards-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <button type="button" onclick="selectDiscoverySource('Codenix Studio', this)" data-source="Codenix Studio" class="discovery-card p-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-left transition space-y-1.5">
+                        <img src="https://placehold.co/240x120/7c3aed/ffffff?text=Codenix+Hub" alt="Codenix Hub" class="w-full h-14 object-cover rounded-xl">
+                        <p class="text-[11px] font-bold truncate">Codenix Hub</p>
+                    </button>
+                    <button type="button" onclick="selectDiscoverySource('Social / Community', this)" data-source="Social / Community" class="discovery-card p-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-left transition space-y-1.5">
+                        <img src="https://placehold.co/240x120/6d28d9/ffffff?text=Social+Media" alt="Social Media" class="w-full h-14 object-cover rounded-xl">
+                        <p class="text-[11px] font-bold truncate">Social Media</p>
+                    </button>
+                    <button type="button" onclick="selectDiscoverySource('Friend / Developer', this)" data-source="Friend / Developer" class="discovery-card p-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-left transition space-y-1.5">
+                        <img src="https://placehold.co/240x120/5b21b6/ffffff?text=Dev+Circle" alt="Dev Circle" class="w-full h-14 object-cover rounded-xl">
+                        <p class="text-[11px] font-bold truncate">Friend / Dev</p>
+                    </button>
+                    <button type="button" onclick="selectDiscoverySource('Search / AI Tools', this)" data-source="Search / AI Tools" class="discovery-card p-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-left transition space-y-1.5">
+                        <img src="https://placehold.co/240x120/4c1d95/ffffff?text=AI+Search" alt="AI Search" class="w-full h-14 object-cover rounded-xl">
+                        <p class="text-[11px] font-bold truncate">Search / AI</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Star Rating -->
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold">Rate Nixy Experience:</span>
+                <div id="feedback-rating-stars" class="flex items-center gap-1">
+                    <button type="button" onclick="setFeedbackRating(1)" data-star="1" class="text-lg opacity-40 hover:opacity-100">★</button>
+                    <button type="button" onclick="setFeedbackRating(2)" data-star="2" class="text-lg opacity-40 hover:opacity-100">★</button>
+                    <button type="button" onclick="setFeedbackRating(3)" data-star="3" class="text-lg opacity-40 hover:opacity-100">★</button>
+                    <button type="button" onclick="setFeedbackRating(4)" data-star="4" class="text-lg opacity-40 hover:opacity-100">★</button>
+                    <button type="button" onclick="setFeedbackRating(5)" data-star="5" class="text-lg text-amber-400">★</button>
+                </div>
+            </div>
+
+            <textarea id="feedback-comment-input" rows="2" placeholder="Share a quick note or suggestion with Nixy..." class="w-full px-3.5 py-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 resize-none"></textarea>
+
+            <button type="button" onclick="submitQuickFeedback()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold shadow-md">
+                Send Feedback to Nixy
+            </button>
         </div>
     </div>
 
@@ -863,37 +989,320 @@
             PREFERRED_PROVIDER: 'codenix_nixy_preferred_provider',
             LOCAL_USAGE: 'codenix_nixy_usage_v1',
             LOCAL_CHATS: 'codenix_nixy_chats_v1',
-            NOTIF_READ: 'codenix_notif_read',
+            LANG: 'codenix_nixy_lang',
+            OUTFIT: 'codenix_nixy_outfit',
+            SLEEPING: 'codenix_nixy_sleeping',
             TOUR_DONE: 'codenix_nixy_tour_done_v6'
         };
 
-        let state = {
-            user: null,
-            userIp: '0.0.0.0',
-            conversations: [],
-            activeConversationId: null,
-            isGenerating: false,
-            latestCodyHtml: '',
-            shareNixStream: null,
-            uploadedFiles: [],
-            tutorialStep: 0,
-            preferredProvider: localStorage.getItem(STORAGE_KEYS.PREFERRED_PROVIDER) || 'auto',
-            usage: {
-                minuteStart: Date.now(),
-                minuteCount: 0,
-                dayStr: new Date().toISOString().slice(0, 10),
-                dailyChats: 0,
-                dailyImages: 0,
-                codenixTokens: 0,
-                puterLinked: localStorage.getItem(STORAGE_KEYS.PUTER_LINKED) === 'true'
+        const UI_TRANSLATIONS = {
+            en: {
+                feedbackBtn: 'Feedback',
+                usageBtn: 'Usage & Puter',
+                shareBtn: 'Share (PIN)'
+            },
+            ar: {
+                feedbackBtn: 'آراء سريعة',
+                usageBtn: 'الاستخدام و Puter',
+                shareBtn: 'مشاركة (PIN)'
+            },
+            es: {
+                feedbackBtn: 'Opinión',
+                usageBtn: 'Uso y Puter',
+                shareBtn: 'Compartir (PIN)'
+            },
+            fr: {
+                feedbackBtn: 'Avis',
+                usageBtn: 'Usage et Puter',
+                shareBtn: 'Partager (PIN)'
+            },
+            de: {
+                feedbackBtn: 'Feedback',
+                usageBtn: 'Nutzung & Puter',
+                shareBtn: 'Teilen (PIN)'
+            },
+            zh: {
+                feedbackBtn: '反馈',
+                usageBtn: '用量与 Puter',
+                shareBtn: '分享 (PIN)'
             }
         };
+
+        function detectPreferredLanguage() {
+            const saved = localStorage.getItem(STORAGE_KEYS.LANG);
+            if (saved && UI_TRANSLATIONS[saved]) return saved;
+            const candidates = navigator.languages || [navigator.language || 'en'];
+            for (const c of candidates) {
+                const code = String(c).toLowerCase().split('-')[0];
+                if (UI_TRANSLATIONS[code]) return code;
+            }
+            return 'en';
+        }
+
+        function applyLanguage(langCode) {
+            const code = UI_TRANSLATIONS[langCode] ? langCode : 'en';
+            localStorage.setItem(STORAGE_KEYS.LANG, code);
+            document.documentElement.lang = code;
+            document.documentElement.dir = code === 'ar' ? 'rtl' : 'ltr';
+            const codeBadge = document.getElementById('current-lang-code');
+            if (codeBadge) codeBadge.textContent = code.toUpperCase();
+            const dict = UI_TRANSLATIONS[code] || UI_TRANSLATIONS.en;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
+            renderLangDropdownMenu(code);
+        }
+
+        function renderLangDropdownMenu(activeCode) {
+            const dd = document.getElementById('lang-dropdown');
+            if (!dd) return;
+            const items = [
+                ['en', 'English'],
+                ['ar', 'العربية'],
+                ['es', 'Español'],
+                ['fr', 'Français'],
+                ['de', 'Deutsch'],
+                ['zh', '中文']
+            ];
+            dd.innerHTML = items.map(([c, label]) => `
+                <button type="button" onclick="applyLanguage('${c}'); document.getElementById('lang-dropdown').classList.add('hidden');" class="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between ${c === activeCode ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300' : 'hover:bg-codenix-50 dark:hover:bg-codenix-black'}">
+                    <span>${label}</span>
+                    <span class="font-mono text-[10px] uppercase opacity-70">${c}</span>
+                </button>
+            `).join('');
+        }
+
+        function toggleLangDropdown(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('lang-dropdown')?.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', () => {
+            document.getElementById('lang-dropdown')?.classList.add('hidden');
+        });
+
+        let nixyOutfit = localStorage.getItem(STORAGE_KEYS.OUTFIT) || 'none';
+        let nixySleeping = localStorage.getItem(STORAGE_KEYS.SLEEPING) === 'true';
+
+        function applyNixyAppearance() {
+            const orbs = document.querySelectorAll('.nixy-orb');
+            orbs.forEach(orb => {
+                orb.querySelectorAll('.nixy-accessory-badge').forEach(b => b.remove());
+                if (nixyOutfit && nixyOutfit !== 'none') {
+                    const tag = document.createElement('span');
+                    tag.className = 'nixy-accessory-badge absolute -top-2.5 right-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-white text-zinc-900 shadow border border-codenix-300 pointer-events-none';
+                    tag.textContent = nixyOutfit === 'jacket' ? '🧥' : (nixyOutfit === 'wizard' ? '🧙' : '🕶️');
+                    orb.appendChild(tag);
+                }
+                if (nixySleeping) {
+                    const zzz = document.createElement('span');
+                    zzz.className = 'nixy-accessory-badge absolute -top-3 left-0 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-950 text-purple-200 shadow pointer-events-none';
+                    zzz.textContent = 'Zzz';
+                    orb.appendChild(zzz);
+                    orb.classList.add('opacity-80');
+                } else {
+                    orb.classList.remove('opacity-80');
+                }
+            });
+            const sleepBtn = document.getElementById('nixy-sleep-btn');
+            if (sleepBtn) sleepBtn.textContent = nixySleeping ? '☀️ Wake Up' : '😴 Sleep';
+        }
+
+        function setNixyOutfit(outfit) {
+            nixyOutfit = outfit;
+            localStorage.setItem(STORAGE_KEYS.OUTFIT, outfit);
+            applyNixyAppearance();
+            const duoLines = {
+                none: 'Back to classic purple orb mode!',
+                jacket: 'Ooh cozy jacket! Warm & ready for coding!',
+                wizard: 'Wizard hat on! Casting multi-model spells!',
+                shades: 'Cool shades! Looking extra sharp today!'
+            };
+            setNixyMood('happy', duoLines[outfit] || 'Looking good!');
+            showCompanionBubble(duoLines[outfit] || 'Outfit updated!', 2600);
+        }
+
+        function toggleNixySleep() {
+            nixySleeping = !nixySleeping;
+            localStorage.setItem(STORAGE_KEYS.SLEEPING, String(nixySleeping));
+            applyNixyAppearance();
+            if (nixySleeping) {
+                setNixyMood('idle', 'Zzz... Nixy is taking a cozy power nap. Click Wake Up anytime!');
+                showCompanionBubble('Zzz... sleeping mode on!', 2800);
+            } else {
+                setNixyMood('happy', 'Wide awake and ready to help!');
+                showCompanionBubble('I am awake! Let us build!', 2800);
+            }
+        }
+
+        function triggerNixyDance() {
+            nixySleeping = false;
+            localStorage.setItem(STORAGE_KEYS.SLEEPING, 'false');
+            applyNixyAppearance();
+            setNixyMood('speaking', 'Woop woop! Nixy dance time!');
+            showCompanionBubble('✨ Nixy happy dance! ✨', 2600);
+            setTimeout(() => setNixyMood('idle'), 1800);
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+            const isLight = savedTheme === 'light';
+            document.documentElement.classList.toggle('light', isLight);
+            document.documentElement.classList.toggle('dark', !isLight);
+            updateThemeIcon(!isLight);
+        }
+
+        function toggleTheme() {
+            const isCurrentlyDark = document.documentElement.classList.contains('dark');
+            const nextIsDark = !isCurrentlyDark;
+            document.documentElement.classList.toggle('dark', nextIsDark);
+            document.documentElement.classList.toggle('light', !nextIsDark);
+            localStorage.setItem(STORAGE_KEYS.THEME, nextIsDark ? 'dark' : 'light');
+            updateThemeIcon(nextIsDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (!icon) return;
+            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+
+        function setNixyMood(mood = 'idle', speechText = '') {
+            const orbs = document.querySelectorAll('.nixy-orb');
+            orbs.forEach(orb => {
+                orb.classList.remove('mood-thinking', 'mood-speaking', 'mood-happy', 'mood-error');
+                if (mood && mood !== 'idle') {
+                    orb.classList.add(`mood-${mood}`);
+                }
+            });
+            if (speechText) {
+                const heroSpeech = document.getElementById('nixy-hero-speech');
+                if (heroSpeech) heroSpeech.textContent = speechText;
+            }
+        }
+
+        function pingNixyGreeting() {
+            if (nixySleeping) {
+                toggleNixySleep();
+                return;
+            }
+            const greetings = [
+                'Hey there! Need code, tables, PDFs, images, or voice?',
+                'Nixy online! Try switching outfits or opening Tool Library.',
+                'Purple orb power at 100%! What are we building today?'
+            ];
+            const pick = greetings[Math.floor(Math.random() * greetings.length)];
+            setNixyMood('happy', pick);
+            showCompanionBubble(pick, 3000);
+            setTimeout(() => setNixyMood('idle'), 1800);
+        }
+
+        function bindNixyEyeTracking() {
+            document.addEventListener('mousemove', (e) => {
+                if (nixySleeping) return;
+                const eyes = document.querySelectorAll('.nixy-eye');
+                eyes.forEach(eye => {
+                    const rect = eye.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return;
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    const dx = Math.max(-3, Math.min(3, (e.clientX - cx) / 45));
+                    const dy = Math.max(-3, Math.min(3, (e.clientY - cy) / 45));
+                    eye.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+                });
+            }, { passive: true });
+        }
+
+        function getPreferredProviderMode() {
+            const saved = localStorage.getItem(STORAGE_KEYS.PREFERRED_PROVIDER);
+            return saved === 'puter' ? 'puter' : 'auto';
+        }
+
+        function updateProviderModeUI() {
+            const mode = getPreferredProviderMode();
+            const labelEl = document.getElementById('provider-mode-label');
+            const badgeEl = document.getElementById('active-provider-badge');
+            const footerEl = document.getElementById('quota-footer-label');
+            if (mode === 'puter') {
+                if (labelEl) labelEl.textContent = 'Mode: Puter.js (Unlimited)';
+                if (badgeEl) badgeEl.textContent = 'Puter.js ∞';
+                if (footerEl) footerEl.textContent = 'Puter.js Unlimited Mode active — 0 rate limits & uncounted usage';
+            } else {
+                if (labelEl) labelEl.textContent = 'Mode: Auto APIs';
+                if (badgeEl) badgeEl.textContent = 'Auto APIs';
+                if (footerEl) footerEl.textContent = 'Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)';
+            }
+        }
+
+        function setProviderMode(mode) {
+            const normalized = mode === 'puter' ? 'puter' : 'auto';
+            localStorage.setItem(STORAGE_KEYS.PREFERRED_PROVIDER, normalized);
+            if (normalized === 'puter') {
+                localStorage.setItem(STORAGE_KEYS.PUTER_LINKED, 'true');
+            }
+            updateProviderModeUI();
+            updateQuotaUI();
+            showToast(normalized === 'puter' ? 'Switched to Puter.js (Unlimited)' : 'Switched to Auto APIs');
+        }
+
+        function togglePreferredProvider() {
+            const current = getPreferredProviderMode();
+            setProviderMode(current === 'puter' ? 'auto' : 'puter');
+        }
+
+        function updateQuotaUI() {
+            const isPuter = getPreferredProviderMode() === 'puter';
+            const sidebarQuota = document.getElementById('sidebar-quota-text');
+            const tokensVal = document.getElementById('modal-tokens-val');
+            const chatsVal = document.getElementById('modal-chats-val');
+            const imagesVal = document.getElementById('modal-images-val');
+            const puterBtnText = document.getElementById('modal-puter-btn-text');
+
+            if (isPuter) {
+                if (sidebarQuota) sidebarQuota.textContent = 'Puter.js: Unlimited ∞';
+                if (tokensVal) tokensVal.textContent = '∞';
+                if (chatsVal) chatsVal.textContent = 'Unlimited';
+                if (imagesVal) imagesVal.textContent = 'Unlimited';
+            } else {
+                const raw = localStorage.getItem(STORAGE_KEYS.LOCAL_USAGE);
+                let usage = { dailyChats: 0, dailyImages: 0, tokensUsed: 0 };
+                try {
+                    if (raw) usage = { ...usage, ...JSON.parse(raw) };
+                } catch (_) {}
+                if (sidebarQuota) sidebarQuota.textContent = `Chat: ${usage.dailyChats}/30 • Img: ${usage.dailyImages}/3`;
+                if (tokensVal) tokensVal.textContent = String(usage.tokensUsed || 0);
+                if (chatsVal) chatsVal.textContent = `${usage.dailyChats || 0} / 30`;
+                if (imagesVal) imagesVal.textContent = `${usage.dailyImages || 0} / 3`;
+            }
+
+            if (puterBtnText) {
+                const linked = localStorage.getItem(STORAGE_KEYS.PUTER_LINKED) === 'true' || isPuter;
+                puterBtnText.textContent = linked ? 'Puter.js Account Linked' : 'Link Puter.js Account Now';
+            }
+        }
+
+        async function linkPuterAccount() {
+            try {
+                if (window.puter?.auth?.signIn) {
+                    await window.puter.auth.signIn();
+                }
+            } catch (_) {}
+            localStorage.setItem(STORAGE_KEYS.PUTER_LINKED, 'true');
+            updateQuotaUI();
+            showToast('Puter.js account linked!');
+        }
 
         // ==========================================
         // 1. INITIALIZATION & SUPABASE AUTH GUARD
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
+            applyLanguage(detectPreferredLanguage());
+            applyNixyAppearance();
             lucide.createIcons();
             bindNixyEyeTracking();
             updateProviderModeUI();
@@ -976,1500 +1385,12 @@
         }
 
         // ==========================================
-        // 2. THEME & NIXY ORB COMPANION HELPERS
-        // ==========================================
-        function initTheme() {
-            const saved = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
-            const html = document.documentElement;
-            if (saved === 'dark') {
-                html.classList.add('dark');
-            } else {
-                html.classList.remove('dark');
-            }
-            updateThemeIcon();
-        }
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.classList.toggle('dark');
-            localStorage.setItem(STORAGE_KEYS.THEME, isDark ? 'dark' : 'light');
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const icon = document.getElementById('theme-icon');
-            if (!icon) return;
-            const isDark = document.documentElement.classList.contains('dark');
-            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            lucide.createIcons();
-        }
-
-        function bindNixyEyeTracking() {
-            document.addEventListener('mousemove', (e) => {
-                const eyes = document.getElementById('nixy-eyes');
-                const orb = document.getElementById('nixy-main-orb');
-                if (!eyes || !orb) return;
-                const rect = orb.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2;
-                const cy = rect.top + rect.height / 2;
-                const dx = Math.max(-5, Math.min(5, (e.clientX - cx) / 45));
-                const dy = Math.max(-4, Math.min(4, (e.clientY - cy) / 45));
-                eyes.style.transform = `translate(${dx}px, ${dy}px)`;
-            });
-        }
-
-        function setNixyMood(mood, speechText) {
-            const orb = document.getElementById('nixy-main-orb');
-            const speech = document.getElementById('nixy-hero-speech');
-            if (orb) {
-                orb.classList.remove('mood-thinking', 'mood-speaking', 'mood-happy', 'mood-error');
-                if (mood && mood !== 'idle') orb.classList.add(`mood-${mood}`);
-            }
-            if (speech && speechText) {
-                speech.textContent = speechText;
-            }
-        }
-
-        function pingNixyGreeting() {
-            const greetings = [
-                "Hi! I'm Nixy — ready to build apps, tables, PDFs, images, or voice scripts!",
-                "Need live screen help? Turn on ShareNix and I can see your screen!",
-                "Switch to Unlimited Puter.js anytime for zero rate limits!"
-            ];
-            const pick = greetings[Math.floor(Math.random() * greetings.length)];
-            setNixyMood('happy', pick);
-            setTimeout(() => setNixyMood('idle'), 2000);
-        }
-
-        function showToast(msg) {
-            const box = document.getElementById('toast-box');
-            if (!box) return;
-            box.textContent = msg;
-            box.classList.remove('hidden');
-            clearTimeout(window.__nixyToastTimer);
-            window.__nixyToastTimer = setTimeout(() => box.classList.add('hidden'), 3200);
-        }
-
-        // ==========================================
-        // 3. QUOTAS, RATE LIMITS & PUTER.JS PROVIDER
-        // ==========================================
-        function togglePreferredProvider() {
-            const next = state.preferredProvider === 'puter' ? 'auto' : 'puter';
-            setProviderMode(next);
-        }
-
-        function setProviderMode(mode) {
-            state.preferredProvider = mode;
-            localStorage.setItem(STORAGE_KEYS.PREFERRED_PROVIDER, mode);
-            updateProviderModeUI();
-            updateQuotaUI();
-            showToast(mode === 'puter'
-                ? 'Switched to Puter.js — Unlimited & Uncounted!'
-                : 'Switched to Auto Primary APIs (with Puter.js fallback)');
-        }
-
-        function updateProviderModeUI() {
-            const label = document.getElementById('provider-mode-label');
-            const badge = document.getElementById('active-provider-badge');
-            if (state.preferredProvider === 'puter') {
-                if (label) label.textContent = 'Mode: Puter.js (Unlimited)';
-                if (badge) badge.textContent = 'Puter.js ∞';
-            } else {
-                if (label) label.textContent = 'Mode: Auto APIs';
-                if (badge) badge.textContent = 'Auto APIs';
-            }
-        }
-
-        function normalizeUsageWindows() {
-            const now = Date.now();
-            if (now - state.usage.minuteStart > 60000) {
-                state.usage.minuteStart = now;
-                state.usage.minuteCount = 0;
-            }
-            const today = new Date().toISOString().slice(0, 10);
-            if (state.usage.dayStr !== today) {
-                state.usage.dayStr = today;
-                state.usage.dailyChats = 0;
-                state.usage.dailyImages = 0;
-            }
-        }
-
-        function checkShouldUsePuterFallback(isImage = false) {
-            if (state.preferredProvider === 'puter') return true;
-            normalizeUsageWindows();
-            const hitLimit = state.usage.minuteCount >= 3 ||
-                state.usage.dailyChats >= 30 ||
-                (isImage && state.usage.dailyImages >= 3);
-            if (hitLimit && !state.usage.puterLinked) {
-                linkPuterAccount(true);
-            }
-            return hitLimit || state.usage.puterLinked;
-        }
-
-        async function linkPuterAccount(silent = false) {
-            try {
-                if (window.puter?.auth?.signIn && !window.puter.auth.isSignedIn?.()) {
-                    await window.puter.auth.signIn();
-                }
-            } catch (_) {}
-            state.usage.puterLinked = true;
-            localStorage.setItem(STORAGE_KEYS.PUTER_LINKED, 'true');
-            updateQuotaUI();
-            await syncUserLimitsToSupabase();
-            if (!silent) showToast('Puter.js linked! Unlimited fallback enabled.');
-        }
-
-        async function loadUserLimitsFromSupabase() {
-            try {
-                const localRaw = localStorage.getItem(STORAGE_KEYS.LOCAL_USAGE);
-                if (localRaw) {
-                    Object.assign(state.usage, JSON.parse(localRaw));
-                }
-                if (!state.user) return;
-                const { data } = await supabaseClient
-                    .from('nixy_user_limits')
-                    .select('*')
-                    .eq('user_id', state.user.id)
-                    .maybeSingle();
-
-                if (data) {
-                    state.usage.dailyChats = data.daily_chat_count ?? state.usage.dailyChats;
-                    state.usage.dailyImages = data.daily_image_count ?? state.usage.dailyImages;
-                    state.usage.codenixTokens = Number(data.codenix_tokens_used ?? state.usage.codenixTokens);
-                    state.usage.puterLinked = Boolean(data.puter_linked || state.usage.puterLinked);
-                    if (data.day_date) state.usage.dayStr = data.day_date;
-                }
-                normalizeUsageWindows();
-            } catch (_) {}
-        }
-
-        async function syncUserLimitsToSupabase() {
-            try {
-                localStorage.setItem(STORAGE_KEYS.LOCAL_USAGE, JSON.stringify(state.usage));
-                updateQuotaUI();
-                if (!state.user) return;
-                await supabaseClient.from('nixy_user_limits').upsert({
-                    user_id: state.user.id,
-                    email: state.user.email,
-                    ip_address: state.userIp,
-                    minute_window: new Date(state.usage.minuteStart).toISOString(),
-                    minute_count: state.usage.minuteCount,
-                    day_date: state.usage.dayStr,
-                    daily_chat_count: state.usage.dailyChats,
-                    daily_image_count: state.usage.dailyImages,
-                    codenix_tokens_used: state.usage.codenixTokens,
-                    puter_linked: state.usage.puterLinked,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id' });
-            } catch (_) {}
-        }
-
-        function updateQuotaUI() {
-            normalizeUsageWindows();
-            const isUnlimited = state.preferredProvider === 'puter';
-            const sidebarQuota = document.getElementById('sidebar-quota-text');
-            const footerQuota = document.getElementById('quota-footer-label');
-            const tokensVal = document.getElementById('modal-tokens-val');
-            const chatsVal = document.getElementById('modal-chats-val');
-            const imagesVal = document.getElementById('modal-images-val');
-            const puterBtn = document.getElementById('modal-puter-btn-text');
-
-            if (sidebarQuota) {
-                sidebarQuota.textContent = isUnlimited
-                    ? 'Puter.js Active • Unlimited ∞'
-                    : `Chat: ${state.usage.dailyChats}/30 • Img: ${state.usage.dailyImages}/3`;
-            }
-            if (footerQuota) {
-                footerQuota.textContent = isUnlimited
-                    ? 'Provider: Puter.js (Unlimited & Uncounted)'
-                    : 'Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)';
-            }
-            if (tokensVal) tokensVal.textContent = state.usage.codenixTokens.toLocaleString();
-            if (chatsVal) chatsVal.textContent = isUnlimited ? '∞ Unlimited' : `${state.usage.dailyChats} / 30`;
-            if (imagesVal) imagesVal.textContent = isUnlimited ? '∞ Unlimited' : `${state.usage.dailyImages} / 3`;
-            if (puterBtn) {
-                puterBtn.textContent = state.usage.puterLinked ? 'Puter.js Linked ✓' : 'Link Puter.js Account Now';
-            }
-        }
-
-        // ==========================================
-        // 4. CONVERSATIONS, MEMORY & SUPABASE SYNC
-        // ==========================================
-        async function loadConversationsFromSupabase(initialChatId = null) {
-            let localConvs = [];
-            try {
-                const raw = localStorage.getItem(STORAGE_KEYS.LOCAL_CHATS);
-                if (raw) localConvs = JSON.parse(raw);
-            } catch (_) {}
-
-            try {
-                if (state.user) {
-                    const { data: rows } = await supabaseClient
-                        .from('nixy_conversations')
-                        .select('*')
-                        .eq('user_id', state.user.id)
-                        .order('updated_at', { ascending: false });
-
-                    if (Array.isArray(rows) && rows.length > 0) {
-                        const map = new Map();
-                        localConvs.forEach(c => map.set(c.id, c));
-                        rows.forEach(r => {
-                            const existing = map.get(r.id);
-                            map.set(r.id, {
-                                id: r.id,
-                                title: r.title || existing?.title || 'Conversation',
-                                updated_at: r.updated_at || r.created_at,
-                                messages: existing?.messages || []
-                            });
-                        });
-                        state.conversations = Array.from(map.values());
-                    } else {
-                        state.conversations = localConvs;
-                    }
-                } else {
-                    state.conversations = localConvs;
-                }
-            } catch (_) {
-                state.conversations = localConvs;
-            }
-
-            if (state.conversations.length === 0) {
-                await createNewChat(true);
-            } else {
-                const targetId = (initialChatId && state.conversations.some(c => c.id === initialChatId))
-                    ? initialChatId
-                    : state.conversations[0].id;
-                await selectConversation(targetId);
-            }
-            renderConversationList();
-        }
-
-        function persistConversationsLocally() {
-            try {
-                localStorage.setItem(STORAGE_KEYS.LOCAL_CHATS, JSON.stringify(state.conversations));
-            } catch (_) {}
-        }
-
-        async function createNewChat(skipSelect = false) {
-            const id = crypto.randomUUID ? crypto.randomUUID() : 'chat-' + Date.now();
-            const conv = {
-                id,
-                title: 'New Conversation',
-                updated_at: new Date().toISOString(),
-                messages: []
-            };
-            state.conversations.unshift(conv);
-            persistConversationsLocally();
-
-            try {
-                if (state.user) {
-                    await supabaseClient.from('nixy_conversations').insert({
-                        id: conv.id,
-                        user_id: state.user.id,
-                        title: conv.title
-                    });
-                }
-            } catch (_) {}
-
-            if (!skipSelect) {
-                await selectConversation(id);
-            }
-            renderConversationList();
-            return conv;
-        }
-
-        async function selectConversation(id) {
-            if (!id) return;
-            state.activeConversationId = id;
-
-            // Keep search input clear so switching conversations never hides the rest of the list
-            const searchBox = document.getElementById('chat-search');
-            if (searchBox && searchBox.value) searchBox.value = '';
-
-            const conv = state.conversations.find(c => c.id === id);
-            if (conv && (!conv.messages || conv.messages.length === 0) && state.user) {
-                try {
-                    const { data: msgs } = await supabaseClient
-                        .from('nixy_messages')
-                        .select('*')
-                        .eq('conversation_id', id)
-                        .order('created_at', { ascending: true });
-                    if (Array.isArray(msgs) && msgs.length > 0) {
-                        conv.messages = msgs.map(m => ({
-                            role: m.role,
-                            content: m.content,
-                            tool_used: m.tool_used,
-                            provider_used: m.provider_used
-                        }));
-                        persistConversationsLocally();
-                    }
-                } catch (_) {}
-            }
-
-            // Auto-update private user URL (?chat=<id>)
-            try {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('share');
-                url.searchParams.set('chat', id);
-                window.history.replaceState({}, '', url.toString());
-            } catch (_) {}
-
-            renderConversationList();
-            renderMessages();
-        }
-
-        async function deleteConversation(id, event) {
-            if (event) event.stopPropagation();
-            state.conversations = state.conversations.filter(c => c.id !== id);
-            persistConversationsLocally();
-            try {
-                if (state.user) {
-                    await supabaseClient.from('nixy_conversations').delete().eq('id', id);
-                }
-            } catch (_) {}
-
-            if (state.conversations.length === 0) {
-                await createNewChat();
-            } else if (state.activeConversationId === id) {
-                await selectConversation(state.conversations[0].id);
-            } else {
-                renderConversationList();
-            }
-        }
-
-        function renderConversationList() {
-            const list = document.getElementById('conversation-list');
-            if (!list) return;
-            const query = (document.getElementById('chat-search')?.value || '').trim().toLowerCase();
-            const filtered = query
-                ? state.conversations.filter(c => (c.title || '').toLowerCase().includes(query))
-                : state.conversations;
-
-            if (filtered.length === 0) {
-                list.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No matching conversations</p>`;
-                return;
-            }
-
-            list.innerHTML = filtered.map(c => {
-                const active = c.id === state.activeConversationId;
-                return `
-                    <div onclick="selectConversation('${c.id}')" class="group flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl cursor-pointer text-xs transition ${active ? 'bg-codenix-600 text-white font-semibold shadow-sm' : 'hover:bg-codenix-600/10 text-zinc-700 dark:text-zinc-300'}">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0 ${active ? 'text-white' : 'text-codenix-500'}"></i>
-                            <span class="truncate">${escapeHtml(c.title || 'New Conversation')}</span>
-                        </div>
-                        <button onclick="deleteConversation('${c.id}', event)" title="Delete" class="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-black/20 transition">
-                            <i data-lucide="trash-2" class="w-3 h-3"></i>
-                        </button>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        async function saveMessageToSupabase(conversationId, role, content, toolUsed = 'chat', providerUsed = 'Auto', tokensUsed = 0) {
-            persistConversationsLocally();
-            try {
-                if (!state.user) return;
-                await supabaseClient.from('nixy_messages').insert({
-                    conversation_id: conversationId,
-                    user_id: state.user.id,
-                    role,
-                    content,
-                    tool_used: toolUsed,
-                    provider_used: providerUsed,
-                    tokens_used: tokensUsed
-                });
-                const conv = state.conversations.find(c => c.id === conversationId);
-                if (conv) {
-                    await supabaseClient.from('nixy_conversations').update({
-                        title: conv.title,
-                        updated_at: new Date().toISOString()
-                    }).eq('id', conversationId);
-                }
-            } catch (_) {}
-        }
-
-        function buildCrossConversationMemory() {
-            const others = state.conversations
-                .filter(c => c.id !== state.activeConversationId && Array.isArray(c.messages) && c.messages.length > 0)
-                .slice(0, 5);
-            if (others.length === 0) return '';
-            const summaries = others.map(c => {
-                const snippet = c.messages.slice(-2).map(m => `${m.role}: ${String(m.content).slice(0, 140)}`).join(' | ');
-                return `- "${c.title}": ${snippet}`;
-            }).join('\n');
-            return `\nUser's earlier conversation memory:\n${summaries}`;
-        }
-
-        // ==========================================
-        // 5. FILE UPLOADS & SHARENIX LIVE SCREEN VISION
-        // ==========================================
-        async function handleFileUploadSelection(event) {
-            const files = Array.from(event.target.files || []);
-            for (const file of files) {
-                if (file.type.startsWith('image/')) {
-                    const dataUrl = await readFileAsDataURL(file);
-                    state.uploadedFiles.push({ name: file.name, type: 'image', dataUrl });
-                } else {
-                    const text = await readFileAsText(file);
-                    state.uploadedFiles.push({ name: file.name, type: 'text', text: text.slice(0, 12000) });
-                }
-            }
-            event.target.value = '';
-            renderUploadedFilesStrip();
-        }
-
-        function readFileAsDataURL(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => resolve('');
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function readFileAsText(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(String(reader.result || ''));
-                reader.onerror = () => resolve('[Binary or unreadable file]');
-                reader.readAsText(file);
-            });
-        }
-
-        function removeUploadedFile(idx) {
-            state.uploadedFiles.splice(idx, 1);
-            renderUploadedFilesStrip();
-        }
-
-        function renderUploadedFilesStrip() {
-            const strip = document.getElementById('uploaded-files-strip');
-            if (!strip) return;
-            if (state.uploadedFiles.length === 0) {
-                strip.classList.add('hidden');
-                strip.classList.remove('flex');
-                strip.innerHTML = '';
-                return;
-            }
-            strip.classList.remove('hidden');
-            strip.classList.add('flex');
-            strip.innerHTML = state.uploadedFiles.map((f, i) => `
-                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-600/15 border border-codenix-500/30 text-xs font-medium text-codenix-700 dark:text-codenix-200">
-                    <i data-lucide="${f.type === 'image' ? 'image' : 'file-text'}" class="w-3.5 h-3.5"></i>
-                    <span class="max-w-[140px] truncate">${escapeHtml(f.name)}</span>
-                    <button onclick="removeUploadedFile(${i})" class="hover:text-rose-500 ml-1">×</button>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        async function toggleShareNix() {
-            if (state.shareNixStream) {
-                stopShareNix();
-                return;
-            }
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                state.shareNixStream = stream;
-                const video = document.getElementById('sharenix-video');
-                video.srcObject = stream;
-                stream.getVideoTracks()[0].addEventListener('ended', stopShareNix);
-
-                const banner = document.getElementById('sharenix-live-banner');
-                banner.classList.remove('hidden');
-                banner.classList.add('flex');
-                showToast('ShareNix active! Nixy can now see your screen.');
-            } catch (_) {
-                showToast('Screen sharing cancelled or unavailable.');
-            }
-        }
-
-        function captureShareNixFrame() {
-            if (!state.shareNixStream) return null;
-            const video = document.getElementById('sharenix-video');
-            const canvas = document.getElementById('sharenix-canvas');
-            if (!video || !canvas || !video.videoWidth) return null;
-            canvas.width = Math.min(1280, video.videoWidth);
-            canvas.height = Math.round((canvas.width / video.videoWidth) * video.videoHeight);
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL('image/jpeg', 0.78);
-        }
-
-        // ==========================================
-        // 6. INTENT ROUTING, MULTIMODAL AI & TOOLS
-        // ==========================================
-        const ALLOWED_NIXY_TOOLS = [
-            { id: 'chat', name: 'General Reasoning & Tables/Docs', desc: 'Answer questions, explain concepts, analyze uploaded files or shared screens, and create structured Markdown tables or documents.' },
-            { id: 'image', name: 'SubeAI', desc: 'Generate AI images, illustrations, artwork, or visual concepts when the user wants a picture or visual created.' },
-            { id: 'qr', name: 'NixQR', desc: 'Generate a scannable QR code for a URL, link, or text value.' },
-            { id: 'voice', name: 'NixVoice', desc: 'Generate a clean spoken script and play text-to-speech audio when the user asks to speak or hear something aloud.' },
-            { id: 'vidy', name: 'Vidy', desc: 'Render an animated 60fps HTML5 canvas motion graphic loop.' },
-            { id: 'pomodory', name: 'Pomodory', desc: 'Start or configure a focus countdown timer.' },
-            { id: 'cody', name: 'Cody', desc: 'Build a complete interactive single-file web app or UI component with live preview.' }
-        ];
-
-        function buildAllowedToolsSystemPrompt() {
-            const list = ALLOWED_NIXY_TOOLS
-                .map(t => `- ${t.name} (tool_id: "${t.id}"): ${t.desc}`)
-                .join('\n');
-            return `You are Nixy, the intelligent Codenix AI Agent.
-ALLOWED TOOLS YOU ARE PERMITTED TO USE:
-${list}
-
-TOOL SELECTION RULES:
-- Choose the most appropriate tool based on the user's intent and context anywhere in the prompt—do NOT require the message to start with a specific trigger word or phrase.
-- You are strictly limited to the allowed tools listed above; never invent external or unapproved tools.`;
-        }
-
-        function planToolSelection(text, attachments = [], hasScreen = false) {
-            const lower = String(text || '').toLowerCase();
-            let chosen = 'chat';
-            let reason = 'General conversation, analysis, or structured document/table response';
-
-            if (/\b(image|generate\s+image|create\s+image|make\s+an?\s+image|draw|paint|illustrate|picture\s+of|photo\s+of|artwork)\b/i.test(lower) && !/\b(image\s*to\s*text|ocr|read\s+image|analyze\s+image|describe\s+image|what\s+is\s+in\s+(this|the)\s+image)\b/i.test(lower)) {
-                chosen = 'image';
-                reason = 'User explicitly requested generating an image -> selecting SubeAI';
-            } else if (/\b(qr\s*code|nixqr|barcode)\b/i.test(lower)) {
-                chosen = 'qr';
-                reason = 'User requested a QR code -> selecting NixQR';
-            } else if (/\b(speak|say\s+aloud|read\s+(it|this|that)\s+aloud|voice\s+over|tts|nixvoice)\b/i.test(lower)) {
-                chosen = 'voice';
-                reason = 'User wants spoken audio / TTS output -> selecting NixVoice';
-            } else if (/\b(vidy|motion\s+graphic|animation\s+loop|60fps)\b/i.test(lower)) {
-                chosen = 'vidy';
-                reason = 'User requested an animated motion graphic -> selecting Vidy';
-            } else if (/\b(pomodory|pomodoro|focus\s+timer|countdown\s+timer)\b/i.test(lower)) {
-                chosen = 'pomodory';
-                reason = 'User requested a focus timer -> selecting Pomodory';
-            } else if (/\b(cody|web\s*app|website|landing\s+page|interactive\s+app|html\s*app|dashboard\s+app)\b/i.test(lower) && /\b(build|create|make|generate|code)\b/i.test(lower)) {
-                chosen = 'cody';
-                reason = 'User asked to build an interactive web app/page -> selecting Cody';
-            } else if (hasScreen || attachments.length > 0) {
-                chosen = 'chat';
-                reason = 'Analyzing attached files or live shared screen context -> selecting General Reasoning & Analysis';
-            }
-
-            const meta = ALLOWED_NIXY_TOOLS.find(t => t.id === chosen) || ALLOWED_NIXY_TOOLS[0];
-            return {
-                tool: chosen,
-                toolName: meta.name,
-                thought: `Thinking: ${reason}.`
-            };
-        }
-
-        function detectPromptIntent(text) {
-            return planToolSelection(text).tool;
-        }
-
-        function handlePromptKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendPrompt();
-            }
-        }
-
-        function autoResizeTextarea(el) {
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
-        }
-
-        function sendPreset(text) {
-            const input = document.getElementById('prompt-input');
-            if (input) {
-                input.value = text;
-                handleSendPrompt();
-            }
-        }
-
-        async function handleSendPrompt() {
-            if (state.isGenerating) return;
-            const input = document.getElementById('prompt-input');
-            const rawText = (input?.value || '').trim();
-            if (!rawText && state.uploadedFiles.length === 0) return;
-
-            let conv = state.conversations.find(c => c.id === state.activeConversationId);
-            if (!conv) conv = await createNewChat();
-
-            const screenSnapshot = captureShareNixFrame();
-            const attachedFiles = [...state.uploadedFiles];
-            state.uploadedFiles = [];
-            renderUploadedFilesStrip();
-
-            if (input) {
-                input.value = '';
-                input.style.height = 'auto';
-            }
-
-            const userDisplayContent = rawText || `Uploaded ${attachedFiles.length} file(s)`;
-            conv.messages.push({
-                role: 'user',
-                content: userDisplayContent,
-                attachments: attachedFiles,
-                hasScreen: Boolean(screenSnapshot)
-            });
-
-            if (conv.messages.length === 1) {
-                conv.title = userDisplayContent.slice(0, 42);
-                renderConversationList();
-            }
-
-            renderMessages();
-            await saveMessageToSupabase(conv.id, 'user', userDisplayContent, 'user', 'User', 0);
-
-            state.isGenerating = true;
-            const sendBtn = document.getElementById('send-prompt-btn');
-            if (sendBtn) sendBtn.disabled = true;
-
-            const plan = planToolSelection(rawText, attachedFiles, Boolean(screenSnapshot));
-            const isImageTool = plan.tool === 'image';
-            setLoadingIndicator(
-                true,
-                isImageTool ? 'SubeAI is generating your image...' : `${plan.thought} Using ${plan.toolName}...`,
-                isImageTool
-            );
-            setNixyMood('thinking', isImageTool ? 'Crafting your image...' : `${plan.thought}`);
-
-            const tool = plan.tool;
-            const usePuter = checkShouldUsePuterFallback(isImageTool);
-
-            try {
-                let assistantMarkdown = '';
-                let providerUsed = usePuter ? 'Puter.js' : 'Primary APIs';
-                let usedPuterFallback = usePuter;
-
-                const fileContext = attachedFiles
-                    .filter(f => f.type === 'text')
-                    .map(f => `\n[Attached File: ${f.name}]\n${f.text}`)
-                    .join('\n');
-
-                const imageAttachments = attachedFiles
-                    .filter(f => f.type === 'image')
-                    .map(f => f.dataUrl);
-                if (screenSnapshot) imageAttachments.push(screenSnapshot);
-
-                const systemPrompt = `${buildAllowedToolsSystemPrompt()}
-
-Pre-response tool plan for this turn:
-- Selected Tool: ${plan.toolName} (${plan.tool})
-- Reasoning: ${plan.thought}
-
-You can generate rich Markdown tables, structured documents, code, explanations, and analyze uploaded files or live shared screens. Always format tables in clean GitHub-Flavored Markdown.${buildCrossConversationMemory()}`;
-
-                const history = [
-                    { role: 'system', content: systemPrompt },
-                    ...conv.messages.slice(-12).map((m, idx, arr) => {
-                        const isLast = idx === arr.length - 1;
-                        return {
-                            role: m.role,
-                            content: isLast ? `${m.content}${fileContext}` : m.content,
-                            images: isLast ? imageAttachments : []
-                        };
-                    })
-                ];
-
-                if (tool === 'image') {
-                    const imgRes = await generateSubeAIImage(rawText, usePuter);
-                    providerUsed = imgRes.provider;
-                    usedPuterFallback = /puter/i.test(providerUsed);
-                    assistantMarkdown = `### SubeAI Generated Image\n\n![Generated Image](${imgRes.url})`;
-                    if (!usedPuterFallback) state.usage.dailyImages += 1;
-                } else if (tool === 'qr') {
-                    const urlMatch = rawText.match(/https?:\/\/[^\s]+/i);
-                    const qrTarget = urlMatch ? urlMatch[0] : rawText.replace(/.*(qr\s*code\s*(for|of)?)/i, '').trim() || 'https://codenix.ai';
-                    assistantMarkdown = `### NixQR Instant Code\n\nTarget: \`${qrTarget}\`\n\n\`\`\`nixqr\n${qrTarget}\n\`\`\``;
-                } else if (tool === 'voice') {
-                    const scriptRes = await callCascadingChatAI([
-                        { role: 'system', content: 'Write ONLY plain spoken text for text-to-speech. Never use HTML tags, markdown code blocks, or stage directions.' },
-                        { role: 'user', content: rawText }
-                    ], usePuter);
-                    providerUsed = scriptRes.provider;
-                    usedPuterFallback = /puter/i.test(providerUsed);
-                    const spokenText = String(scriptRes.text || rawText)
-                        .replace(/<[^>]*>?/g, ' ')
-                        .replace(/```[\s\S]*?```/g, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    speakWithBrowserTTS(spokenText, true);
-                    assistantMarkdown = `### NixVoice Spoken Output\n\n> "${escapeHtml(spokenText)}"\n\n\`\`\`nixvoice\n${spokenText}\n\`\`\``;
-                    if (!usedPuterFallback) state.usage.dailyChats += 1;
-                } else if (tool === 'vidy') {
-                    assistantMarkdown = `### Vidy 60fps Motion Graphic\n\n\`\`\`vidy\n${rawText}\n\`\`\``;
-                } else if (tool === 'pomodory') {
-                    const minsMatch = rawText.match(/(\d+)\s*min/i);
-                    const mins = minsMatch ? parseInt(minsMatch[1], 10) : 25;
-                    setPomodoryMinutes(mins);
-                    openPomodoryModal();
-                    assistantMarkdown = `Started a **${mins}-minute Pomodory** focus session for you!`;
-                } else if (tool === 'cody') {
-                    const codeRes = await callCascadingChatAI([
-                        { role: 'system', content: 'You are Cody, Codenix expert web builder. Return a complete, self-contained single-file HTML/Tailwind/JS web app inside a ```html code block, followed by a brief summary.' },
-                        ...history.slice(1)
-                    ], usePuter);
-                    providerUsed = codeRes.provider;
-                    usedPuterFallback = /puter/i.test(providerUsed);
-                    assistantMarkdown = codeRes.text;
-                    const htmlMatch = assistantMarkdown.match(/```html\s*([\s\S]*?)```/i);
-                    if (htmlMatch) {
-                        openCodyCanvas(htmlMatch[1]);
-                    }
-                    if (!usedPuterFallback) state.usage.dailyChats += 1;
-                } else {
-                    const aiRes = await callCascadingChatAI(history, usePuter);
-                    providerUsed = aiRes.provider;
-                    usedPuterFallback = /puter/i.test(providerUsed);
-                    assistantMarkdown = aiRes.text;
-                    if (!usedPuterFallback) state.usage.dailyChats += 1;
-                }
-
-                const tokensEarned = usedPuterFallback ? 0 : Math.ceil(assistantMarkdown.length / 4);
-                if (!usedPuterFallback) {
-                    state.usage.minuteCount += 1;
-                    state.usage.codenixTokens += tokensEarned;
-                }
-
-                const badge = document.getElementById('active-provider-badge');
-                if (badge) badge.textContent = providerUsed;
-
-                conv.messages.push({
-                    role: 'assistant',
-                    content: assistantMarkdown,
-                    tool_used: tool,
-                    tool_thought: plan.thought,
-                    provider_used: providerUsed
-                });
-                renderMessages();
-                await saveMessageToSupabase(conv.id, 'assistant', assistantMarkdown, tool, providerUsed, tokensEarned);
-                await syncUserLimitsToSupabase();
-                setNixyMood('happy', 'Done! Ready for your next step.');
-                setTimeout(() => setNixyMood('idle'), 2200);
-            } catch (err) {
-                const errText = `Sorry, I ran into an issue: ${err?.message || 'Unable to reach AI providers.'}`;
-                conv.messages.push({
-                    role: 'assistant',
-                    content: errText,
-                    tool_used: tool,
-                    provider_used: 'Error'
-                });
-                renderMessages();
-                setNixyMood('error', 'Something went wrong — please try again.');
-            } finally {
-                state.isGenerating = false;
-                setLoadingIndicator(false);
-                if (sendBtn) sendBtn.disabled = false;
-            }
-        }
-
-        function setLoadingIndicator(visible, label = 'Nixy is thinking...', isImageGenerating = false) {
-            const box = document.getElementById('nixy-loading-indicator');
-            const txt = document.getElementById('nixy-loading-text');
-            const imgCard = document.getElementById('nixy-image-generating-card');
-            const scrollArea = document.getElementById('chat-scroll-area');
-            if (!box) return;
-            if (txt) txt.textContent = label;
-            if (imgCard) {
-                imgCard.classList.toggle('hidden', !(visible && isImageGenerating));
-            }
-            if (visible) {
-                box.classList.remove('hidden');
-                box.classList.add('flex');
-                if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
-            } else {
-                box.classList.add('hidden');
-                box.classList.remove('flex');
-                if (imgCard) imgCard.classList.add('hidden');
-            }
-        }
-
-        async function callCascadingChatAI(messages, forcePuter = false) {
-            if (!forcePuter) {
-                try {
-                    const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'chat', messages })
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data?.text) {
-                            return { text: data.text, provider: data.provider || 'Codenix API' };
-                        }
-                    }
-                } catch (_) {}
-            }
-
-            // Puter.js fallback or direct unlimited provider
-            if (window.puter?.ai?.chat) {
-                const lastMsg = messages[messages.length - 1];
-                const promptJoined = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-                const resp = lastMsg?.images?.length > 0
-                    ? await window.puter.ai.chat(promptJoined, lastMsg.images[0])
-                    : await window.puter.ai.chat(promptJoined);
-                const text = typeof resp === 'string'
-                    ? resp
-                    : (resp?.message?.content || resp?.toString() || 'Response generated via Puter.js.');
-                return { text, provider: 'Puter.js' };
-            }
-
-            throw new Error('No AI provider responded.');
-        }
-
-        async function generateSubeAIImage(prompt, forcePuter = false) {
-            const cleanPrompt = String(prompt || 'futuristic purple abstract art').trim();
-
-            const tryPuterImage = async () => {
-                if (!window.puter?.ai?.txt2img) return null;
-                try {
-                    const result = await window.puter.ai.txt2img(cleanPrompt, { model: 'gpt-image-1' }).catch(() => window.puter.ai.txt2img(cleanPrompt));
-                    if (!result) return null;
-                    if (typeof result === 'string' && (result.startsWith('http') || result.startsWith('data:'))) {
-                        return { url: result, provider: 'Puter.js' };
-                    }
-                    if (result?.src) {
-                        return { url: result.src, provider: 'Puter.js' };
-                    }
-                    if (result instanceof Blob || (typeof Blob !== 'undefined' && result?.arrayBuffer)) {
-                        const url = URL.createObjectURL(result);
-                        return { url, provider: 'Puter.js' };
-                    }
-                } catch (_) {}
-                return null;
-            };
-
-            if (forcePuter) {
-                const puterImg = await tryPuterImage();
-                if (puterImg) return puterImg;
-            }
-
-            if (!forcePuter) {
-                try {
-                    const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'image', prompt: cleanPrompt })
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data?.url) {
-                            return { url: data.url, provider: data.provider || 'SubeAI API' };
-                        }
-                    }
-                } catch (_) {}
-
-                const puterFallback = await tryPuterImage();
-                if (puterFallback) return puterFallback;
-            }
-
-            const encoded = encodeURIComponent(cleanPrompt);
-            return {
-                url: `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`,
-                provider: 'Pollinations'
-            };
-        }
-
-        // ==========================================
-        // 7. MESSAGE RENDERING + END-OF-MESSAGE COPY
-        // ==========================================
-        function renderMessages() {
-            const hero = document.getElementById('nixy-hero');
-            const feed = document.getElementById('messages-feed');
-            const scrollArea = document.getElementById('chat-scroll-area');
-            if (!feed) return;
-
-            const conv = state.conversations.find(c => c.id === state.activeConversationId);
-            const msgs = conv?.messages || [];
-
-            if (hero) {
-                hero.classList.toggle('hidden', msgs.length > 0);
-            }
-
-            feed.innerHTML = msgs.map((m, idx) => {
-                if (m.role === 'user') {
-                    const imgsHtml = (m.attachments || [])
-                        .filter(a => a.type === 'image' && a.dataUrl)
-                        .map(a => `<img src="${a.dataUrl}" class="max-h-40 rounded-xl mt-2 border border-white/20">`)
-                        .join('');
-                    const screenBadge = m.hasScreen
-                        ? `<span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-white/20 mt-1.5">Screen Frame Attached</span>`
-                        : '';
-                    return `
-                        <div class="flex justify-end">
-                            <div class="max-w-[85%] sm:max-w-[75%] px-4 py-3 rounded-2xl rounded-br-sm bg-codenix-600 text-white text-sm shadow-md">
-                                <p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(m.content)}</p>
-                                ${imgsHtml}
-                                ${screenBadge}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                const renderedHtml = renderRichAssistantContent(m.content, idx);
-                const thoughtLine = m.tool_thought
-                    ? `<p class="text-[11px] italic text-zinc-500 dark:text-zinc-400 mb-2">${escapeHtml(m.tool_thought)}</p>`
-                    : '';
-                return `
-                    <div class="flex items-start gap-3">
-                        <div class="nixy-orb w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">
-                            <div class="flex items-center gap-1.5">
-                                <span class="nixy-eye w-1.5 h-1.5 block"></span>
-                                <span class="nixy-eye w-1.5 h-1.5 block"></span>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0 bg-codenix-50/80 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-2xl rounded-tl-sm p-4 shadow-xs">
-                            <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-codenix-200/70 dark:border-codenix-border">
-                                <span class="text-[11px] font-bold text-codenix-700 dark:text-codenix-300">Nixy • ${escapeHtml(m.provider_used || 'AI')} • ${escapeHtml(m.tool_used || 'chat')}</span>
-                            </div>
-                            ${thoughtLine}
-                            <div id="assistant-msg-body-${idx}" class="prose dark:prose-invert max-w-none text-sm">
-                                ${renderedHtml}
-                            </div>
-                            <div class="mt-3 pt-2 border-t border-codenix-200/60 dark:border-codenix-border/70 flex items-center justify-end">
-                                <button type="button" onclick="copyAssistantMessage(${idx}, this)" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
-                                    <i data-lucide="copy" class="w-3 h-3"></i>
-                                    <span>Copy Message</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            hydrateSpecialWidgets();
-            lucide.createIcons();
-            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
-        }
-
-        function copyAssistantMessage(idx, btn) {
-            const conv = state.conversations.find(c => c.id === state.activeConversationId);
-            const msg = conv?.messages?.[idx];
-            if (!msg) return;
-            const textToCopy = String(msg.content || '');
-            if (navigator.clipboard?.writeText) {
-                navigator.clipboard.writeText(textToCopy).catch(() => {});
-            }
-            const ta = document.createElement('textarea');
-            ta.value = textToCopy;
-            document.body.appendChild(ta);
-            ta.select();
-            try { document.execCommand('copy'); } catch (_) {}
-            document.body.removeChild(ta);
-            if (btn) {
-                const span = btn.querySelector('span');
-                const prev = span ? span.textContent : 'Copy Message';
-                if (span) span.textContent = 'Copied!';
-                setTimeout(() => { if (span) span.textContent = prev; }, 1500);
-            }
-            showToast('Message copied!');
-        }
-
-        function renderRichAssistantContent(markdown, msgIdx) {
-            let text = String(markdown || '');
-            window.__nixyRawCodeMap = window.__nixyRawCodeMap || [];
-
-            // Extract fenced code blocks first so marked doesn't strip or escape previewable HTML
-            text = text.replace(/```([a-zA-Z0-9_-]*)\s*([\s\S]*?)```/g, (fullMatch, langRaw, bodyRaw) => {
-                const lang = (langRaw || 'code').toLowerCase();
-                const content = String(bodyRaw || '').replace(/^\n+|\n+$/g, '');
-                if (lang === 'nixqr') {
-                    return `<div class="nixqr-mount my-3 p-4 rounded-2xl bg-white inline-flex flex-col items-center gap-2 border border-codenix-300" data-qr="${escapeHtml(content)}"></div>`;
-                }
-                if (lang === 'nixvoice') {
-                    return `<button type="button" onclick="speakWithBrowserTTS(${JSON.stringify(content)}, false)" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenix-600 text-white text-xs font-bold">Play Voice</button>`;
-                }
-                if (lang === 'vidy') {
-                    return `<canvas class="vidy-canvas w-full h-48 rounded-2xl my-2 border border-codenix-500/30" data-prompt="${escapeHtml(content)}"></canvas>`;
-                }
-                const codeIdx = window.__nixyRawCodeMap.length;
-                window.__nixyRawCodeMap.push({ code: content, lang });
-                return `\n<div class="nix-code-placeholder" data-code-idx="${codeIdx}"></div>\n`;
-            });
-
-            return window.marked ? window.marked.parse(text) : escapeHtml(text);
-        }
-
-        window.__nixyCodeBlocks = [];
-
-        function buildSandboxSafePreviewHtml(rawCode) {
-            const storageShim = `<script>(function(){try{window.localStorage.getItem('__test');}catch(_){const mem={};const shim={getItem:k=>Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null,setItem:(k,v)=>{mem[k]=String(v);},removeItem:k=>{delete mem[k];},clear:()=>{for(const k in mem)delete mem[k];}};try{Object.defineProperty(window,'localStorage',{get:()=>shim});}catch(__){}try{Object.defineProperty(window,'sessionStorage',{get:()=>shim});}catch(__){}}})();<\/script>`;
-            if (/<html|<body|<!doctype/i.test(rawCode)) {
-                return rawCode.includes('<head>')
-                    ? rawCode.replace('<head>', '<head>' + storageShim)
-                    : storageShim + rawCode;
-            }
-            if (/^\s*(const|let|var|function|class|document\.|window\.)/m.test(rawCode) && !/<[a-z][\s\S]*>/i.test(rawCode)) {
-                return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${storageShim}<script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4 bg-white text-zinc-900"><div id="app"></div><script>${rawCode}<\/script></body></html>`;
-            }
-            return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${storageShim}<script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-4 bg-white text-zinc-900">${rawCode}</body></html>`;
-        }
-
-        function enhanceGeneratedCodeBlocks() {
-            const feed = document.getElementById('messages-feed');
-            if (!feed) return;
-
-            // Add compact sizing and a Download button to every generated image in chat
-            feed.querySelectorAll('.prose img').forEach(img => {
-                if (img.dataset.nixyWrapped === 'true') return;
-                img.dataset.nixyWrapped = 'true';
-                const wrap = document.createElement('div');
-                wrap.className = 'nix-generated-img-wrap my-2.5 inline-flex flex-col items-start gap-2 p-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border max-w-full';
-                const dlBtn = document.createElement('button');
-                dlBtn.type = 'button';
-                dlBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold transition';
-                dlBtn.textContent = 'Download Image';
-                dlBtn.onclick = () => downloadGeneratedImage(img.src);
-                img.parentNode.insertBefore(wrap, img);
-                wrap.appendChild(img);
-                wrap.appendChild(dlBtn);
-            });
-
-            const extMap = { html: 'html', javascript: 'js', js: 'js', python: 'py', py: 'py', css: 'css', json: 'json', sql: 'sql', typescript: 'ts', ts: 'ts' };
-
-            feed.querySelectorAll('.nix-code-placeholder').forEach(placeholder => {
-                if (placeholder.dataset.enhanced === 'true') return;
-                placeholder.dataset.enhanced = 'true';
-
-                const rawIdx = Number(placeholder.dataset.codeIdx);
-                const rawEntry = (window.__nixyRawCodeMap || [])[rawIdx] || { code: '', lang: 'code' };
-                const rawCode = rawEntry.code;
-                const lang = (rawEntry.lang || 'code').toLowerCase();
-                const ext = extMap[lang] || lang || 'txt';
-                const fileName = `snippet.${ext}`;
-
-                const blockId = window.__nixyCodeBlocks.length;
-                window.__nixyCodeBlocks.push({ code: rawCode, lang, fileName });
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'nix-code-card';
-
-                const fileBar = document.createElement('div');
-                fileBar.className = 'nix-file-graphic';
-                fileBar.title = 'Click to show or hide file contents';
-                fileBar.onclick = (e) => {
-                    if (e.target.closest('button')) return;
-                    toggleCodeBlockVisibility(blockId);
-                };
-                fileBar.innerHTML = `
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="nix-file-icon-badge">${escapeHtml(ext.slice(0, 4).toUpperCase())}</div>
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold font-mono text-purple-100 truncate">${escapeHtml(fileName)}</p>
-                            <p class="text-[10px] text-purple-300/80">${rawCode.split('\n').length} lines • ${escapeHtml(lang)} • Click to toggle</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                        <button type="button" onclick="previewCodeBlock(${blockId})" class="nix-code-btn">Preview</button>
-                        <button type="button" onclick="copyCodeBlock(${blockId}, this)" class="nix-code-btn">Copy</button>
-                        <button type="button" onclick="downloadCodeBlock(${blockId})" class="nix-code-btn">Download</button>
-                        <button type="button" id="toggle-file-btn-${blockId}" onclick="toggleCodeBlockVisibility(${blockId})" class="nix-code-btn">Hide</button>
-                    </div>
-                `;
-
-                const pre = document.createElement('pre');
-                pre.id = `nix-code-pre-${blockId}`;
-                pre.style.margin = '0';
-                pre.style.border = 'none';
-                pre.style.borderRadius = '0';
-
-                const codeEl = document.createElement('code');
-                codeEl.className = `language-${lang}`;
-                codeEl.textContent = rawCode;
-                if (window.hljs?.highlightElement) {
-                    try { window.hljs.highlightElement(codeEl); } catch (_) {}
-                }
-
-                pre.appendChild(codeEl);
-                wrapper.appendChild(fileBar);
-                wrapper.appendChild(pre);
-                placeholder.replaceWith(wrapper);
-            });
-        }
-
-        function toggleCodeBlockVisibility(blockId) {
-            const pre = document.getElementById(`nix-code-pre-${blockId}`);
-            const btn = document.getElementById(`toggle-file-btn-${blockId}`);
-            if (!pre) return;
-            const isHidden = pre.style.display === 'none';
-            pre.style.display = isHidden ? 'block' : 'none';
-            if (btn) btn.textContent = isHidden ? 'Hide' : 'Show';
-        }
-
-        function previewCodeBlock(blockId) {
-            const item = window.__nixyCodeBlocks[blockId];
-            if (!item) return;
-            const htmlDoc = buildSandboxSafePreviewHtml(item.code);
-            openCodyCanvas(htmlDoc);
-        }
-
-        function copyCodeBlock(blockId, btn) {
-            const item = window.__nixyCodeBlocks[blockId];
-            if (!item) return;
-            const ta = document.createElement('textarea');
-            ta.value = item.code;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            if (btn) {
-                const orig = btn.textContent;
-                btn.textContent = 'Copied!';
-                setTimeout(() => { btn.textContent = orig; }, 1500);
-            }
-            showToast('Code copied to clipboard!');
-        }
-
-        function downloadCodeBlock(blockId) {
-            const item = window.__nixyCodeBlocks[blockId];
-            if (!item) return;
-            const blob = new Blob([item.code], { type: 'text/plain;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = item.fileName || `nixy-code-${Date.now()}.txt`;
-            a.click();
-            showToast(`Downloaded ${item.fileName || 'file'}`);
-        }
-
-        async function downloadGeneratedImage(src) {
-            if (!src) return;
-            try {
-                const res = await fetch(src);
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `nixy-image-${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 4000);
-                showToast('Image downloaded!');
-            } catch (_) {
-                const a = document.createElement('a');
-                a.href = src;
-                a.download = `nixy-image-${Date.now()}.png`;
-                a.target = '_blank';
-                a.click();
-                showToast('Opening image download...');
-            }
-        }
-
-        function hydrateSpecialWidgets() {
-            enhanceGeneratedCodeBlocks();
-            document.querySelectorAll('.nixqr-mount').forEach(el => {
-                if (el.dataset.rendered) return;
-                el.dataset.rendered = 'true';
-                const val = el.dataset.qr || 'https://codenix.ai';
-                if (window.QRCode) {
-                    new QRCode(el, { text: val, width: 148, height: 148, colorDark: '#4c1d95', colorLight: '#ffffff' });
-                }
-            });
-
-            document.querySelectorAll('.vidy-canvas').forEach(canvas => {
-                if (canvas.dataset.running) return;
-                canvas.dataset.running = 'true';
-                const ctx = canvas.getContext('2d');
-                let t = 0;
-                function loop() {
-                    if (!document.body.contains(canvas)) return;
-                    const w = canvas.width = canvas.offsetWidth || 400;
-                    const h = canvas.height = canvas.offsetHeight || 190;
-                    ctx.fillStyle = '#07060b';
-                    ctx.fillRect(0, 0, w, h);
-                    for (let i = 0; i < 5; i++) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `hsla(${265 + i * 12}, 85%, 65%, 0.7)`;
-                        ctx.lineWidth = 2.5;
-                        ctx.arc(w / 2, h / 2, 24 + i * 14 + Math.sin(t + i) * 6, t * (i % 2 ? 1 : -1), t * (i % 2 ? 1 : -1) + Math.PI * 1.4);
-                        ctx.stroke();
-                    }
-                    t += 0.04;
-                    requestAnimationFrame(loop);
-                }
-                loop();
-            });
-        }
-
-        function exportMessageAsPDF(idx) {
-            const conv = state.conversations.find(c => c.id === state.activeConversationId);
-            const msg = conv?.messages?.[idx];
-            if (!msg) return;
-            if (window.jspdf?.jsPDF) {
-                const doc = new window.jspdf.jsPDF();
-                const lines = doc.splitTextToSize(msg.content, 180);
-                doc.text(lines, 15, 20);
-                doc.save(`nixy-document-${Date.now()}.pdf`);
-                showToast('PDF exported!');
-            }
-        }
-
-        function exportMessageAsDOC(idx) {
-            const el = document.getElementById(`assistant-msg-body-${idx}`);
-            if (!el) return;
-            const html = `<html><head><meta charset="utf-8"></head><body>${el.innerHTML}</body></html>`;
-            const blob = new Blob([html], { type: 'application/msword' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `nixy-document-${Date.now()}.doc`;
-            a.click();
-            showToast('DOC exported!');
-        }
-
-        function exportMessageTableCSV(idx) {
-            const el = document.getElementById(`assistant-msg-body-${idx}`);
-            const table = el?.querySelector('table');
-            if (!table) {
-                showToast('No table found in this message.');
-                return;
-            }
-            const rows = Array.from(table.querySelectorAll('tr')).map(tr =>
-                Array.from(tr.querySelectorAll('th,td')).map(td => `"${td.innerText.replace(/"/g, '""')}"`).join(',')
-            ).join('\n');
-            const blob = new Blob([rows], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `nixy-table-${Date.now()}.csv`;
-            a.click();
-            showToast('CSV exported!');
-        }
-
-        // ==========================================
-        // 8. CODY CANVAS, ASTREYA VOICE & MODALS
-        // ==========================================
-        function openCodyCanvas(htmlCode) {
-            state.latestCodyHtml = htmlCode;
-            const pane = document.getElementById('cody-canvas-pane');
-            const frame = document.getElementById('cody-preview-frame');
-            const editor = document.getElementById('cody-code-editor');
-            if (pane) {
-                pane.classList.remove('hidden');
-                pane.classList.add('flex');
-            }
-            if (frame) {
-                try {
-                    const blob = new Blob([htmlCode], { type: 'text/html' });
-                    if (window.__codyBlobUrl) URL.revokeObjectURL(window.__codyBlobUrl);
-                    window.__codyBlobUrl = URL.createObjectURL(blob);
-                    frame.removeAttribute('srcdoc');
-                    frame.src = window.__codyBlobUrl;
-                } catch (_) {
-                    frame.srcdoc = htmlCode;
-                }
-            }
-            if (editor) editor.value = htmlCode;
-            switchCodyTab('preview');
-        }
-
-        function closeCodyCanvas() {
-            const pane = document.getElementById('cody-canvas-pane');
-            if (pane) {
-                pane.classList.add('hidden');
-                pane.classList.remove('flex');
-            }
-        }
-
-        function switchCodyTab(tab) {
-            const frame = document.getElementById('cody-preview-frame');
-            const editor = document.getElementById('cody-code-editor');
-            const btnPrev = document.getElementById('cody-tab-preview');
-            const btnCode = document.getElementById('cody-tab-code');
-            if (tab === 'preview') {
-                if (editor && frame) frame.srcdoc = editor.value;
-                frame?.classList.remove('hidden');
-                editor?.classList.add('hidden');
-                btnPrev?.classList.add('bg-codenix-600', 'text-white');
-                btnCode?.classList.remove('bg-codenix-600', 'text-white');
-            } else {
-                frame?.classList.add('hidden');
-                editor?.classList.remove('hidden');
-                btnCode?.classList.add('bg-codenix-600', 'text-white');
-                btnPrev?.classList.remove('bg-codenix-600', 'text-white');
-            }
-        }
-
-        let astreyaRecognition = null;
-        function openAstreyaModal() {
-            const modal = document.getElementById('astreya-modal');
-            if (!modal) return;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeAstreyaModal() {
-            const modal = document.getElementById('astreya-modal');
-            if (!modal) return;
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            if (astreyaRecognition) {
-                try { astreyaRecognition.stop(); } catch (_) {}
-            }
-        }
-
-        function toggleAstreyaListening() {
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const statusEl = document.getElementById('astreya-status');
-            const captionEl = document.getElementById('astreya-caption');
-            if (!SpeechRec) {
-                if (statusEl) statusEl.textContent = 'Speech Recognition unavailable in this browser';
-                return;
-            }
-            if (astreyaRecognition) {
-                try { astreyaRecognition.stop(); } catch (_) {}
-                astreyaRecognition = null;
-                if (statusEl) statusEl.textContent = 'Tap Orb to Speak';
-                return;
-            }
-            astreyaRecognition = new SpeechRec();
-            astreyaRecognition.lang = 'en-US';
-            astreyaRecognition.onstart = () => {
-                if (statusEl) statusEl.textContent = 'Listening... Speak now';
-            };
-            astreyaRecognition.onresult = async (event) => {
-                const transcript = event.results[0][0].transcript;
-                if (captionEl) captionEl.textContent = `"${transcript}"`;
-                if (statusEl) statusEl.textContent = 'Thinking...';
-                const input = document.getElementById('prompt-input');
-                if (input) input.value = transcript;
-                await handleSendPrompt();
-                const conv = state.conversations.find(c => c.id === state.activeConversationId);
-                const lastReply = conv?.messages?.[conv.messages.length - 1]?.content || '';
-                const cleanSpeech = lastReply.replace(/[#*`>\[\]()]/g, '').slice(0, 260);
-                if (captionEl) captionEl.textContent = cleanSpeech;
-                speakWithBrowserTTS(cleanSpeech);
-                if (statusEl) statusEl.textContent = 'Tap Orb to Speak Again';
-            };
-            astreyaRecognition.onend = () => {
-                astreyaRecognition = null;
-            };
-            astreyaRecognition.start();
-        }
-
-        function stopShareNix() {
-            if (state.shareNixStream) {
-                try {
-                    state.shareNixStream.getTracks().forEach(track => track.stop());
-                } catch (_) {}
-                state.shareNixStream = null;
-            }
-            const video = document.getElementById('sharenix-video');
-            if (video) video.srcObject = null;
-            const banner = document.getElementById('sharenix-live-banner');
-            if (banner) {
-                banner.classList.add('hidden');
-                banner.classList.remove('flex');
-            }
-            showToast('ShareNix screen sharing stopped.');
-        }
-
-        let lastSpokenSignature = '';
-        let lastSpokenAt = 0;
-        function speakWithBrowserTTS(text, onceGuard = false) {
-            if (!window.speechSynthesis) return;
-            const clean = String(text || '').replace(/<[^>]*>?/g, ' ').replace(/\s+/g, ' ').trim();
-            if (!clean) return;
-            const now = Date.now();
-            if (onceGuard && clean === lastSpokenSignature && now - lastSpokenAt < 5000) return;
-            lastSpokenSignature = clean;
-            lastSpokenAt = now;
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(clean);
-            window.speechSynthesis.speak(utter);
-        }
-
-        // Pomodory Focus Timer
-        let pomodorySeconds = 25 * 60;
-        let pomodoryInterval = null;
-
-        function openPomodoryModal() {
-            const modal = document.getElementById('pomodory-modal');
-            modal?.classList.remove('hidden');
-            modal?.classList.add('flex');
-            updatePomodoryDisplay();
-        }
-
-        function closePomodoryModal() {
-            const modal = document.getElementById('pomodory-modal');
-            modal?.classList.add('hidden');
-            modal?.classList.remove('flex');
-        }
-
-        function setPomodoryMinutes(mins) {
-            clearInterval(pomodoryInterval);
-            pomodoryInterval = null;
-            pomodorySeconds = mins * 60;
-            updatePomodoryDisplay();
-            const btn = document.getElementById('pomodory-start-btn');
-            if (btn) btn.textContent = 'Start Timer';
-        }
-
-        function togglePomodoryTimer() {
-            const btn = document.getElementById('pomodory-start-btn');
-            if (pomodoryInterval) {
-                clearInterval(pomodoryInterval);
-                pomodoryInterval = null;
-                if (btn) btn.textContent = 'Resume Timer';
-                return;
-            }
-            if (btn) btn.textContent = 'Pause Timer';
-            pomodoryInterval = setInterval(() => {
-                if (pomodorySeconds <= 0) {
-                    clearInterval(pomodoryInterval);
-                    pomodoryInterval = null;
-                    showToast('Pomodory focus session complete!');
-                    return;
-                }
-                pomodorySeconds -= 1;
-                updatePomodoryDisplay();
-            }, 1000);
-        }
-
-        function resetPomodoryTimer() {
-            setPomodoryMinutes(25);
-        }
-
-        function updatePomodoryDisplay() {
-            const disp = document.getElementById('pomodory-display');
-            if (!disp) return;
-            const m = String(Math.floor(pomodorySeconds / 60)).padStart(2, '0');
-            const s = String(pomodorySeconds % 60).padStart(2, '0');
-            disp.textContent = `${m}:${s}`;
-        }
-
-        // Interactive Nixy Tutorial
-        const TUTORIAL_STEPS = [
-            {
-                title: 'Meet Nixy — Your AI Companion',
-                body: 'I remember your current conversation and past saved chats in Supabase, routing to primary AI models first or unlimited Puter.js.',
-                action: () => pingNixyGreeting()
-            },
-            {
-                title: 'Unlimited Puter.js Mode',
-                body: 'Click "Mode: Auto APIs" in the top bar anytime to switch to Puter.js for zero rate limits and uncounted usage.',
-                action: () => togglePreferredProvider()
-            },
-            {
-                title: 'Tool Library, Announcements & Notifications',
-                body: 'Open Tool Library next to Plugins & Tools to launch Codenix Sheet apps, and check the top bell for live announcements and notices.',
-                action: () => toggleToolLibrarySection(true)
-            },
-            {
-                title: 'Files & Live Screen Vision (ShareNix)',
-                body: 'Attach images, PDFs, CSVs, or code with the paperclip icon, or share your screen with ShareNix so I can see what you see.',
-                action: () => toggleShareNix()
-            },
-            {
-                title: 'Astreya Voice & Cody Live Canvas',
-                body: 'Speak hands-free with Astreya or ask Cody to generate interactive web apps with live preview.',
-                action: () => openAstreyaModal()
-            }
-        ];
-
-        // ==========================================
-        // 9. GOOGLE SHEET TOOL LIBRARY, ANNOUNCEMENTS, NOTIFICATIONS & COMPANION TOUR
+        // 9. GOOGLE SHEET TOOL LIBRARY, NIX WATCHES & FEEDBACK
         // ==========================================
         let sheetToolLibrary = [];
-        let sheetNotifications = [];
-        let sheetBroadcastQueue = [];
-        let sheetBroadcastIdx = 0;
+        let sheetNixWatches = [];
+        let selectedDiscoverySource = 'Codenix Studio';
+        let selectedFeedbackRating = 5;
 
         function cleanSheetImageUrl(url) {
             if (!url) return '';
@@ -2491,8 +1412,7 @@ You can generate rich Markdown tables, structured documents, code, explanations,
                 const rows = data?.table?.rows || [];
 
                 const tools = [];
-                const notifs = [];
-                const msgs = [];
+                const watches = [];
 
                 rows.forEach(row => {
                     const cells = row.c || [];
@@ -2501,17 +1421,15 @@ You can generate rich Markdown tables, structured documents, code, explanations,
                     if (!sectionType || sectionType.toLowerCase() === 'section type') return;
                     const lower = sectionType.toLowerCase();
 
-                    if (['notifications', 'notification', 'broadcasts', 'broadcast'].includes(lower)) {
-                        const title = String(getVal(1) || '').trim();
-                        const link = cleanSheetImageUrl(getVal(2));
-                        if (title) notifs.push({ title, link, isBroadcast: lower.includes('broadcast') });
+                    if (['notifications', 'notification', 'broadcasts', 'broadcast', 'messages', 'message'].includes(lower)) {
                         return;
                     }
 
-                    if (['messages', 'message'].includes(lower)) {
+                    if (lower.includes('watch')) {
                         const title = String(getVal(1) || '').trim();
-                        const mediaUrl = cleanSheetImageUrl(getVal(2));
-                        if (title) msgs.push({ title, mediaUrl });
+                        const link = String(getVal(2) || '').trim() || '#';
+                        const image = cleanSheetImageUrl(getVal(3));
+                        if (title) watches.push({ title, link, image });
                         return;
                     }
 
@@ -2526,21 +1444,27 @@ You can generate rich Markdown tables, structured documents, code, explanations,
                 });
 
                 sheetToolLibrary = tools;
-                sheetNotifications = notifs;
+                sheetNixWatches = watches.length > 0 ? watches : [
+                    { title: 'Nixy Multi-Model Watch', link: '#', image: '' },
+                    { title: 'Codenix Release Watch', link: '#', image: '' }
+                ];
                 renderToolLibraryUI();
-                renderSheetNotificationsUI();
-                setupSheetBroadcastModal(msgs);
+                renderNixWatchesUI();
                 lucide.createIcons();
             } catch (_) {}
         }
 
         function toggleToolLibrarySection(forceOpen) {
-            const sec = document.getElementById('tool-library-section');
-            if (!sec) return;
-            const shouldShow = typeof forceOpen === 'boolean' ? forceOpen : sec.classList.contains('hidden');
-            sec.classList.toggle('hidden', !shouldShow);
-            if (shouldShow && sheetToolLibrary.length === 0) {
-                loadGoogleSheetWorkspaceData();
+            const modal = document.getElementById('tool-library-modal');
+            if (!modal) return;
+            const shouldShow = typeof forceOpen === 'boolean' ? forceOpen : modal.classList.contains('hidden');
+            if (shouldShow) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                if (sheetToolLibrary.length === 0) loadGoogleSheetWorkspaceData();
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
             }
         }
 
@@ -2551,13 +1475,13 @@ You can generate rich Markdown tables, structured documents, code, explanations,
             if (!gridEl) return;
 
             if (sheetToolLibrary.length === 0) {
-                gridEl.innerHTML = `<p class="col-span-full text-xs text-zinc-400 py-2">No tools found in the connected Google Sheet.</p>`;
+                gridEl.innerHTML = `<p class="col-span-full text-xs text-zinc-400 py-4 text-center">No tools found in the connected Google Sheet.</p>`;
                 return;
             }
 
             gridEl.innerHTML = sheetToolLibrary.map(item => `
-                <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener" class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition min-w-0">
-                    <div class="w-9 h-9 rounded-xl bg-codenix-600/15 border border-codenix-500/25 flex items-center justify-center overflow-hidden shrink-0 text-xs font-bold text-codenix-600 dark:text-codenix-300">
+                <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener" class="flex items-center gap-2.5 p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-codenix-600/15 border border-codenix-500/25 flex items-center justify-center overflow-hidden shrink-0 text-xs font-bold text-codenix-600 dark:text-codenix-300">
                         ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" onerror="this.remove()" class="w-full h-full object-cover">` : escapeHtml(item.name.slice(0, 2).toUpperCase())}
                     </div>
                     <div class="min-w-0">
@@ -2568,130 +1492,81 @@ You can generate rich Markdown tables, structured documents, code, explanations,
             `).join('');
         }
 
-        function toggleSheetNotifDropdown(e) {
-            if (e) e.stopPropagation();
-            const dd = document.getElementById('sheet-notif-dropdown');
-            if (!dd) return;
-            dd.classList.toggle('hidden');
+        function renderNixWatchesUI() {
+            const countEl = document.getElementById('nix-watches-count');
+            const listEl = document.getElementById('nix-watches-list');
+            if (countEl) countEl.textContent = String(sheetNixWatches.length);
+            if (!listEl) return;
+            listEl.innerHTML = sheetNixWatches.map(w => {
+                const card = `
+                    <div class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border">
+                        <span class="w-2 h-2 rounded-full bg-codenix-500 shrink-0"></span>
+                        <span class="text-xs font-semibold truncate">${escapeHtml(w.title)}</span>
+                    </div>`;
+                return w.link && w.link !== '#'
+                    ? `<a href="${escapeHtml(w.link)}" target="_blank" rel="noopener" class="block hover:opacity-90">${card}</a>`
+                    : card;
+            }).join('');
         }
 
-        document.addEventListener('click', () => {
-            document.getElementById('sheet-notif-dropdown')?.classList.add('hidden');
-        });
-
-        function getReadSheetNotifIds() {
-            try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.NOTIF_READ)) || []; } catch (_) { return []; }
+        function openFeedbackModal() {
+            const modal = document.getElementById('feedback-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            renderNixWatchesUI();
         }
 
-        function markAllSheetNotifsRead() {
-            const ids = sheetNotifications.map(n => `${n.title}|${n.link || ''}`);
-            try { localStorage.setItem(STORAGE_KEYS.NOTIF_READ, JSON.stringify(ids.slice(-200))); } catch (_) {}
-            renderSheetNotificationsUI();
-        }
-
-        function renderSheetNotificationsUI() {
-            const readIds = getReadSheetNotifIds();
-            const unreadCount = sheetNotifications.filter(n => !readIds.includes(`${n.title}|${n.link || ''}`)).length;
-            const badgeEl = document.getElementById('sheet-notif-badge');
-            const countEl = document.getElementById('sheet-notif-count');
-            const listEl = document.getElementById('sheet-notif-list');
-            const panelEl = document.getElementById('sheet-announcements-panel');
-            const panelBadge = document.getElementById('sheet-announcements-badge');
-            const panelList = document.getElementById('sheet-announcements-list');
-
-            if (countEl) countEl.textContent = String(unreadCount);
-            if (badgeEl) badgeEl.classList.toggle('hidden', unreadCount === 0);
-
-            if (listEl) {
-                if (sheetNotifications.length === 0) {
-                    listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-4">No notifications right now.</p>`;
-                } else {
-                    listEl.innerHTML = sheetNotifications.map(n => {
-                        const id = `${n.title}|${n.link || ''}`;
-                        const isRead = readIds.includes(id);
-                        const tag = n.isBroadcast ? 'Broadcast' : 'Notice';
-                        const body = `
-                            <div class="flex items-start justify-between gap-2 p-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black/70 border border-codenix-200/70 dark:border-codenix-border ${isRead ? 'opacity-65' : ''}">
-                                <div class="min-w-0">
-                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">${tag}</span>
-                                    <p class="text-xs font-semibold mt-1 break-words">${escapeHtml(n.title)}</p>
-                                </div>
-                                ${!isRead ? '<span class="w-2 h-2 rounded-full bg-codenix-500 mt-1.5 shrink-0"></span>' : ''}
-                            </div>`;
-                        return n.link && n.link !== '#'
-                            ? `<a href="${escapeHtml(n.link)}" target="_blank" rel="noopener" class="block">${body}</a>`
-                            : body;
-                    }).join('');
-                }
-            }
-
-            if (panelEl && panelList) {
-                if (sheetNotifications.length === 0) {
-                    panelEl.classList.add('hidden');
-                } else {
-                    panelEl.classList.remove('hidden');
-                    if (panelBadge) panelBadge.textContent = `${sheetNotifications.length} active`;
-                    panelList.innerHTML = sheetNotifications.slice(0, 4).map(n => {
-                        const card = `
-                            <div class="p-3 rounded-xl bg-white dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border">
-                                <span class="text-[10px] font-bold uppercase text-codenix-600 dark:text-codenix-400">${n.isBroadcast ? 'Broadcast' : 'Notice'}</span>
-                                <p class="text-xs font-semibold mt-0.5">${escapeHtml(n.title)}</p>
-                            </div>`;
-                        return n.link && n.link !== '#'
-                            ? `<a href="${escapeHtml(n.link)}" target="_blank" rel="noopener" class="block hover:opacity-90">${card}</a>`
-                            : card;
-                    }).join('');
-                }
-            }
-        }
-
-        function setupSheetBroadcastModal(messages) {
-            sheetBroadcastQueue = (messages || []).filter(m => {
-                try { return !localStorage.getItem('codenix_bc_seen_' + btoa(unescape(encodeURIComponent(m.title))).slice(0, 16)); } catch (_) { return true; }
-            });
-            if (!sheetBroadcastQueue.length) return;
-            sheetBroadcastIdx = 0;
-            showSheetBroadcastItem();
-            const modal = document.getElementById('sheet-broadcast-modal');
-            modal?.classList.remove('hidden');
-            modal?.classList.add('flex');
-        }
-
-        function showSheetBroadcastItem() {
-            const item = sheetBroadcastQueue[sheetBroadcastIdx];
-            if (!item) return;
-            const parts = String(item.title || '').split(/\s*\|\s*/);
-            document.getElementById('sheet-broadcast-title').textContent = parts.length > 1 ? parts[0] : 'Announcement';
-            document.getElementById('sheet-broadcast-body').textContent = parts.length > 1 ? parts.slice(1).join(' | ') : item.title;
-            const mediaBox = document.getElementById('sheet-broadcast-media');
-            if (item.mediaUrl && item.mediaUrl !== '#') {
-                mediaBox.classList.remove('hidden');
-                mediaBox.innerHTML = `<img src="${escapeHtml(item.mediaUrl)}" alt="Announcement" class="w-full h-full object-cover">`;
-            } else {
-                mediaBox.classList.add('hidden');
-                mediaBox.innerHTML = '';
-            }
-            document.getElementById('sheet-broadcast-next-btn').textContent =
-                sheetBroadcastIdx < sheetBroadcastQueue.length - 1 ? 'Next' : 'Got it';
-        }
-
-        function advanceSheetBroadcastModal() {
-            const item = sheetBroadcastQueue[sheetBroadcastIdx];
-            if (item) {
-                try { localStorage.setItem('codenix_bc_seen_' + btoa(unescape(encodeURIComponent(item.title))).slice(0, 16), 'true'); } catch (_) {}
-            }
-            if (sheetBroadcastIdx < sheetBroadcastQueue.length - 1) {
-                sheetBroadcastIdx += 1;
-                showSheetBroadcastItem();
-            } else {
-                closeSheetBroadcastModal();
-            }
-        }
-
-        function closeSheetBroadcastModal() {
-            const modal = document.getElementById('sheet-broadcast-modal');
+        function closeFeedbackModal() {
+            const modal = document.getElementById('feedback-modal');
             modal?.classList.add('hidden');
             modal?.classList.remove('flex');
+        }
+
+        function selectDiscoverySource(source, btnEl) {
+            selectedDiscoverySource = source;
+            document.querySelectorAll('.discovery-card').forEach(c => {
+                c.classList.remove('border-codenix-600', 'ring-2', 'ring-codenix-500/40');
+            });
+            if (btnEl) btnEl.classList.add('border-codenix-600', 'ring-2', 'ring-codenix-500/40');
+            const duoLine = document.getElementById('feedback-duo-line');
+            if (duoLine) duoLine.textContent = `Nixy says: Awesome! Found through ${source} — Duolingo streak unlocked!`;
+        }
+
+        function setFeedbackRating(rating) {
+            selectedFeedbackRating = rating;
+            document.querySelectorAll('#feedback-rating-stars button').forEach(btn => {
+                const s = Number(btn.dataset.star || 0);
+                btn.classList.toggle('text-amber-400', s <= rating);
+                btn.classList.toggle('opacity-40', s > rating);
+            });
+            const duoLine = document.getElementById('feedback-duo-line');
+            if (duoLine) {
+                duoLine.textContent = rating >= 4
+                    ? `Nixy says: ${rating} stars?! You make my purple orb glow!`
+                    : `Nixy says: Thanks for ${rating} stars — I'll keep getting sharper for you!`;
+            }
+        }
+
+        async function submitQuickFeedback() {
+            const comment = (document.getElementById('feedback-comment-input')?.value || '').trim();
+            try {
+                if (state.user) {
+                    await supabaseClient.from('nixy_feedback').insert({
+                        user_id: state.user.id,
+                        email: state.user.email,
+                        discovery_source: selectedDiscoverySource,
+                        rating: selectedFeedbackRating,
+                        comment
+                    });
+                }
+            } catch (_) {}
+            if (document.getElementById('feedback-comment-input')) {
+                document.getElementById('feedback-comment-input').value = '';
+            }
+            triggerNixyDance();
+            closeFeedbackModal();
+            showToast('Thank you! Nixy saved your feedback.');
         }
 
         let companionDragState = null;
