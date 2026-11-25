@@ -61,6 +61,9 @@
     <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- jsPDF for instant PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -161,6 +164,33 @@
             transition: background 0.15s ease;
         }
         .nix-code-btn:hover { background: rgba(139, 92, 246, 0.38); }
+
+        /* Rich Markdown Tables & Document Cards */
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 0.82rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        .prose thead {
+            background: rgba(124, 58, 237, 0.18);
+            color: #6d28d9;
+        }
+        .dark .prose thead {
+            background: rgba(124, 58, 237, 0.28);
+            color: #ddd6fe;
+        }
+        .prose th, .prose td {
+            padding: 0.55rem 0.75rem;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            text-align: left;
+        }
+        .prose tbody tr:nth-child(even) {
+            background: rgba(139, 92, 246, 0.05);
+        }
 
         /* Astreya Voice Orb */
         @keyframes astreyaPulse {
@@ -303,8 +333,14 @@
                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold">
                         <span class="w-2 h-2 rounded-full bg-codenix-500 animate-pulse"></span>
                         <span>Nixy Agent</span>
-                        <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">NVIDIA → Auto</span>
+                        <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">Auto APIs</span>
                     </div>
+
+                    <!-- Provider Mode Selector: Primary APIs vs Puter.js (Unlimited) -->
+                    <button onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch between Primary APIs and Unlimited Puter.js" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
+                        <i data-lucide="infinity" class="w-3.5 h-3.5"></i>
+                        <span id="provider-mode-label">Mode: Auto APIs</span>
+                    </button>
 
                     <!-- ShareNix Live Screen Pill -->
                     <div id="sharenix-live-banner" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
@@ -449,7 +485,7 @@
                     </div>
 
                     <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-1.5 px-1">
-                        <span id="quota-footer-label">Limits: 3 req/min • 30 chats/day • 3 images/day (Auto Puter.js after limit)</span>
+                        <span id="quota-footer-label">Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)</span>
                         <span id="puter-link-status" class="font-mono text-codenix-600 dark:text-codenix-400">Puter: Ready</span>
                     </div>
                 </div>
@@ -585,14 +621,19 @@
             <div class="p-3.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs space-y-1.5">
                 <p class="font-semibold text-codenix-700 dark:text-codenix-300">Model Routing & Puter.js</p>
                 <p class="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Nixy works firstly with the primary AI model APIs. When limits are reached, Puter.js seamlessly takes over and Puter.js requests are <strong>not calculated</strong> in your usage limits.
+                    Nixy works firstly with the primary AI model APIs. Whenever <strong>Puter.js</strong> is your active provider (or auto-activated), there are <strong>no rate limits</strong> and usage is not counted.
                 </p>
             </div>
 
-            <button onclick="linkPuterAccount()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold flex items-center justify-center gap-2">
-                <i data-lucide="link" class="w-4 h-4"></i>
-                <span id="modal-puter-btn-text">Link Puter.js Account Now</span>
-            </button>
+            <div class="flex gap-2">
+                <button onclick="linkPuterAccount()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold flex items-center justify-center gap-2">
+                    <i data-lucide="link" class="w-4 h-4"></i>
+                    <span id="modal-puter-btn-text">Link Puter.js Account Now</span>
+                </button>
+                <button onclick="setProviderMode('puter'); closeUsageModal();" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">
+                    Use Unlimited Puter
+                </button>
+            </div>
         </div>
     </div>
 
@@ -618,6 +659,7 @@
         const STORAGE_KEYS = {
             THEME: 'codenix_nixy_theme',
             PUTER_LINKED: 'codenix_nixy_puter_linked',
+            PREFERRED_PROVIDER: 'codenix_nixy_preferred_provider',
             LOCAL_USAGE: 'codenix_nixy_usage_v1',
             LOCAL_CHATS: 'codenix_nixy_chats_v1'
         };
@@ -630,6 +672,7 @@
             isGenerating: false,
             latestCodyHtml: '',
             shareNixStream: null,
+            preferredProvider: localStorage.getItem(STORAGE_KEYS.PREFERRED_PROVIDER) || 'auto',
             usage: {
                 minuteStart: Date.now(),
                 minuteCount: 0,
@@ -648,6 +691,7 @@
             initTheme();
             lucide.createIcons();
             bindNixyEyeTracking();
+            updateProviderModeUI();
 
             // Check if opening a PIN-protected shared link (?share=slug)
             const params = new URLSearchParams(window.location.search);
@@ -836,6 +880,9 @@
         }
 
         function checkShouldUsePuterFallback(isImageRequest) {
+            if (state.preferredProvider === 'puter') {
+                return true;
+            }
             const now = Date.now();
             if (now - state.usage.minuteStart >= 60000) {
                 state.usage.minuteStart = now;
@@ -851,6 +898,34 @@
             if (isImageRequest && state.usage.dailyImages >= 3) return true;
             if (!isImageRequest && state.usage.dailyChats >= 30) return true;
             return false;
+        }
+
+        function togglePreferredProvider() {
+            setProviderMode(state.preferredProvider === 'puter' ? 'auto' : 'puter');
+        }
+
+        function setProviderMode(mode) {
+            state.preferredProvider = mode;
+            localStorage.setItem(STORAGE_KEYS.PREFERRED_PROVIDER, mode);
+            updateProviderModeUI();
+            updateQuotaUI();
+            showToast(mode === 'puter'
+                ? 'Switched to Puter.js Provider — Unlimited & uncounted!'
+                : 'Switched to Auto Primary APIs first.');
+        }
+
+        function updateProviderModeUI() {
+            const label = document.getElementById('provider-mode-label');
+            const badge = document.getElementById('active-provider-badge');
+            const footer = document.getElementById('quota-footer-label');
+            const isPuter = state.preferredProvider === 'puter';
+            if (label) label.textContent = isPuter ? 'Provider: Puter.js (Unlimited)' : 'Mode: Auto APIs';
+            if (badge && isPuter) badge.textContent = 'Puter.js Unlimited';
+            if (footer) {
+                footer.textContent = isPuter
+                    ? 'Puter.js Active: Unlimited chats, images, tables, docs & PDFs (0 quota used)'
+                    : 'Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)';
+            }
         }
 
         async function linkPuterAccount() {
@@ -878,10 +953,14 @@
             if (tokEl) tokEl.textContent = `${state.usage.codenixTokens} tok`;
             if (quotaEl) quotaEl.textContent = `Chat: ${state.usage.dailyChats}/30 • Img: ${state.usage.dailyImages}/3`;
             if (pillEl) {
-                pillEl.textContent = state.usage.puterLinked ? 'Puter Linked' : 'API Active';
+                pillEl.textContent = state.preferredProvider === 'puter'
+                    ? 'Unlimited Puter'
+                    : (state.usage.puterLinked ? 'Puter Linked' : 'API Active');
             }
             if (puterStatus) {
-                puterStatus.textContent = state.usage.puterLinked ? 'Puter: Linked (Uncounted)' : 'Puter: Ready';
+                puterStatus.textContent = (state.preferredProvider === 'puter' || state.usage.puterLinked)
+                    ? 'Puter: Unlimited (No Limits)'
+                    : 'Puter: Ready';
             }
             if (mTok) mTok.textContent = String(state.usage.codenixTokens);
             if (mChat) mChat.textContent = `${state.usage.dailyChats} / 30`;
@@ -901,6 +980,7 @@
         }
 
         async function loadConversationsFromSupabase(requestedChatId = null) {
+            const localChats = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_CHATS) || '[]');
             try {
                 const { data, error } = await supabaseClient
                     .from('nixy_conversations')
@@ -909,9 +989,24 @@
                     .order('updated_at', { ascending: false });
 
                 if (!error && Array.isArray(data)) {
-                    state.conversations = data.map(c => ({ ...c, messages: [] }));
-                    // Preload recent messages across past conversations so Nixy remembers old conversations
+                    const merged = data.map(c => {
+                        const existingLocal = localChats.find(lc => lc.id === c.id);
+                        return { ...c, messages: existingLocal?.messages || [] };
+                    });
+                    // Keep any unsynced local chats so nothing disappears
+                    localChats.forEach(lc => {
+                        if (!merged.some(m => m.id === lc.id)) merged.push(lc);
+                    });
+                    state.conversations = merged;
                     await preloadCrossConversationMemory();
+                    if (state.conversations.length > 0) {
+                        const targetConv = requestedChatId && state.conversations.find(c => c.id === requestedChatId)
+                            ? requestedChatId
+                            : state.conversations[0].id;
+                        await selectConversation(targetConv);
+                    }
+                } else {
+                    state.conversations = localChats;
                     if (state.conversations.length > 0) {
                         const targetConv = requestedChatId && state.conversations.find(c => c.id === requestedChatId)
                             ? requestedChatId
@@ -920,7 +1015,6 @@
                     }
                 }
             } catch (err) {
-                const localChats = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_CHATS) || '[]');
                 state.conversations = localChats;
                 if (state.conversations.length > 0) {
                     const targetConv = requestedChatId && state.conversations.find(c => c.id === requestedChatId)
@@ -929,6 +1023,7 @@
                     await selectConversation(targetConv);
                 }
             }
+            localStorage.setItem(STORAGE_KEYS.LOCAL_CHATS, JSON.stringify(state.conversations));
             renderConversationList();
         }
 
@@ -1005,15 +1100,21 @@
             const conv = state.conversations.find(c => c.id === convId);
             if (conv && state.user) {
                 try {
-                    const { data } = await supabaseClient
+                    const { data, error } = await supabaseClient
                         .from('nixy_messages')
                         .select('*')
                         .eq('conversation_id', convId)
                         .order('created_at', { ascending: true });
-                    if (Array.isArray(data)) {
+                    if (!error && Array.isArray(data) && data.length > 0) {
                         conv.messages = data;
+                        localStorage.setItem(STORAGE_KEYS.LOCAL_CHATS, JSON.stringify(state.conversations));
                     }
                 } catch (_) {}
+            }
+            // Clear search filter if active so the full conversation list stays visible
+            const searchInput = document.getElementById('chat-search');
+            if (searchInput && searchInput.value) {
+                searchInput.value = '';
             }
             renderConversationList();
             renderMessages();
@@ -1072,6 +1173,7 @@
             if (/\b(voice|speak|tts|say aloud|nixvoice|audio)\b/.test(p)) return 'nixvoice';
             if (/\b(motion|animation|video|vidy|looping graphic)\b/.test(p)) return 'vidy';
             if (/\b(pomodoro|pomodory|timer|focus session)\b/.test(p)) return 'pomodory';
+            if (/\b(pdf|document|doc|report|table|spreadsheet|csv|comparison table)\b/.test(p)) return 'doc_table';
             if (/\b(html|website|landing page|calculator|app|cody|hostnix|canvas|build a)\b/.test(p)) return 'cody';
             return 'chat';
         }
@@ -1304,10 +1406,22 @@
                     openPomodoryModal();
                     providerUsed = 'Pomodory Engine';
                     assistantMarkdown = `### Pomodory Focus Timer Started\nConfigured a **${mins}:00** focus session in the Pomodory timer modal.`;
-                    state.usage.dailyChats += 1;
+                    if (!usePuter) state.usage.dailyChats += 1;
+                } else if (tool === 'doc_table') {
+                    const docHistory = [
+                        { role: 'system', content: 'You are Nixy, the intelligent Codenix AI Agent skilled in creating clean Markdown tables, structured documents, reports, and PDF-ready content. Always format tabular data using standard GitHub-Flavored Markdown tables (`| Col 1 | Col 2 |`) and structure documents with clear `#` / `##` / `###` headings and bullet points.' + crossMemory },
+                        ...conv.messages.slice(-16).map(m => ({ role: m.role, content: m.content + (m.role === 'user' ? screenContextNote : '') }))
+                    ];
+                    const aiRes = await callCascadingChatAI(docHistory, usePuter);
+                    providerUsed = aiRes.provider;
+                    usedPuterFallback = /puter/i.test(providerUsed);
+                    assistantMarkdown = aiRes.text;
+                    if (!usedPuterFallback) {
+                        state.usage.dailyChats += 1;
+                    }
                 } else {
                     const history = [
-                        { role: 'system', content: 'You are Nixy, the intelligent Codenix AI Agent. Remember both all messages in the current conversation and relevant context from the user\'s previous saved conversations. Format answers cleanly with Markdown.' + crossMemory },
+                        { role: 'system', content: 'You are Nixy, the intelligent Codenix AI Agent. You can create structured tables, rich documents, PDFs, code, images, and more. Remember both all messages in the current conversation and relevant context from the user\'s previous saved conversations. Format answers cleanly with Markdown.' + crossMemory },
                         ...conv.messages.slice(-16).map(m => ({ role: m.role, content: m.content + (m.role === 'user' ? screenContextNote : '') }))
                     ];
                     const aiRes = await callCascadingChatAI(history, usePuter);
@@ -1406,15 +1520,35 @@
                             </div>
                         </div>
                         <div class="flex-1 min-w-0 p-4 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border space-y-2">
-                            <div class="flex items-center justify-between text-[11px]">
+                            <div class="flex items-center justify-between gap-2 text-[11px]">
                                 <span class="font-bold text-codenix-700 dark:text-codenix-300">Nixy • ${(m.tool_used || 'chat').toUpperCase()}</span>
-                                <span class="font-mono text-zinc-400">${escapeHtml(m.provider_used || '')}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="exportMessageAsPdf(${i})" title="Download as PDF" class="px-2 py-0.5 rounded-md bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 font-semibold transition">PDF</button>
+                                    <button onclick="exportMessageAsDoc(${i})" title="Download as Document (.doc)" class="px-2 py-0.5 rounded-md bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 font-semibold transition">DOC</button>
+                                    <span class="font-mono text-zinc-400">${escapeHtml(m.provider_used || '')}</span>
+                                </div>
                             </div>
                             <div class="prose prose-sm dark:prose-invert max-w-none nixy-msg-body" data-msg-idx="${i}">${parsedHtml}</div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            // Add CSV download button above rendered tables
+            feed.querySelectorAll('.nixy-msg-body table').forEach((tableEl, tIdx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'overflow-x-auto my-2';
+                const bar = document.createElement('div');
+                bar.className = 'flex justify-end mb-1';
+                const csvBtn = document.createElement('button');
+                csvBtn.className = 'px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold';
+                csvBtn.textContent = 'Export Table (CSV)';
+                csvBtn.onclick = () => exportTableToCsv(tableEl, `nixy-table-${tIdx + 1}.csv`);
+                bar.appendChild(csvBtn);
+                tableEl.parentNode.insertBefore(wrapper, tableEl);
+                wrapper.appendChild(bar);
+                wrapper.appendChild(tableEl);
+            });
 
             // Hydrate NixQR codes, Vidy Motion Canvases, and Copyable Code Cards
             feed.querySelectorAll('.nixqr-embed').forEach(el => {
@@ -1437,6 +1571,77 @@
             const scrollArea = document.getElementById('chat-scroll-area');
             scrollArea.scrollTop = scrollArea.scrollHeight;
             lucide.createIcons();
+        }
+
+        // ==========================================
+        // EXPORT HELPERS: PDF, WORD DOC, & CSV TABLES
+        // ==========================================
+        function exportMessageAsPdf(msgIndex) {
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            const msg = conv?.messages?.[msgIndex];
+            if (!msg) return;
+
+            const bodyEl = document.querySelector(`.nixy-msg-body[data-msg-idx="${msgIndex}"]`);
+            const plainText = bodyEl ? bodyEl.innerText : msg.content;
+
+            if (window.jspdf && window.jspdf.jsPDF) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+                const margin = 44;
+                const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(14);
+                doc.text(conv.title || 'Nixy AI Document', margin, 48);
+
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10.5);
+                const lines = doc.splitTextToSize(plainText, maxWidth);
+                let y = 74;
+                lines.forEach(line => {
+                    if (y > doc.internal.pageSize.getHeight() - 48) {
+                        doc.addPage();
+                        y = 48;
+                    }
+                    doc.text(line, margin, y);
+                    y += 15;
+                });
+                doc.save(`${(conv.title || 'nixy-document').replace(/[^a-z0-9_-]/gi, '_')}.pdf`);
+                showToast('PDF downloaded!');
+            } else {
+                showToast('PDF generator still loading...');
+            }
+        }
+
+        function exportMessageAsDoc(msgIndex) {
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            const bodyEl = document.querySelector(`.nixy-msg-body[data-msg-idx="${msgIndex}"]`);
+            const htmlContent = bodyEl ? bodyEl.innerHTML : '';
+            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(conv?.title || 'Nixy Document')}</title></head><body style="font-family:Arial,sans-serif;line-height:1.6;">${htmlContent}</body></html>`;
+            const blob = new Blob([fullHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(conv?.title || 'nixy-document').replace(/[^a-z0-9_-]/gi, '_')}.doc`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Document (.doc) downloaded!');
+        }
+
+        function exportTableToCsv(tableEl, filename) {
+            const rows = Array.from(tableEl.querySelectorAll('tr'));
+            const csv = rows.map(row =>
+                Array.from(row.querySelectorAll('th, td'))
+                    .map(cell => `"${(cell.innerText || '').replace(/"/g, '""')}"`)
+                    .join(',')
+            ).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Table exported as CSV!');
         }
 
         // ==========================================
