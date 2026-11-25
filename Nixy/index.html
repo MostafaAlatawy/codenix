@@ -237,6 +237,26 @@
             background: rgba(139, 92, 246, 0.05);
         }
 
+        /* Compact Generated Image Card + Shimmer */
+        @keyframes nixyShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .nix-img-shimmer {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.12) 25%, rgba(167, 139, 250, 0.28) 50%, rgba(139, 92, 246, 0.12) 75%);
+            background-size: 200% 100%;
+            animation: nixyShimmer 1.6s infinite linear;
+        }
+        .nix-generated-img-wrap img {
+            max-width: min(100%, 420px);
+            max-height: 300px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0.75rem;
+            display: block;
+        }
+
         /* Astreya Voice Orb */
         @keyframes astreyaPulse {
             0%, 100% { transform: scale(1); }
@@ -331,6 +351,13 @@
                         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span>Interactive Tutorial with Nixy</span>
                     </button>
+                    <button onclick="toggleToolLibrarySection()" id="tool-library-toggle-btn" class="col-span-2 flex items-center justify-between gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-semibold transition">
+                        <span class="flex items-center gap-1.5 truncate">
+                            <i data-lucide="grid" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
+                            <span class="truncate">Tool Library</span>
+                        </span>
+                        <span id="sheet-tool-library-count" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0</span>
+                    </button>
                 </div>
 
                 <!-- User Session & Quota Footer -->
@@ -383,6 +410,26 @@
 
                 <!-- Header Right Controls -->
                 <div class="flex items-center gap-1.5 sm:gap-2">
+                    <!-- Sheet Notifications Bell -->
+                    <div class="relative">
+                        <button onclick="toggleSheetNotifDropdown(event)" id="sheet-notif-btn" aria-label="Notifications" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition relative">
+                            <i data-lucide="bell" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                            <span id="sheet-notif-badge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-codenix-500"></span>
+                        </button>
+                        <div id="sheet-notif-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-2xl p-3.5 z-50 text-left space-y-2.5">
+                            <div class="flex items-center justify-between pb-2 border-b border-codenix-200 dark:border-codenix-border">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold">Notifications & Notices</span>
+                                    <span id="sheet-notif-count" class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0</span>
+                                </div>
+                                <button type="button" onclick="markAllSheetNotifsRead()" class="text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline">Mark all read</button>
+                            </div>
+                            <div id="sheet-notif-list" class="max-h-64 overflow-y-auto space-y-1.5">
+                                <p class="text-xs text-zinc-400 text-center py-4">Syncing sheet notifications...</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <button onclick="openUsageModal()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-medium hover:border-codenix-500 transition">
                         <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span>Usage & Puter</span>
@@ -405,6 +452,30 @@
                 <!-- CHAT STREAM AREA -->
                 <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth">
                     <div class="max-w-3xl mx-auto space-y-6">
+
+                        <!-- Sheet Announcements Banner -->
+                        <section id="sheet-announcements-panel" class="hidden rounded-2xl bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border p-4 shadow-xs">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="megaphone" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-codenix-700 dark:text-codenix-300">Workspace Announcements</h2>
+                                </div>
+                                <span id="sheet-announcements-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0 active</span>
+                            </div>
+                            <div id="sheet-announcements-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+                        </section>
+
+                        <!-- Tool Library Drawer / Section (Next to Plugins & Tools) -->
+                        <section id="tool-library-section" class="hidden rounded-2xl bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border p-4 shadow-xs space-y-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="layout-grid" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-codenix-700 dark:text-codenix-300">Tool Library (Codenix Sheet)</h2>
+                                </div>
+                                <button type="button" onclick="toggleToolLibrarySection(false)" class="text-xs text-zinc-400 hover:text-codenix-600">Close</button>
+                            </div>
+                            <div id="tool-library-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5"></div>
+                        </section>
 
                         <!-- Dashboard Introduction Hero with Nixy Orb -->
                         <div id="nixy-hero" class="flex flex-col items-center justify-center text-center py-8 sm:py-12">
@@ -480,13 +551,20 @@
                                     <span class="nixy-eye w-1.5 h-1.5 block"></span>
                                 </div>
                             </div>
-                            <div class="bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs flex items-center gap-3">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="nixy-typing-dot"></span>
-                                    <span class="nixy-typing-dot"></span>
-                                    <span class="nixy-typing-dot"></span>
+                            <div class="bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs space-y-2.5 max-w-md w-full">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="nixy-typing-dot"></span>
+                                        <span class="nixy-typing-dot"></span>
+                                        <span class="nixy-typing-dot"></span>
+                                    </div>
+                                    <span id="nixy-loading-text" class="text-xs font-semibold text-codenix-700 dark:text-codenix-300">Nixy is thinking...</span>
                                 </div>
-                                <span id="nixy-loading-text" class="text-xs font-semibold text-codenix-700 dark:text-codenix-300">Nixy is thinking...</span>
+                                <div id="nixy-image-generating-card" class="hidden rounded-xl overflow-hidden border border-codenix-500/30 bg-codenix-950/60 p-3">
+                                    <div class="nix-img-shimmer w-full h-36 rounded-lg flex items-center justify-center">
+                                        <span class="text-[11px] font-semibold text-codenix-200 px-3 py-1 rounded-full bg-black/40">Generating image with SubeAI / Puter...</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -736,6 +814,33 @@
     <!-- Toast Notification -->
     <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-xl"></div>
 
+    <!-- Sheet Broadcast / Announcement Modal -->
+    <div id="sheet-broadcast-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
+            <button type="button" onclick="closeSheetBroadcastModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <p class="text-[11px] font-extrabold uppercase tracking-wider text-codenix-600 dark:text-codenix-400">Codenix Announcement</p>
+            <h3 id="sheet-broadcast-title" class="text-lg font-extrabold">Announcement</h3>
+            <div id="sheet-broadcast-media" class="hidden rounded-xl overflow-hidden bg-black aspect-video"></div>
+            <p id="sheet-broadcast-body" class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed"></p>
+            <div class="flex justify-end pt-1">
+                <button type="button" onclick="advanceSheetBroadcastModal()" id="sheet-broadcast-next-btn" class="px-5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Draggable & Interactive Nixy Companion Bubble -->
+    <div id="nixy-companion-floater" onpointerdown="startDraggingNixyCompanion(event)" class="fixed bottom-24 right-5 z-40 cursor-grab active:cursor-grabbing select-none flex flex-col items-center gap-1.5">
+        <div id="nixy-companion-bubble" class="hidden max-w-[230px] px-3 py-1.5 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-500/40 text-[11px] font-semibold text-zinc-800 dark:text-zinc-100 shadow-lg text-center"></div>
+        <div class="nixy-orb w-12 h-12 rounded-full flex items-center justify-center">
+            <div class="flex items-center gap-2 pointer-events-none">
+                <span class="nixy-eye w-2.5 h-2.5 block"></span>
+                <span class="nixy-eye w-2.5 h-2.5 block"></span>
+            </div>
+        </div>
+    </div>
+
     <script>
         /**
          * NIXY AI AGENT — CODENIX STUDIO
@@ -749,7 +854,7 @@
         const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
         const CLOUDFLARE_PROXY_URL = '/api/nixy';
-
+        const GOOGLE_SHEET_ID = '12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const STORAGE_KEYS = {
@@ -757,7 +862,9 @@
             PUTER_LINKED: 'codenix_nixy_puter_linked',
             PREFERRED_PROVIDER: 'codenix_nixy_preferred_provider',
             LOCAL_USAGE: 'codenix_nixy_usage_v1',
-            LOCAL_CHATS: 'codenix_nixy_chats_v1'
+            LOCAL_CHATS: 'codenix_nixy_chats_v1',
+            NOTIF_READ: 'codenix_notif_read',
+            TOUR_DONE: 'codenix_nixy_tour_done_v6'
         };
 
         let state = {
@@ -813,8 +920,10 @@
             await detectClientIp();
             await loadUserLimitsFromSupabase();
             await loadConversationsFromSupabase(params.get('chat'));
+            await loadGoogleSheetWorkspaceData();
             updateQuotaUI();
             hideAuthGate();
+            runWorkspaceTourIfNeeded();
         });
 
         async function verifySupabaseSession() {
@@ -1419,9 +1528,9 @@ TOOL SELECTION RULES:
             let chosen = 'chat';
             let reason = 'General conversation, analysis, or structured document/table response';
 
-            if (/\b(generate|create|draw|paint|render|design|illustrate)\b.{0,45}\b(image|picture|photo|art|artwork|illustration|avatar|wallpaper|logo|scene)\b|\bsubeai\b/i.test(lower)) {
+            if (/\b(image|generate\s+image|create\s+image|make\s+an?\s+image|draw|paint|illustrate|picture\s+of|photo\s+of|artwork)\b/i.test(lower) && !/\b(image\s*to\s*text|ocr|read\s+image|analyze\s+image|describe\s+image|what\s+is\s+in\s+(this|the)\s+image)\b/i.test(lower)) {
                 chosen = 'image';
-                reason = 'User requested generating or creating an image/visual -> selecting SubeAI';
+                reason = 'User explicitly requested generating an image -> selecting SubeAI';
             } else if (/\b(qr\s*code|nixqr|barcode)\b/i.test(lower)) {
                 chosen = 'qr';
                 reason = 'User requested a QR code -> selecting NixQR';
@@ -1514,11 +1623,15 @@ TOOL SELECTION RULES:
             if (sendBtn) sendBtn.disabled = true;
 
             const plan = planToolSelection(rawText, attachedFiles, Boolean(screenSnapshot));
-            setLoadingIndicator(true, `${plan.thought} Using ${plan.toolName}...`);
-            setNixyMood('thinking', `${plan.thought}`);
+            const isImageTool = plan.tool === 'image';
+            setLoadingIndicator(
+                true,
+                isImageTool ? 'SubeAI is generating your image...' : `${plan.thought} Using ${plan.toolName}...`,
+                isImageTool
+            );
+            setNixyMood('thinking', isImageTool ? 'Crafting your image...' : `${plan.thought}`);
 
             const tool = plan.tool;
-            const isImageTool = tool === 'image';
             const usePuter = checkShouldUsePuterFallback(isImageTool);
 
             try {
@@ -1560,7 +1673,7 @@ You can generate rich Markdown tables, structured documents, code, explanations,
                     const imgRes = await generateSubeAIImage(rawText, usePuter);
                     providerUsed = imgRes.provider;
                     usedPuterFallback = /puter/i.test(providerUsed);
-                    assistantMarkdown = `### SubeAI Generated Artwork\n\n![Generated Image](${imgRes.url})\n\n*Prompt:* ${rawText}`;
+                    assistantMarkdown = `### SubeAI Generated Image\n\n![Generated Image](${imgRes.url})`;
                     if (!usedPuterFallback) state.usage.dailyImages += 1;
                 } else if (tool === 'qr') {
                     const urlMatch = rawText.match(/https?:\/\/[^\s]+/i);
@@ -1644,17 +1757,20 @@ You can generate rich Markdown tables, structured documents, code, explanations,
             } finally {
                 state.isGenerating = false;
                 setLoadingIndicator(false);
-                const sendBtn = document.getElementById('send-prompt-btn');
                 if (sendBtn) sendBtn.disabled = false;
             }
         }
 
-        function setLoadingIndicator(visible, label = 'Nixy is thinking...') {
+        function setLoadingIndicator(visible, label = 'Nixy is thinking...', isImageGenerating = false) {
             const box = document.getElementById('nixy-loading-indicator');
             const txt = document.getElementById('nixy-loading-text');
+            const imgCard = document.getElementById('nixy-image-generating-card');
             const scrollArea = document.getElementById('chat-scroll-area');
             if (!box) return;
             if (txt) txt.textContent = label;
+            if (imgCard) {
+                imgCard.classList.toggle('hidden', !(visible && isImageGenerating));
+            }
             if (visible) {
                 box.classList.remove('hidden');
                 box.classList.add('flex');
@@ -1662,6 +1778,7 @@ You can generate rich Markdown tables, structured documents, code, explanations,
             } else {
                 box.classList.add('hidden');
                 box.classList.remove('flex');
+                if (imgCard) imgCard.classList.add('hidden');
             }
         }
 
@@ -1889,6 +2006,23 @@ You can generate rich Markdown tables, structured documents, code, explanations,
         function enhanceGeneratedCodeBlocks() {
             const feed = document.getElementById('messages-feed');
             if (!feed) return;
+
+            // Add compact sizing and a Download button to every generated image in chat
+            feed.querySelectorAll('.prose img').forEach(img => {
+                if (img.dataset.nixyWrapped === 'true') return;
+                img.dataset.nixyWrapped = 'true';
+                const wrap = document.createElement('div');
+                wrap.className = 'nix-generated-img-wrap my-2.5 inline-flex flex-col items-start gap-2 p-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border max-w-full';
+                const dlBtn = document.createElement('button');
+                dlBtn.type = 'button';
+                dlBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold transition';
+                dlBtn.textContent = 'Download Image';
+                dlBtn.onclick = () => downloadGeneratedImage(img.src);
+                img.parentNode.insertBefore(wrap, img);
+                wrap.appendChild(img);
+                wrap.appendChild(dlBtn);
+            });
+
             const extMap = { html: 'html', javascript: 'js', js: 'js', python: 'py', py: 'py', css: 'css', json: 'json', sql: 'sql', typescript: 'ts', ts: 'ts' };
 
             feed.querySelectorAll('.nix-code-placeholder').forEach(placeholder => {
@@ -1993,6 +2127,30 @@ You can generate rich Markdown tables, structured documents, code, explanations,
             a.download = item.fileName || `nixy-code-${Date.now()}.txt`;
             a.click();
             showToast(`Downloaded ${item.fileName || 'file'}`);
+        }
+
+        async function downloadGeneratedImage(src) {
+            if (!src) return;
+            try {
+                const res = await fetch(src);
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `nixy-image-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+                showToast('Image downloaded!');
+            } catch (_) {
+                const a = document.createElement('a');
+                a.href = src;
+                a.download = `nixy-image-${Date.now()}.png`;
+                a.target = '_blank';
+                a.click();
+                showToast('Opening image download...');
+            }
         }
 
         function hydrateSpecialWidgets() {
@@ -2289,65 +2447,304 @@ You can generate rich Markdown tables, structured documents, code, explanations,
                 action: () => togglePreferredProvider()
             },
             {
+                title: 'Tool Library, Announcements & Notifications',
+                body: 'Open Tool Library next to Plugins & Tools to launch Codenix Sheet apps, and check the top bell for live announcements and notices.',
+                action: () => toggleToolLibrarySection(true)
+            },
+            {
                 title: 'Files & Live Screen Vision (ShareNix)',
                 body: 'Attach images, PDFs, CSVs, or code with the paperclip icon, or share your screen with ShareNix so I can see what you see.',
                 action: () => toggleShareNix()
             },
             {
-                title: 'Tables, Docs & Instant PDFs',
-                body: 'Ask me for comparisons, reports, or structured tables — every response has one-click PDF, DOC, and CSV export buttons.',
-                action: () => sendPreset('Create a comparison table of top AI architectures with strengths and use cases')
-            },
-            {
                 title: 'Astreya Voice & Cody Live Canvas',
-                body: 'Speak hands-free with Astreya or ask Cody to generate interactive web apps you can preview and publish to HostNix.',
+                body: 'Speak hands-free with Astreya or ask Cody to generate interactive web apps with live preview.',
                 action: () => openAstreyaModal()
             }
         ];
 
-        function startNixyTutorial() {
-            state.tutorialStep = 0;
-            renderTutorialStep();
-            const modal = document.getElementById('nixy-tutorial-modal');
+        // ==========================================
+        // 9. GOOGLE SHEET TOOL LIBRARY, ANNOUNCEMENTS, NOTIFICATIONS & COMPANION TOUR
+        // ==========================================
+        let sheetToolLibrary = [];
+        let sheetNotifications = [];
+        let sheetBroadcastQueue = [];
+        let sheetBroadcastIdx = 0;
+
+        function cleanSheetImageUrl(url) {
+            if (!url) return '';
+            let cleaned = String(url).trim();
+            cleaned = cleaned.replace(/^=IMAGE\((["']?)(.*?)\1\)$/i, '$2');
+            cleaned = cleaned.replace(/^<img[^>]*src=["']?([^"'>]+)["']?[^>]*>/i, '$1');
+            cleaned = cleaned.replace(/['">]+$/g, '').replace(/^['">]+/g, '');
+            return cleaned.trim();
+        }
+
+        async function loadGoogleSheetWorkspaceData() {
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
+                const res = await fetch(url);
+                const text = await res.text();
+                const jsonStart = text.indexOf('({') + 1;
+                const jsonEnd = text.lastIndexOf('})') + 1;
+                const data = JSON.parse(text.slice(jsonStart, jsonEnd));
+                const rows = data?.table?.rows || [];
+
+                const tools = [];
+                const notifs = [];
+                const msgs = [];
+
+                rows.forEach(row => {
+                    const cells = row.c || [];
+                    const getVal = (idx) => (cells[idx] ? (cells[idx].v ?? cells[idx].f ?? '') : '');
+                    const sectionType = String(getVal(0) || '').trim();
+                    if (!sectionType || sectionType.toLowerCase() === 'section type') return;
+                    const lower = sectionType.toLowerCase();
+
+                    if (['notifications', 'notification', 'broadcasts', 'broadcast'].includes(lower)) {
+                        const title = String(getVal(1) || '').trim();
+                        const link = cleanSheetImageUrl(getVal(2));
+                        if (title) notifs.push({ title, link, isBroadcast: lower.includes('broadcast') });
+                        return;
+                    }
+
+                    if (['messages', 'message'].includes(lower)) {
+                        const title = String(getVal(1) || '').trim();
+                        const mediaUrl = cleanSheetImageUrl(getVal(2));
+                        if (title) msgs.push({ title, mediaUrl });
+                        return;
+                    }
+
+                    for (let colIdx = 1; colIdx + 1 < cells.length; colIdx += 3) {
+                        const name = String(getVal(colIdx) || '').trim();
+                        const link = String(getVal(colIdx + 1) || '').trim();
+                        const image = cleanSheetImageUrl(getVal(colIdx + 2));
+                        if (name) {
+                            tools.push({ section: sectionType, name, link: link || '#', image });
+                        }
+                    }
+                });
+
+                sheetToolLibrary = tools;
+                sheetNotifications = notifs;
+                renderToolLibraryUI();
+                renderSheetNotificationsUI();
+                setupSheetBroadcastModal(msgs);
+                lucide.createIcons();
+            } catch (_) {}
+        }
+
+        function toggleToolLibrarySection(forceOpen) {
+            const sec = document.getElementById('tool-library-section');
+            if (!sec) return;
+            const shouldShow = typeof forceOpen === 'boolean' ? forceOpen : sec.classList.contains('hidden');
+            sec.classList.toggle('hidden', !shouldShow);
+            if (shouldShow && sheetToolLibrary.length === 0) {
+                loadGoogleSheetWorkspaceData();
+            }
+        }
+
+        function renderToolLibraryUI() {
+            const countEl = document.getElementById('sheet-tool-library-count');
+            const gridEl = document.getElementById('tool-library-grid');
+            if (countEl) countEl.textContent = String(sheetToolLibrary.length);
+            if (!gridEl) return;
+
+            if (sheetToolLibrary.length === 0) {
+                gridEl.innerHTML = `<p class="col-span-full text-xs text-zinc-400 py-2">No tools found in the connected Google Sheet.</p>`;
+                return;
+            }
+
+            gridEl.innerHTML = sheetToolLibrary.map(item => `
+                <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener" class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-codenix-600/15 border border-codenix-500/25 flex items-center justify-center overflow-hidden shrink-0 text-xs font-bold text-codenix-600 dark:text-codenix-300">
+                        ${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" onerror="this.remove()" class="w-full h-full object-cover">` : escapeHtml(item.name.slice(0, 2).toUpperCase())}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold truncate">${escapeHtml(item.name)}</p>
+                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(item.section)}</p>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function toggleSheetNotifDropdown(e) {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('sheet-notif-dropdown');
+            if (!dd) return;
+            dd.classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', () => {
+            document.getElementById('sheet-notif-dropdown')?.classList.add('hidden');
+        });
+
+        function getReadSheetNotifIds() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.NOTIF_READ)) || []; } catch (_) { return []; }
+        }
+
+        function markAllSheetNotifsRead() {
+            const ids = sheetNotifications.map(n => `${n.title}|${n.link || ''}`);
+            try { localStorage.setItem(STORAGE_KEYS.NOTIF_READ, JSON.stringify(ids.slice(-200))); } catch (_) {}
+            renderSheetNotificationsUI();
+        }
+
+        function renderSheetNotificationsUI() {
+            const readIds = getReadSheetNotifIds();
+            const unreadCount = sheetNotifications.filter(n => !readIds.includes(`${n.title}|${n.link || ''}`)).length;
+            const badgeEl = document.getElementById('sheet-notif-badge');
+            const countEl = document.getElementById('sheet-notif-count');
+            const listEl = document.getElementById('sheet-notif-list');
+            const panelEl = document.getElementById('sheet-announcements-panel');
+            const panelBadge = document.getElementById('sheet-announcements-badge');
+            const panelList = document.getElementById('sheet-announcements-list');
+
+            if (countEl) countEl.textContent = String(unreadCount);
+            if (badgeEl) badgeEl.classList.toggle('hidden', unreadCount === 0);
+
+            if (listEl) {
+                if (sheetNotifications.length === 0) {
+                    listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-4">No notifications right now.</p>`;
+                } else {
+                    listEl.innerHTML = sheetNotifications.map(n => {
+                        const id = `${n.title}|${n.link || ''}`;
+                        const isRead = readIds.includes(id);
+                        const tag = n.isBroadcast ? 'Broadcast' : 'Notice';
+                        const body = `
+                            <div class="flex items-start justify-between gap-2 p-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black/70 border border-codenix-200/70 dark:border-codenix-border ${isRead ? 'opacity-65' : ''}">
+                                <div class="min-w-0">
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">${tag}</span>
+                                    <p class="text-xs font-semibold mt-1 break-words">${escapeHtml(n.title)}</p>
+                                </div>
+                                ${!isRead ? '<span class="w-2 h-2 rounded-full bg-codenix-500 mt-1.5 shrink-0"></span>' : ''}
+                            </div>`;
+                        return n.link && n.link !== '#'
+                            ? `<a href="${escapeHtml(n.link)}" target="_blank" rel="noopener" class="block">${body}</a>`
+                            : body;
+                    }).join('');
+                }
+            }
+
+            if (panelEl && panelList) {
+                if (sheetNotifications.length === 0) {
+                    panelEl.classList.add('hidden');
+                } else {
+                    panelEl.classList.remove('hidden');
+                    if (panelBadge) panelBadge.textContent = `${sheetNotifications.length} active`;
+                    panelList.innerHTML = sheetNotifications.slice(0, 4).map(n => {
+                        const card = `
+                            <div class="p-3 rounded-xl bg-white dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border">
+                                <span class="text-[10px] font-bold uppercase text-codenix-600 dark:text-codenix-400">${n.isBroadcast ? 'Broadcast' : 'Notice'}</span>
+                                <p class="text-xs font-semibold mt-0.5">${escapeHtml(n.title)}</p>
+                            </div>`;
+                        return n.link && n.link !== '#'
+                            ? `<a href="${escapeHtml(n.link)}" target="_blank" rel="noopener" class="block hover:opacity-90">${card}</a>`
+                            : card;
+                    }).join('');
+                }
+            }
+        }
+
+        function setupSheetBroadcastModal(messages) {
+            sheetBroadcastQueue = (messages || []).filter(m => {
+                try { return !localStorage.getItem('codenix_bc_seen_' + btoa(unescape(encodeURIComponent(m.title))).slice(0, 16)); } catch (_) { return true; }
+            });
+            if (!sheetBroadcastQueue.length) return;
+            sheetBroadcastIdx = 0;
+            showSheetBroadcastItem();
+            const modal = document.getElementById('sheet-broadcast-modal');
             modal?.classList.remove('hidden');
             modal?.classList.add('flex');
         }
 
-        function closeNixyTutorial() {
-            const modal = document.getElementById('nixy-tutorial-modal');
+        function showSheetBroadcastItem() {
+            const item = sheetBroadcastQueue[sheetBroadcastIdx];
+            if (!item) return;
+            const parts = String(item.title || '').split(/\s*\|\s*/);
+            document.getElementById('sheet-broadcast-title').textContent = parts.length > 1 ? parts[0] : 'Announcement';
+            document.getElementById('sheet-broadcast-body').textContent = parts.length > 1 ? parts.slice(1).join(' | ') : item.title;
+            const mediaBox = document.getElementById('sheet-broadcast-media');
+            if (item.mediaUrl && item.mediaUrl !== '#') {
+                mediaBox.classList.remove('hidden');
+                mediaBox.innerHTML = `<img src="${escapeHtml(item.mediaUrl)}" alt="Announcement" class="w-full h-full object-cover">`;
+            } else {
+                mediaBox.classList.add('hidden');
+                mediaBox.innerHTML = '';
+            }
+            document.getElementById('sheet-broadcast-next-btn').textContent =
+                sheetBroadcastIdx < sheetBroadcastQueue.length - 1 ? 'Next' : 'Got it';
+        }
+
+        function advanceSheetBroadcastModal() {
+            const item = sheetBroadcastQueue[sheetBroadcastIdx];
+            if (item) {
+                try { localStorage.setItem('codenix_bc_seen_' + btoa(unescape(encodeURIComponent(item.title))).slice(0, 16), 'true'); } catch (_) {}
+            }
+            if (sheetBroadcastIdx < sheetBroadcastQueue.length - 1) {
+                sheetBroadcastIdx += 1;
+                showSheetBroadcastItem();
+            } else {
+                closeSheetBroadcastModal();
+            }
+        }
+
+        function closeSheetBroadcastModal() {
+            const modal = document.getElementById('sheet-broadcast-modal');
             modal?.classList.add('hidden');
             modal?.classList.remove('flex');
         }
 
-        function renderTutorialStep() {
-            const step = TUTORIAL_STEPS[state.tutorialStep];
-            document.getElementById('tutorial-step-badge').textContent = `Step ${state.tutorialStep + 1} of ${TUTORIAL_STEPS.length}`;
-            document.getElementById('tutorial-title').textContent = step.title;
-            document.getElementById('tutorial-body').textContent = step.body;
-            document.getElementById('tutorial-prev-btn').disabled = state.tutorialStep === 0;
-            document.getElementById('tutorial-next-btn').textContent = state.tutorialStep === TUTORIAL_STEPS.length - 1 ? 'Finish' : 'Next';
+        let companionDragState = null;
+        function startDraggingNixyCompanion(e) {
+            const floater = document.getElementById('nixy-companion-floater');
+            if (!floater) return;
+            const rect = floater.getBoundingClientRect();
+            companionDragState = {
+                startX: e.clientX,
+                startY: e.clientY,
+                offsetX: e.clientX - rect.left,
+                offsetY: e.clientY - rect.top,
+                moved: false
+            };
+            const onMove = (ev) => {
+                if (!companionDragState) return;
+                if (Math.hypot(ev.clientX - companionDragState.startX, ev.clientY - companionDragState.startY) > 6) {
+                    companionDragState.moved = true;
+                }
+                const x = Math.max(12, Math.min(window.innerWidth - rect.width - 12, ev.clientX - companionDragState.offsetX));
+                const y = Math.max(12, Math.min(window.innerHeight - rect.height - 12, ev.clientY - companionDragState.offsetY));
+                floater.style.left = `${x}px`;
+                floater.style.top = `${y}px`;
+                floater.style.right = 'auto';
+                floater.style.bottom = 'auto';
+            };
+            const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                if (companionDragState && !companionDragState.moved) {
+                    showCompanionBubble("Hi! Drag me anywhere or click Interactive Tutorial with Nixy!", 3200);
+                }
+                companionDragState = null;
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
         }
 
-        function prevTutorialStep() {
-            if (state.tutorialStep > 0) {
-                state.tutorialStep -= 1;
-                renderTutorialStep();
-            }
+        function showCompanionBubble(msg, duration = 3200) {
+            const bubble = document.getElementById('nixy-companion-bubble');
+            if (!bubble) return;
+            bubble.textContent = msg;
+            bubble.classList.remove('hidden');
+            clearTimeout(window.__companionBubbleTimer);
+            window.__companionBubbleTimer = setTimeout(() => bubble.classList.add('hidden'), duration);
         }
 
-        function nextTutorialStep() {
-            if (state.tutorialStep < TUTORIAL_STEPS.length - 1) {
-                state.tutorialStep += 1;
-                renderTutorialStep();
-            } else {
-                closeNixyTutorial();
-            }
-        }
-
-        function tryTutorialAction() {
-            const step = TUTORIAL_STEPS[state.tutorialStep];
-            closeNixyTutorial();
-            if (step?.action) step.action();
+        function runWorkspaceTourIfNeeded() {
+            try {
+                if (localStorage.getItem(STORAGE_KEYS.TOUR_DONE) === 'true') return;
+                localStorage.setItem(STORAGE_KEYS.TOUR_DONE, 'true');
+            } catch (_) {}
+            showCompanionBubble("Welcome! I'm Nixy. Explore Tool Library, Notifications, or take the Guided Tour!", 4500);
         }
 
         // Share Conversation with PIN & Usage Modals
