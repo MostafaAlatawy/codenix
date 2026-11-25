@@ -229,6 +229,7 @@
             <div class="p-3.5 border-b border-codenix-200 dark:border-codenix-border space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
+                        <img src="/logo.png" alt="Codenix Logo" onerror="this.style.display='none'" class="w-7 h-7 rounded-lg object-contain shrink-0">
                         <div class="nixy-orb w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                             <div class="flex items-center gap-1.5">
                                 <span class="nixy-eye w-1.5 h-1.5 block"></span>
@@ -253,10 +254,10 @@
                     <span>New Conversation</span>
                 </button>
 
-                <!-- Search Conversations -->
+                <!-- Search Conversations (autocomplete disabled so email never autofills) -->
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                    <input type="text" id="chat-search" oninput="renderConversationList()" placeholder="Search conversations..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
+                    <input type="search" id="chat-search" name="nixy_conv_filter" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" oninput="renderConversationList()" placeholder="Search conversations..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
                 </div>
             </div>
 
@@ -287,33 +288,9 @@
                         <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="truncate">ShareNix</span>
                     </button>
-                </div>
-
-                <!-- Codenix Tokens & Quota Dashboard Mini-Card -->
-                <div onclick="openUsageModal()" class="p-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border cursor-pointer hover:border-codenix-500 transition">
-                    <div class="flex items-center justify-between text-[11px] mb-1">
-                        <span class="font-semibold text-codenix-700 dark:text-codenix-300 flex items-center gap-1">
-                            <i data-lucide="coins" class="w-3.5 h-3.5"></i> Codenix Tokens
-                        </span>
-                        <span id="sidebar-token-count" class="font-mono font-bold text-codenix-600 dark:text-codenix-400">0 tok</span>
-                    </div>
-                    <div class="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
-                        <span id="sidebar-quota-text">Chat: 0/30 • Img: 0/3</span>
-                        <span id="sidebar-fallback-pill" class="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold">API Active</span>
-                    </div>
-                </div>
-
-                <!-- User Account Footer -->
-                <div class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-codenix-600 text-white text-xs font-bold flex items-center justify-center shrink-0">U</div>
-                        <div class="min-w-0">
-                            <p id="user-display-name" class="text-xs font-semibold truncate">Loading...</p>
-                            <p id="user-display-ip" class="text-[10px] font-mono text-zinc-400 truncate">IP: ...</p>
-                        </div>
-                    </div>
-                    <button onclick="signOutUser()" title="Sign Out" class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 transition">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <button onclick="startNixyTutorial()" class="col-span-2 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
+                        <span>Interactive Tutorial with Nixy</span>
                     </button>
                 </div>
             </div>
@@ -331,6 +308,7 @@
 
                     <!-- Active Routing Engine Pill -->
                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold">
+                        <img src="/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-4 h-4 rounded object-contain">
                         <span class="w-2 h-2 rounded-full bg-codenix-500 animate-pulse"></span>
                         <span>Nixy Agent</span>
                         <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">Auto APIs</span>
@@ -389,22 +367,19 @@
                                 </div>
                             </div>
 
-                            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">
-                                Welcome to <span class="bg-gradient-to-r from-codenix-600 via-purple-500 to-codenix-400 bg-clip-text text-transparent">Nixy AI</span>
-                            </h1>
-                            <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-lg mb-7">
-                                Intelligent routing across NVIDIA, Gemini, DeepSeek, Cohere, Groq, OpenRouter & Puter.js with integrated creative & developer tools.
+                            <div class="flex items-center justify-center gap-2.5 mb-2">
+                                <img src="/logo.png" alt="Codenix Logo" onerror="this.style.display='none'" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-contain">
+                                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+                                    Welcome to <span class="bg-gradient-to-r from-codenix-600 via-purple-500 to-codenix-400 bg-clip-text text-transparent">Nixy AI</span>
+                                </h1>
+                            </div>
+                            <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-lg mb-4">
+                                Intelligent routing across NVIDIA, Gemini, DeepSeek, Cohere, Groq, OpenRouter & Puter.js with multimodal vision, voice, files, tables, PDFs & creative tools.
                             </p>
-
-                            <!-- Tool Capabilities Grid -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl text-left">
-                                <button onclick="sendPreset('Generate a futuristic purple and obsidian cyberpunk city illustration with SubeAI')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition text-left">
-                                    <div class="flex items-center gap-2 text-xs font-bold text-codenix-700 dark:text-codenix-300 mb-1">
-                                        <i data-lucide="image" class="w-4 h-4"></i>
-                                        <span>SubeAI Image Studio</span>
-                                    </div>
-                                    <p class="text-xs text-zinc-600 dark:text-zinc-400">Generate artwork with Stability, Pollinations & Puter fallback.</p>
-                                </button>
+                            <button onclick="startNixyTutorial()" class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold shadow-md shadow-codenix-600/25 transition">
+                                <i data-lucide="compass" class="w-3.5 h-3.5"></i>
+                                <span>Take Guided Tour with Nixy</span>
+                            </button>
 
                                 <button onclick="sendPreset('Build a sleek interactive habit tracker web app with Cody and publish it to HostNix')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition text-left">
                                     <div class="flex items-center gap-2 text-xs font-bold text-codenix-700 dark:text-codenix-300 mb-1">
@@ -464,82 +439,118 @@
             <!-- COMPOSER BAR -->
             <div class="p-3 sm:p-4 border-t border-codenix-200 dark:border-codenix-border bg-white/95 dark:bg-codenix-black/95 backdrop-blur-md shrink-0">
                 <div class="max-w-3xl mx-auto">
-                    <!-- Hidden Screen Capture Video Element for ShareNix -->
+                    <!-- Hidden Screen Capture Video & Canvas for ShareNix Vision -->
                     <video id="sharenix-video" autoplay playsinline muted class="hidden"></video>
+                    <canvas id="sharenix-canvas" class="hidden"></canvas>
+
+                    <!-- Uploaded Files Preview Strip -->
+                    <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
+
+                    <!-- Hidden File Input -->
+                    <input type="file" id="nixy-file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql,.xml" onchange="handleFileUploadSelection(event)" class="hidden">
 
                     <!-- Input Box -->
-                    <div class="flex items-end gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 shadow-sm transition">
-                        <button onclick="openAstreyaModal()" title="Astreya Voice Mode" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
+                    <div class="flex items-end gap-1.5 sm:gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 shadow-sm transition">
+                        <button onclick="document.getElementById('nixy-file-input').click()" title="Upload Files or Images" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
+                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                        </button>
+
+                        <button onclick="openAstreyaModal()" title="Astreya Multimodal Voice Mode" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="audio-waveform" class="w-4 h-4"></i>
                         </button>
 
-                        <button onclick="toggleShareNix()" title="ShareNix Screen Context" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
+                        <button onclick="toggleShareNix()" title="ShareNix Live Screen Vision" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="monitor-up" class="w-4 h-4"></i>
                         </button>
 
-                        <textarea id="prompt-input" rows="1" placeholder="Message Nixy or ask to generate images, QR, code, voice, motion..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
+                        <textarea id="prompt-input" rows="1" placeholder="Message Nixy, upload files, share screen, or ask for images, tables, PDFs, QR, voice..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
 
                         <button id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white shadow-md shadow-codenix-600/25 transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
+    <!-- ASTREYA MULTIMODAL VOICE MODE MODAL -->
+    <div id="astreya-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex-col items-center justify-between p-4 sm:p-6 text-white overflow-y-auto">
+        <div class="w-full max-w-2xl flex items-center justify-between">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold">
+                <img src="/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-4 h-4 rounded object-contain">
+                <span class="w-2 h-2 rounded-full bg-codenix-400 animate-pulse"></span>
+                <span>Astreya Multimodal Voice Companion</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleShareNix()" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5">
+                    <i data-lucide="monitor-up" class="w-3.5 h-3.5"></i>
+                    <span>Share Screen</span>
+                </button>
+                <button onclick="closeAstreyaModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
 
-                    <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-1.5 px-1">
-                        <span id="quota-footer-label">Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)</span>
-                        <span id="puter-link-status" class="font-mono text-codenix-600 dark:text-codenix-400">Puter: Ready</span>
+        <div class="flex flex-col items-center text-center my-auto w-full max-w-2xl py-4">
+            <div id="astreya-orb" onclick="toggleAstreyaListening()" class="astreya-orb w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center cursor-pointer mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="nixy-eye w-3.5 h-3.5 block"></span>
+                    <span class="nixy-eye w-3.5 h-3.5 block"></span>
+                </div>
+            </div>
+            <p id="astreya-status" class="text-xs font-bold uppercase tracking-widest text-codenix-300 mb-3">Tap Orb to Speak or Ask Below</p>
+            <div class="w-full max-w-lg px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-200 mb-4">
+                <p id="astreya-caption">"Hello! I'm Astreya & Nixy. Ask me to generate images, inspect your screen, create QR codes, or answer anything!"</p>
+            </div>
+
+            <!-- Live Multimodal Visual Stage inside Voice Mode (Images, QR, Tables, Screen) -->
+            <div id="astreya-visual-stage" class="hidden w-full max-w-lg p-4 rounded-2xl bg-codenix-panel/95 border border-codenix-500/40 text-left shadow-2xl space-y-2">
+                <div class="flex items-center justify-between text-[11px] text-codenix-300 font-bold">
+                    <span id="astreya-visual-title">Generated Visual</span>
+                    <button onclick="document.getElementById('astreya-visual-stage').classList.add('hidden')" class="text-zinc-400 hover:text-white">Hide</button>
+                </div>
+                <div id="astreya-visual-content" class="prose prose-sm prose-invert max-w-none flex flex-col items-center"></div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-lg space-y-2.5">
+            <div class="flex items-center gap-2 bg-white/10 border border-white/15 rounded-2xl p-1.5">
+                <input type="text" id="astreya-text-input" onkeydown="if(event.key==='Enter') sendAstreyaCommand()" placeholder="Or type a voice command (e.g. 'Generate a purple dragon image')..." class="flex-1 bg-transparent px-3 py-1.5 text-xs text-white placeholder-zinc-400 focus:outline-none">
+                <button onclick="sendAstreyaCommand()" class="px-3.5 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-500 text-xs font-bold">Send</button>
+            </div>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="toggleAstreyaListening()" class="px-5 py-2.5 rounded-full bg-codenix-600 hover:bg-codenix-500 text-xs font-bold">Listen / Speak</button>
+                <button onclick="closeAstreyaModal()" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">End Voice</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE NIXY TUTORIAL MODAL -->
+    <div id="nixy-tutorial-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative text-center space-y-4">
+            <button onclick="closeNixyTutorial()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center justify-center gap-2">
+                <div class="nixy-orb w-16 h-16 rounded-full flex items-center justify-center">
+                    <div class="flex items-center gap-2.5">
+                        <span class="nixy-eye w-3 h-3 block"></span>
+                        <span class="nixy-eye w-3 h-3 block"></span>
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <!-- ASTREYA VOICE MODE MODAL -->
-    <div id="astreya-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex-col items-center justify-between p-6 text-white">
-        <div class="w-full max-w-lg flex items-center justify-between">
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold">
-                <span class="w-2 h-2 rounded-full bg-codenix-400 animate-pulse"></span>
-                <span>Astreya Voice Companion</span>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold">
+                <span id="tutorial-step-badge">Step 1 of 5</span>
             </div>
-            <button onclick="closeAstreyaModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
 
-        <div class="flex flex-col items-center text-center my-auto">
-            <div id="astreya-orb" onclick="toggleAstreyaListening()" class="astreya-orb w-40 h-40 rounded-full flex items-center justify-center cursor-pointer mb-6">
-                <i id="astreya-orb-icon" data-lucide="mic" class="w-10 h-10 text-white"></i>
-            </div>
-            <p id="astreya-status" class="text-xs font-bold uppercase tracking-widest text-codenix-300 mb-3">Tap Orb to Speak</p>
-            <div class="max-w-md px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-200">
-                <p id="astreya-caption">"Hello! I'm Astreya powered by Nixy. Tap the orb and talk with me."</p>
-            </div>
-        </div>
+            <h3 id="tutorial-title" class="text-lg font-extrabold text-zinc-900 dark:text-white">Meet Nixy — Your AI Companion</h3>
+            <p id="tutorial-body" class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                Hi! I'm Nixy. I remember your current conversation and past saved chats in Supabase, and I automatically route to the best AI model or unlimited Puter.js!
+            </p>
 
-        <div class="flex items-center gap-3">
-            <button onclick="toggleAstreyaListening()" class="px-5 py-2.5 rounded-full bg-codenix-600 hover:bg-codenix-500 text-xs font-bold">Listen / Pause</button>
-            <button onclick="closeAstreyaModal()" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">End Voice</button>
-        </div>
-    </div>
-
-    <!-- POMODORY FOCUS TIMER MODAL -->
-    <div id="pomodory-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative">
-            <button onclick="closePomodoryModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-xs font-bold mb-3">
-                <i data-lucide="timer" class="w-3.5 h-3.5"></i>
-                <span>Pomodory Focus</span>
-            </div>
-            <div id="pomodory-display" class="text-5xl font-extrabold font-mono tracking-tight my-4 text-codenix-600 dark:text-codenix-400">25:00</div>
-            <div class="flex justify-center gap-2 mb-5">
-                <button onclick="setPomodoryMinutes(25)" class="px-3 py-1 rounded-lg bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">25m Focus</button>
-                <button onclick="setPomodoryMinutes(5)" class="px-3 py-1 rounded-lg bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">5m Break</button>
-                <button onclick="setPomodoryMinutes(15)" class="px-3 py-1 rounded-lg bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">15m Long</button>
-            </div>
-            <div class="flex gap-2">
-                <button id="pomodory-start-btn" onclick="togglePomodoryTimer()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Start Timer</button>
-                <button onclick="resetPomodoryTimer()" class="px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Reset</button>
+            <div class="flex items-center justify-between pt-2 gap-2">
+                <button onclick="prevTutorialStep()" id="tutorial-prev-btn" class="px-4 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Back</button>
+                <button onclick="tryTutorialAction()" class="px-4 py-2 rounded-xl bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-xs font-bold">Try This Feature</button>
+                <button onclick="nextTutorialStep()" id="tutorial-next-btn" class="px-5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Next</button>
             </div>
         </div>
     </div>
@@ -672,6 +683,8 @@
             isGenerating: false,
             latestCodyHtml: '',
             shareNixStream: null,
+            uploadedFiles: [],
+            tutorialStep: 0,
             preferredProvider: localStorage.getItem(STORAGE_KEYS.PREFERRED_PROVIDER) || 'auto',
             usage: {
                 minuteStart: Date.now(),
@@ -681,6 +694,23 @@
                 dailyImages: 0,
                 codenixTokens: 0,
                 puterLinked: localStorage.getItem(STORAGE_KEYS.PUTER_LINKED) === 'true'
+            }
+        };
+
+        // ==========================================
+        // 1. INITIALIZATION & SUPABASE AUTH GUARD
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
+            lucide.createIcons();
+            bindNixyEyeTracking();
+            updateProviderModeUI();
+
+            // Clear any browser autofill in conversation search
+            const searchBox = document.getElementById('chat-search');
+            if (searchBox) {
+                searchBox.value = '';
+                setTimeout(() => { searchBox.value = ''; }, 250);
             }
         };
 
@@ -1169,13 +1199,153 @@
         function detectRequestedTool(prompt) {
             const p = prompt.toLowerCase();
             if (/\b(qr|qrcode|qr code|nixqr)\b/.test(p)) return 'nixqr';
-            if (/\b(image|draw|paint|illustration|subeai|generate a picture|photo of)\b/.test(p)) return 'subeai';
-            if (/\b(voice|speak|tts|say aloud|nixvoice|audio)\b/.test(p)) return 'nixvoice';
+            if (/\b(image|draw|paint|illustration|subeai|generate a picture|photo of|picture of|artwork)\b/.test(p)) return 'subeai';
+            if (/\b(voice|speak|tts|say aloud|nixvoice|audio|read this|pronounce)\b/.test(p)) return 'nixvoice';
             if (/\b(motion|animation|video|vidy|looping graphic)\b/.test(p)) return 'vidy';
             if (/\b(pomodoro|pomodory|timer|focus session)\b/.test(p)) return 'pomodory';
             if (/\b(pdf|document|doc|report|table|spreadsheet|csv|comparison table)\b/.test(p)) return 'doc_table';
             if (/\b(html|website|landing page|calculator|app|cody|hostnix|canvas|build a)\b/.test(p)) return 'cody';
             return 'chat';
+        }
+
+        // Understands user's voice request and prepares the exact spoken script + TTS text
+        async function prepareSmartVoiceScript(userPrompt, forcePuter) {
+            const quotedMatch = userPrompt.match(/["“](.+?)["”]/);
+            if (quotedMatch && quotedMatch[1].trim().length > 1) {
+                return quotedMatch[1].trim();
+            }
+            const directSayMatch = userPrompt.match(/^(?:please\s+)?(?:say|speak|read|pronounce|tts)\s*(?:out\s*loud|aloud|this|that)?\s*:?\s*(.+)$/i);
+            if (directSayMatch && directSayMatch[1].trim().length > 1 && !/\b(about|for|a story|a greeting|something|joke|explanation)\b/i.test(directSayMatch[1])) {
+                return directSayMatch[1].trim();
+            }
+            try {
+                const res = await callCascadingChatAI([
+                    {
+                        role: 'system',
+                        content: 'You are Nixy Voice Script Engine. The user wants text-to-speech audio generated from their request. Understand their intent and write ONLY the exact, natural spoken words to be read aloud (no markdown, no labels, no quotes, 1-3 clear sentences).'
+                    },
+                    { role: 'user', content: userPrompt }
+                ], forcePuter);
+                if (res && res.text) {
+                    return res.text.replace(/^["“]|["”]$/g, '').trim();
+                }
+            } catch (_) {}
+            return userPrompt.replace(/^(generate|create|make|say|speak|nixvoice)\s*(a\s*)?(voice|audio|tts)?\s*:?\s*/i, '').trim() || 'Hello from Nixy AI!';
+        }
+
+        // ==========================================
+        // FILE UPLOADING & SHARENIX LIVE SCREEN VISION
+        // ==========================================
+        async function handleFileUploadSelection(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            for (const file of files) {
+                if (file.type.startsWith('image/')) {
+                    const dataUrl = await readFileAsDataUrl(file);
+                    state.uploadedFiles.push({
+                        name: file.name,
+                        type: file.type,
+                        isImage: true,
+                        dataUrl
+                    });
+                } else {
+                    const textContent = await readFileAsText(file);
+                    state.uploadedFiles.push({
+                        name: file.name,
+                        type: file.type || 'text/plain',
+                        isImage: false,
+                        textContent: textContent.slice(0, 12000)
+                    });
+                }
+            }
+            event.target.value = '';
+            renderUploadedFilesStrip();
+            showToast(`${files.length} file(s) attached for Nixy!`);
+        }
+
+        function readFileAsDataUrl(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => resolve('');
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function readFileAsText(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result || ''));
+                reader.onerror = () => resolve(`[Binary file: ${file.name}]`);
+                reader.readAsText(file);
+            });
+        }
+
+        function removeUploadedFile(idx) {
+            state.uploadedFiles.splice(idx, 1);
+            renderUploadedFilesStrip();
+        }
+
+        function renderUploadedFilesStrip() {
+            const strip = document.getElementById('uploaded-files-strip');
+            if (!strip) return;
+            if (!state.uploadedFiles.length) {
+                strip.classList.add('hidden');
+                strip.classList.remove('flex');
+                strip.innerHTML = '';
+                return;
+            }
+            strip.classList.remove('hidden');
+            strip.classList.add('flex');
+            strip.innerHTML = state.uploadedFiles.map((f, idx) => `
+                <div class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-codenix-600/15 border border-codenix-500/30 text-xs text-codenix-700 dark:text-codenix-200">
+                    ${f.isImage ? `<img src="${f.dataUrl}" class="w-5 h-5 rounded object-cover">` : `<i data-lucide="file-text" class="w-3.5 h-3.5"></i>`}
+                    <span class="max-w-[140px] truncate font-medium">${escapeHtml(f.name)}</span>
+                    <button onclick="removeUploadedFile(${idx})" class="text-zinc-400 hover:text-rose-500 font-bold">&times;</button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function captureShareNixFrame() {
+            if (!state.shareNixStream) return null;
+            const vid = document.getElementById('sharenix-video');
+            const canvas = document.getElementById('sharenix-canvas');
+            if (!vid || !canvas || !vid.videoWidth) return null;
+            const scale = Math.min(1, 1024 / vid.videoWidth);
+            canvas.width = Math.round(vid.videoWidth * scale);
+            canvas.height = Math.round(vid.videoHeight * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.78);
+        }
+
+        async function analyzeVisualWithNixy(imageDataUrl, question, forcePuter) {
+            if (window.puter && puter.ai && typeof puter.ai.chat === 'function') {
+                try {
+                    const res = await puter.ai.chat(question, imageDataUrl);
+                    const txt = typeof res === 'string' ? res : (res?.message?.content || res?.text || '');
+                    if (txt) return txt;
+                } catch (_) {}
+            }
+            try {
+                const res = await fetch(CLOUDFLARE_PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'vision',
+                        provider: 'GEMINI_API_1',
+                        prompt: question,
+                        imageDataUrl
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data?.text) return data.text;
+                }
+            } catch (_) {}
+            return '';
         }
 
         // Cascading Chat API: NVIDIA_API -> GEMINI_API_1 -> DEEPSEEK_API -> COHERE_API -> GROQ_API -> OPEN_API -> Puter.js
@@ -1296,7 +1466,8 @@
             if (state.isGenerating) return;
             const input = document.getElementById('prompt-input');
             const prompt = (input.value || '').trim();
-            if (!prompt) return;
+            const attachedFiles = [...state.uploadedFiles];
+            if (!prompt && !attachedFiles.length) return;
 
             if (!state.activeConversationId) {
                 await createNewChat();
@@ -1307,8 +1478,11 @@
 
             input.value = '';
             autoResizeTextarea(input);
+            state.uploadedFiles = [];
+            renderUploadedFilesStrip();
 
-            const tool = detectRequestedTool(prompt);
+            const effectivePrompt = prompt || `Analyze the uploaded file(s): ${attachedFiles.map(f => f.name).join(', ')}`;
+            const tool = detectRequestedTool(effectivePrompt);
             const isImageTool = tool === 'subeai';
             const usePuter = checkShouldUsePuterFallback(isImageTool);
 
@@ -1317,20 +1491,43 @@
                 await linkPuterAccount();
             }
 
-            // Capture ShareNix screen frame if screen sharing is active
-            let screenContextNote = '';
-            if (state.shareNixStream) {
-                screenContextNote = '\n[ShareNix Screen Active: User is currently sharing their screen with Nixy.]';
+            // Capture live ShareNix screen frame + attached file context so the model sees everything
+            let multimodalContext = '';
+            const liveScreenFrame = captureShareNixFrame();
+            if (liveScreenFrame) {
+                const screenSummary = await analyzeVisualWithNixy(
+                    liveScreenFrame,
+                    `Describe everything visible on the user's shared screen in detail so you can answer: "${effectivePrompt}"`,
+                    usePuter
+                );
+                multimodalContext += `\n\n[ShareNix Live Screen Vision]: ${screenSummary || 'User is actively sharing their screen.'}`;
             }
 
-            conv.messages.push({ role: 'user', content: prompt, tool_used: tool });
+            for (const f of attachedFiles) {
+                if (f.isImage && f.dataUrl) {
+                    const imgAnalysis = await analyzeVisualWithNixy(
+                        f.dataUrl,
+                        `Analyze this uploaded image (${f.name}) thoroughly in context of: "${effectivePrompt}"`,
+                        usePuter
+                    );
+                    multimodalContext += `\n\n[Uploaded Image "${f.name}" Analysis]: ${imgAnalysis || 'Image attached by user.'}`;
+                } else if (f.textContent) {
+                    multimodalContext += `\n\n[Uploaded File "${f.name}" Content]:\n\`\`\`\n${f.textContent}\n\`\`\``;
+                }
+            }
+
+            const userDisplayMsg = attachedFiles.length
+                ? `${effectivePrompt}\n\n📎 Attached: ${attachedFiles.map(f => f.name).join(', ')}`
+                : effectivePrompt;
+
+            conv.messages.push({ role: 'user', content: userDisplayMsg, tool_used: tool });
             if (conv.title === 'New Conversation') {
-                conv.title = prompt.slice(0, 42);
+                conv.title = effectivePrompt.slice(0, 42);
             }
             updatePrivateChatUrl(conv.id);
             renderConversationList();
             renderMessages();
-            await saveMessageToSupabase(conv.id, 'user', prompt, tool, 'user', Math.ceil(prompt.length / 4));
+            await saveMessageToSupabase(conv.id, 'user', userDisplayMsg, tool, 'user', Math.ceil(userDisplayMsg.length / 4));
 
             state.isGenerating = true;
             document.getElementById('send-prompt-btn').disabled = true;
@@ -1343,25 +1540,25 @@
                 const crossMemory = buildCrossConversationMemoryPrompt(conv.id);
 
                 if (tool === 'subeai') {
-                    const imgRes = await callCascadingImageAI(prompt, usePuter);
+                    const imgRes = await callCascadingImageAI(effectivePrompt, usePuter);
                     providerUsed = imgRes.provider;
                     usedPuterFallback = /puter/i.test(providerUsed);
-                    assistantMarkdown = `### SubeAI Image Result\nGenerated via **${providerUsed}**:\n\n![SubeAI Artwork](${imgRes.imageUrl})\n\n*Prompt:* ${prompt}`;
+                    assistantMarkdown = `### SubeAI Image Result\nGenerated via **${providerUsed}**:\n\n![SubeAI Artwork](${imgRes.imageUrl})\n\n*Prompt:* ${effectivePrompt}`;
                     if (!usedPuterFallback) {
                         state.usage.dailyImages += 1;
                     }
                 } else if (tool === 'nixqr') {
-                    const urlMatch = prompt.match(/https?:\/\/[^\s]+/i);
-                    const qrTarget = urlMatch ? urlMatch[0] : prompt.replace(/^.*nixqr\s*(for|of)?\s*/i, '').trim() || 'https://codenix.ai';
+                    const urlMatch = effectivePrompt.match(/https?:\/\/[^\s]+/i);
+                    const qrTarget = urlMatch ? urlMatch[0] : effectivePrompt.replace(/^.*nixqr\s*(for|of)?\s*/i, '').trim() || 'https://codenix.ai';
                     providerUsed = 'NixQR Engine';
                     assistantMarkdown = `### NixQR Generated\nEncoded target: \`${qrTarget}\`\n\n<div class="nixqr-embed" data-qr-target="${escapeHtml(qrTarget)}"></div>`;
-                    state.usage.dailyChats += 1;
+                    if (!usedPuterFallback) state.usage.dailyChats += 1;
                 } else if (tool === 'cody') {
                     const codePrompt = [
                         { role: 'system', content: 'You are Cody, Codenix\'s expert web engineer. Output a single complete, self-contained HTML file inside ```html ... ``` with Tailwind CSS and interactive JavaScript.' + crossMemory },
                         ...conv.messages.slice(-8).map((m, idx, arr) => ({
                             role: m.role,
-                            content: m.content + (idx === arr.length - 1 ? screenContextNote : '')
+                            content: m.content + (idx === arr.length - 1 ? multimodalContext : '')
                         }))
                     ];
                     const aiRes = await callCascadingChatAI(codePrompt, usePuter);
@@ -1373,7 +1570,7 @@
                     openCodyCanvas(extractedHtml);
 
                     let hostNixNote = '';
-                    if (/\b(publish|hostnix|deploy)\b/i.test(prompt)) {
+                    if (/\b(publish|hostnix|deploy)\b/i.test(effectivePrompt)) {
                         const slug = await publishHtmlToHostNix(extractedHtml);
                         hostNixNote = `\n\n🚀 **Published to HostNix:** \`https://hostnix.vercel.app/#${slug}\``;
                     }
@@ -1382,35 +1579,35 @@
                         state.usage.dailyChats += 1;
                     }
                 } else if (tool === 'nixvoice') {
-                    const cleanSpeech = prompt.replace(/^(generate|create|say|speak|nixvoice)\s*(voice|audio|greeting|aloud)?\s*:?\s*/i, '').trim() || 'Hello from Nixy and Codenix AI!';
-                    const voiceRes = await callCascadingVoiceAI(cleanSpeech, usePuter);
+                    const smartSpeechScript = await prepareSmartVoiceScript(effectivePrompt + multimodalContext, usePuter);
+                    const voiceRes = await callCascadingVoiceAI(smartSpeechScript, usePuter);
                     providerUsed = voiceRes.provider;
                     usedPuterFallback = /puter/i.test(providerUsed);
                     if (voiceRes.audioUrl) {
-                        assistantMarkdown = `### NixVoice Audio Synthesized\nProvider: **${providerUsed}**\n\n<audio controls autoplay src="${voiceRes.audioUrl}" class="w-full mt-2"></audio>\n\n> "${cleanSpeech}"`;
+                        assistantMarkdown = `### NixVoice Audio & TTS Script\nProvider: **${providerUsed}**\n\n<audio controls autoplay src="${voiceRes.audioUrl}" class="w-full mt-2"></audio>\n\n**Spoken TTS Text:**\n> ${smartSpeechScript}`;
                     } else {
-                        speakWithBrowserTTS(cleanSpeech);
-                        assistantMarkdown = `### NixVoice Spoken\nProvider: **${providerUsed}**\n\n> "${cleanSpeech}"`;
+                        speakWithBrowserTTS(smartSpeechScript);
+                        assistantMarkdown = `### NixVoice Spoken & TTS Text\nProvider: **${providerUsed}**\n\n**Spoken TTS Text:**\n> ${smartSpeechScript}`;
                     }
                     if (!usedPuterFallback) {
                         state.usage.dailyChats += 1;
                     }
                 } else if (tool === 'vidy') {
                     providerUsed = 'Vidy 60fps Engine';
-                    assistantMarkdown = `### Vidy Motion Graphic Loop\nGenerated a 60fps looping Codenix purple motion sequence for: **${escapeHtml(prompt)}**\n\n<div class="vidy-embed" data-vidy-prompt="${escapeHtml(prompt)}"></div>`;
-                    state.usage.dailyChats += 1;
+                    assistantMarkdown = `### Vidy Motion Graphic Loop\nGenerated a 60fps looping Codenix purple motion sequence for: **${escapeHtml(effectivePrompt)}**\n\n<div class="vidy-embed" data-vidy-prompt="${escapeHtml(effectivePrompt)}"></div>`;
+                    if (!usedPuterFallback) state.usage.dailyChats += 1;
                 } else if (tool === 'pomodory') {
-                    const minsMatch = prompt.match(/(\d+)\s*(min|minute)/i);
+                    const minsMatch = effectivePrompt.match(/(\d+)\s*(min|minute)/i);
                     const mins = minsMatch ? Math.min(90, Math.max(1, parseInt(minsMatch[1], 10))) : 25;
                     setPomodoryMinutes(mins);
                     openPomodoryModal();
                     providerUsed = 'Pomodory Engine';
                     assistantMarkdown = `### Pomodory Focus Timer Started\nConfigured a **${mins}:00** focus session in the Pomodory timer modal.`;
-                    if (!usePuter) state.usage.dailyChats += 1;
+                    if (!usedPuterFallback) state.usage.dailyChats += 1;
                 } else if (tool === 'doc_table') {
                     const docHistory = [
                         { role: 'system', content: 'You are Nixy, the intelligent Codenix AI Agent skilled in creating clean Markdown tables, structured documents, reports, and PDF-ready content. Always format tabular data using standard GitHub-Flavored Markdown tables (`| Col 1 | Col 2 |`) and structure documents with clear `#` / `##` / `###` headings and bullet points.' + crossMemory },
-                        ...conv.messages.slice(-16).map(m => ({ role: m.role, content: m.content + (m.role === 'user' ? screenContextNote : '') }))
+                        ...conv.messages.slice(-16).map((m, idx, arr) => ({ role: m.role, content: m.content + (idx === arr.length - 1 ? multimodalContext : '') }))
                     ];
                     const aiRes = await callCascadingChatAI(docHistory, usePuter);
                     providerUsed = aiRes.provider;
@@ -1421,8 +1618,8 @@
                     }
                 } else {
                     const history = [
-                        { role: 'system', content: 'You are Nixy, the intelligent Codenix AI Agent. You can create structured tables, rich documents, PDFs, code, images, and more. Remember both all messages in the current conversation and relevant context from the user\'s previous saved conversations. Format answers cleanly with Markdown.' + crossMemory },
-                        ...conv.messages.slice(-16).map(m => ({ role: m.role, content: m.content + (m.role === 'user' ? screenContextNote : '') }))
+                        { role: 'system', content: 'You are Nixy, the intelligent Codenix AI Agent. You can see shared screens via ShareNix, analyze uploaded files/images, create structured tables, rich documents, PDFs, code, images, QR codes, and voice responses. Remember both all messages in the current conversation and relevant context from the user\'s previous saved conversations. Format answers cleanly with Markdown.' + crossMemory },
+                        ...conv.messages.slice(-16).map((m, idx, arr) => ({ role: m.role, content: m.content + (idx === arr.length - 1 ? multimodalContext : '') }))
                     ];
                     const aiRes = await callCascadingChatAI(history, usePuter);
                     providerUsed = aiRes.provider;
@@ -1432,39 +1629,199 @@
                         state.usage.dailyChats += 1;
                     }
                 }
+        // Astreya Multimodal Voice Mode (Supports Images, QR, Screen Vision, Tables & Voice)
+        let astreyaRecognition = null;
+        function openAstreyaModal() {
+            const modal = document.getElementById('astreya-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+        function closeAstreyaModal() {
+            if (astreyaRecognition) { try { astreyaRecognition.stop(); } catch (_) {} }
+            window.speechSynthesis?.cancel();
+            const modal = document.getElementById('astreya-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        async function sendAstreyaCommand() {
+            const inp = document.getElementById('astreya-text-input');
+            const cmd = (inp?.value || '').trim();
+            if (!cmd) return;
+            inp.value = '';
+            await processAstreyaTurn(cmd);
+        }
+        function toggleAstreyaListening() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                document.getElementById('astreya-caption').textContent = 'SpeechRecognition is not supported in this browser — use the command input below!';
+                return;
+            }
+            astreyaRecognition = new SR();
+            astreyaRecognition.lang = 'en-US';
+            document.getElementById('astreya-status').textContent = 'Listening...';
+            astreyaRecognition.onresult = async (e) => {
+                const spoken = e.results?.[0]?.[0]?.transcript || '';
+                await processAstreyaTurn(spoken);
+            };
+            astreyaRecognition.start();
+        }
+        async function processAstreyaTurn(spoken) {
+            if (!spoken) return;
+            const captionEl = document.getElementById('astreya-caption');
+            const statusEl = document.getElementById('astreya-status');
+            const visualStage = document.getElementById('astreya-visual-stage');
+            const visualTitle = document.getElementById('astreya-visual-title');
+            const visualContent = document.getElementById('astreya-visual-content');
 
-                // Puter.js requests are NOT calculated in usage limits or token counters
-                const tokensEarned = usedPuterFallback ? 0 : Math.max(25, Math.ceil((prompt.length + assistantMarkdown.length) / 3));
-                if (!usedPuterFallback) {
-                    state.usage.minuteCount += 1;
-                    state.usage.codenixTokens += tokensEarned;
+            captionEl.textContent = `"${spoken}"`;
+            statusEl.textContent = 'Nixy is thinking...';
+
+            const usePuter = checkShouldUsePuterFallback(false);
+            const tool = detectRequestedTool(spoken);
+            let spokenReply = '';
+
+            // Also sync turn into active chat conversation if open
+            if (!state.activeConversationId) await createNewChat();
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+
+            // Check live ShareNix screen frame if active
+            let screenNote = '';
+            const frame = captureShareNixFrame();
+            if (frame) {
+                const seen = await analyzeVisualWithNixy(frame, `What is on the user's screen right now? Answer: "${spoken}"`, usePuter);
+                screenNote = `\n[Screen Vision]: ${seen}`;
+            }
+
+            if (tool === 'subeai') {
+                statusEl.textContent = 'Generating Image in Voice Mode...';
+                const imgRes = await callCascadingImageAI(spoken, usePuter);
+                visualTitle.textContent = `SubeAI Image • ${imgRes.provider}`;
+                visualContent.innerHTML = `<img src="${imgRes.imageUrl}" alt="Generated Image" class="max-h-64 rounded-xl shadow-lg object-contain">`;
+                visualStage.classList.remove('hidden');
+                spokenReply = `Here is the image I generated for ${spoken}.`;
+                if (conv) {
+                    conv.messages.push({ role: 'user', content: spoken, tool_used: 'subeai' });
+                    conv.messages.push({ role: 'assistant', content: `### SubeAI Image (Voice Mode)\n![SubeAI Artwork](${imgRes.imageUrl})`, tool_used: 'subeai', provider_used: imgRes.provider });
+                    renderMessages();
                 }
-                await syncUserLimitsToSupabase();
+            } else if (tool === 'nixqr') {
+                const urlMatch = spoken.match(/https?:\/\/[^\s]+/i);
+                const qrTarget = urlMatch ? urlMatch[0] : spoken.replace(/^.*qr\s*(code)?\s*(for|of)?\s*/i, '').trim() || 'https://codenix.ai';
+                visualTitle.textContent = `NixQR • ${qrTarget}`;
+                visualContent.innerHTML = `<div id="astreya-qr-box" class="p-3 bg-white rounded-xl"></div>`;
+                visualStage.classList.remove('hidden');
+                new QRCode(document.getElementById('astreya-qr-box'), { text: qrTarget, width: 150, height: 150 });
+                spokenReply = `I've generated your QR code for ${qrTarget} right on screen.`;
+            } else {
+                const reply = await callCascadingChatAI([
+                    { role: 'system', content: 'You are Astreya & Nixy, a multimodal AI voice assistant. You can see the user\'s screen when shared and generate images, QR codes, tables, and answers. Answer clearly and naturally in 1-3 sentences.' },
+                    { role: 'user', content: spoken + screenNote }
+                ], usePuter);
+                spokenReply = reply.text;
+                if (spokenReply.includes('|') && spokenReply.includes('---')) {
+                    visualTitle.textContent = 'Generated Table';
+                    visualContent.innerHTML = window.marked ? window.marked.parse(spokenReply) : escapeHtml(spokenReply);
+                    visualStage.classList.remove('hidden');
+                }
+                if (conv) {
+                    conv.messages.push({ role: 'user', content: spoken, tool_used: 'astreya' });
+                    conv.messages.push({ role: 'assistant', content: spokenReply, tool_used: 'astreya', provider_used: reply.provider });
+                    renderMessages();
+                }
+            }
 
-                document.getElementById('active-provider-badge').textContent = providerUsed;
-                conv.messages.push({
-                    role: 'assistant',
-                    content: assistantMarkdown,
-                    tool_used: tool,
-                    provider_used: providerUsed,
-                    tokens_used: tokensEarned
-                });
+            captionEl.textContent = `"${spokenReply}"`;
+            statusEl.textContent = 'Speaking...';
+            const voice = await callCascadingVoiceAI(spokenReply.replace(/[#*`>|]/g, ''), usePuter);
+            if (voice.audioUrl) {
+                const audio = new Audio(voice.audioUrl);
+                audio.onended = () => { statusEl.textContent = 'Tap Orb to Speak'; };
+                audio.play();
+            } else {
+                speakWithBrowserTTS(spokenReply.replace(/[#*`>|]/g, ''));
+                statusEl.textContent = 'Tap Orb to Speak';
+            }
+        }
 
-                renderMessages();
-                await saveMessageToSupabase(conv.id, 'assistant', assistantMarkdown, tool, providerUsed, tokensEarned);
-                setNixyMood('happy', `Done via ${providerUsed}!`);
-            } catch (err) {
-                conv.messages.push({
-                    role: 'assistant',
-                    content: `⚠️ **Nixy Error:** ${err.message}`,
-                    tool_used: tool,
-                    provider_used: 'Error'
-                });
-                renderMessages();
-                setNixyMood('error', 'Hit a snag — check connection');
-            } finally {
-                state.isGenerating = false;
-                document.getElementById('send-prompt-btn').disabled = false;
+        // ==========================================
+        // INTERACTIVE NIXY GUIDED TUTORIAL
+        // ==========================================
+        const NIXY_TUTORIAL_STEPS = [
+            {
+                title: '1. Meet Nixy & Cross-Chat Memory',
+                body: 'I am Nixy, your Codenix AI companion! I remember every message in your current conversation AND context from your past saved Supabase chats.',
+                preset: 'What do you remember from my previous conversations?'
+            },
+            {
+                title: '2. Upload Files & Live Screen Vision',
+                body: 'Click the paperclip icon to attach images, PDFs, CSVs, or code files, or click ShareNix so I can see and analyze your live screen in real time!',
+                preset: 'Explain how I can upload files or share my screen with you.'
+            },
+            {
+                title: '3. Smart Voice & Multimodal Astreya',
+                body: 'Ask me to generate voice/TTS scripts in chat or open Astreya Voice Mode to speak naturally and see generated images, QR codes, and tables right inside voice mode!',
+                preset: 'Generate a warm welcome voice greeting for Codenix Studio users.'
+            },
+            {
+                title: '4. Tables, Documents, PDFs & CSVs',
+                body: 'Ask me for any comparison table, report, or document. Every answer includes one-click PDF, DOC, and CSV table export buttons!',
+                preset: 'Create a comparison table of top AI models with strengths and speed, ready for PDF export.'
+            },
+            {
+                title: '5. Cody Live Canvas + Unlimited Puter.js',
+                body: 'Ask me to build any web app to launch the split-screen Cody Live Canvas and publish to HostNix—and switch to Puter.js anytime for unlimited uncounted usage!',
+                preset: 'Build a sleek interactive purple Pomodoro & task dashboard app with Cody.'
+            }
+        ];
+
+        function startNixyTutorial() {
+            state.tutorialStep = 0;
+            renderNixyTutorialStep();
+            const modal = document.getElementById('nixy-tutorial-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setNixyMood('happy', 'Welcome to the Nixy interactive tour!');
+        }
+
+        function closeNixyTutorial() {
+            const modal = document.getElementById('nixy-tutorial-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            setNixyMood('idle');
+        }
+
+        function renderNixyTutorialStep() {
+            const step = NIXY_TUTORIAL_STEPS[state.tutorialStep];
+            document.getElementById('tutorial-step-badge').textContent = `Step ${state.tutorialStep + 1} of ${NIXY_TUTORIAL_STEPS.length}`;
+            document.getElementById('tutorial-title').textContent = step.title;
+            document.getElementById('tutorial-body').textContent = step.body;
+            document.getElementById('tutorial-prev-btn').disabled = state.tutorialStep === 0;
+            document.getElementById('tutorial-next-btn').textContent = state.tutorialStep === NIXY_TUTORIAL_STEPS.length - 1 ? 'Finish' : 'Next';
+        }
+
+        function nextTutorialStep() {
+            if (state.tutorialStep < NIXY_TUTORIAL_STEPS.length - 1) {
+                state.tutorialStep += 1;
+                renderNixyTutorialStep();
+            } else {
+                closeNixyTutorial();
+                showToast('Tutorial completed! Nixy is ready.');
+            }
+        }
+
+        function prevTutorialStep() {
+            if (state.tutorialStep > 0) {
+                state.tutorialStep -= 1;
+                renderNixyTutorialStep();
+            }
+        }
+
+        function tryTutorialAction() {
+            const step = NIXY_TUTORIAL_STEPS[state.tutorialStep];
+            closeNixyTutorial();
+            if (step?.preset) {
+                sendPreset(step.preset);
             }
         }
 
