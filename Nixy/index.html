@@ -73,7 +73,6 @@
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.35); border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.65); }
 
-        /* Nixy Purple Ball with 2 White Ball Eyes */
         @keyframes nixyFloat {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-6px); }
@@ -118,7 +117,6 @@
             animation: none;
         }
 
-        /* Loading Typing Dots Animation */
         @keyframes nixyDotBounce {
             0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
             40% { transform: translateY(-5px); opacity: 1; }
@@ -134,7 +132,6 @@
         .nixy-typing-dot:nth-child(2) { animation-delay: 0.16s; }
         .nixy-typing-dot:nth-child(3) { animation-delay: 0.32s; }
 
-        /* Smart Markdown & Code Cards (Nix 4.5 Intelligent UI) */
         .prose pre {
             background-color: #0b0914 !important;
             border: 1px solid #251f38;
@@ -184,33 +181,6 @@
         }
         .nix-code-btn:hover { background: rgba(139, 92, 246, 0.38); }
 
-        .nix-file-graphic {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            padding: 0.65rem 0.85rem;
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(37, 31, 56, 0.75));
-            border-bottom: 1px solid #251f38;
-            cursor: pointer;
-        }
-        .nix-file-icon-badge {
-            width: 2rem;
-            height: 2.25rem;
-            border-radius: 0.5rem;
-            background: rgba(139, 92, 246, 0.25);
-            border: 1px solid rgba(167, 139, 250, 0.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 800;
-            color: #ede9fe;
-            font-family: 'JetBrains Mono', monospace;
-            flex-shrink: 0;
-        }
-
-        /* Rich Markdown Tables & Document Cards */
         .prose table {
             width: 100%;
             border-collapse: collapse;
@@ -237,7 +207,6 @@
             background: rgba(139, 92, 246, 0.05);
         }
 
-        /* Compact Generated Image Card + Shimmer */
         @keyframes nixyShimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
@@ -257,7 +226,6 @@
             display: block;
         }
 
-        /* Astreya Voice Orb */
         @keyframes astreyaPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.08); }
@@ -290,7 +258,6 @@
 
         <!-- SIDEBAR -->
         <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-codenix-50/70 dark:bg-codenix-panel border-r border-codenix-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
-            <!-- Top Brand + New Chat -->
             <div class="p-3.5 border-b border-codenix-200 dark:border-codenix-border space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
@@ -303,55 +270,51 @@
                             <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Multi-Model AI Agent</p>
                         </div>
                     </div>
-                    <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600">
+                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
 
-                <button onclick="createNewChat()" class="w-full py-2.5 px-3.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-codenix-600/25 transition-all active:scale-[0.98]">
+                <button type="button" onclick="createNewChat()" class="w-full py-2.5 px-3.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-codenix-600/25 transition-all active:scale-[0.98]">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     <span>New Conversation</span>
                 </button>
 
-                <!-- Search Conversations (autocomplete disabled so email never autofills) -->
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
                     <input type="search" id="chat-search" name="nixy_conv_filter" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" oninput="renderConversationList()" placeholder="Search conversations..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
                 </div>
             </div>
 
-            <!-- Conversations History (Supabase nixy_conversations) -->
             <div id="conversation-list" class="flex-1 overflow-y-auto p-2.5 space-y-1"></div>
 
-            <!-- Plugin Library & Tools Quick Bar -->
             <div class="p-3 border-t border-codenix-200 dark:border-codenix-border space-y-2.5 bg-white/70 dark:bg-codenix-black/50">
                 <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-codenix-700 dark:text-codenix-300 px-1">
                     <span>Plugins & Tools</span>
                     <span class="text-[10px] font-mono text-zinc-400">8 Active</span>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-                    <!-- NixCode Plugin opens /NixCode in domain -->
                     <a href="/NixCode" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
                         <i data-lucide="terminal" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="truncate">NixCode</span>
                     </a>
-                    <button onclick="openAstreyaModal()" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-medium transition">
+                    <button type="button" onclick="openAstreyaModal()" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-medium transition">
                         <i data-lucide="mic" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="truncate">Astreya</span>
                     </button>
-                    <button onclick="openPomodoryModal()" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-medium transition">
+                    <button type="button" onclick="openPomodoryModal()" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-medium transition">
                         <i data-lucide="timer" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="truncate">Pomodory</span>
                     </button>
-                    <button onclick="toggleShareNix()" id="sidebar-sharenix-btn" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-medium transition">
+                    <button type="button" onclick="toggleShareNix()" id="sidebar-sharenix-btn" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-medium transition">
                         <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="truncate">ShareNix</span>
                     </button>
-                    <button onclick="startNixyTutorial()" class="col-span-2 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
+                    <button type="button" onclick="startNixyTutorial()" class="col-span-2 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span>Interactive Tutorial with Nixy</span>
                     </button>
-                    <button onclick="toggleToolLibrarySection()" id="tool-library-toggle-btn" class="col-span-2 flex items-center justify-between gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-semibold transition">
+                    <button type="button" onclick="toggleToolLibrarySection()" id="tool-library-toggle-btn" class="col-span-2 flex items-center justify-between gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-semibold transition">
                         <span class="flex items-center gap-1.5 truncate">
                             <i data-lucide="grid" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
                             <span class="truncate">Tool Library</span>
@@ -360,7 +323,6 @@
                     </button>
                 </div>
 
-                <!-- User Session & Quota Footer -->
                 <div class="pt-2 border-t border-codenix-200 dark:border-codenix-border flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2 min-w-0">
                         <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-codenix-600 text-white text-xs font-bold flex items-center justify-center shrink-0">N</div>
@@ -369,7 +331,7 @@
                             <p id="sidebar-quota-text" class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Chat: 0/30 • Img: 0/3</p>
                         </div>
                     </div>
-                    <button onclick="signOutUser()" title="Sign Out" class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 transition shrink-0">
+                    <button type="button" onclick="signOutUser()" title="Sign Out" class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 transition shrink-0">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -382,11 +344,10 @@
             <!-- Top Header Bar -->
             <header class="h-14 border-b border-codenix-200 dark:border-codenix-border px-3 sm:px-5 flex items-center justify-between bg-white/90 dark:bg-codenix-black/90 backdrop-blur-md shrink-0 z-20">
                 <div class="flex items-center gap-2.5">
-                    <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-codenix-50 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
+                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-codenix-50 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
                         <i data-lucide="menu" class="w-5 h-5"></i>
                     </button>
 
-                    <!-- Active Routing Engine Pill -->
                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold">
                         <img src="/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-4 h-4 rounded object-contain">
                         <span class="w-2 h-2 rounded-full bg-codenix-500 animate-pulse"></span>
@@ -394,23 +355,19 @@
                         <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">Auto APIs</span>
                     </div>
 
-                    <!-- Provider Mode Selector: Primary APIs vs Puter.js (Unlimited) -->
-                    <button onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch between Primary APIs and Unlimited Puter.js" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
+                    <button type="button" onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch between Primary APIs and Unlimited Puter.js" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
                         <i data-lucide="infinity" class="w-3.5 h-3.5"></i>
                         <span id="provider-mode-label">Mode: Auto APIs</span>
                     </button>
 
-                    <!-- ShareNix Live Screen Pill -->
                     <div id="sharenix-live-banner" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                         <span>ShareNix Active</span>
-                        <button onclick="stopShareNix()" class="ml-1 underline hover:no-underline">Stop</button>
+                        <button type="button" onclick="stopShareNix()" class="ml-1 underline hover:no-underline">Stop</button>
                     </div>
                 </div>
 
-                <!-- Header Right Controls -->
                 <div class="flex items-center gap-1.5 sm:gap-2">
-                    <!-- Language Selector -->
                     <div class="relative">
                         <button type="button" onclick="toggleLangDropdown(event)" id="lang-btn" title="Language" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition flex items-center gap-1 text-xs font-bold">
                             <i data-lucide="globe" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
@@ -419,23 +376,22 @@
                         <div id="lang-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-40 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-2xl p-1.5 z-50 space-y-0.5"></div>
                     </div>
 
-                    <!-- Quick Feedback & Nix Watches -->
                     <button type="button" onclick="openFeedbackModal()" title="Quick Feedback & Nix Watches" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold hover:border-codenix-500 transition">
                         <i data-lucide="message-circle-heart" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="hidden sm:inline" data-i18n="feedbackBtn">Feedback</span>
                     </button>
 
-                    <button onclick="openUsageModal()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-medium hover:border-codenix-500 transition">
+                    <button type="button" onclick="openUsageModal()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-medium hover:border-codenix-500 transition">
                         <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span data-i18n="usageBtn">Usage & Puter</span>
                     </button>
 
-                    <button onclick="openShareModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-xs font-semibold transition">
+                    <button type="button" onclick="openShareModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-xs font-semibold transition">
                         <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
                         <span class="hidden sm:inline" data-i18n="shareBtn">Share (PIN)</span>
                     </button>
 
-                    <button onclick="toggleTheme()" title="Toggle Purple/White & Purple/Black Mode" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
+                    <button type="button" onclick="toggleTheme()" title="Toggle Purple/White & Purple/Black Mode" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
                         <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
                     </button>
                 </div>
@@ -451,7 +407,7 @@
                         <!-- Dashboard Introduction Hero with Nixy Orb -->
                         <div id="nixy-hero" class="flex flex-col items-center justify-center text-center py-8 sm:py-12">
                             <div id="nixy-hero-speech" class="mb-4 px-4 py-2 rounded-2xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 shadow-lg max-w-md">
-                                Hi! I'm <span class="font-bold text-codenix-600 dark:text-codenix-400">Nixy</span> — your Codenix AI Agent. Ask anything or invoke my tools below!
+                                Hi! I'm <span class="font-bold text-codenix-600 dark:text-codenix-400">Nixy</span> — your Codenix AI Agent. Ask anything or click me!
                             </div>
 
                             <!-- Nixy: Purple Ball with 2 White Ball Eyes -->
@@ -493,7 +449,7 @@
                     </div>
                 </div>
 
-                <!-- CODY LIVE CODE & PREVIEW CANVAS DRAWER (Opens when Cody generates an app) -->
+                <!-- CODY LIVE CODE & PREVIEW CANVAS DRAWER -->
                 <aside id="cody-canvas-pane" class="hidden w-full lg:w-[480px] xl:w-[540px] border-l border-codenix-200 dark:border-codenix-border bg-codenix-50 dark:bg-codenix-panel flex-col shrink-0 z-20">
                     <div class="h-12 px-4 border-b border-codenix-200 dark:border-codenix-border flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -501,9 +457,9 @@
                             <span class="text-xs font-bold">Cody Live Canvas</span>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="switchCodyTab('preview')" id="cody-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
-                            <button onclick="switchCodyTab('code')" id="cody-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 dark:text-zinc-400 text-[11px] font-semibold">Code</button>
-                            <button onclick="closeCodyCanvas()" class="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
+                            <button type="button" onclick="switchCodyTab('preview')" id="cody-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
+                            <button type="button" onclick="switchCodyTab('code')" id="cody-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 dark:text-zinc-400 text-[11px] font-semibold">Code</button>
+                            <button type="button" onclick="closeCodyCanvas()" class="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -516,33 +472,28 @@
             <!-- COMPOSER BAR -->
             <div class="p-3 sm:p-4 border-t border-codenix-200 dark:border-codenix-border bg-white/95 dark:bg-codenix-black/95 backdrop-blur-md shrink-0">
                 <div class="max-w-3xl mx-auto">
-                    <!-- Hidden Screen Capture Video & Canvas for ShareNix Vision -->
                     <video id="sharenix-video" autoplay playsinline muted class="hidden"></video>
                     <canvas id="sharenix-canvas" class="hidden"></canvas>
 
-                    <!-- Uploaded Files Preview Strip -->
                     <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
-
-                    <!-- Hidden File Input -->
                     <input type="file" id="nixy-file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql,.xml" onchange="handleFileUploadSelection(event)" class="hidden">
 
-                    <!-- Input Box -->
                     <div class="flex items-end gap-1.5 sm:gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 shadow-sm transition">
-                        <button onclick="document.getElementById('nixy-file-input').click()" title="Upload Files or Images" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
+                        <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Upload Files or Images" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
                         </button>
 
-                        <button onclick="openAstreyaModal()" title="Astreya Multimodal Voice Mode" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
+                        <button type="button" onclick="openAstreyaModal()" title="Astreya Multimodal Voice Mode" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="audio-waveform" class="w-4 h-4"></i>
                         </button>
 
-                        <button onclick="toggleShareNix()" title="ShareNix Live Screen Vision" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
+                        <button type="button" onclick="toggleShareNix()" title="ShareNix Live Screen Vision" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="monitor-up" class="w-4 h-4"></i>
                         </button>
 
                         <textarea id="prompt-input" rows="1" placeholder="Message Nixy, upload files, share screen, or ask for images, tables, PDFs, QR, voice..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
 
-                        <button id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white shadow-md shadow-codenix-600/25 transition shrink-0">
+                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white shadow-md shadow-codenix-600/25 transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -561,11 +512,11 @@
                 <span>Astreya Multimodal Voice Companion</span>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="toggleShareNix()" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5">
+                <button type="button" onclick="toggleShareNix()" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5">
                     <i data-lucide="monitor-up" class="w-3.5 h-3.5"></i>
                     <span>Share Screen</span>
                 </button>
-                <button onclick="closeAstreyaModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
+                <button type="button" onclick="closeAstreyaModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -588,7 +539,7 @@
     <!-- POMODORY FOCUS TIMER MODAL -->
     <div id="pomodory-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative space-y-4">
-            <button onclick="closePomodoryModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+            <button type="button" onclick="closePomodoryModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <div class="w-12 h-12 rounded-2xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center mx-auto">
@@ -597,13 +548,13 @@
             <h3 class="text-lg font-extrabold">Pomodory Focus Session</h3>
             <div id="pomodory-display" class="text-4xl font-extrabold font-mono text-codenix-600 dark:text-codenix-400 py-2">25:00</div>
             <div class="flex items-center justify-center gap-2 text-xs">
-                <button onclick="setPomodoryMinutes(15)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">15m</button>
-                <button onclick="setPomodoryMinutes(25)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">25m</button>
-                <button onclick="setPomodoryMinutes(50)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">50m</button>
+                <button type="button" onclick="setPomodoryMinutes(15)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">15m</button>
+                <button type="button" onclick="setPomodoryMinutes(25)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">25m</button>
+                <button type="button" onclick="setPomodoryMinutes(50)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">50m</button>
             </div>
             <div class="flex items-center gap-2 pt-1">
-                <button id="pomodory-start-btn" onclick="togglePomodoryTimer()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Start Timer</button>
-                <button onclick="resetPomodoryTimer()" class="px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Reset</button>
+                <button type="button" id="pomodory-start-btn" onclick="togglePomodoryTimer()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Start Timer</button>
+                <button type="button" onclick="resetPomodoryTimer()" class="px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Reset</button>
             </div>
         </div>
     </div>
@@ -611,7 +562,7 @@
     <!-- INTERACTIVE NIXY TUTORIAL MODAL -->
     <div id="nixy-tutorial-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative text-center space-y-4">
-            <button onclick="closeNixyTutorial()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+            <button type="button" onclick="closeNixyTutorial()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
@@ -634,17 +585,17 @@
             </p>
 
             <div class="flex items-center justify-between pt-2 gap-2">
-                <button onclick="prevTutorialStep()" id="tutorial-prev-btn" class="px-4 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Back</button>
-                <button onclick="tryTutorialAction()" class="px-4 py-2 rounded-xl bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-xs font-bold">Try This Feature</button>
-                <button onclick="nextTutorialStep()" id="tutorial-next-btn" class="px-5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Next</button>
+                <button type="button" onclick="prevTutorialStep()" id="tutorial-prev-btn" class="px-4 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Back</button>
+                <button type="button" onclick="tryTutorialAction()" class="px-4 py-2 rounded-xl bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-xs font-bold">Try This Feature</button>
+                <button type="button" onclick="nextTutorialStep()" id="tutorial-next-btn" class="px-5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Next</button>
             </div>
         </div>
     </div>
 
-    <!-- SHARE CONVERSATION WITH PIN MODAL (Saves to Supabase nixy_shared_chats) -->
+    <!-- SHARE CONVERSATION WITH PIN MODAL -->
     <div id="share-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
-            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+            <button type="button" onclick="closeShareModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <div class="flex items-center gap-2">
@@ -662,7 +613,7 @@
                 <input type="password" id="share-pin-input" maxlength="8" placeholder="Enter PIN (e.g. 2486)" class="w-full px-3.5 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-sm font-mono focus:outline-none focus:border-codenix-500">
             </div>
 
-            <button onclick="publishSharedConversation()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold shadow-md">
+            <button type="button" onclick="publishSharedConversation()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold shadow-md">
                 Generate PIN-Protected Share Link
             </button>
 
@@ -670,13 +621,13 @@
                 <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Published to Supabase! Share this link:</p>
                 <div class="flex items-center gap-2">
                     <input type="text" id="share-link-output" readonly class="flex-1 bg-transparent text-xs font-mono text-codenix-600 dark:text-codenix-300 focus:outline-none">
-                    <button onclick="copyShareUrl()" class="px-3 py-1 rounded-lg bg-codenix-600 text-white text-xs font-semibold">Copy</button>
+                    <button type="button" onclick="copyShareUrl()" class="px-3 py-1 rounded-lg bg-codenix-600 text-white text-xs font-semibold">Copy</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- PIN UNLOCK MODAL (When opening a shared link ?share=SLUG) -->
+    <!-- PIN UNLOCK MODAL -->
     <div id="pin-unlock-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
             <div class="w-12 h-12 rounded-2xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center mx-auto">
@@ -685,14 +636,14 @@
             <h3 class="text-lg font-bold">Protected Nixy Conversation</h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Enter the publisher's PIN to view this shared chat.</p>
             <input type="password" id="unlock-pin-input" maxlength="8" placeholder="Enter PIN" class="w-full px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-center text-base font-mono focus:outline-none focus:border-codenix-500">
-            <button onclick="verifySharedPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock Conversation</button>
+            <button type="button" onclick="verifySharedPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock Conversation</button>
         </div>
     </div>
 
     <!-- CODENIX TOKENS USAGE & PUTER.JS LINK MODAL -->
     <div id="usage-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
-            <button onclick="closeUsageModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+            <button type="button" onclick="closeUsageModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <h3 class="text-base font-bold flex items-center gap-2">
@@ -723,11 +674,11 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="linkPuterAccount()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold flex items-center justify-center gap-2">
+                <button type="button" onclick="linkPuterAccount()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold flex items-center justify-center gap-2">
                     <i data-lucide="link" class="w-4 h-4"></i>
                     <span id="modal-puter-btn-text">Link Puter.js Account Now</span>
                 </button>
-                <button onclick="setProviderMode('puter'); closeUsageModal();" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">
+                <button type="button" onclick="setProviderMode('puter'); closeUsageModal();" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">
                     Use Unlimited Puter
                 </button>
             </div>
@@ -778,7 +729,6 @@
                 </div>
             </div>
 
-            <!-- Nix Watches Strip -->
             <div class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-extrabold uppercase tracking-wider text-codenix-700 dark:text-codenix-300">Nix Watches (Live Watchlist)</span>
@@ -787,7 +737,6 @@
                 <div id="nix-watches-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
             </div>
 
-            <!-- How did you know us? Visual Cards -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold">How did you know us?</label>
                 <div id="discovery-cards-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -810,7 +759,6 @@
                 </div>
             </div>
 
-            <!-- Star Rating -->
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold">Rate Nixy Experience:</span>
                 <div id="feedback-rating-stars" class="flex items-center gap-1">
@@ -844,11 +792,8 @@
     <script>
         /**
          * NIXY AI AGENT — CODENIX STUDIO
-         * - Supabase Auth check -> redirects to /Start if not signed in
-         * - Multi-API fallback chain via Cloudflare Worker endpoint (/api/nixy) + Puter.js fallback
-         * - Rate limits: 3 req/min, 30 chats/day, 3 images/day -> auto links Puter.js & persists in localStorage
-         * - Tools: SubeAI, NixQR, Cody (+ HostNix), NixVoice, Astreya, ShareNix, Vidy, Pomodory + NixCode (/NixCode)
-         * - Supabase persistence on nixy_user_limits, nixy_conversations, nixy_messages, nixy_shared_chats, nixy_hostnix_apps
+         * Self-contained client application with Supabase auth/persistence, multi-provider routing,
+         * interactive Nixy character behaviors, multi-language support, and workspace tools.
          */
 
         const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
@@ -865,12 +810,16 @@
             LOCAL_USAGE: 'nixy_local_usage',
             TOUR_DONE: 'nixy_tour_done'
         };
+
         const state = {
             user: null,
             userIp: '',
             conversations: [],
-            activeConversationId: null
+            activeConversationId: null,
+            uploadedFiles: [],
+            isSending: false
         };
+
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 persistSession: true,
@@ -878,6 +827,18 @@
                 detectSessionInUrl: true
             }
         });
+
+        // ==========================================
+        // LANGUAGE & TRANSLATIONS
+        // ==========================================
+        const NIXY_TRANSLATIONS = {
+            en: { feedbackBtn: 'Feedback', usageBtn: 'Usage & Puter', shareBtn: 'Share (PIN)' },
+            ar: { feedbackBtn: 'التقييم', usageBtn: 'الاستخدام و Puter', shareBtn: 'مشاركة (PIN)' },
+            es: { feedbackBtn: 'Opinión', usageBtn: 'Uso y Puter', shareBtn: 'Compartir (PIN)' },
+            fr: { feedbackBtn: 'Avis', usageBtn: 'Usage et Puter', shareBtn: 'Partager (PIN)' },
+            de: { feedbackBtn: 'Feedback', usageBtn: 'Nutzung & Puter', shareBtn: 'Teilen (PIN)' },
+            zh: { feedbackBtn: '反馈', usageBtn: '用量与 Puter', shareBtn: '分享 (PIN)' }
+        };
 
         function renderLangDropdownMenu(activeCode) {
             const dd = document.getElementById('lang-dropdown');
@@ -902,39 +863,6 @@
             if (e) e.stopPropagation();
             document.getElementById('lang-dropdown')?.classList.toggle('hidden');
         }
-
-        const NIXY_TRANSLATIONS = {
-            en: {
-                feedbackBtn: 'Feedback',
-                usageBtn: 'Usage & Puter',
-                shareBtn: 'Share (PIN)'
-            },
-            ar: {
-                feedbackBtn: 'التقييم',
-                usageBtn: 'الاستخدام و Puter',
-                shareBtn: 'مشاركة (PIN)'
-            },
-            es: {
-                feedbackBtn: 'Opinión',
-                usageBtn: 'Uso y Puter',
-                shareBtn: 'Compartir (PIN)'
-            },
-            fr: {
-                feedbackBtn: 'Avis',
-                usageBtn: 'Usage et Puter',
-                shareBtn: 'Partager (PIN)'
-            },
-            de: {
-                feedbackBtn: 'Feedback',
-                usageBtn: 'Nutzung & Puter',
-                shareBtn: 'Teilen (PIN)'
-            },
-            zh: {
-                feedbackBtn: '反馈',
-                usageBtn: '用量与 Puter',
-                shareBtn: '分享 (PIN)'
-            }
-        };
 
         function detectPreferredLanguage() {
             try {
@@ -970,6 +898,9 @@
             document.getElementById('lang-dropdown')?.classList.add('hidden');
         });
 
+        // ==========================================
+        // NIXY CHARACTER MOODS, OUTFITS & AUTO LOOP
+        // ==========================================
         let nixyOutfit = localStorage.getItem(STORAGE_KEYS.OUTFIT) || 'none';
         let nixySleeping = localStorage.getItem(STORAGE_KEYS.SLEEPING) === 'true';
         let nixyClickCycleIndex = 0;
@@ -1007,7 +938,7 @@
             localStorage.setItem(STORAGE_KEYS.SLEEPING, String(nixySleeping));
             applyNixyAppearance();
             if (nixySleeping) {
-                setNixyMood('idle', 'Zzz... Nixy is taking an automatic power nap. Click me to wake up!');
+                setNixyMood('idle', 'Zzz... Nixy is taking a cozy power nap. Click me to wake up!');
                 showCompanionBubble('Zzz... Nixy napping automatically!', 2800);
             } else {
                 setNixyMood('happy', 'Wide awake and ready to help!');
@@ -1017,9 +948,11 @@
 
         function triggerNixyDance() {
             if (nixySleeping) toggleNixySleep(false);
-            setNixyMood('speaking', 'Woop woop! Nixy automatic dance!');
+            setNixyMood('speaking', 'Woop woop! Nixy dance time!');
             showCompanionBubble('✨ Nixy happy dance! ✨', 2600);
-            setTimeout(() => setNixyMood('idle'), 1800);
+            setTimeout(() => {
+                if (!nixySleeping) setNixyMood('idle');
+            }, 1800);
         }
 
         function handleNixyCharacterClick(e) {
@@ -1077,42 +1010,39 @@
             }, 14000);
         }
 
-        function setNixyOutfit(outfit) {
-            nixyOutfit = outfit;
-            localStorage.setItem(STORAGE_KEYS.OUTFIT, outfit);
-            applyNixyAppearance();
-            const duoLines = {
-                none: 'Back to classic purple orb mode!',
-                jacket: 'Ooh cozy jacket! Warm & ready for coding!',
-                wizard: 'Wizard hat on! Casting multi-model spells!',
-                shades: 'Cool shades! Looking extra sharp today!'
-            };
-            setNixyMood('happy', duoLines[outfit] || 'Looking good!');
-            showCompanionBubble(duoLines[outfit] || 'Outfit updated!', 2600);
-        }
-
-        function toggleNixySleep() {
-            nixySleeping = !nixySleeping;
-            localStorage.setItem(STORAGE_KEYS.SLEEPING, String(nixySleeping));
-            applyNixyAppearance();
-            if (nixySleeping) {
-                setNixyMood('idle', 'Zzz... Nixy is taking a cozy power nap. Click Wake Up anytime!');
-                showCompanionBubble('Zzz... sleeping mode on!', 2800);
-            } else {
-                setNixyMood('happy', 'Wide awake and ready to help!');
-                showCompanionBubble('I am awake! Let us build!', 2800);
+        function setNixyMood(mood = 'idle', speechText = '') {
+            const orbs = document.querySelectorAll('.nixy-orb');
+            orbs.forEach(orb => {
+                orb.classList.remove('mood-thinking', 'mood-speaking', 'mood-happy', 'mood-error');
+                if (mood && mood !== 'idle') {
+                    orb.classList.add(`mood-${mood}`);
+                }
+            });
+            if (speechText) {
+                const heroSpeech = document.getElementById('nixy-hero-speech');
+                if (heroSpeech) heroSpeech.textContent = speechText;
             }
         }
 
-        function triggerNixyDance() {
-            nixySleeping = false;
-            localStorage.setItem(STORAGE_KEYS.SLEEPING, 'false');
-            applyNixyAppearance();
-            setNixyMood('speaking', 'Woop woop! Nixy dance time!');
-            showCompanionBubble('✨ Nixy happy dance! ✨', 2600);
-            setTimeout(() => setNixyMood('idle'), 1800);
+        function bindNixyEyeTracking() {
+            document.addEventListener('mousemove', (e) => {
+                if (nixySleeping) return;
+                const eyes = document.querySelectorAll('.nixy-eye');
+                eyes.forEach(eye => {
+                    const rect = eye.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return;
+                    const cx = rect.left + rect.width / 2;
+                    const cy = rect.top + rect.height / 2;
+                    const dx = Math.max(-3, Math.min(3, (e.clientX - cx) / 45));
+                    const dy = Math.max(-3, Math.min(3, (e.clientY - cy) / 45));
+                    eye.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+                });
+            }, { passive: true });
         }
 
+        // ==========================================
+        // THEME, PROVIDER & QUOTA STATE
+        // ==========================================
         function initTheme() {
             const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
             const isLight = savedTheme === 'light';
@@ -1137,52 +1067,6 @@
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
                 window.lucide.createIcons();
             }
-        }
-
-        function setNixyMood(mood = 'idle', speechText = '') {
-            const orbs = document.querySelectorAll('.nixy-orb');
-            orbs.forEach(orb => {
-                orb.classList.remove('mood-thinking', 'mood-speaking', 'mood-happy', 'mood-error');
-                if (mood && mood !== 'idle') {
-                    orb.classList.add(`mood-${mood}`);
-                }
-            });
-            if (speechText) {
-                const heroSpeech = document.getElementById('nixy-hero-speech');
-                if (heroSpeech) heroSpeech.textContent = speechText;
-            }
-        }
-
-        function pingNixyGreeting() {
-            if (nixySleeping) {
-                toggleNixySleep();
-                return;
-            }
-            const greetings = [
-                'Hey there! Need code, tables, PDFs, images, or voice?',
-                'Nixy online! Try switching outfits or opening Tool Library.',
-                'Purple orb power at 100%! What are we building today?'
-            ];
-            const pick = greetings[Math.floor(Math.random() * greetings.length)];
-            setNixyMood('happy', pick);
-            showCompanionBubble(pick, 3000);
-            setTimeout(() => setNixyMood('idle'), 1800);
-        }
-
-        function bindNixyEyeTracking() {
-            document.addEventListener('mousemove', (e) => {
-                if (nixySleeping) return;
-                const eyes = document.querySelectorAll('.nixy-eye');
-                eyes.forEach(eye => {
-                    const rect = eye.getBoundingClientRect();
-                    if (!rect.width || !rect.height) return;
-                    const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height / 2;
-                    const dx = Math.max(-3, Math.min(3, (e.clientX - cx) / 45));
-                    const dy = Math.max(-3, Math.min(3, (e.clientY - cy) / 45));
-                    eye.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
-                });
-            }, { passive: true });
         }
 
         function getPreferredProviderMode() {
@@ -1222,6 +1106,25 @@
             setProviderMode(current === 'puter' ? 'auto' : 'puter');
         }
 
+        function getLocalUsage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.LOCAL_USAGE);
+                return { dailyChats: 0, dailyImages: 0, tokensUsed: 0, ...(raw ? JSON.parse(raw) : {}) };
+            } catch (_) {
+                return { dailyChats: 0, dailyImages: 0, tokensUsed: 0 };
+            }
+        }
+
+        function recordLocalUsage(deltaChats = 0, deltaImages = 0, deltaTokens = 0) {
+            if (getPreferredProviderMode() === 'puter') return;
+            const usage = getLocalUsage();
+            usage.dailyChats += deltaChats;
+            usage.dailyImages += deltaImages;
+            usage.tokensUsed += deltaTokens;
+            localStorage.setItem(STORAGE_KEYS.LOCAL_USAGE, JSON.stringify(usage));
+            updateQuotaUI();
+        }
+
         function updateQuotaUI() {
             const isPuter = getPreferredProviderMode() === 'puter';
             const sidebarQuota = document.getElementById('sidebar-quota-text');
@@ -1236,11 +1139,7 @@
                 if (chatsVal) chatsVal.textContent = 'Unlimited';
                 if (imagesVal) imagesVal.textContent = 'Unlimited';
             } else {
-                const raw = localStorage.getItem(STORAGE_KEYS.LOCAL_USAGE);
-                let usage = { dailyChats: 0, dailyImages: 0, tokensUsed: 0 };
-                try {
-                    if (raw) usage = { ...usage, ...JSON.parse(raw) };
-                } catch (_) {}
+                const usage = getLocalUsage();
                 if (sidebarQuota) sidebarQuota.textContent = `Chat: ${usage.dailyChats}/30 • Img: ${usage.dailyImages}/3`;
                 if (tokensVal) tokensVal.textContent = String(usage.tokensUsed || 0);
                 if (chatsVal) chatsVal.textContent = `${usage.dailyChats || 0} / 30`;
@@ -1265,13 +1164,13 @@
         }
 
         // ==========================================
-        // 1. INITIALIZATION & SUPABASE AUTH GUARD
+        // AUTH & SUPABASE CONVERSATIONS
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
             applyLanguage(detectPreferredLanguage());
             applyNixyAppearance();
-            lucide.createIcons();
+            if (window.lucide?.createIcons) window.lucide.createIcons();
             bindNixyEyeTracking();
             updateProviderModeUI();
 
@@ -1307,8 +1206,6 @@
         async function verifySupabaseSession() {
             try {
                 let session = null;
-
-                // Give Supabase a brief moment on load to restore a persisted session from storage/URL
                 const initialRes = await supabaseClient.auth.getSession();
                 session = initialRes?.data?.session || null;
 
@@ -1332,7 +1229,6 @@
                     });
                 }
 
-                // Fallback check of Supabase localStorage session token if present
                 if (!session) {
                     for (let i = 0; i < localStorage.length; i++) {
                         const k = localStorage.key(i);
@@ -1368,8 +1264,7 @@
                     }
                 });
                 return true;
-            } catch (err) {
-                console.warn('Session check warning:', err);
+            } catch (_) {
                 window.location.replace('/Start');
                 return false;
             }
@@ -1427,6 +1322,30 @@
             } catch (_) {}
         }
 
+        function generateId() {
+            return (window.crypto && typeof window.crypto.randomUUID === 'function')
+                ? window.crypto.randomUUID()
+                : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+        }
+
+        async function createNewChat() {
+            const newId = generateId();
+            const conv = { id: newId, title: 'New Conversation', messages: [] };
+            state.conversations.unshift(conv);
+            state.activeConversationId = newId;
+            renderConversationList();
+            renderMessages();
+            if (state.user) {
+                try {
+                    await supabaseClient.from('nixy_conversations').insert({
+                        id: newId,
+                        user_id: state.user.id,
+                        title: conv.title
+                    });
+                } catch (_) {}
+            }
+        }
+
         async function loadConversationsFromSupabase(preferredChatId = null) {
             if (!state.user || !supabaseClient) {
                 renderConversationList();
@@ -1467,9 +1386,7 @@
                     state.conversations = conversations;
                     state.activeConversationId = activeConv.id;
                 } else {
-                    const newId = (window.crypto && typeof window.crypto.randomUUID === 'function')
-                        ? window.crypto.randomUUID()
-                        : 'conv-' + Date.now();
+                    const newId = generateId();
                     await supabaseClient.from('nixy_conversations').insert({
                         id: newId,
                         user_id: state.user.id,
@@ -1480,8 +1397,9 @@
                 }
             } catch (_) {
                 if (!state.conversations.length) {
-                    state.conversations = [{ id: 'local-default', title: 'New Conversation', messages: [] }];
-                    state.activeConversationId = 'local-default';
+                    const fallbackId = generateId();
+                    state.conversations = [{ id: fallbackId, title: 'New Conversation', messages: [] }];
+                    state.activeConversationId = fallbackId;
                 }
             }
             renderConversationList();
@@ -1562,21 +1480,439 @@
                     </div>
                 `;
             }).join('');
-        }
 
-        function showToast(msg) {
-            const box = document.getElementById('toast-box');
-            if (!box) return;
-            box.textContent = String(msg || '');
-            box.classList.remove('hidden');
-            clearTimeout(window.__nixyToastTimer);
-            window.__nixyToastTimer = setTimeout(() => {
-                box.classList.add('hidden');
-            }, 2800);
+            if (window.hljs?.highlightAll) {
+                try { window.hljs.highlightAll(); } catch (_) {}
+            }
+            const scrollArea = document.getElementById('chat-scroll-area');
+            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
         // ==========================================
-        // 9. GOOGLE SHEET TOOL LIBRARY, NIX WATCHES & FEEDBACK
+        // COMPOSER, FILE UPLOADS & AI ROUTING
+        // ==========================================
+        function handlePromptKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendPrompt();
+            }
+        }
+
+        function autoResizeTextarea(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+        }
+
+        function handleFileUploadSelection(event) {
+            const files = Array.from(event.target?.files || []);
+            if (!files.length) return;
+            files.forEach(file => {
+                state.uploadedFiles.push({
+                    name: file.name,
+                    type: file.type || 'file',
+                    size: file.size
+                });
+            });
+            renderUploadedFilesStrip();
+            event.target.value = '';
+        }
+
+        function renderUploadedFilesStrip() {
+            const strip = document.getElementById('uploaded-files-strip');
+            if (!strip) return;
+            if (!state.uploadedFiles.length) {
+                strip.classList.add('hidden');
+                strip.classList.remove('flex');
+                strip.innerHTML = '';
+                return;
+            }
+            strip.classList.remove('hidden');
+            strip.classList.add('flex');
+            strip.innerHTML = state.uploadedFiles.map((f, idx) => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-[11px] font-medium">
+                    <span class="truncate max-w-[140px]">${escapeHtml(f.name)}</span>
+                    <button type="button" onclick="removeUploadedFile(${idx})" class="text-zinc-400 hover:text-rose-500">×</button>
+                </span>
+            `).join('');
+        }
+
+        function removeUploadedFile(index) {
+            state.uploadedFiles.splice(index, 1);
+            renderUploadedFilesStrip();
+        }
+
+        async function callNixyChatEngine(messages) {
+            const preferred = getPreferredProviderMode();
+            if (preferred !== 'puter') {
+                try {
+                    const res = await fetch(CLOUDFLARE_PROXY_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'chat', messages })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data?.text) {
+                            return { text: data.text, provider: data.provider || 'Cloudflare API' };
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            if (window.puter?.ai?.chat) {
+                try {
+                    const puterRes = await window.puter.ai.chat(messages);
+                    const text = typeof puterRes === 'string'
+                        ? puterRes
+                        : (puterRes?.message?.content || puterRes?.result?.content || puterRes?.text || '');
+                    if (text) return { text: String(text), provider: 'Puter.js' };
+                } catch (_) {}
+            }
+
+            const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+            return {
+                text: `I received your message: "${lastUser}". Connect your /api/nixy worker or Puter.js session for live model completions.`,
+                provider: 'Nixy Local'
+            };
+        }
+
+        async function handleSendPrompt() {
+            if (state.isSending) return;
+            const inputEl = document.getElementById('prompt-input');
+            const rawText = (inputEl?.value || '').trim();
+            const attachedNames = state.uploadedFiles.map(f => f.name);
+            const promptText = attachedNames.length
+                ? `${rawText}\n\n[Attached files: ${attachedNames.join(', ')}]`.trim()
+                : rawText;
+
+            if (!promptText) return;
+
+            let conv = state.conversations.find(c => c.id === state.activeConversationId);
+            if (!conv) {
+                await createNewChat();
+                conv = state.conversations[0];
+            }
+
+            if (conv.title === 'New Conversation' && rawText) {
+                conv.title = rawText.slice(0, 42);
+                renderConversationList();
+            }
+
+            conv.messages.push({ role: 'user', content: promptText });
+            state.uploadedFiles = [];
+            renderUploadedFilesStrip();
+            if (inputEl) {
+                inputEl.value = '';
+                autoResizeTextarea(inputEl);
+            }
+            renderMessages();
+
+            state.isSending = true;
+            setNixyMood('thinking');
+            const loadingEl = document.getElementById('nixy-loading-indicator');
+            if (loadingEl) {
+                loadingEl.classList.remove('hidden');
+                loadingEl.classList.add('flex');
+            }
+
+            try {
+                if (state.user) {
+                    try {
+                        await supabaseClient.from('nixy_messages').insert({
+                            conversation_id: conv.id,
+                            user_id: state.user.id,
+                            role: 'user',
+                            content: promptText
+                        });
+                        await supabaseClient.from('nixy_conversations')
+                            .update({ title: conv.title, updated_at: new Date().toISOString() })
+                            .eq('id', conv.id);
+                    } catch (_) {}
+                }
+
+                const reply = await callNixyChatEngine(conv.messages);
+                conv.messages.push({
+                    role: 'assistant',
+                    content: reply.text,
+                    providerUsed: reply.provider
+                });
+                recordLocalUsage(1, 0, Math.max(25, Math.round(reply.text.length / 4)));
+
+                if (state.user) {
+                    try {
+                        await supabaseClient.from('nixy_messages').insert({
+                            conversation_id: conv.id,
+                            user_id: state.user.id,
+                            role: 'assistant',
+                            content: reply.text,
+                            provider_used: reply.provider
+                        });
+                    } catch (_) {}
+                }
+
+                setNixyMood('happy');
+                setTimeout(() => {
+                    if (!nixySleeping) setNixyMood('idle');
+                }, 1500);
+            } catch (_) {
+                setNixyMood('error');
+                conv.messages.push({
+                    role: 'assistant',
+                    content: 'Sorry, I ran into a temporary issue generating a response.'
+                });
+            } finally {
+                state.isSending = false;
+                if (loadingEl) {
+                    loadingEl.classList.add('hidden');
+                    loadingEl.classList.remove('flex');
+                }
+                renderMessages();
+            }
+        }
+
+        // ==========================================
+        // CODY CANVAS, ASTREYA, POMODORY & SHARENIX
+        // ==========================================
+        function switchCodyTab(tab) {
+            const previewBtn = document.getElementById('cody-tab-preview');
+            const codeBtn = document.getElementById('cody-tab-code');
+            const frame = document.getElementById('cody-preview-frame');
+            const editor = document.getElementById('cody-code-editor');
+            const isPreview = tab === 'preview';
+            frame?.classList.toggle('hidden', !isPreview);
+            editor?.classList.toggle('hidden', isPreview);
+            if (previewBtn) previewBtn.className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500 dark:text-zinc-400'}`;
+            if (codeBtn) codeBtn.className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${!isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500 dark:text-zinc-400'}`;
+        }
+
+        function closeCodyCanvas() {
+            document.getElementById('cody-canvas-pane')?.classList.add('hidden');
+        }
+
+        function openAstreyaModal() {
+            const m = document.getElementById('astreya-modal');
+            m?.classList.remove('hidden');
+            m?.classList.add('flex');
+        }
+
+        function closeAstreyaModal() {
+            const m = document.getElementById('astreya-modal');
+            m?.classList.add('hidden');
+            m?.classList.remove('flex');
+        }
+
+        let astreyaRecognition = null;
+        function toggleAstreyaListening() {
+            const statusEl = document.getElementById('astreya-status');
+            const captionEl = document.getElementById('astreya-caption');
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                if (captionEl) captionEl.textContent = 'Voice recognition is not supported in this browser; type in the chat bar anytime!';
+                return;
+            }
+            if (astreyaRecognition) {
+                astreyaRecognition.stop();
+                astreyaRecognition = null;
+                if (statusEl) statusEl.textContent = 'Tap Orb to Speak or Ask Below';
+                return;
+            }
+            astreyaRecognition = new SpeechRec();
+            astreyaRecognition.lang = document.documentElement.lang || 'en-US';
+            if (statusEl) statusEl.textContent = 'Listening... Tap Orb to Stop';
+            astreyaRecognition.onresult = (ev) => {
+                const transcript = ev.results?.[0]?.[0]?.transcript || '';
+                if (captionEl && transcript) captionEl.textContent = `"${transcript}"`;
+                const input = document.getElementById('prompt-input');
+                if (input && transcript) {
+                    input.value = transcript;
+                    closeAstreyaModal();
+                    handleSendPrompt();
+                }
+            };
+            astreyaRecognition.onend = () => {
+                astreyaRecognition = null;
+                if (statusEl) statusEl.textContent = 'Tap Orb to Speak or Ask Below';
+            };
+            astreyaRecognition.start();
+        }
+
+        let pomodorySeconds = 25 * 60;
+        let pomodoryInterval = null;
+
+        function openPomodoryModal() {
+            const m = document.getElementById('pomodory-modal');
+            m?.classList.remove('hidden');
+            m?.classList.add('flex');
+            renderPomodoryDisplay();
+        }
+
+        function closePomodoryModal() {
+            const m = document.getElementById('pomodory-modal');
+            m?.classList.add('hidden');
+            m?.classList.remove('flex');
+        }
+
+        function renderPomodoryDisplay() {
+            const disp = document.getElementById('pomodory-display');
+            if (!disp) return;
+            const mins = String(Math.floor(pomodorySeconds / 60)).padStart(2, '0');
+            const secs = String(pomodorySeconds % 60).padStart(2, '0');
+            disp.textContent = `${mins}:${secs}`;
+        }
+
+        function setPomodoryMinutes(mins) {
+            clearInterval(pomodoryInterval);
+            pomodoryInterval = null;
+            pomodorySeconds = mins * 60;
+            const btn = document.getElementById('pomodory-start-btn');
+            if (btn) btn.textContent = 'Start Timer';
+            renderPomodoryDisplay();
+        }
+
+        function togglePomodoryTimer() {
+            const btn = document.getElementById('pomodory-start-btn');
+            if (pomodoryInterval) {
+                clearInterval(pomodoryInterval);
+                pomodoryInterval = null;
+                if (btn) btn.textContent = 'Resume Timer';
+                return;
+            }
+            if (btn) btn.textContent = 'Pause Timer';
+            pomodoryInterval = setInterval(() => {
+                if (pomodorySeconds > 0) {
+                    pomodorySeconds--;
+                    renderPomodoryDisplay();
+                } else {
+                    clearInterval(pomodoryInterval);
+                    pomodoryInterval = null;
+                    if (btn) btn.textContent = 'Start Timer';
+                    showToast('Pomodory session complete!');
+                }
+            }, 1000);
+        }
+
+        function resetPomodoryTimer() {
+            setPomodoryMinutes(25);
+        }
+
+        let shareNixStream = null;
+        async function toggleShareNix() {
+            if (shareNixStream) {
+                stopShareNix();
+                return;
+            }
+            if (!navigator.mediaDevices?.getDisplayMedia) {
+                showToast('Screen sharing is not supported in this browser.');
+                return;
+            }
+            try {
+                shareNixStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                const video = document.getElementById('sharenix-video');
+                if (video) video.srcObject = shareNixStream;
+                document.getElementById('sharenix-live-banner')?.classList.remove('hidden');
+                document.getElementById('sharenix-live-banner')?.classList.add('flex');
+                shareNixStream.getVideoTracks()[0]?.addEventListener('ended', stopShareNix);
+                showToast('ShareNix screen share started.');
+            } catch (_) {
+                showToast('Screen share cancelled.');
+            }
+        }
+
+        function stopShareNix() {
+            if (shareNixStream) {
+                shareNixStream.getTracks().forEach(t => t.stop());
+                shareNixStream = null;
+            }
+            document.getElementById('sharenix-live-banner')?.classList.add('hidden');
+            document.getElementById('sharenix-live-banner')?.classList.remove('flex');
+        }
+
+        // ==========================================
+        // INTERACTIVE TUTORIAL WITH NIXY
+        // ==========================================
+        const TUTORIAL_STEPS = [
+            {
+                title: 'Meet Nixy — Your AI Companion',
+                body: 'Click me anytime to cycle outfits & moods, or drag my floating orb around the workspace!',
+                actionLabel: 'Dance',
+                action: () => triggerNixyDance()
+            },
+            {
+                title: 'Tool Library & Google Sheet Sync',
+                body: 'Open Tool Library to browse and launch tools synced from your Codenix Google Sheet.',
+                actionLabel: 'Open Tools',
+                action: () => { closeNixyTutorial(); toggleToolLibrarySection(true); }
+            },
+            {
+                title: 'Astreya Voice & ShareNix Vision',
+                body: 'Use voice mode or share your screen so Nixy can help with visual context.',
+                actionLabel: 'Voice Mode',
+                action: () => { closeNixyTutorial(); openAstreyaModal(); }
+            },
+            {
+                title: 'Pomodory Focus Timer',
+                body: 'Stay focused with 15m, 25m, or 50m Pomodoro intervals right inside Nixy.',
+                actionLabel: 'Open Timer',
+                action: () => { closeNixyTutorial(); openPomodoryModal(); }
+            },
+            {
+                title: 'Quick Feedback & Nix Watches',
+                body: 'Let Nixy know how you discovered Codenix and check live Nix Watches.',
+                actionLabel: 'Feedback',
+                action: () => { closeNixyTutorial(); openFeedbackModal(); }
+            }
+        ];
+        let tutorialStepIndex = 0;
+
+        function startNixyTutorial() {
+            tutorialStepIndex = 0;
+            renderTutorialStep();
+            const modal = document.getElementById('nixy-tutorial-modal');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+        }
+
+        function closeNixyTutorial() {
+            const modal = document.getElementById('nixy-tutorial-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
+        }
+
+        function renderTutorialStep() {
+            const step = TUTORIAL_STEPS[tutorialStepIndex] || TUTORIAL_STEPS[0];
+            document.getElementById('tutorial-step-badge').textContent = `Step ${tutorialStepIndex + 1} of ${TUTORIAL_STEPS.length}`;
+            document.getElementById('tutorial-title').textContent = step.title;
+            document.getElementById('tutorial-body').textContent = step.body;
+            const prevBtn = document.getElementById('tutorial-prev-btn');
+            const nextBtn = document.getElementById('tutorial-next-btn');
+            if (prevBtn) prevBtn.disabled = tutorialStepIndex === 0;
+            if (nextBtn) nextBtn.textContent = tutorialStepIndex === TUTORIAL_STEPS.length - 1 ? 'Finish' : 'Next';
+        }
+
+        function prevTutorialStep() {
+            if (tutorialStepIndex > 0) {
+                tutorialStepIndex--;
+                renderTutorialStep();
+            }
+        }
+
+        function nextTutorialStep() {
+            if (tutorialStepIndex < TUTORIAL_STEPS.length - 1) {
+                tutorialStepIndex++;
+                renderTutorialStep();
+            } else {
+                closeNixyTutorial();
+            }
+        }
+
+        function tryTutorialAction() {
+            const step = TUTORIAL_STEPS[tutorialStepIndex];
+            if (step?.action) step.action();
+        }
+
+        // ==========================================
+        // GOOGLE SHEET TOOL LIBRARY, NIX WATCHES & FEEDBACK
         // ==========================================
         let sheetToolLibrary = [];
         let sheetNixWatches = [];
@@ -1641,7 +1977,7 @@
                 ];
                 renderToolLibraryUI();
                 renderNixWatchesUI();
-                lucide.createIcons();
+                if (window.lucide?.createIcons) window.lucide.createIcons();
             } catch (_) {}
         }
 
@@ -1721,7 +2057,7 @@
             });
             if (btnEl) btnEl.classList.add('border-codenix-600', 'ring-2', 'ring-codenix-500/40');
             const duoLine = document.getElementById('feedback-duo-line');
-            if (duoLine) duoLine.textContent = `Nixy says: Awesome! Found through ${source} — Duolingo streak unlocked!`;
+            if (duoLine) duoLine.textContent = `Nixy says: Awesome! Found through ${source} — streak unlocked!`;
         }
 
         function setFeedbackRating(rating) {
@@ -1760,6 +2096,9 @@
             showToast('Thank you! Nixy saved your feedback.');
         }
 
+        // ==========================================
+        // COMPANION FLOATER, SHARE PIN, USAGE & TOAST
+        // ==========================================
         let companionDragState = null;
         function startDraggingNixyCompanion(e) {
             const floater = document.getElementById('nixy-companion-floater');
@@ -1810,10 +2149,9 @@
                 if (localStorage.getItem(STORAGE_KEYS.TOUR_DONE) === 'true') return;
                 localStorage.setItem(STORAGE_KEYS.TOUR_DONE, 'true');
             } catch (_) {}
-            showCompanionBubble("Welcome! I'm Nixy. Explore Tool Library, Notifications, or take the Guided Tour!", 4500);
+            showCompanionBubble("Welcome! I'm Nixy. Explore Tool Library or take the Interactive Tutorial!", 4500);
         }
 
-        // Share Conversation with PIN & Usage Modals
         function openShareModal() {
             const modal = document.getElementById('share-modal');
             modal?.classList.remove('hidden');
@@ -1915,6 +2253,17 @@
                 sidebar.classList.add('-translate-x-full');
                 backdrop?.classList.add('hidden');
             }
+        }
+
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            if (!box) return;
+            box.textContent = String(msg || '');
+            box.classList.remove('hidden');
+            clearTimeout(window.__nixyToastTimer);
+            window.__nixyToastTimer = setTimeout(() => {
+                box.classList.add('hidden');
+            }, 2800);
         }
 
         function escapeHtml(str) {
