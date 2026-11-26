@@ -513,6 +513,7 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
         const CLOUDFLARE_PROXY_URL = '/api/nixy';
         const GOOGLE_SHEET_ID = '12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk';
+        const CODENIX_DOMAIN_BASE = 'https://codenix.pages.dev/dashboard';
 
         const NIXY_SYSTEM_PROMPT = [
             'You are Nixy, the Codenix AI Agent.',
@@ -631,6 +632,8 @@
 
             if (window.location.pathname === '/u' || window.location.pathname === '/u/') {
                 openProfileView(true);
+            } else {
+                syncDashboardRoute();
             }
 
             hideAuthGate();
@@ -682,14 +685,30 @@
                 if (nameEl) nameEl.textContent = name;
                 if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
 
-                supabaseClient.auth.onAuthStateChange((ev) => {
-                    if (ev === 'SIGNED_OUT') window.location.replace('/Start');
+                supabaseClient.auth.onAuthStateChange((ev, nextSession) => {
+                    if (ev === 'SIGNED_OUT' || !nextSession?.user) {
+                        window.location.replace('/Start');
+                    }
                 });
                 return true;
             } catch (_) {
                 window.location.replace('/Start');
                 return false;
             }
+        }
+
+        function syncDashboardRoute(conv = null) {
+            try {
+                if (state.profileViewOpen) return;
+                if (conv && !conv.isTemporary) {
+                    const url = new URL(window.location.href);
+                    url.pathname = '/dashboard';
+                    url.searchParams.set('chat', conv.id);
+                    window.history.replaceState({}, '', url.pathname + url.search);
+                } else if (window.location.pathname.startsWith('/c/')) {
+                    window.history.replaceState({}, '', '/dashboard');
+                }
+            } catch (_) {}
         }
 
         function hideAuthGate() {
@@ -759,12 +778,7 @@
 
         function syncConversationDomainUrl(conv) {
             if (!conv || conv.isTemporary) return;
-            try {
-                const targetPath = `/c/${encodeURIComponent(conv.id)}`;
-                if (window.location.pathname !== targetPath && !state.profileViewOpen) {
-                    window.history.replaceState({}, '', targetPath);
-                }
-            } catch (_) {}
+            syncDashboardRoute(conv);
         }
 
         function updateHeaderTitle() {
@@ -774,7 +788,7 @@
             if (titleEl) titleEl.textContent = conv?.title || 'New chat';
             if (badgeEl) {
                 if (conv && !conv.isTemporary) {
-                    badgeEl.textContent = `/c/${conv.id.slice(0, 8)}`;
+                    badgeEl.textContent = `/dashboard?chat=${conv.id.slice(0, 8)}`;
                     badgeEl.classList.remove('hidden');
                 } else {
                     badgeEl.classList.add('hidden');
@@ -816,9 +830,7 @@
                 state.__tempConv = { id: tempId, title: 'Temporary chat', messages: [], isTemporary: true };
                 state.activeConversationId = tempId;
                 try {
-                    if (window.location.pathname.startsWith('/c/')) {
-                        window.history.replaceState({}, '', '/');
-                    }
+                    window.history.replaceState({}, '', '/dashboard');
                 } catch (_) {}
                 showToast('Temporary chat enabled — messages are not saved to Supabase');
             } else {
@@ -1376,6 +1388,7 @@
             }
 
             window.__codeBlocks = [];
+            window.__assistantTexts = [];
             const qrTargets = [];
 
             feed.innerHTML = msgs.map((m, idx) => {
@@ -1389,6 +1402,7 @@
                     `;
                 }
 
+                const msgStoreIdx = window.__assistantTexts.push(String(m.content || '')) - 1;
                 const bodyHtml = formatSmartAssistantBody(String(m.content || ''));
 
                 let wikiCard = '';
@@ -1429,13 +1443,45 @@
                     mediaHtml += `<div id="${qrId}" class="mt-3 p-3 rounded-2xl bg-white inline-block"></div>`;
                 }
 
+                const voteUpClass = m.reaction === 'up' ? 'text-codenix-600 dark:text-codenix-400 bg-codenix-600/15' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200';
+                const voteDownClass = m.reaction === 'down' ? 'text-rose-500 bg-rose-500/15' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200';
+
                 return `
                     <div class="flex items-start gap-3">
                         <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 rounded-lg object-contain shrink-0 mt-1">
-                        <div class="max-w-[90%] flex-1 rounded-2xl rounded-tl-sm px-4 py-3 bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-xs sm:text-sm">
-                            <div class="prose dark:prose-invert max-w-none">${bodyHtml}</div>
-                            ${wikiCard}
-                            ${mediaHtml}
+                        <div class="max-w-[90%] flex-1 space-y-1.5">
+                            <div class="rounded-2xl rounded-tl-sm px-4 py-3 bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-xs sm:text-sm">
+                                <div class="prose dark:prose-invert max-w-none">${bodyHtml}</div>
+                                ${wikiCard}
+                                ${mediaHtml}
+                            </div>
+
+                            <!-- Message Action Row: Copy, Thumbs Up/Down, Listen, Share, More -->
+                            <div class="relative flex items-center gap-1 px-1">
+                                <button type="button" onclick="copyAssistantReply(${msgStoreIdx})" title="Copy" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="rateAssistantReply(${idx}, 'up')" title="Good response" class="p-1.5 rounded-lg ${voteUpClass} hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
+                                    <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="rateAssistantReply(${idx}, 'down')" title="Bad response" class="p-1.5 rounded-lg ${voteDownClass} hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
+                                    <i data-lucide="thumbs-down" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="speakAssistantReply(${msgStoreIdx})" title="Read aloud" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
+                                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="openShareModal()" title="Share" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
+                                    <i data-lucide="share" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="toggleReplyMoreMenu(${idx})" title="More actions" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
+                                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                                </button>
+
+                                <div id="reply-more-menu-${idx}" class="hidden absolute left-0 top-8 z-30 w-44 rounded-xl bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border shadow-xl p-1 text-xs">
+                                    <button type="button" onclick="downloadAssistantReplyText(${msgStoreIdx}); toggleReplyMoreMenu(${idx})" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-card transition">Download text</button>
+                                    <button type="button" onclick="openVoiceMode(); toggleReplyMoreMenu(${idx})" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-card transition">Open Voice Mode</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1545,161 +1591,45 @@
             navigator.clipboard?.writeText(item.code).then(() => showToast('Code copied'));
         }
 
-        // =========================================================================
-        // VOICE MODE (Speech Recognition + Fast Reply + Puter.js / Web Speech TTS)
-        // =========================================================================
-        let voiceRecognition = null;
-        let voiceListening = false;
-        let voiceMuted = false;
-
-        function openVoiceMode() {
-            const overlay = document.getElementById('voice-overlay');
-            overlay?.classList.remove('hidden');
-            overlay?.classList.add('flex');
-            setVoiceOrbState('idle', 'Tap orb to speak');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
+        function copyAssistantReply(idx) {
+            const raw = window.__assistantTexts?.[idx] || '';
+            navigator.clipboard?.writeText(raw).then(() => showToast('Copied response'));
         }
 
-        function closeVoiceMode() {
-            stopVoiceListening();
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-            const overlay = document.getElementById('voice-overlay');
-            overlay?.classList.add('hidden');
-            overlay?.classList.remove('flex');
+        function rateAssistantReply(msgIdx, dir) {
+            const conv = getActiveConversation();
+            if (!conv?.messages?.[msgIdx]) return;
+            const current = conv.messages[msgIdx].reaction;
+            conv.messages[msgIdx].reaction = current === dir ? null : dir;
+            renderMessages();
         }
 
-        function setVoiceOrbState(mode, statusLabel) {
-            const orb = document.getElementById('voice-orb');
-            const st = document.getElementById('voice-status-text');
-            if (orb) orb.className = `voice-orb-ring orb-${mode}`;
-            if (st && statusLabel) st.textContent = statusLabel;
+        async function speakAssistantReply(idx) {
+            const raw = window.__assistantTexts?.[idx] || '';
+            const plain = raw.replace(/```[\s\S]*?```/g, '').replace(/[#*`]/g, '').trim();
+            if (!plain) return;
+            showToast('Playing audio...');
+            await speakVoiceReply(plain);
         }
 
-        function toggleVoiceMicListening() {
-            if (voiceListening) {
-                stopVoiceListening();
-            } else {
-                startVoiceListening();
-            }
+        function toggleReplyMoreMenu(msgIdx) {
+            const menu = document.getElementById(`reply-more-menu-${msgIdx}`);
+            if (!menu) return;
+            document.querySelectorAll('[id^="reply-more-menu-"]').forEach(el => {
+                if (el.id !== `reply-more-menu-${msgIdx}`) el.classList.add('hidden');
+            });
+            menu.classList.toggle('hidden');
         }
 
-        function startVoiceListening() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) {
-                showToast('Voice recognition unavailable in this browser');
-                return;
-            }
-            if (voiceListening) return;
-
-            voiceRecognition = new SR();
-            voiceRecognition.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
-            voiceRecognition.interimResults = true;
-            voiceRecognition.continuous = false;
-
-            voiceRecognition.onstart = () => {
-                voiceListening = true;
-                document.getElementById('voice-mic-label').textContent = 'Stop';
-                setVoiceOrbState('listening', 'Listening...');
-            };
-
-            voiceRecognition.onresult = async (ev) => {
-                let transcript = '';
-                let isFinal = false;
-                for (let i = ev.resultIndex; i < ev.results.length; i++) {
-                    transcript += ev.results[i][0].transcript;
-                    if (ev.results[i].isFinal) isFinal = true;
-                }
-                if (transcript.trim()) {
-                    document.getElementById('voice-speaker-label').textContent = 'You';
-                    document.getElementById('voice-caption-text').textContent = transcript.trim();
-                }
-                if (isFinal && transcript.trim()) {
-                    stopVoiceListening();
-                    await handleVoiceTurn(transcript.trim());
-                }
-            };
-
-            voiceRecognition.onerror = () => {
-                voiceListening = false;
-                document.getElementById('voice-mic-label').textContent = 'Listen';
-                setVoiceOrbState('idle', 'Tap orb to speak');
-            };
-
-            voiceRecognition.onend = () => {
-                voiceListening = false;
-                document.getElementById('voice-mic-label').textContent = 'Listen';
-                if (!window.__voiceBusy) setVoiceOrbState('idle', 'Tap orb to speak');
-            };
-
-            try { voiceRecognition.start(); } catch (_) {}
-        }
-
-        function stopVoiceListening() {
-            if (voiceRecognition) {
-                try { voiceRecognition.stop(); } catch (_) {}
-                voiceRecognition = null;
-            }
-            voiceListening = false;
-            const lbl = document.getElementById('voice-mic-label');
-            if (lbl) lbl.textContent = 'Listen';
-        }
-
-        function toggleVoiceSpeakerMute() {
-            voiceMuted = !voiceMuted;
-            if (voiceMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-            const lbl = document.getElementById('voice-speaker-label-btn');
-            if (lbl) lbl.textContent = voiceMuted ? 'Muted' : 'Sound On';
-        }
-
-        async function handleVoiceTurn(spokenText) {
-            window.__voiceBusy = true;
-            setVoiceOrbState('thinking', 'Thinking...');
-            try {
-                const conv = getActiveConversation();
-                const history = (conv?.messages || []).slice(-6).map(m => ({ role: m.role, content: m.content }));
-                history.push({ role: 'user', content: spokenText });
-
-                const reply = await generateChatReply(history);
-                const cleanReply = String(reply || '').replace(/```[\s\S]*?```/g, '').replace(/[#*`]/g, '').trim();
-
-                document.getElementById('voice-speaker-label').textContent = 'Codenix';
-                document.getElementById('voice-caption-text').textContent = cleanReply || 'Done.';
-
-                if (!voiceMuted && cleanReply) {
-                    setVoiceOrbState('speaking', 'Speaking...');
-                    await speakVoiceReply(cleanReply);
-                }
-            } finally {
-                window.__voiceBusy = false;
-                setVoiceOrbState('idle', 'Tap orb to speak');
-            }
-        }
-
-        async function speakVoiceReply(text) {
-            const snippet = text.slice(0, 400);
-            if (window.puter?.ai?.txt2speech) {
-                try {
-                    const audio = await window.puter.ai.txt2speech(snippet);
-                    if (audio && typeof audio.play === 'function') {
-                        await new Promise((resolve) => {
-                            audio.onended = resolve;
-                            audio.onerror = resolve;
-                            audio.play().catch(resolve);
-                        });
-                        return;
-                    }
-                } catch (_) {}
-            }
-            if ('speechSynthesis' in window) {
-                await new Promise((resolve) => {
-                    window.speechSynthesis.cancel();
-                    const u = new SpeechSynthesisUtterance(snippet);
-                    u.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
-                    u.onend = resolve;
-                    u.onerror = resolve;
-                    window.speechSynthesis.speak(u);
-                });
-            }
+        function downloadAssistantReplyText(idx) {
+            const raw = window.__assistantTexts?.[idx] || '';
+            const blob = new Blob([raw], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'codenix-response.txt';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         // =========================================================================
@@ -1807,7 +1737,7 @@
                     title: conv.title,
                     messages_snapshot: conv.messages
                 });
-                const url = `${window.location.origin}/?share=${encodeURIComponent(slug)}`;
+                const url = `${CODENIX_DOMAIN_BASE}?share=${encodeURIComponent(slug)}`;
                 document.getElementById('share-link-input').value = url;
                 document.getElementById('share-link-box').classList.remove('hidden');
                 showToast('Share link ready');
