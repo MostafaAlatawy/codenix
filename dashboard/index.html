@@ -1392,8 +1392,12 @@
                     const searchSummary = await runWebSearchTool(fullPrompt);
                     assistantMsg = { role: 'assistant', content: searchSummary };
                 } else {
-                    const replyText = await runSmartChatTool(fullPrompt, selectedTool);
-                    assistantMsg = { role: 'assistant', content: replyText };
+                    const replyData = await runSmartChatTool(fullPrompt, selectedTool);
+                    assistantMsg = {
+                        role: 'assistant',
+                        content: replyData.text,
+                        wikiCard: replyData.wikiCard || null
+                    };
                 }
 
                 getActiveMessages().push(assistantMsg);
@@ -1507,29 +1511,83 @@
                 { role: 'user', content: promptText }
             ];
 
+            const wikiPromise = toolName === 'general_chat' ? fetchWikipediaSmartCard(promptText) : Promise.resolve(null);
+
+            let replyText = '';
             if (window.puter?.ai?.chat) {
                 try {
                     const res = await window.puter.ai.chat(messages);
                     const text = typeof res === 'string'
                         ? res
                         : (res?.message?.content || res?.result?.content || res?.text || '');
-                    if (text) return String(text);
+                    if (text) replyText = String(text);
                 } catch (_) {}
             }
 
-            try {
-                const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'chat', messages })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data?.text) return String(data.text);
-                }
-            } catch (_) {}
+            if (!replyText) {
+                try {
+                    const res = await fetch(CLOUDFLARE_PROXY_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'chat', messages })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data?.text) replyText = String(data.text);
+                    }
+                } catch (_) {}
+            }
 
-            return `### Summary\nHere is a structured response for **${promptText}**.`;
+            if (!replyText) {
+                replyText = `### Summary\nHere is a structured response for **${promptText}**.`;
+            }
+
+            const wikiCard = await wikiPromise;
+            return { text: replyText, wikiCard };
+        }
+
+        async function fetchWikipediaSmartCard(queryText) {
+            const cleaned = String(queryText || '')
+                .replace(/^(what is|who is|tell me about|explain|define|ما هو|ما هي|من هو|تكلم عن|اشرح)\s+/i, '')
+                .replace(/[?!؟.]+$/g, '')
+                .trim();
+
+            if (!cleaned || cleaned.length < 2 || cleaned.length > 90) return null;
+
+            const isArabic = /[\u0600-\u06FF]/.test(cleaned);
+            const wikiLang = isArabic ? 'ar' : 'en';
+            const candidateTerms = [cleaned];
+            const words = cleaned.split(/\s+/).filter(Boolean);
+            if (words.length > 2) {
+                candidateTerms.push(words.slice(0, 2).join(' '));
+            }
+
+            for (const term of candidateTerms) {
+                try {
+                    const searchUrl = `https://${wikiLang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&utf8=&format=json&origin=*`;
+                    const sRes = await fetch(searchUrl);
+                    if (!sRes.ok) continue;
+                    const sData = await sRes.json();
+                    const firstTitle = sData?.query?.search?.[0]?.title;
+                    if (!firstTitle) continue;
+
+                    const sumUrl = `https://${wikiLang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstTitle)}`;
+                    const pRes = await fetch(sumUrl);
+                    if (!pRes.ok) continue;
+                    const pData = await pRes.json();
+                    const imgSrc = pData?.thumbnail?.source || pData?.originalimage?.source || '';
+                    if (imgSrc) {
+                        return {
+                            title: pData.title || firstTitle,
+                            extract: String(pData.extract || '').slice(0, 220),
+                            imageUrl: imgSrc,
+                            pageUrl: pData.content_urls?.desktop?.page || `https://${wikiLang}.wikipedia.org/wiki/${encodeURIComponent(firstTitle)}`
+                        };
+                    }
+                } catch (_) {}
+            }
+
+            return null;
         }
 
         // ==========================================
@@ -1568,6 +1626,18 @@
                 const bodyHtml = formatSmartResponseHtml(String(msg.content || ''));
 
                 let mediaHtml = '';
+                if (msg.wikiCard && msg.wikiCard.imageUrl) {
+                    mediaHtml += `
+                        <div class="mt-3 p-3 rounded-2xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border max-w-md flex items-start gap-3">
+                            <img src="${escapeHtml(msg.wikiCard.imageUrl)}" alt="${escapeHtml(msg.wikiCard.title || 'Wikipedia')}" loading="lazy" onerror="this.closest('div').remove()" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-codenix-200 dark:border-codenix-border">
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">${escapeHtml(msg.wikiCard.title || 'Wikipedia')}</p>
+                                ${msg.wikiCard.extract ? `<p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-3 leading-snug">${escapeHtml(msg.wikiCard.extract)}</p>` : ''}
+                                ${msg.wikiCard.pageUrl ? `<a href="${escapeHtml(msg.wikiCard.pageUrl)}" target="_blank" rel="noopener" class="inline-block text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline">Wikipedia</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
                 if (msg.imageUrl) {
                     mediaHtml += `
                         <div class="mt-3 p-2.5 rounded-2xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2 max-w-md">
