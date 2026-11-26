@@ -29,7 +29,6 @@
                             950: '#2e1065',
                             black: '#07060b',
                             panel: '#100e18',
-                            card: '#161322',
                             border: '#251f38'
                         }
                     },
@@ -48,17 +47,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 
     <!-- Supabase JS v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Puter.js v2 SDK -->
-    <script>window.puter = window.puter || {}; window.puter.quiet = true;</script>
-    <script src="https://js.puter.com/v2/"></script>
+        <script src="https://js.puter.com/v2/"></script>
 
     <!-- Marked.js + Highlight.js -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
@@ -69,25 +67,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.35); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.65); }
 
         @keyframes nixyFloat {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-6px); }
         }
         @keyframes nixyGlow {
-            0%, 100% { box-shadow: 0 0 28px rgba(124, 58, 237, 0.5), inset 0 -6px 14px rgba(15, 8, 36, 0.5); }
-            50% { box-shadow: 0 0 46px rgba(167, 139, 250, 0.85), inset 0 -6px 14px rgba(15, 8, 36, 0.5); }
+            0%, 100% { box-shadow: 0 0 28px rgba(124, 58, 237, 0.55), inset 0 -6px 14px rgba(15, 8, 36, 0.5); }
+            50% { box-shadow: 0 0 44px rgba(167, 139, 250, 0.85), inset 0 -6px 14px rgba(15, 8, 36, 0.5); }
         }
         @keyframes nixyBlink {
             0%, 92%, 96%, 100% { transform: scaleY(1); }
             94% { transform: scaleY(0.1); }
         }
         .nixy-orb {
-            background: radial-gradient(circle at 30% 25%, #e9d5ff 0%, #8b5cf6 52%, #3b0764 100%);
+            background: radial-gradient(circle at 30% 25%, #ddd6fe 0%, #8b5cf6 50%, #4c1d95 100%);
             animation: nixyFloat 3.6s ease-in-out infinite, nixyGlow 2.8s ease-in-out infinite;
             position: relative;
             user-select: none;
@@ -96,17 +94,17 @@
         .nixy-eye {
             background-color: #ffffff;
             border-radius: 9999px;
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.95);
             animation: nixyBlink 4.2s infinite;
             transition: transform 0.14s ease-out, height 0.2s ease, background-color 0.2s ease;
         }
         .nixy-orb.mood-thinking .nixy-eye {
             background-color: #fef08a;
-            animation: nixyBlink 0.9s infinite;
+            animation: nixyBlink 1s infinite;
         }
         .nixy-orb.mood-speaking {
             transform: scale(1.08);
-            box-shadow: 0 0 54px rgba(168, 85, 247, 0.95);
+            box-shadow: 0 0 50px rgba(168, 85, 247, 0.95);
         }
         .nixy-orb.mood-happy .nixy-eye {
             height: 45% !important;
@@ -123,8 +121,8 @@
             40% { transform: translateY(-5px); opacity: 1; }
         }
         .nixy-typing-dot {
-            width: 6px;
-            height: 6px;
+            width: 7px;
+            height: 7px;
             border-radius: 9999px;
             background-color: #8b5cf6;
             display: inline-block;
@@ -156,44 +154,15 @@
         .nix-code-card {
             background: #0b0914;
             border: 1px solid #251f38;
-            border-radius: 0.9rem;
+            border-radius: 0.85rem;
             margin: 0.75rem 0;
             overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-        .nix-file-graphic {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.6rem 0.85rem;
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.18), rgba(16, 14, 24, 0.9));
-            border-bottom: 1px solid #251f38;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .nix-file-graphic:hover {
-            background: linear-gradient(90deg, rgba(124, 58, 237, 0.28), rgba(16, 14, 24, 0.95));
-        }
-        .nix-file-icon-badge {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 0.55rem;
-            background: rgba(139, 92, 246, 0.25);
-            border: 1px solid rgba(167, 139, 250, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 800;
-            font-family: 'JetBrains Mono', monospace;
-            color: #ddd6fe;
-            shrink: 0;
         }
         .nix-code-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.4rem 0.8rem;
+            padding: 0.45rem 0.8rem;
             background: #141024;
             border-bottom: 1px solid #251f38;
             font-size: 11px;
@@ -201,16 +170,15 @@
             font-family: 'JetBrains Mono', monospace;
         }
         .nix-code-btn {
-            padding: 0.22rem 0.6rem;
-            border-radius: 0.45rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.4rem;
             background: rgba(139, 92, 246, 0.18);
             color: #ede9fe;
             font-size: 11px;
             font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            transition: all 0.15s ease;
+            transition: background 0.15s ease;
         }
-        .nix-code-btn:hover { background: rgba(139, 92, 246, 0.4); }
+        .nix-code-btn:hover { background: rgba(139, 92, 246, 0.38); }
 
         .prose table {
             width: 100%;
@@ -248,8 +216,8 @@
             animation: nixyShimmer 1.6s infinite linear;
         }
         .nix-generated-img-wrap img {
-            max-width: min(100%, 440px);
-            max-height: 320px;
+            max-width: min(100%, 420px);
+            max-height: 300px;
             width: auto;
             height: auto;
             object-fit: contain;
@@ -266,6 +234,35 @@
             box-shadow: 0 0 70px rgba(139, 92, 246, 0.55);
             animation: astreyaPulse 3.5s ease-in-out infinite;
         }
+    
+        /* ===== Nixy UI polish ===== */
+        :root { --nx-ease: cubic-bezier(.22,1,.36,1); }
+        .dark body { background: radial-gradient(900px 480px at 85% -8%, rgba(124,58,237,.20), transparent 60%), radial-gradient(700px 420px at -8% 108%, rgba(167,139,250,.13), transparent 60%), #07060b !important; }
+        html:not(.dark) body { background: radial-gradient(900px 480px at 85% -8%, rgba(167,139,250,.22), transparent 60%), #faf9ff !important; }
+        #app-sidebar { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+        @keyframes nixyIn { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+        #messages-feed > div { animation: nixyIn .4s var(--nx-ease) both; }
+        #messages-feed > .flex.justify-end > div { background: linear-gradient(135deg, #7c3aed, #6d28d9) !important; box-shadow: 0 8px 24px -10px rgba(124,58,237,.7); }
+        #messages-feed > .flex.justify-start > div { backdrop-filter: blur(10px); box-shadow: 0 10px 30px -18px rgba(0,0,0,.55); border-radius: 1.1rem; }
+        #prompt-input { font-size: 16px; }
+        #send-prompt-btn { background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important; transition: transform .2s var(--nx-ease), box-shadow .2s; }
+        #send-prompt-btn:hover { transform: translateY(-1px) scale(1.05); box-shadow: 0 8px 22px -6px rgba(139,92,246,.8); }
+        #send-prompt-btn:active { transform: scale(.94); }
+        #send-prompt-btn:disabled { opacity: .5; }
+        .nixy-chip { transition: transform .2s var(--nx-ease), border-color .2s, background .2s; white-space: nowrap; }
+        .nixy-chip:hover { transform: translateY(-2px); background: rgba(139,92,246,.14); }
+        #nixy-loading-indicator > div:last-child, #nixy-loading-indicator { position: relative; }
+        #nixy-loading-text { background: linear-gradient(90deg,#8b5cf6,#c4b5fd,#8b5cf6); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: nixyShimmer 1.8s linear infinite; }
+        @keyframes nixyShimmer { to { background-position: -200% 0; } }
+        .nix-generated-img-wrap img { width: 100%; border-radius: .75rem; display: block; }
+        .prose img { border-radius: .75rem; max-width: 100%; }
+        .prose a { color: #8b5cf6; text-decoration: underline; text-underline-offset: 3px; }
+        .prose h1, .prose h2, .prose h3 { font-weight: 700; margin: .9rem 0 .4rem; }
+        .prose ul { list-style: disc; padding-inline-start: 1.2rem; margin: .4rem 0; }
+        .prose ol { list-style: decimal; padding-inline-start: 1.2rem; margin: .4rem 0; }
+        [dir="rtl"] .prose, .prose:lang(ar) { text-align: start; }
+        button:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
     </style>
 </head>
 <body class="bg-white text-zinc-900 dark:bg-codenix-black dark:text-zinc-100 h-[100dvh] flex flex-col overflow-hidden transition-colors duration-200">
@@ -279,7 +276,7 @@
             </div>
         </div>
         <p class="text-sm font-bold text-codenix-700 dark:text-codenix-300">Nixy — Verifying Codenix Session...</p>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Authenticating workspace & Cloudflare secrets...</p>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Redirecting to /Start if unauthenticated</p>
     </div>
 
     <!-- Mobile Sidebar Backdrop -->
@@ -288,7 +285,7 @@
     <div class="flex h-full w-full overflow-hidden relative">
 
         <!-- SIDEBAR -->
-        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-codenix-50/80 dark:bg-codenix-panel/95 backdrop-blur-xl border-r border-codenix-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
+        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-codenix-50/70 dark:bg-codenix-panel border-r border-codenix-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
             <div class="p-3.5 border-b border-codenix-200 dark:border-codenix-border space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
@@ -296,9 +293,9 @@
                         <div>
                             <div class="flex items-center gap-1.5">
                                 <span class="font-extrabold text-base tracking-tight text-codenix-700 dark:text-white">Nixy</span>
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 border border-codenix-500/30">STUDIO</span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 border border-codenix-500/30">CODENIX</span>
                             </div>
-                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Autonomous AI Agent</p>
+                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Multi-Model AI Agent</p>
                         </div>
                     </div>
                     <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600">
@@ -306,23 +303,23 @@
                     </button>
                 </div>
 
-                <button type="button" onclick="createNewChat()" class="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-codenix-600 to-indigo-600 hover:from-codenix-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-codenix-600/25 transition-all active:scale-[0.98]">
+                <button type="button" onclick="createNewChat()" class="w-full py-2.5 px-3.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-codenix-600/25 transition-all active:scale-[0.98]">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     <span>New Conversation</span>
                 </button>
 
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                    <input type="search" id="chat-search" name="nixy_conv_filter" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" oninput="renderConversationList()" placeholder="Search conversations..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 transition">
+                    <input type="search" id="chat-search" name="nixy_conv_filter" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" oninput="renderConversationList()" placeholder="Search conversations..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
                 </div>
             </div>
 
             <div id="conversation-list" class="flex-1 overflow-y-auto p-2.5 space-y-1"></div>
 
-            <div class="p-3 border-t border-codenix-200 dark:border-codenix-border space-y-2.5 bg-white/70 dark:bg-codenix-black/60">
+            <div class="p-3 border-t border-codenix-200 dark:border-codenix-border space-y-2.5 bg-white/70 dark:bg-codenix-black/50">
                 <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-codenix-700 dark:text-codenix-300 px-1">
-                    <span>Agent Arsenal</span>
-                    <span class="text-[10px] font-mono text-emerald-500 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>10 Tools</span>
+                    <span>Plugins & Tools</span>
+                    <span class="text-[10px] font-mono text-zinc-400">8 Active</span>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5 text-[11px]">
                     <a href="/NixCode" class="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
@@ -341,17 +338,14 @@
                         <i data-lucide="monitor-up" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
                         <span class="truncate">ShareNix</span>
                     </button>
-                    <button type="button" onclick="openToolsModal()" class="col-span-2 flex items-center justify-between gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
-                        <span class="flex items-center gap-1.5">
-                            <i data-lucide="cpu" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                            <span>Agent Tools & Capabilities</span>
-                        </span>
-                        <span class="text-[10px] font-mono bg-codenix-600 text-white px-1.5 py-0.5 rounded">Inspect</span>
+                    <button type="button" onclick="startNixyTutorial()" class="col-span-2 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 font-semibold transition">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
+                        <span>Interactive Tutorial with Nixy</span>
                     </button>
                     <button type="button" onclick="toggleToolLibrarySection()" id="tool-library-toggle-btn" class="col-span-2 flex items-center justify-between gap-1.5 px-2.5 py-2 rounded-xl bg-white dark:bg-codenix-panel hover:border-codenix-500/50 border border-codenix-200 dark:border-codenix-border font-semibold transition">
                         <span class="flex items-center gap-1.5 truncate">
                             <i data-lucide="grid" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="truncate">Sheet Tool Library</span>
+                            <span class="truncate">Tool Library</span>
                         </span>
                         <span id="sheet-tool-library-count" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0</span>
                     </button>
@@ -359,7 +353,7 @@
 
                 <div class="pt-2 border-t border-codenix-200 dark:border-codenix-border flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2 min-w-0">
-                        <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-gradient-to-tr from-codenix-600 to-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm">N</div>
+                        <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-codenix-600 text-white text-xs font-bold flex items-center justify-center shrink-0">N</div>
                         <div class="min-w-0">
                             <p id="user-display-name" class="text-xs font-semibold truncate">Codenix Member</p>
                             <p id="sidebar-quota-text" class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Chat: 0/30 • Img: 0/3</p>
@@ -376,8 +370,8 @@
         <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-white dark:bg-codenix-black">
 
             <!-- Top Header Bar -->
-            <header class="h-14 border-b border-codenix-200 dark:border-codenix-border px-3 sm:px-5 flex items-center justify-between bg-white/85 dark:bg-codenix-black/85 backdrop-blur-md shrink-0 z-20">
-                <div class="flex items-center gap-2">
+            <header class="h-14 border-b border-codenix-200 dark:border-codenix-border px-3 sm:px-5 flex items-center justify-between bg-white/90 dark:bg-codenix-black/90 backdrop-blur-md shrink-0 z-20">
+                <div class="flex items-center gap-2.5">
                     <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-codenix-50 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
                         <i data-lucide="menu" class="w-5 h-5"></i>
                     </button>
@@ -385,13 +379,13 @@
                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold">
                         <img src="/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-4 h-4 rounded object-contain">
                         <span class="w-2 h-2 rounded-full bg-codenix-500 animate-pulse"></span>
-                        <span class="hidden sm:inline">Nixy Agent</span>
-                        <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">Cloudflare + Puter</span>
+                        <span>Nixy Agent</span>
+                        <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">Auto APIs</span>
                     </div>
 
-                    <button type="button" onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch between Auto (Cloudflare Secrets -> Puter.js Fallback) and Direct Puter.js" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
-                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                        <span id="provider-mode-label">Mode: Smart Fallback</span>
+                    <button type="button" onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch between Primary APIs and Unlimited Puter.js" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">
+                        <i data-lucide="infinity" class="w-3.5 h-3.5"></i>
+                        <span id="provider-mode-label">Mode: Auto APIs</span>
                     </button>
 
                     <div id="sharenix-live-banner" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
@@ -402,11 +396,6 @@
                 </div>
 
                 <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button type="button" onclick="startNixyTutorial()" title="Interactive Tutorial" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold hover:border-codenix-500 transition">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                        <span>Tour</span>
-                    </button>
-
                     <div class="relative">
                         <button type="button" onclick="toggleLangDropdown(event)" id="lang-btn" title="Language" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition flex items-center gap-1 text-xs font-bold">
                             <i data-lucide="globe" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
@@ -430,7 +419,7 @@
                         <span class="hidden sm:inline" data-i18n="shareBtn">Share (PIN)</span>
                     </button>
 
-                    <button type="button" onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
+                    <button type="button" onclick="toggleTheme()" title="Toggle Purple/White & Purple/Black Mode" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
                         <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
                     </button>
                 </div>
@@ -444,52 +433,17 @@
                     <div class="max-w-3xl mx-auto space-y-6">
 
                         <!-- Dashboard Introduction Hero with Nixy Orb -->
-                        <div id="nixy-hero" class="flex flex-col items-center justify-center text-center py-6 sm:py-10">
+                        <div id="nixy-hero" class="flex flex-col items-center justify-center text-center py-8 sm:py-12">
                             <div id="nixy-hero-speech" class="mb-4 px-4 py-2 rounded-2xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 shadow-lg max-w-md">
-                                Hi! I'm <span class="font-bold text-codenix-600 dark:text-codenix-400">Nixy</span> — powered by Cloudflare Secrets & Unlimited Puter.js fallback. What shall we build?
+                                Hi! I'm <span class="font-bold text-codenix-600 dark:text-codenix-400">Nixy</span> — your Codenix AI Agent. Ask anything or click me!
                             </div>
 
                             <!-- Nixy: Purple Ball with 2 White Ball Eyes -->
-                            <div id="nixy-main-orb" class="nixy-orb w-24 h-24 rounded-full flex items-center justify-center mb-6 cursor-pointer" title="Click Nixy to cycle mood, outfit & animations!" onclick="handleNixyCharacterClick(event)">
+                            <div id="nixy-main-orb" class="nixy-orb w-24 h-24 rounded-full flex items-center justify-center mb-5 cursor-pointer" title="Click Nixy to cycle mood, outfit & animations!" onclick="handleNixyCharacterClick(event)">
                                 <div id="nixy-eyes" class="flex items-center justify-center gap-3.5 pointer-events-none">
                                     <span class="nixy-eye w-4 h-4 block"></span>
                                     <span class="nixy-eye w-4 h-4 block"></span>
                                 </div>
-                            </div>
-
-                            <!-- Starter Suggestion Cards -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl text-left">
-                                <button type="button" onclick="quickSendPrompt('Generate a futuristic cyberpunk city at sunset with neon purple lights')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel/80 border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition group">
-                                    <div class="flex items-center gap-2 text-xs font-bold text-codenix-700 dark:text-codenix-300 mb-1">
-                                        <i data-lucide="image" class="w-4 h-4"></i>
-                                        <span>AI Image Studio</span>
-                                    </div>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">Generate high-res artwork via Cloudflare or Puter.js</p>
-                                </button>
-
-                                <button type="button" onclick="quickSendPrompt('Build an interactive HTML & Tailwind CSS pomodoro dashboard with dark mode')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel/80 border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition group">
-                                    <div class="flex items-center gap-2 text-xs font-bold text-codenix-700 dark:text-codenix-300 mb-1">
-                                        <i data-lucide="code-2" class="w-4 h-4"></i>
-                                        <span>Cody Live App Builder</span>
-                                    </div>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">Write runnable web apps & preview them live</p>
-                                </button>
-
-                                <button type="button" onclick="quickSendPrompt('Generate a QR code for https://codenix.studio')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel/80 border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition group">
-                                    <div class="flex items-center gap-2 text-xs font-bold text-codenix-700 dark:text-codenix-300 mb-1">
-                                        <i data-lucide="qr-code" class="w-4 h-4"></i>
-                                        <span>Instant QR & Math Tools</span>
-                                    </div>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">Create downloadable QR codes or evaluate expressions</p>
-                                </button>
-
-                                <button type="button" onclick="quickSendPrompt('Say in voice: Welcome to Codenix Studio, where your ideas come alive!')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel/80 border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition group">
-                                    <div class="flex items-center gap-2 text-xs font-bold text-codenix-700 dark:text-codenix-300 mb-1">
-                                        <i data-lucide="volume-2" class="w-4 h-4"></i>
-                                        <span>Puter Neural Voice TTS</span>
-                                    </div>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">Synthesize natural speech audio with instant playback</p>
-                                </button>
                             </div>
                         </div>
 
@@ -511,11 +465,11 @@
                                         <span class="nixy-typing-dot"></span>
                                         <span class="nixy-typing-dot"></span>
                                     </div>
-                                    <span id="nixy-loading-text" class="text-xs font-semibold text-codenix-700 dark:text-codenix-300">Nixy is routing tool...</span>
+                                    <span id="nixy-loading-text" class="text-xs font-semibold text-codenix-700 dark:text-codenix-300">Nixy is thinking...</span>
                                 </div>
                                 <div id="nixy-image-generating-card" class="hidden rounded-xl overflow-hidden border border-codenix-500/30 bg-codenix-950/60 p-3">
                                     <div class="nix-img-shimmer w-full h-36 rounded-lg flex items-center justify-center">
-                                        <span class="text-[11px] font-semibold text-codenix-200 px-3 py-1 rounded-full bg-black/40">Generating image via Cloudflare / Puter.js...</span>
+                                        <span class="text-[11px] font-semibold text-codenix-200 px-3 py-1 rounded-full bg-black/40">Generating image with SubeAI / Puter...</span>
                                     </div>
                                 </div>
                             </div>
@@ -533,7 +487,6 @@
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="switchCodyTab('preview')" id="cody-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
                             <button type="button" onclick="switchCodyTab('code')" id="cody-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 dark:text-zinc-400 text-[11px] font-semibold">Code</button>
-                            <button type="button" onclick="runEditedCodyCode()" title="Run Edited Code" class="px-2 py-1 rounded-lg bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">Run</button>
                             <button type="button" onclick="closeCodyCanvas()" class="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
@@ -553,15 +506,19 @@
                     <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
                     <input type="file" id="nixy-file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql,.xml" onchange="handleFileUploadSelection(event)" class="hidden">
 
-                    <!-- Quick Tool Chips -->
+                    <!-- Quick Tool Chips for Voice, Image, Code, Table & Docs -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1.5 mb-1.5 text-[11px]">
-                        <button type="button" onclick="quickInsertPrompt('Generate an image of ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="image" class="w-3 h-3 text-codenix-500"></i>Image</button>
-                        <button type="button" onclick="quickInsertPrompt('Say in voice: ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="volume-2" class="w-3 h-3 text-codenix-500"></i>Voice</button>
-                        <button type="button" onclick="quickInsertPrompt('Build an interactive HTML app for ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="code" class="w-3 h-3 text-codenix-500"></i>Code</button>
-                        <button type="button" onclick="quickInsertPrompt('Generate a QR code for ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="qr-code" class="w-3 h-3 text-codenix-500"></i>QR Code</button>
-                        <button type="button" onclick="quickInsertPrompt('Calculate: ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="calculator" class="w-3 h-3 text-codenix-500"></i>Math</button>
-                        <button type="button" onclick="quickInsertPrompt('Create a markdown table comparing ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="table" class="w-3 h-3 text-codenix-500"></i>Table</button>
-                        <button type="button" onclick="quickInsertPrompt('Search the web for ')" class="px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition flex items-center gap-1"><i data-lucide="globe" class="w-3 h-3 text-codenix-500"></i>Web Search</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.image_generator.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">🎨 Image</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.puter_voice.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">🎙 Voice</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.code_canvas.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">💻 Code</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.data_table.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">📊 Table</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.document_writer.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">📄 Document</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.web_search.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">🔎 Search</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.weather.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">⛅ Weather</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.qr_generator.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">▦ QR</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.translator.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">🌐 Translate</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.calculator.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">🧮 Calc</button>
+                        <button type="button" onclick="quickInsertPrompt(NIXY_TOOLS.tool_finder.prefix)" class="nixy-chip px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 font-semibold shrink-0 transition">🧰 Codenix tools</button>
                     </div>
 
                     <div class="flex items-end gap-1.5 sm:gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 shadow-sm transition">
@@ -577,37 +534,16 @@
                             <i data-lucide="monitor-up" class="w-4 h-4"></i>
                         </button>
 
-                        <textarea id="prompt-input" rows="1" placeholder="Ask Nixy anything — auto-selects Images, Voice, Code, QR, Math, Tables, Web Search & Screen Vision..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
+                        <textarea id="prompt-input" rows="1" placeholder="Message Nixy, upload files, share screen, or ask for images, tables, PDFs, QR, voice..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
 
                         <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white shadow-md shadow-codenix-600/25 transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <p id="quota-footer-label" class="text-[10px] text-zinc-400 text-center mt-1.5">Primary: Cloudflare Secrets Proxy • Automatic Fallback: Unlimited Puter.js SDK</p>
+                    <p id="quota-footer-label" class="text-[10px] text-zinc-400 text-center mt-1.5">Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)</p>
                 </div>
             </div>
         </main>
-    </div>
-
-    <!-- AGENT TOOLS & CAPABILITIES MODAL -->
-    <div id="tools-modal" onclick="if(event.target===this) closeToolsModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative space-y-4">
-            <div class="flex items-center justify-between border-b border-codenix-200 dark:border-codenix-border pb-3">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center">
-                        <i data-lucide="cpu" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-extrabold">Nixy Autonomous Tool Router</h3>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Automatically selected from your natural prompt with Cloudflare -> Puter.js failover</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeToolsModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-codenix-600">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div id="agent-tools-grid" class="overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2.5 pr-1"></div>
-        </div>
     </div>
 
     <!-- ASTREYA MULTIMODAL VOICE MODE MODAL -->
@@ -636,9 +572,9 @@
                     <span class="nixy-eye w-3.5 h-3.5 block"></span>
                 </div>
             </div>
-            <p id="astreya-status" class="text-xs font-bold uppercase tracking-widest text-codenix-300 mb-3">Tap Orb to Speak</p>
+            <p id="astreya-status" class="text-xs font-bold uppercase tracking-widest text-codenix-300 mb-3">Tap Orb to Speak or Ask Below</p>
             <div class="w-full max-w-lg px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-200 mb-4">
-                <p id="astreya-caption">"Hello! Tap my orb and speak—I'll route your request to the right tool and answer back!"</p>
+                <p id="astreya-caption">"Hello! I'm Astreya & Nixy. Ask me to generate images, inspect your screen, create QR codes, or answer anything!"</p>
             </div>
         </div>
     </div>
@@ -672,6 +608,7 @@
             <button type="button" onclick="closeNixyTutorial()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
+
             <div class="flex items-center justify-center gap-2">
                 <div class="nixy-orb w-16 h-16 rounded-full flex items-center justify-center">
                     <div class="flex items-center gap-2.5">
@@ -680,16 +617,19 @@
                     </div>
                 </div>
             </div>
+
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold">
                 <span id="tutorial-step-badge">Step 1 of 5</span>
             </div>
+
             <h3 id="tutorial-title" class="text-lg font-extrabold text-zinc-900 dark:text-white">Meet Nixy — Your AI Companion</h3>
             <p id="tutorial-body" class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                Nixy uses Cloudflare Worker secrets first and automatically falls back to unlimited Puter.js for chat, code, images, and neural voice!
+                Hi! I'm Nixy. I remember your current conversation and past saved chats in Supabase, and I automatically route to the best AI model or unlimited Puter.js!
             </p>
+
             <div class="flex items-center justify-between pt-2 gap-2">
                 <button type="button" onclick="prevTutorialStep()" id="tutorial-prev-btn" class="px-4 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Back</button>
-                <button type="button" onclick="tryTutorialAction()" class="px-4 py-2 rounded-xl bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-xs font-bold">Try Feature</button>
+                <button type="button" onclick="tryTutorialAction()" class="px-4 py-2 rounded-xl bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-xs font-bold">Try This Feature</button>
                 <button type="button" onclick="nextTutorialStep()" id="tutorial-next-btn" class="px-5 py-2 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Next</button>
             </div>
         </div>
@@ -710,13 +650,16 @@
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Protected by a PIN saved in Supabase</p>
                 </div>
             </div>
+
             <div>
                 <label class="block text-xs font-semibold mb-1">Set Access PIN (4-8 digits)</label>
                 <input type="password" id="share-pin-input" maxlength="8" placeholder="Enter PIN (e.g. 2486)" class="w-full px-3.5 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-sm font-mono focus:outline-none focus:border-codenix-500">
             </div>
+
             <button type="button" onclick="publishSharedConversation()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold shadow-md">
                 Generate PIN-Protected Share Link
             </button>
+
             <div id="share-result-box" class="hidden p-3 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2">
                 <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Published to Supabase! Share this link:</p>
                 <div class="flex items-center gap-2">
@@ -748,7 +691,7 @@
             </button>
             <h3 class="text-base font-bold flex items-center gap-2">
                 <i data-lucide="coins" class="w-5 h-5 text-codenix-600 dark:text-codenix-400"></i>
-                <span>Cloudflare Secrets & Puter.js Failover</span>
+                <span>Codenix Tokens & Rate Limits</span>
             </h3>
 
             <div class="grid grid-cols-3 gap-2 text-center">
@@ -767,12 +710,9 @@
             </div>
 
             <div class="p-3.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs space-y-1.5">
-                <p class="font-semibold text-codenix-700 dark:text-codenix-300 flex items-center justify-between">
-                    <span>Cloudflare Proxy Status:</span>
-                    <span id="cf-proxy-status-badge" class="font-mono text-[11px] px-2 py-0.5 rounded bg-codenix-600/20">Checking...</span>
-                </p>
+                <p class="font-semibold text-codenix-700 dark:text-codenix-300">Model Routing & Puter.js</p>
                 <p class="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Nixy sends your Supabase JWT token to <code>/api/nixy</code> to securely unlock Cloudflare Worker secrets. If the proxy is offline or rate-limited, Nixy seamlessly switches to <strong>Puter.js</strong> for unlimited AI chat, code, images, and TTS.
+                    Nixy works firstly with the primary AI model APIs. Whenever <strong>Puter.js</strong> is your active provider (or auto-activated), there are <strong>no rate limits</strong> and usage is not counted.
                 </p>
             </div>
 
@@ -782,11 +722,14 @@
                     <span id="modal-puter-btn-text">Link Puter.js Account Now</span>
                 </button>
                 <button type="button" onclick="setProviderMode('puter'); closeUsageModal();" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">
-                    Force Puter.js
+                    Use Unlimited Puter
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-xl"></div>
 
     <!-- TOOL LIBRARY POP MODAL -->
     <div id="tool-library-modal" onclick="if(event.target===this) toggleToolLibrarySection(false)" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
@@ -797,7 +740,7 @@
                         <i data-lucide="layout-grid" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold">Sheet Tool Library</h3>
+                        <h3 class="text-base font-extrabold">Tool Library</h3>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400">Apps synced from your Codenix Google Sheet</p>
                     </div>
                 </div>
@@ -809,7 +752,7 @@
         </div>
     </div>
 
-    <!-- QUICK FEEDBACK & NIX WATCHES MODAL -->
+    <!-- PROFESSIONAL QUICK FEEDBACK & NIX WATCHES MODAL -->
     <div id="feedback-modal" onclick="if(event.target===this) closeFeedbackModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-xl w-full max-h-[88vh] overflow-y-auto shadow-2xl relative space-y-4">
             <button type="button" onclick="closeFeedbackModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
@@ -889,25 +832,17 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-xl"></div>
-
     <script>
         /**
-         * NIXY AI AGENT STUDIO — CODENIX
-         * Features:
-         * 1. Strong Autonomous System Prompt & Intent-Based Tool Router (10 Tools)
-         * 2. Cloudflare Worker Secrets Proxy (/api/nixy) with Supabase Bearer Auth & Automatic Puter.js Failover
-         * 3. Supabase Persistence (Auth, Conversations, Messages, Limits, Shared Chats, Feedback)
-         * 4. Google Sheets Integration (Tool Library & Live Nix Watches)
-         * 5. Complete UI Event Handlers (File Uploads, Auto-Resize, Live Code Canvas, QR, Calculator, TTS, Image Gen)
+         * NIXY AI AGENT — CODENIX STUDIO
+         * Self-contained client application with Supabase auth/persistence, multi-provider routing,
+         * interactive Nixy character behaviors, multi-language support, and workspace tools.
          */
 
         const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
         const CLOUDFLARE_PROXY_URL = '/api/nixy';
         const GOOGLE_SHEET_ID = '12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk';
-
         const STORAGE_KEYS = {
             THEME: 'nixy_theme',
             LANG: 'nixy_lang',
@@ -921,13 +856,11 @@
 
         const state = {
             user: null,
-            sessionToken: '',
             userIp: '',
             conversations: [],
             activeConversationId: null,
             uploadedFiles: [],
-            isSending: false,
-            cloudflareHealthy: null
+            isSending: false
         };
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -937,653 +870,6 @@
                 detectSessionInUrl: true
             }
         });
-
-        // ==========================================
-        // STRONG SYSTEM PROMPT & TOOL REGISTRY
-        // ==========================================
-        const NIXY_SYSTEM_PROMPT = `
-You are Nixy, the flagship Autonomous AI Agent of Codenix Studio.
-IDENTITY & ARCHITECTURE:
-- You are intelligent, proactive, concise, and technically authoritative.
-- You have direct access to an autonomous tool suite:
-  1. [image_generator]: Generates high-resolution artwork, illustrations, logos, and photorealistic visuals.
-  2. [puter_voice]: Synthesizes spoken audio (Text-to-Speech) using Puter.js neural voices or browser TTS.
-  3. [code_canvas]: Writes complete, self-contained, runnable HTML/CSS/JS/Python/React applications ready for the Cody Live Preview Canvas.
-  4. [qr_generator]: Creates instant, downloadable QR codes for URLs, Wi-Fi credentials, or text payloads.
-  5. [math_calculator]: Evaluates mathematical expressions, unit conversions, and quantitative formulas accurately.
-  6. [data_table]: Structures comparisons, datasets, and schedules into clean, exportable Markdown tables.
-  7. [document_writer]: Produces comprehensive reports, essays, guides, and structured documentation exportable to PDF/DOC.
-  8. [web_search]: Retrieves real-time web knowledge and current facts.
-  9. [screen_vision]: Analyzes active ShareNix screen captures or uploaded images.
-  10. [general_chat]: Handles reasoning, brainstorming, debugging, and conversational assistance.
-
-EXECUTION RULES:
-- Always tailor your output format to match the active tool.
-- When [code_canvas] is selected, ALWAYS wrap complete runnable web code inside a single \`\`\`html code block so the user can immediately click "Preview".
-- When [data_table] is selected, ALWAYS output a clean Markdown table with headers and alignment dividers.
-- Never mention internal routing errors; seamlessly deliver the best result using Cloudflare APIs or Puter.js.
-`.trim();
-
-        const AGENT_TOOLS_CATALOG = [
-            { id: 'image_generator', name: 'AI Image Generator', desc: 'Creates artwork & visuals via Cloudflare Secrets or Puter.js txt2img', triggers: 'generate image, draw, picture of, illustration, logo', icon: 'image' },
-            { id: 'puter_voice', name: 'Neural Voice (TTS)', desc: 'Speaks text aloud and generates downloadable audio via Puter.js', triggers: 'say in voice, speak, read aloud, tts, audio', icon: 'volume-2' },
-            { id: 'code_canvas', name: 'Cody Live Code Studio', desc: 'Builds runnable HTML/JS/Python apps with instant live iframe preview', triggers: 'html, app, website, code, react, game, component', icon: 'code-2' },
-            { id: 'qr_generator', name: 'Instant QR Studio', desc: 'Generates high-contrast downloadable QR codes for any URL or text', triggers: 'qr code, barcode, scan link', icon: 'qr-code' },
-            { id: 'math_calculator', name: 'Precision Calculator', desc: 'Solves arithmetic, percentages, and algebraic expressions', triggers: 'calculate, math, solve, equation, 2+2', icon: 'calculator' },
-            { id: 'data_table', name: 'Structured Data Table', desc: 'Formats comparisons & data into CSV-exportable Markdown tables', triggers: 'table, compare, matrix, spreadsheet, csv', icon: 'table' },
-            { id: 'document_writer', name: 'Document & PDF Architect', desc: 'Drafts structured reports exportable to PDF & DOC', triggers: 'document, report, essay, guide, article', icon: 'file-text' },
-            { id: 'web_search', name: 'Live Web Intelligence', desc: 'Queries real-time web context via Cloudflare/Puter search', triggers: 'search, latest news, current, lookup', icon: 'globe' },
-            { id: 'screen_vision', name: 'ShareNix Multimodal Vision', desc: 'Inspects uploaded images or active screen shares', triggers: 'screen, look at, analyze image, screenshot', icon: 'eye' },
-            { id: 'general_chat', name: 'Nixy Core Reasoning', desc: 'Deep multi-turn chat powered by Cloudflare APIs & Puter.js', triggers: 'Default conversational reasoning', icon: 'sparkles' }
-        ];
-
-        /**
-         * Intelligent Weighted Intent Classifier
-         * Evaluates natural language prompts anywhere in the sentence (no rigid prefix required)
-         */
-        function decideAllowedTool(promptText, hasAttachedImages = false) {
-            const raw = String(promptText || '').trim();
-            const q = raw.toLowerCase();
-
-            // 1. Vision / Screen Share check
-            if (hasAttachedImages || shareNixStream || /\b(my screen|on screen|analyze this image|describe this image|what is in this picture|screenshot|شاشة|حلل الصورة)\b/.test(q)) {
-                return 'screen_vision';
-            }
-
-            // 2. QR Code Generator
-            if (/\b(qr\s*code|qrcode|generate qr|create qr|make a qr|رمز استجابة|باركود)\b/.test(q)) {
-                return 'qr_generator';
-            }
-
-            // 3. Image Generation
-            if (/\b(generate (an? )?image|create (an? )?image|draw (an? )?|paint (an? )?|make (an? )?image|image of|picture of|photo of|render (an? )?|illustration of|artwork of|design a logo|صورة|ارسم|توليد صورة)\b/.test(q)) {
-                return 'image_generator';
-            }
-
-            // 4. Voice / Text-to-Speech
-            if (/\b(say in voice|speak this|speak out|read aloud|read this aloud|generate voice|voice of|text to speech|tts|pronounce|audio of|بصوت|انطق|اقرأ بصوت)\b/.test(q)) {
-                return 'puter_voice';
-            }
-
-            // 5. Math & Calculator (explicit math command or pure arithmetic expression)
-            const pureMath = /^[\d\s+\-*/().%^=]+$/.test(raw.replace(/^calculate\s*:?\s*/i, '')) && /\d/.test(raw) && /[+\-*/%^]/.test(raw);
-            if (pureMath || /\b(calculate|compute|evaluate|math|solve for|what is \d+\s*[+\-*/^]\s*\d+|احسب|حساب)\b/.test(q)) {
-                return 'math_calculator';
-            }
-
-            // 6. Code / Interactive App Builder
-            if (/\b(html|css|javascript|typescript|react|python|sql|code|script|landing page|web app|website|calculator app|mini game|interactive|snippet|program|function|كود|برمجة|صفحة ويب|تطبيق)\b/.test(q)) {
-                return 'code_canvas';
-            }
-
-            // 7. Data Table / Comparison Matrix
-            if (/\b(table|spreadsheet|csv|compare|comparison|versus|\bvs\b|matrix|schedule|breakdown chart|جدول|مقارنة)\b/.test(q)) {
-                return 'data_table';
-            }
-
-            // 8. Web Search
-            if (/\b(search the web|web search|search for|latest news|current weather|today's|look up online|ابحث في الويب|بحث)\b/.test(q)) {
-                return 'web_search';
-            }
-
-            // 9. Document / Report Writer
-            if (/\b(write a report|structured document|comprehensive guide|essay on|documentation for|whitepaper|article about|تقرير|مقال|مستند)\b/.test(q)) {
-                return 'document_writer';
-            }
-
-            return 'general_chat';
-        }
-
-        // ==========================================
-        // CLOUDFLARE SECRETS HELPER + PUTER.JS FAILOVER
-        // ==========================================
-        async function getAuthHeaders() {
-            let token = state.sessionToken;
-            if (!token && supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.auth.getSession();
-                    token = data?.session?.access_token || '';
-                    state.sessionToken = token;
-                } catch (_) {}
-            }
-            const headers = {
-                'Content-Type': 'application/json',
-                'X-Client-Platform': 'codenix-nixy-web'
-            };
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            return headers;
-        }
-
-        async function callCloudflareWorker(payload) {
-            const headers = await getAuthHeaders();
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 18000);
-
-            try {
-                const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify({
-                        ...payload,
-                        userId: state.user?.id || '',
-                        userEmail: state.user?.email || '',
-                        useCloudflareSecrets: true
-                    }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
-                if (!res.ok) {
-                    state.cloudflareHealthy = false;
-                    throw new Error(`Cloudflare Worker HTTP ${res.status}`);
-                }
-                const data = await res.json();
-                if (data?.error) {
-                    state.cloudflareHealthy = false;
-                    throw new Error(data.error);
-                }
-                state.cloudflareHealthy = true;
-                updateCloudflareBadgeUI();
-                return data;
-            } catch (err) {
-                clearTimeout(timeoutId);
-                state.cloudflareHealthy = false;
-                updateCloudflareBadgeUI();
-                throw err;
-            }
-        }
-
-        function updateCloudflareBadgeUI() {
-            const badge = document.getElementById('cf-proxy-status-badge');
-            if (!badge) return;
-            if (state.cloudflareHealthy === true) {
-                badge.textContent = 'Connected (Secrets Active)';
-                badge.className = 'font-mono text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-500';
-            } else if (state.cloudflareHealthy === false) {
-                badge.textContent = 'Failover Active (Puter.js)';
-                badge.className = 'font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400';
-            } else {
-                badge.textContent = 'Standby (Auto-Route)';
-            }
-        }
-
-        function extractPuterText(puterRes) {
-            if (!puterRes) return '';
-            if (typeof puterRes === 'string') return puterRes;
-            if (typeof puterRes?.message?.content === 'string') return puterRes.message.content;
-            if (Array.isArray(puterRes?.message?.content)) {
-                return puterRes.message.content.map(part => part?.text || '').join('');
-            }
-            if (typeof puterRes?.result?.content === 'string') return puterRes.result.content;
-            if (typeof puterRes?.text === 'string') return puterRes.text;
-            return '';
-        }
-
-        // ==========================================
-        // SPECIALIZED TOOL EXECUTORS
-        // ==========================================
-        async function executeImageGenerator(promptText) {
-            const cleanPrompt = String(promptText || '')
-                .replace(/^(generate (an? )?image|create (an? )?image|draw (an? )?|make (an? )?image|image of|picture of|photo of)\s*(of|for)?\s*/i, '')
-                .trim() || promptText;
-
-            // 1. Try Cloudflare Secrets Worker first unless Puter mode forced
-            if (getPreferredProviderMode() !== 'puter') {
-                try {
-                    const data = await callCloudflareWorker({ action: 'image', prompt: cleanPrompt });
-                    const imgUrl = data?.url || data?.image || (data?.b64_json ? `data:image/png;base64,${data.b64_json}` : '');
-                    if (imgUrl) {
-                        return { url: imgUrl, provider: data.provider || 'Cloudflare AI Image', prompt: cleanPrompt };
-                    }
-                } catch (_) {
-                    // Failover to Puter.js automatically
-                }
-            }
-
-            // 2. Automatic Failover to Puter.js txt2img
-            if (window.puter?.ai?.txt2img) {
-                try {
-                    const imgEl = await window.puter.ai.txt2img(cleanPrompt, { testMode: false });
-                    if (imgEl?.src) {
-                        return { url: imgEl.src, provider: 'Puter.js txt2img (Failover)', prompt: cleanPrompt };
-                    }
-                } catch (_) {}
-            }
-
-            // 3. Secondary Fallback
-            return {
-                url: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=896&height=512&nologo=true&seed=${Date.now()}`,
-                provider: 'SubeAI Visual Engine',
-                prompt: cleanPrompt
-            };
-        }
-
-        let lastSpokenVoiceSignature = '';
-        async function executeVoiceGenerator(promptText) {
-            const spokenText = String(promptText || '')
-                .replace(/^(say in voice|speak this|speak out|read aloud|read this aloud|generate voice|voice of|text to speech|tts|audio of)\s*:?\s*/i, '')
-                .replace(/<[^>]*>/g, '')
-                .trim() || 'Hello from Nixy AI Studio!';
-
-            let audioUrl = '';
-            let provider = 'Puter.js Neural TTS';
-
-            // 1. Try Puter.js txt2speech (primary for voice)
-            if (window.puter?.ai?.txt2speech) {
-                try {
-                    const audioObj = await window.puter.ai.txt2speech(spokenText);
-                    if (typeof audioObj === 'string') {
-                        audioUrl = audioObj;
-                    } else if (audioObj?.src) {
-                        audioUrl = audioObj.src;
-                    } else if (audioObj && typeof audioObj.play === 'function') {
-                        const sig = `${spokenText.slice(0, 80)}::${Date.now()}`;
-                        if (lastSpokenVoiceSignature !== sig) {
-                            lastSpokenVoiceSignature = sig;
-                            audioObj.play();
-                        }
-                    }
-                } catch (_) {}
-            }
-
-            // 2. Fallback to Web SpeechSynthesis if Puter audio URL wasn't returned
-            if (!audioUrl && 'speechSynthesis' in window) {
-                provider = 'Browser Speech Synthesis';
-                const sig = spokenText.slice(0, 100);
-                if (lastSpokenVoiceSignature !== sig) {
-                    lastSpokenVoiceSignature = sig;
-                    window.speechSynthesis.cancel();
-                    const utter = new SpeechSynthesisUtterance(spokenText);
-                    utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
-                    window.speechSynthesis.speak(utter);
-                }
-            }
-
-            return { spokenText, audioUrl, provider };
-        }
-
-        function executeQrGenerator(promptText) {
-            const urlMatch = String(promptText || '').match(/https?:\/\/[^\s]+/i);
-            const payload = urlMatch
-                ? urlMatch[0]
-                : String(promptText || '')
-                    .replace(/^(generate|create|make)\s*(a\s*)?(qr\s*code|qrcode)\s*(for|of|with)?\s*:?\s*/i, '')
-                    .trim() || 'https://codenix.studio';
-
-            const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=12&data=${encodeURIComponent(payload)}`;
-            return { payload, qrUrl: qrDataUrl, provider: 'Nixy QR Studio' };
-        }
-
-        function executeMathCalculator(promptText) {
-            const cleaned = String(promptText || '')
-                .replace(/^(calculate|compute|evaluate|solve|math)\s*:?\s*/i, '')
-                .replace(/[^0-9+\-*/().%^ ]/g, '')
-                .replace(/\^/g, '**')
-                .trim();
-
-            if (cleaned && /[0-9]/.test(cleaned)) {
-                try {
-                    const result = Function(`"use strict"; return (${cleaned});`)();
-                    if (typeof result === 'number' && Number.isFinite(result)) {
-                        return {
-                            solved: true,
-                            expression: cleaned.replace(/\*\*/g, '^'),
-                            result,
-                            provider: 'Nixy Precision Math'
-                        };
-                    }
-                } catch (_) {}
-            }
-            return { solved: false };
-        }
-
-        function captureActiveScreenFrame() {
-            const video = document.getElementById('sharenix-video');
-            const canvas = document.getElementById('sharenix-canvas');
-            if (!shareNixStream || !video || !canvas || !video.videoWidth) return null;
-            canvas.width = Math.min(video.videoWidth, 1280);
-            canvas.height = Math.round(canvas.width * (video.videoHeight / video.videoWidth));
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL('image/jpeg', 0.8);
-        }
-
-        async function callNixyChatEngine(messages, selectedTool = 'general_chat', imageAttachments = []) {
-            const preferred = getPreferredProviderMode();
-            const toolInstruction = `ACTIVE TOOL: [${selectedTool}]. Follow all formatting requirements for [${selectedTool}].`;
-            const payloadMessages = [
-                { role: 'system', content: `${NIXY_SYSTEM_PROMPT}\n\n${toolInstruction}` },
-                ...messages.slice(-14)
-            ];
-
-            // 1. Primary Route: Cloudflare Worker Secrets Proxy (/api/nixy)
-            if (preferred !== 'puter') {
-                try {
-                    const data = await callCloudflareWorker({
-                        action: selectedTool === 'web_search' ? 'search' : 'chat',
-                        tool: selectedTool,
-                        messages: payloadMessages,
-                        images: imageAttachments
-                    });
-                    const replyText = data?.text || data?.reply || data?.choices?.[0]?.message?.content || '';
-                    if (replyText) {
-                        return {
-                            text: String(replyText),
-                            provider: data.provider || 'Cloudflare Secrets API'
-                        };
-                    }
-                } catch (_) {
-                    // Automatically fall through to Puter.js when Cloudflare fails
-                }
-            }
-
-            // 2. Automatic Failover Route: Puter.js AI SDK (Unlimited, No API Key Required)
-            if (window.puter?.ai?.chat) {
-                try {
-                    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || '';
-                    let puterRes;
-                    if (imageAttachments.length > 0) {
-                        puterRes = await window.puter.ai.chat(
-                            `${NIXY_SYSTEM_PROMPT}\n${toolInstruction}\nUser: ${lastUserMsg}`,
-                            imageAttachments[0]
-                        );
-                    } else {
-                        puterRes = await window.puter.ai.chat(payloadMessages);
-                    }
-                    const text = extractPuterText(puterRes);
-                    if (text) {
-                        return {
-                            text: String(text),
-                            provider: preferred === 'puter' ? 'Puter.js Unlimited' : 'Puter.js (Auto-Failover)'
-                        };
-                    }
-                } catch (_) {}
-            }
-
-            // 3. Deterministic Offline / Emergency Fallback
-            const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
-            if (selectedTool === 'data_table') {
-                return {
-                    text: `| Item | Details | Status |\n| :--- | :--- | :--- |\n| ${escapeHtml(lastUser.slice(0, 35) || 'Query')} | Generated structured comparison table | Ready |`,
-                    provider: 'Nixy Local Table Engine'
-                };
-            }
-            if (selectedTool === 'code_canvas') {
-                return {
-                    text: `Here is a self-contained interactive web app for your request:\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8" />\n  <title>Nixy Live App</title>\n  <script src="https://cdn.tailwindcss.com"><\/script>\n</head>\n<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-6">\n  <div class="max-w-md w-full bg-slate-900 border border-purple-500/30 rounded-2xl p-6 text-center space-y-4 shadow-xl">\n    <h1 class="text-xl font-bold text-purple-400">${escapeHtml(lastUser.slice(0, 48) || 'Nixy App')}</h1>\n    <p class="text-sm text-slate-300">Rendered inside Cody Live Preview Canvas.</p>\n    <button onclick="this.textContent='Clicked! ✨'" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-sm font-semibold">Test Interaction</button>\n  </div>\n</body>\n</html>\n\`\`\``,
-                    provider: 'Nixy Local Code Engine'
-                };
-            }
-            return {
-                text: `I processed your request ("${lastUser}"). Sign in to Puter.js or verify your Cloudflare Worker endpoint at \`/api/nixy\` for full cloud model completions.`,
-                provider: 'Nixy Local Fallback'
-            };
-        }
-
-        // ==========================================
-        // COMPOSER INPUT & FILE UPLOAD HANDLERS
-        // ==========================================
-        function handlePromptKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendPrompt();
-            }
-        }
-
-        function autoResizeTextarea(el) {
-            if (!el) return;
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
-        }
-
-        function quickInsertPrompt(prefix) {
-            const input = document.getElementById('prompt-input');
-            if (!input) return;
-            input.value = prefix;
-            input.focus();
-            autoResizeTextarea(input);
-        }
-
-        function quickSendPrompt(fullPrompt) {
-            const input = document.getElementById('prompt-input');
-            if (!input) return;
-            input.value = fullPrompt;
-            handleSendPrompt();
-        }
-
-        async function handleFileUploadSelection(e) {
-            const files = Array.from(e.target.files || []);
-            if (!files.length) return;
-
-            for (const file of files) {
-                if (file.size > 6 * 1024 * 1024) {
-                    showToast(`Skipped ${file.name} (max 6MB)`);
-                    continue;
-                }
-                const isImage = file.type.startsWith('image/');
-                const reader = new FileReader();
-                const content = await new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = () => resolve('');
-                    if (isImage) reader.readAsDataURL(file);
-                    else reader.readAsText(file);
-                });
-
-                state.uploadedFiles.push({
-                    name: file.name,
-                    type: file.type,
-                    isImage,
-                    data: content
-                });
-            }
-            e.target.value = '';
-            renderUploadedFilesStrip();
-        }
-
-        function removeUploadedFile(idx) {
-            state.uploadedFiles.splice(idx, 1);
-            renderUploadedFilesStrip();
-        }
-
-        function renderUploadedFilesStrip() {
-            const strip = document.getElementById('uploaded-files-strip');
-            if (!strip) return;
-            if (!state.uploadedFiles.length) {
-                strip.classList.add('hidden');
-                strip.classList.remove('flex');
-                strip.innerHTML = '';
-                return;
-            }
-            strip.classList.remove('hidden');
-            strip.classList.add('flex');
-            strip.innerHTML = state.uploadedFiles.map((f, idx) => `
-                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-600/15 border border-codenix-500/30 text-xs font-medium text-codenix-700 dark:text-codenix-200">
-                    <i data-lucide="${f.isImage ? 'image' : 'file-text'}" class="w-3.5 h-3.5"></i>
-                    <span class="max-w-[140px] truncate">${escapeHtml(f.name)}</span>
-                    <button type="button" onclick="removeUploadedFile(${idx})" class="hover:text-rose-500 ml-1">&times;</button>
-                </div>
-            `).join('');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
-        }
-
-        // ==========================================
-        // MAIN SEND PROMPT & AUTONOMOUS EXECUTION
-        // ==========================================
-        async function handleSendPrompt() {
-            if (state.isSending) return;
-            const inputEl = document.getElementById('prompt-input');
-            const rawText = (inputEl?.value || '').trim();
-
-            const attachedImages = state.uploadedFiles.filter(f => f.isImage && f.data).map(f => f.data);
-            const attachedTextFiles = state.uploadedFiles.filter(f => !f.isImage && f.data);
-            const screenCapture = captureActiveScreenFrame();
-            if (screenCapture) attachedImages.push(screenCapture);
-
-            let composedPrompt = rawText;
-            if (attachedTextFiles.length) {
-                const fileContext = attachedTextFiles
-                    .map(f => `\n--- File: ${f.name} ---\n${String(f.data).slice(0, 6000)}`)
-                    .join('\n');
-                composedPrompt = `${rawText}\n${fileContext}`.trim();
-            } else if (state.uploadedFiles.length && !rawText) {
-                composedPrompt = `Analyze attached file(s): ${state.uploadedFiles.map(f => f.name).join(', ')}`;
-            }
-
-            if (!composedPrompt) return;
-
-            let conv = state.conversations.find(c => c.id === state.activeConversationId);
-            if (!conv) {
-                await createNewChat();
-                conv = state.conversations[0];
-            }
-
-            if (conv.title === 'New Conversation' && rawText) {
-                conv.title = rawText.slice(0, 42);
-                renderConversationList();
-            }
-
-            const selectedTool = decideAllowedTool(composedPrompt, attachedImages.length > 0);
-            const displayUserText = rawText || `[Uploaded ${state.uploadedFiles.length} file(s)]`;
-
-            conv.messages.push({ role: 'user', content: displayUserText });
-            state.uploadedFiles = [];
-            renderUploadedFilesStrip();
-            if (inputEl) {
-                inputEl.value = '';
-                autoResizeTextarea(inputEl);
-            }
-            renderMessages();
-
-            state.isSending = true;
-            setNixyMood('thinking');
-            const loadingEl = document.getElementById('nixy-loading-indicator');
-            const loadingTextEl = document.getElementById('nixy-loading-text');
-            const imgGenCard = document.getElementById('nixy-image-generating-card');
-            if (loadingTextEl) loadingTextEl.textContent = `Nixy selected [${selectedTool}]...`;
-            if (imgGenCard) imgGenCard.classList.toggle('hidden', selectedTool !== 'image_generator');
-            if (loadingEl) {
-                loadingEl.classList.remove('hidden');
-                loadingEl.classList.add('flex');
-            }
-
-            try {
-                if (state.user) {
-                    try {
-                        await supabaseClient.from('nixy_messages').insert({
-                            conversation_id: conv.id,
-                            user_id: state.user.id,
-                            role: 'user',
-                            content: displayUserText
-                        });
-                        await supabaseClient.from('nixy_conversations')
-                            .update({ title: conv.title, updated_at: new Date().toISOString() })
-                            .eq('id', conv.id);
-                    } catch (_) {}
-                }
-
-                if (selectedTool === 'image_generator') {
-                    const imgRes = await executeImageGenerator(composedPrompt);
-                    conv.messages.push({
-                        role: 'assistant',
-                        content: `Generated visual for: **${escapeHtml(imgRes.prompt)}**`,
-                        imageUrl: imgRes.url,
-                        toolUsed: selectedTool,
-                        providerUsed: imgRes.provider
-                    });
-                    recordLocalUsage(0, 1, 150);
-                } else if (selectedTool === 'puter_voice') {
-                    const voiceRes = await executeVoiceGenerator(composedPrompt);
-                    conv.messages.push({
-                        role: 'assistant',
-                        content: `Spoken audio synthesized: *"${escapeHtml(voiceRes.spokenText)}"*`,
-                        audioUrl: voiceRes.audioUrl || '',
-                        toolUsed: selectedTool,
-                        providerUsed: voiceRes.provider
-                    });
-                    recordLocalUsage(1, 0, 80);
-                } else if (selectedTool === 'qr_generator') {
-                    const qrRes = executeQrGenerator(composedPrompt);
-                    conv.messages.push({
-                        role: 'assistant',
-                        content: `Generated QR Code for \`${escapeHtml(qrRes.payload)}\`:`,
-                        imageUrl: qrRes.qrUrl,
-                        toolUsed: selectedTool,
-                        providerUsed: qrRes.provider
-                    });
-                    recordLocalUsage(1, 0, 40);
-                } else if (selectedTool === 'math_calculator') {
-                    const mathRes = executeMathCalculator(composedPrompt);
-                    if (mathRes.solved) {
-                        conv.messages.push({
-                            role: 'assistant',
-                            content: `**Calculation Result:**\n\`\`\`text\n${mathRes.expression} = ${mathRes.result}\n\`\`\``,
-                            toolUsed: selectedTool,
-                            providerUsed: mathRes.provider
-                        });
-                        recordLocalUsage(1, 0, 30);
-                    } else {
-                        const apiMessages = conv.messages.map((m, i) =>
-                            i === conv.messages.length - 1 ? { role: 'user', content: composedPrompt } : { role: m.role, content: m.content }
-                        );
-                        const reply = await callNixyChatEngine(apiMessages, selectedTool, attachedImages);
-                        conv.messages.push({
-                            role: 'assistant',
-                            content: reply.text,
-                            toolUsed: selectedTool,
-                            providerUsed: reply.provider
-                        });
-                        recordLocalUsage(1, 0, Math.max(25, Math.round(reply.text.length / 4)));
-                    }
-                } else {
-                    const apiMessages = conv.messages.map((m, i) =>
-                        i === conv.messages.length - 1 ? { role: 'user', content: composedPrompt } : { role: m.role, content: m.content }
-                    );
-                    const reply = await callNixyChatEngine(apiMessages, selectedTool, attachedImages);
-                    conv.messages.push({
-                        role: 'assistant',
-                        content: reply.text,
-                        toolUsed: selectedTool,
-                        providerUsed: reply.provider
-                    });
-                    recordLocalUsage(1, 0, Math.max(25, Math.round(reply.text.length / 4)));
-                }
-
-                const latestAssistant = conv.messages[conv.messages.length - 1];
-                if (state.user && latestAssistant?.role === 'assistant') {
-                    try {
-                        await supabaseClient.from('nixy_messages').insert({
-                            conversation_id: conv.id,
-                            user_id: state.user.id,
-                            role: 'assistant',
-                            content: latestAssistant.content,
-                            tool_used: latestAssistant.toolUsed || '',
-                            provider_used: latestAssistant.providerUsed || ''
-                        });
-                    } catch (_) {}
-                }
-
-                setNixyMood('happy');
-                setTimeout(() => {
-                    if (!nixySleeping) setNixyMood('idle');
-                }, 1500);
-            } catch (_) {
-                setNixyMood('error');
-                conv.messages.push({
-                    role: 'assistant',
-                    content: 'Sorry, I encountered a temporary error processing that request. Please try again.'
-                });
-            } finally {
-                state.isSending = false;
-                if (imgGenCard) imgGenCard.classList.add('hidden');
-                if (loadingEl) {
-                    loadingEl.classList.add('hidden');
-                    loadingEl.classList.remove('flex');
-                }
-                renderMessages();
-            }
-        }
 
         // ==========================================
         // LANGUAGE & TRANSLATIONS
@@ -1745,7 +1031,9 @@ EXECUTION RULES:
 
             setInterval(() => {
                 if (nixySleeping) {
-                    if (autoStep % 4 === 0) toggleNixySleep(false);
+                    if (autoStep % 4 === 0) {
+                        toggleNixySleep(false);
+                    }
                     return;
                 }
                 autoStep++;
@@ -1757,11 +1045,12 @@ EXECUTION RULES:
                 setNixyOutfit(chosenOutfit);
                 if (autoStep % 2 === 0) {
                     setNixyMood('happy');
+                    showCompanionBubble('Nixy automatically switched style & mood!', 2400);
                     setTimeout(() => {
                         if (!nixySleeping) setNixyMood('idle');
                     }, 1800);
                 }
-            }, 16000);
+            }, 14000);
         }
 
         function setNixyMood(mood = 'idle', speechText = '') {
@@ -1818,7 +1107,9 @@ EXECUTION RULES:
             const icon = document.getElementById('theme-icon');
             if (!icon) return;
             icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
         }
 
         function getPreferredProviderMode() {
@@ -1836,9 +1127,9 @@ EXECUTION RULES:
                 if (badgeEl) badgeEl.textContent = 'Puter.js ∞';
                 if (footerEl) footerEl.textContent = 'Puter.js Unlimited Mode active — 0 rate limits & uncounted usage';
             } else {
-                if (labelEl) labelEl.textContent = 'Mode: Smart Fallback';
-                if (badgeEl) badgeEl.textContent = 'Cloudflare + Puter';
-                if (footerEl) footerEl.textContent = 'Primary: Cloudflare Secrets Proxy • Automatic Fallback: Unlimited Puter.js SDK';
+                if (labelEl) labelEl.textContent = 'Mode: Auto APIs';
+                if (badgeEl) badgeEl.textContent = 'Auto APIs';
+                if (footerEl) footerEl.textContent = 'Limits: 3 req/min • 30 chats/day • 3 images/day (No limits when Puter.js is provider)';
             }
         }
 
@@ -1850,7 +1141,7 @@ EXECUTION RULES:
             }
             updateProviderModeUI();
             updateQuotaUI();
-            showToast(normalized === 'puter' ? 'Switched to Puter.js (Unlimited)' : 'Switched to Smart Fallback (Cloudflare -> Puter.js)');
+            showToast(normalized === 'puter' ? 'Switched to Puter.js (Unlimited)' : 'Switched to Auto APIs');
         }
 
         function togglePreferredProvider() {
@@ -1875,21 +1166,6 @@ EXECUTION RULES:
             usage.tokensUsed += deltaTokens;
             localStorage.setItem(STORAGE_KEYS.LOCAL_USAGE, JSON.stringify(usage));
             updateQuotaUI();
-            syncUsageToSupabase(usage);
-        }
-
-        async function syncUsageToSupabase(usage) {
-            if (!state.user || !supabaseClient) return;
-            try {
-                await supabaseClient.from('nixy_user_limits').upsert({
-                    user_id: state.user.id,
-                    email: state.user.email || '',
-                    daily_chat_count: usage.dailyChats,
-                    daily_image_count: usage.dailyImages,
-                    codenix_tokens_used: usage.tokensUsed,
-                    ip_address: state.userIp || ''
-                }, { onConflict: 'user_id' });
-            } catch (_) {}
         }
 
         function updateQuotaUI() {
@@ -2017,7 +1293,6 @@ EXECUTION RULES:
                 }
 
                 state.user = session.user;
-                state.sessionToken = session.access_token || '';
                 const displayName = session.user.user_metadata?.full_name || session.user.email || 'Codenix Member';
                 const nameEl = document.getElementById('user-display-name');
                 const avatarEl = document.getElementById('user-avatar-badge');
@@ -2029,7 +1304,6 @@ EXECUTION RULES:
                         window.location.replace('/Start');
                     } else if (nextSession?.user) {
                         state.user = nextSession.user;
-                        state.sessionToken = nextSession.access_token || '';
                     }
                 });
                 return true;
@@ -2182,7 +1456,7 @@ EXECUTION RULES:
             const items = state.conversations.filter(c => !filterText || (c.title || '').toLowerCase().includes(filterText));
 
             if (items.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No conversations found.</p>`;
+                listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No conversations yet.</p>`;
                 return;
             }
 
@@ -2244,8 +1518,8 @@ EXECUTION RULES:
                 if (isUser) {
                     return `
                         <div class="flex justify-end">
-                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-xs sm:text-sm bg-gradient-to-r from-codenix-600 to-indigo-600 text-white shadow-md shadow-codenix-600/20">
-                                <p class="whitespace-pre-wrap">${escapeHtml(m.content || '')}</p>
+                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-xs sm:text-sm bg-codenix-600 text-white prose dark:prose-invert">
+                                <p>${escapeHtml(m.content || '')}</p>
                             </div>
                         </div>
                     `;
@@ -2253,10 +1527,10 @@ EXECUTION RULES:
 
                 const assistantIdx = window.__nixyAssistantStore.push(String(m.content || '')) - 1;
                 const toolBadge = m.toolUsed
-                    ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 border border-codenix-500/25 font-semibold">Tool: ${escapeHtml(m.toolUsed)}</span>`
+                    ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 border border-codenix-500/25">${escapeHtml((NIXY_TOOLS[m.toolUsed] || { label: m.toolUsed }).label)}</span>`
                     : '';
                 const providerBadge = m.providerUsed
-                    ? `<span class="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">${escapeHtml(m.providerUsed)}</span>`
+                    ? `<span class="text-[10px] font-mono text-zinc-400">${escapeHtml(m.providerUsed)}</span>`
                     : '';
 
                 let attachmentsHtml = '';
@@ -2264,10 +1538,10 @@ EXECUTION RULES:
                     const imgId = `nix-gen-img-${msgIdx}`;
                     attachmentsHtml += `
                         <div class="nix-generated-img-wrap mt-3 p-2.5 rounded-xl bg-white/70 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border space-y-2">
-                            <img id="${imgId}" src="${escapeHtml(m.imageUrl)}" alt="Generated Output" loading="lazy">
+                            <img id="${imgId}" src="${escapeHtml(m.imageUrl)}" alt="Generated Image" loading="lazy">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(m.providerUsed || 'Generated Media')}</span>
-                                <button type="button" onclick="downloadGeneratedImage('${escapeHtml(m.imageUrl)}')" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download</button>
+                                <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(m.providerUsed || "Generated image")}</span>
+                                <button type="button" onclick="downloadGeneratedImage('${escapeHtml(m.imageUrl)}')" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download Image</button>
                             </div>
                         </div>
                     `;
@@ -2277,8 +1551,8 @@ EXECUTION RULES:
                         <div class="mt-3 p-2.5 rounded-xl bg-white/70 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border space-y-2">
                             <audio controls preload="metadata" src="${escapeHtml(m.audioUrl)}" class="w-full h-9"></audio>
                             <div class="flex items-center justify-between gap-2">
-                                <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">Puter Neural Audio</span>
-                                <a href="${escapeHtml(m.audioUrl)}" download="nixy-voice.mp3" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download MP3</a>
+                                <span class="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">${escapeHtml(m.providerUsed || "Voice audio")}</span>
+                                <a href="${escapeHtml(m.audioUrl)}" download="nixy-voice.mp3" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download Audio</a>
                             </div>
                         </div>
                     `;
@@ -2288,8 +1562,8 @@ EXECUTION RULES:
 
                 return `
                     <div class="flex justify-start">
-                        <div class="max-w-[92%] w-full sm:w-auto rounded-2xl rounded-bl-sm px-4 py-3.5 text-xs sm:text-sm bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-sm space-y-2.5">
-                            ${(toolBadge || providerBadge) ? `<div class="flex items-center justify-between gap-3 pb-1.5 border-b border-codenix-200/70 dark:border-codenix-border/70">${toolBadge}${providerBadge}</div>` : ''}
+                        <div class="max-w-[90%] w-full sm:w-auto rounded-2xl rounded-bl-sm px-4 py-3 text-xs sm:text-sm bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border space-y-2.5">
+                            ${(toolBadge || providerBadge) ? `<div class="flex items-center justify-between gap-2 pb-1 border-b border-codenix-200/70 dark:border-codenix-border/70">${toolBadge}${providerBadge}</div>` : ''}
                             <div class="prose dark:prose-invert max-w-none">${renderedBody}</div>
                             ${attachmentsHtml}
                             <div class="pt-2 border-t border-codenix-200/70 dark:border-codenix-border/70 flex flex-wrap items-center justify-between gap-2">
@@ -2297,9 +1571,8 @@ EXECUTION RULES:
                                     <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'doc')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">DOC</button>
                                     <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'pdf')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">PDF</button>
                                     <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'csv')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">CSV</button>
-                                    <button type="button" onclick="speakAssistantMessage(${assistantIdx})" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">Listen</button>
                                 </div>
-                                <button type="button" onclick="copyAssistantMessage(${assistantIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold transition">Copy</button>
+                                <button type="button" onclick="copyAssistantMessage(${assistantIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold transition">Copy Message</button>
                             </div>
                         </div>
                     </div>
@@ -2330,7 +1603,7 @@ EXECUTION RULES:
             codeBlocks.forEach(blk => {
                 const extMap = { html: 'HTML', htm: 'HTML', js: 'JS', javascript: 'JS', ts: 'TS', py: 'PY', python: 'PY', css: 'CSS', json: 'JSON', sql: 'SQL' };
                 const badge = extMap[blk.lang] || blk.lang.slice(0, 4).toUpperCase() || 'FILE';
-                const fileName = `nixy-app.${blk.lang === 'javascript' ? 'js' : (blk.lang === 'python' ? 'py' : blk.lang)}`;
+                const fileName = `snippet.${blk.lang === 'javascript' ? 'js' : (blk.lang === 'python' ? 'py' : blk.lang)}`;
                 const bodyId = `nix-code-body-${blk.snippetIdx}`;
                 const cardHtml = `
                     <div class="nix-code-card not-prose">
@@ -2339,15 +1612,16 @@ EXECUTION RULES:
                                 <div class="nix-file-icon-badge">${escapeHtml(badge)}</div>
                                 <div class="min-w-0">
                                     <p class="text-xs font-bold text-white truncate">${escapeHtml(fileName)}</p>
-                                    <p class="text-[10px] font-mono text-purple-300">${blk.lineCount} lines • Click header to collapse</p>
+                                    <p class="text-[10px] font-mono text-purple-300">${blk.lineCount} lines • Click to toggle file</p>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-purple-200">RUNNABLE</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-purple-200">FILE</span>
                         </div>
                         <div class="nix-code-header">
                             <span>${escapeHtml(blk.lang)}</span>
                             <div class="flex items-center gap-1.5">
-                                <button type="button" onclick="previewCodeSnippet(${blk.snippetIdx})" class="nix-code-btn !bg-codenix-600 !text-white font-semibold">Live Preview</button>
+                                <button type="button" onclick="toggleCodeBlockVisibility('${bodyId}')" class="nix-code-btn">Hide / Show</button>
+                                <button type="button" onclick="previewCodeSnippet(${blk.snippetIdx})" class="nix-code-btn">Preview</button>
                                 <button type="button" onclick="copyCodeSnippet(${blk.snippetIdx})" class="nix-code-btn">Copy</button>
                                 <button type="button" onclick="downloadCodeSnippet(${blk.snippetIdx})" class="nix-code-btn">Download</button>
                             </div>
@@ -2379,30 +1653,20 @@ EXECUTION RULES:
             pane.classList.add('flex');
             if (editor) editor.value = item.code;
             switchCodyTab('preview');
-            renderCodeIntoPreviewFrame(item.code);
-        }
 
-        function runEditedCodyCode() {
-            const editor = document.getElementById('cody-code-editor');
-            if (!editor) return;
-            switchCodyTab('preview');
-            renderCodeIntoPreviewFrame(editor.value);
-        }
-
-        function renderCodeIntoPreviewFrame(rawCode) {
-            const frame = document.getElementById('cody-preview-frame');
-            if (!frame) return;
             const storageShim = `<script>(function(){try{window.localStorage;window.sessionStorage;}catch(_){const m={};const s={getItem:k=>m[k]??null,setItem:(k,v)=>{m[k]=String(v);},removeItem:k=>{delete m[k];},clear:()=>{for(const k in m)delete m[k];}};try{Object.defineProperty(window,'localStorage',{value:s});}catch(_2){}try{Object.defineProperty(window,'sessionStorage',{value:s});}catch(_3){}}})();<\/script>`;
+            const rawCode = item.code;
             const docHtml = /<html[\s>]|<!doctype html/i.test(rawCode)
                 ? rawCode.replace(/<head(\s[^>]*)?>/i, m => `${m}${storageShim}`)
                 : `<!DOCTYPE html><html><head><meta charset="UTF-8">${storageShim}<style>body{font-family:system-ui,sans-serif;padding:16px;}</style></head><body>${rawCode}</body></html>`;
+
             frame.srcdoc = docHtml;
         }
 
         function copyCodeSnippet(idx) {
             const item = window.__nixySnippetStore?.[idx];
             if (!item) return;
-            navigator.clipboard?.writeText(item.code).then(() => showToast('Code copied!')).catch(() => showToast('Copy failed.'));
+            navigator.clipboard?.writeText(item.code).then(() => showToast('Code copied to clipboard!')).catch(() => showToast('Copy failed.'));
         }
 
         function downloadCodeSnippet(idx) {
@@ -2422,14 +1686,6 @@ EXECUTION RULES:
         function copyAssistantMessage(idx) {
             const text = window.__nixyAssistantStore?.[idx] || '';
             navigator.clipboard?.writeText(text).then(() => showToast('Message copied!')).catch(() => showToast('Copy failed.'));
-        }
-
-        function speakAssistantMessage(idx) {
-            const text = window.__nixyAssistantStore?.[idx] || '';
-            if (!text) return;
-            const clean = text.replace(/```[\s\S]*?```/g, 'Code block omitted.').replace(/[#*`]/g, '');
-            executeVoiceGenerator(clean.slice(0, 600));
-            showToast('Speaking response via Puter Voice...');
         }
 
         function exportAssistantDoc(idx, format) {
@@ -2469,40 +1725,568 @@ EXECUTION RULES:
             if (!imgUrl) return;
             const a = document.createElement('a');
             a.href = imgUrl;
-            a.download = `nixy-asset-${Date.now()}.png`;
+            a.download = `nixy-image-${Date.now()}.png`;
             a.target = '_blank';
             a.rel = 'noopener';
             a.click();
         }
 
-        // ==========================================
-        // TOOLS INSPECTOR MODAL
-        // ==========================================
-        function openToolsModal() {
-            const modal = document.getElementById('tools-modal');
-            const grid = document.getElementById('agent-tools-grid');
-            if (grid) {
-                grid.innerHTML = AGENT_TOOLS_CATALOG.map(t => `
-                    <div class="p-3.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-codenix-700 dark:text-codenix-300 flex items-center gap-1.5">
-                                <i data-lucide="${t.icon}" class="w-3.5 h-3.5"></i>
-                                ${escapeHtml(t.name)}
-                            </span>
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-500">${escapeHtml(t.id)}</span>
-                        </div>
-                        <p class="text-[11px] text-zinc-600 dark:text-zinc-400">${escapeHtml(t.desc)}</p>
-                        <p class="text-[10px] font-mono text-zinc-400 truncate">Triggers: ${escapeHtml(t.triggers)}</p>
-                    </div>
-                `).join('');
-            }
-            modal?.classList.remove('hidden');
-            modal?.classList.add('flex');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
+        function quickInsertPrompt(prefix) {
+            const input = document.getElementById('prompt-input');
+            if (!input) return;
+            input.value = prefix;
+            input.focus();
+            autoResizeTextarea(input);
         }
 
-        function closeToolsModal() {
-            document.getElementById('tools-modal')?.classList.add('hidden');
+        // ==========================================
+        // NIXY AGENT ENGINE — routing, tools, provider fallback
+        // ==========================================
+        const NIXY_TOOLS = {
+            image_generator: { label: 'Image Generator', chip: 'Image', prefix: 'generate image of ' },
+            puter_voice: { label: 'Voice (TTS)', chip: 'Voice', prefix: 'say in voice: ' },
+            code_canvas: { label: 'Code Canvas', chip: 'Code', prefix: 'build an interactive html page for ' },
+            data_table: { label: 'Data Table', chip: 'Table', prefix: 'create a markdown table comparing ' },
+            document_writer: { label: 'Document Writer', chip: 'Document', prefix: 'write a structured document report on ' },
+            web_search: { label: 'Web Search', chip: 'Search', prefix: 'search the web for ' },
+            weather: { label: 'Weather', chip: 'Weather', prefix: 'weather in ' },
+            qr_generator: { label: 'QR Generator', chip: 'QR', prefix: 'make a QR code for ' },
+            calculator: { label: 'Calculator', chip: 'Calc', prefix: 'calculate ' },
+            translator: { label: 'Translator', chip: 'Translate', prefix: 'translate to English: ' },
+            tool_finder: { label: 'Codenix Tool Finder', chip: 'Codenix tools', prefix: 'which Codenix tool can ' },
+            general_chat: { label: 'Chat', chip: '', prefix: '' }
+        };
+
+        const NIXY_SYSTEM_PROMPT = `You are Nixy, the AI agent of Codenix Studio (codenix.pages.dev) — a friendly, sharp, highly capable assistant that builds things, not just talks.
+
+# Mission
+Understand what the user really wants, deliver it completely and correctly on the first try, and keep it short enough to be useful.
+
+# Principles
+1. LANGUAGE: always answer in the language of the user's last message (Arabic incl. Egyptian dialect, English, Spanish, French, etc.). Keep code, identifiers and technical terms in English.
+2. DIRECTNESS: lead with the answer or the deliverable. No filler, no "As an AI", no repeating the question, no long disclaimers.
+3. HONESTY: never invent facts, numbers, prices, links, quotes or sources. If you are unsure, say so briefly. Use tool context provided to you (search results, weather, Codenix catalog) and cite it by name; never claim you browsed or ran something you did not.
+4. COMPLETENESS: deliver finished work — no placeholders, no "TODO", no "rest of the code here".
+5. CLARIFY RARELY: ask at most ONE short question, and only if the task is impossible without the answer. Otherwise state your assumption in one line and proceed.
+6. MEMORY: use the conversation history; do not ask for information the user already gave.
+7. SAFETY: refuse malware, credential theft, weapons, sexual content involving minors and similar harm in one calm sentence and offer a safe alternative. For medical, legal or financial topics give general information and recommend a professional for decisions.
+
+# Tools (the app routes automatically; you receive the chosen tool)
+image_generator, puter_voice, code_canvas, data_table, document_writer, web_search, weather, qr_generator, calculator, translator, tool_finder, general_chat.
+Never tell the user to "use a tool" — just do the work with the tool that was selected. If the selected tool is clearly wrong for the request, still answer the request helpfully.
+
+# Output formatting
+- Markdown. Short paragraphs, bullets for lists, **bold** only for key terms.
+- Code always inside fenced blocks with a language tag.
+- Tables use GitHub markdown with a header row.
+- No emojis unless the user uses them first; at most one.
+
+# About Codenix
+Codenix builds free AI and web tools (e.g. NixCode, HostNix, LinkNix, ShareNix, SubeAI, NixMotion, LenguaNix, Vidy and games like TirboNix, RaceNix, GravNix). When asked about Codenix tools, use only the catalog given in context and give the real links from it.`;
+
+        const NIXY_TOOL_PROMPTS = {
+            code_canvas: `TOOL: code_canvas. Return ONE complete, runnable, self-contained HTML file in a single \`\`\`html block (inline CSS + JS; libraries only from cdnjs.cloudflare.com or cdn.jsdelivr.net). Mobile-first and responsive, touch + keyboard friendly, modern dark UI with a violet (#8b5cf6) accent unless the user asks otherwise, accessible contrast, graceful error handling, no external images that may 404 (use CSS/SVG/emoji). For non-web languages give one complete fenced block with the proper language tag. After the code add at most 3 short lines on how to use it. Do not truncate.`,
+            data_table: `TOOL: data_table. Answer with a clean GitHub markdown table (header row, consistent columns, concise cells) and at most two sentences after it with the key takeaway. Do not invent statistics; mark estimates as "approx." and unknowns as "—".`,
+            document_writer: `TOOL: document_writer. Write a well-structured document: a title (#), a 2-sentence summary, logical ## sections, concrete content (no fluff), and a short conclusion or next steps. Match length to the request (default 400-700 words). The user can export it to DOC/PDF from the buttons below your message, so do not mention file creation.`,
+            translator: `TOOL: translator. Translate faithfully and naturally, preserving tone, formatting, names and numbers. If the target language is not stated: Arabic text -> English, any other -> Arabic. Output the translation first; add a one-line pronunciation or note only if useful. No commentary otherwise.`,
+            web_search: `TOOL: web_search. Answer ONLY from the SEARCH CONTEXT provided below plus well-established knowledge; name the sources you used in a final "Sources" line. If the context does not answer the question, say what is missing and what you do know, flagged as not verified. Never fabricate URLs.`,
+            tool_finder: `TOOL: tool_finder. Recommend the best 1-3 tools from the CODENIX CATALOG below for the user's goal, each with a one-line reason and its link. If nothing fits, say so and suggest the closest option. Never invent tools or links.`,
+            general_chat: `TOOL: general_chat. Answer helpfully and concisely; for how-to questions give numbered steps.`
+        };
+
+        const NIXY_RUNTIME = { proxyDown: false, status: [] };
+
+        function nixyKw(list) {
+            return new RegExp(`(?<![\\p{L}\\p{N}])(?:${list.join('|')})(?![\\p{L}\\p{N}])`, 'iu');
+        }
+
+        const NIXY_ROUTES = [
+            { tool: 'image_generator', strong: [
+                nixyKw(['(?:generate|create|make|draw|design|paint|render|produce|imagine)\\s+(?:me\\s+)?(?:an?\\s+|the\\s+)?(?:[\\p{L}-]+\\s+){0,3}(?:image|picture|photo|photograph|logo|illustration|wallpaper|poster|avatar|artwork|icon|portrait|drawing)s?']),
+                nixyKw(['ارسم(?:لي)?', 'صمم لي صورة', '(?:توليد|انشاء|إنشاء|اعمل|سوي|ولد|اصنع)\\s+(?:لي\\s+)?(?:صورة|صوره|لوجو|شعار|لوغو|بوستر)', 'dibuja', 'genera una imagen', 'crea una imagen'])
+            ], weak: [nixyKw(['image of', 'picture of', 'photo of', 'illustration of', 'صورة', 'imagen de'])] },
+            { tool: 'puter_voice', strong: [
+                nixyKw(['say in voice', 'speak this', 'read (?:this )?aloud', 'text[- ]to[- ]speech', 'tts', 'voice[- ]?over', 'generate (?:a )?voice', 'say it out loud', 'audio of']),
+                nixyKw(['بصوت', 'انطق', 'اقرأ بصوت', 'اقرا بصوت', 'حول (?:النص )?(?:إلى|الى) صوت', 'تحويل النص الى صوت', 'تحويل النص إلى صوت', 'di en voz alta'])
+            ], weak: [nixyKw(['voice', 'صوت'])] },
+            { tool: 'qr_generator', strong: [
+                nixyKw(['qr(?:[- ]?code)?', 'barcode', 'كيو آر', 'كيو ار', 'كود qr', 'باركود', 'رمز الاستجابة السريعة'])
+            ], weak: [] },
+            { tool: 'weather', strong: [
+                nixyKw(['weather', 'forecast', 'temperature in', 'is it (?:raining|sunny|hot|cold)', 'الطقس', 'طقس', 'درجة الحرارة', 'درجات الحرارة', 'el clima', 'el tiempo en', 'météo'])
+            ], weak: [] },
+            { tool: 'translator', strong: [
+                nixyKw(['translate', 'translation of', 'how do you say', 'ترجم', 'ترجمة', 'ترجملي', 'traduce', 'traduire']),
+                nixyKw(['(?:in|into|to)\\s+(?:arabic|english|spanish|french|german|italian|turkish|russian|chinese|japanese|korean|hindi|portuguese)\\s*:'])
+            ], weak: [nixyKw(['in arabic', 'in english', 'in spanish', 'in french', 'بالعربي', 'بالانجليزي', 'بالإنجليزية', 'بالعربية'])] },
+            { tool: 'calculator', strong: [
+                /\d[\d.,]*\s*(?:[+*\/^×÷]|\sx\s|\s-\s)\s*\(?\d/i,
+                nixyKw(['calculate', 'compute', 'what is \\d[\\d.,]*\\s*(?:%|percent|plus|minus|times|divided)', '\\d+\\s*%\\s*of', 'احسب', 'كم يساوي', 'كم ناتج', 'ناتج'])
+            ], weak: [nixyKw(['percent', 'square root', 'الجذر'])] },
+            { tool: 'tool_finder', strong: [
+                nixyKw(['(?:which|what|any)\\s+(?:codenix\\s+|nix\\s*)?tools?\\b', 'tool (?:library|catalog)', 'codenix tools?', 'recommend (?:me )?(?:a )?tool', 'suggest (?:me )?(?:a )?tool', 'ادوات codenix', 'أدوات codenix', 'اي اداة', 'أي أداة', 'ايه الاداة', 'اقترح (?:لي )?اداة', 'اقترح (?:لي )?أداة'])
+            ], weak: [nixyKw(['nixcode', 'hostnix', 'linknix', 'sharenix', 'subeai', 'nixmotion', 'lenguanix', 'vidy', 'codenix'])] },
+            { tool: 'web_search', strong: [
+                nixyKw(['search (?:the )?(?:web|internet|online)(?: for)?', 'google (?:it|this)', 'look (?:it )?up', 'latest news', 'news (?:about|on)', 'who (?:is|was|won)', 'ابحث(?: لي)?(?: عن| في)?', 'دور على', 'اخر اخبار', 'آخر أخبار', 'اخبار', 'أخبار', 'busca en internet', 'recherche'])
+            ], weak: [nixyKw(['latest', 'current', 'today', 'price of', 'سعر', 'النهارده', 'اليوم', 'حاليا', 'حالياً'])] },
+            { tool: 'code_canvas', strong: [
+                nixyKw(['(?:build|create|make|write|code|develop|generate|design|program|fix|debug)\\s+(?:me\\s+)?(?:an?\\s+|the\\s+|my\\s+)?(?:[\\p{L}-]+\\s+){0,4}(?:html|css|javascript|js|typescript|react|vue|website|web ?page|web ?app|landing page|app|game|calculator|component|script|function|class|api|bot|dashboard|python|java|c\\+\\+|sql|flutter|program|extension|tool)s?']),
+                nixyKw(['اكتب (?:لي )?(?:كود|برنامج|سكريبت)', 'كود', 'برمجة', 'اعمل (?:لي )?(?:موقع|صفحة|لعبة|تطبيق|برنامج)', 'صمم (?:لي )?(?:موقع|صفحة|لعبة|تطبيق)', 'موقع', 'لعبة', 'تطبيق', 'صفحة هبوط']),
+                /```|<\/?(?:div|html|script)\b/i
+            ], weak: [nixyKw(['html', 'css', 'javascript', 'react', 'python', 'code', 'bug', 'error', 'function', 'script', 'flutter'])] },
+            { tool: 'data_table', strong: [
+                nixyKw(['table', 'spreadsheet', 'csv', 'comparison', 'compare', 'versus', 'vs\\.?', 'matrix', 'pros and cons', 'جدول', 'قارن', 'مقارنة', 'tabla', 'compara'])
+            ], weak: [nixyKw(['difference between', 'الفرق بين'])] },
+            { tool: 'document_writer', strong: [
+                nixyKw(['(?:write|create|draft|generate|prepare|make)\\s+(?:me\\s+)?(?:an?\\s+|the\\s+)?(?:[\\p{L}-]+\\s+){0,3}(?:report|article|essay|document|guide|proposal|resume|cv|cover letter|letter|plan|documentation|pdf|whitepaper|summary|blog post|email)s?', 'اكتب (?:لي )?(?:تقرير|مقال|بحث|خطاب|رسالة|سيرة ذاتية|ملف)', 'تقرير', 'مقال', 'بحث عن', 'escribe un (?:informe|artículo|ensayo)'])
+            ], weak: [nixyKw(['report', 'article', 'essay', 'document', 'pdf', 'doc'])] }
+        ];
+
+        function scoreNixyTools(promptText) {
+            const q = String(promptText || '').normalize('NFKC');
+            const scores = {};
+            NIXY_ROUTES.forEach((r, order) => {
+                let s = 0;
+                r.strong.forEach(re => { if (re.test(q)) s += 4; });
+                r.weak.forEach(re => { if (re.test(q)) s += 1; });
+                if (s) scores[r.tool] = s + (NIXY_ROUTES.length - order) * 0.01;
+            });
+            // Disambiguation: an explicit build/code request beats incidental "image/table" words.
+            if (scores.code_canvas >= 4 && scores.image_generator && scores.image_generator < 4.5) delete scores.image_generator;
+            if (scores.qr_generator && scores.code_canvas && /\b(?:script|function|component|python|js|react)\b/i.test(q)) delete scores.qr_generator;
+            if (scores.calculator && (scores.code_canvas >= 4 || scores.data_table >= 4 || scores.tool_finder)) delete scores.calculator;
+            if (scores.web_search && scores.web_search < 4 && Object.keys(scores).length > 1) delete scores.web_search;
+            const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            return ranked;
+        }
+
+        function decideAllowedTool(promptText) {
+            const ranked = scoreNixyTools(promptText);
+            return ranked.length && ranked[0][1] >= 1 ? ranked[0][0] : 'general_chat';
+        }
+
+        function isRouteConfident(promptText) {
+            const ranked = scoreNixyTools(promptText);
+            if (!ranked.length) return true;
+            const [, top] = ranked[0];
+            const second = ranked[1] ? ranked[1][1] : 0;
+            return top >= 4 && (top - second >= 3 || !second);
+        }
+
+        async function routeToolWithLLM(promptText, fallbackTool) {
+            try {
+                const toolList = Object.keys(NIXY_TOOLS).map(k => `- ${k}`).join('\n');
+                const res = await askModel([
+                    { role: 'system', content: `You are a strict tool router. Pick the single best tool for the user's request. Tools:\n${toolList}\nRules: image_generator=create a picture/logo/art; puter_voice=speak/read text aloud; code_canvas=write/build code, web pages, apps, games, scripts; data_table=comparison or tabular output; document_writer=long-form report/article/letter; web_search=needs current/factual lookup; weather=weather/forecast; qr_generator=make a QR code; calculator=arithmetic/percent; translator=translate text; tool_finder=asks which Codenix tool to use; general_chat=everything else. Reply with ONLY JSON: {"tool":"<name>"}` },
+                    { role: 'user', content: String(promptText).slice(0, 600) }
+                ], { tool: 'router', timeout: 9000, routing: true });
+                const m = String(res.text).match(/\{[^}]*\}/);
+                const tool = m ? JSON.parse(m[0]).tool : '';
+                if (NIXY_TOOLS[tool]) return tool;
+            } catch (_) {}
+            return fallbackTool;
+        }
+
+        // ----- provider layer with automatic fallback -----
+        function withTimeout(promise, ms, label) {
+            return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error(`${label || 'request'} timed out`)), ms))]);
+        }
+
+        function setAgentStatus(msg) {
+            const el = document.getElementById('nixy-loading-text');
+            if (el) el.textContent = msg;
+        }
+
+        async function proxyCall(payload, timeout = 40000) {
+            if (NIXY_RUNTIME.proxyDown) throw new Error('proxy unavailable');
+            let res;
+            try {
+                res = await withTimeout(fetch(CLOUDFLARE_PROXY_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                }), timeout, 'Cloudflare');
+            } catch (e) {
+                NIXY_RUNTIME.proxyDown = true;
+                throw e;
+            }
+            if (res.status === 404 || res.status === 405) NIXY_RUNTIME.proxyDown = true;
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        }
+
+        function extractPuterText(r) {
+            if (!r) return '';
+            if (typeof r === 'string') return r;
+            const c = r.message?.content ?? r.result?.content ?? r.text ?? '';
+            if (Array.isArray(c)) return c.map(p => p.text || '').join('');
+            return String(c || '');
+        }
+
+        async function askModel(messages, opts = {}) {
+            const { tool = 'general_chat', timeout = 50000 } = opts;
+            const wantsCode = tool === 'code_canvas';
+            const providers = {
+                cloudflare: async () => {
+                    const d = await proxyCall({ action: 'chat', tool, messages }, timeout);
+                    if (!d.text) throw new Error('empty reply');
+                    return { text: d.text, provider: d.provider || 'Cloudflare AI' };
+                },
+                puter: async () => {
+                    if (!window.puter?.ai?.chat) throw new Error('Puter.js not loaded');
+                    const models = wantsCode ? ['claude-sonnet-4-5', undefined] : [undefined];
+                    let lastErr;
+                    for (const model of models) {
+                        try {
+                            const r = await window.puter.ai.chat(messages, model ? { model } : {});
+                            const t = extractPuterText(r);
+                            if (t) return { text: t, provider: model ? `Puter.js · ${model}` : 'Puter.js' };
+                        } catch (e) { lastErr = e; }
+                    }
+                    throw new Error(lastErr?.message || lastErr?.error || 'Puter chat failed');
+                },
+                pollinations: async () => {
+                    const r = await fetch('https://text.pollinations.ai/openai', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: 'openai', messages })
+                    });
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    const d = await r.json();
+                    const t = d?.choices?.[0]?.message?.content;
+                    if (!t) throw new Error('empty reply');
+                    return { text: t, provider: 'Pollinations (fallback)' };
+                }
+            };
+            const order = getPreferredProviderMode() === 'puter'
+                ? ['puter', 'cloudflare', 'pollinations'] : ['cloudflare', 'puter', 'pollinations'];
+            const errors = [];
+            for (const name of order) {
+                if (name === 'cloudflare' && NIXY_RUNTIME.proxyDown) continue;
+                try {
+                    if (!opts.routing) setAgentStatus(`Nixy is using ${NIXY_TOOLS[tool]?.label || tool} via ${name}...`);
+                    return await withTimeout(providers[name](), timeout, name);
+                } catch (e) {
+                    errors.push(`${name}: ${e.message || e}`);
+                    console.warn('[Nixy] provider failed →', name, e);
+                    if (!opts.routing) setAgentStatus(`${name} failed, switching provider...`);
+                }
+            }
+            const err = new Error('All providers failed');
+            err.details = errors;
+            throw err;
+        }
+
+        function cleanHistory(msgs) {
+            return (msgs || [])
+                .filter(m => (m.role === 'user' || m.role === 'assistant') && String(m.content || '').trim())
+                .slice(-16)
+                .map(m => ({ role: m.role, content: String(m.content).slice(0, 6000) }));
+        }
+
+        function buildSystemMessage(tool, extraContext = '') {
+            return { role: 'system', content: [NIXY_SYSTEM_PROMPT, NIXY_TOOL_PROMPTS[tool] || NIXY_TOOL_PROMPTS.general_chat, extraContext].filter(Boolean).join('\n\n') };
+        }
+
+        const isArabicText = (s) => /[\u0600-\u06FF]/.test(String(s || ''));
+
+        // ----- individual tools -----
+        async function generateImageWithTools(promptText) {
+            let cleanPrompt = String(promptText || '')
+                .replace(/^(please\s+)?(generate|create|make|draw|design|paint|render)\s+(me\s+)?(an?\s+)?(image|picture|photo|illustration|logo)?\s*(of|for)?\s*/i, '').trim() || promptText;
+            try { // enhance the prompt into rich English for better results
+                setAgentStatus('Nixy is refining your image prompt...');
+                const r = await askModel([
+                    { role: 'system', content: 'Rewrite the user idea as ONE vivid English image-generation prompt (max 60 words): subject, style, lighting, composition, quality terms. Output only the prompt.' },
+                    { role: 'user', content: cleanPrompt }
+                ], { tool: 'router', timeout: 8000, routing: true });
+                const t = r.text.trim().replace(/^["']|["']$/g, '');
+                if (t && t.length < 500) cleanPrompt = t;
+            } catch (_) {}
+
+            const attempts = getPreferredProviderMode() === 'puter' ? ['puter', 'cloudflare', 'pollinations'] : ['cloudflare', 'puter', 'pollinations'];
+            for (const name of attempts) {
+                try {
+                    setAgentStatus(`Generating image via ${name}...`);
+                    if (name === 'cloudflare') {
+                        const d = await proxyCall({ action: 'image', prompt: cleanPrompt }, 60000);
+                        if (d.url) return { url: d.url, provider: d.provider || 'Cloudflare Image' };
+                    } else if (name === 'puter' && window.puter?.ai?.txt2img) {
+                        const el = await withTimeout(window.puter.ai.txt2img(cleanPrompt), 60000, 'Puter image');
+                        if (el?.src) return { url: el.src, provider: 'Puter.js Image' };
+                    } else if (name === 'pollinations') {
+                        return { url: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=768&nologo=true&seed=${Date.now()}`, provider: 'Pollinations (fallback)' };
+                    }
+                } catch (e) { console.warn('[Nixy] image provider failed', name, e); }
+            }
+            return null;
+        }
+
+        let lastSpokenVoiceSignature = '';
+        async function generateVoiceWithPuter(promptText) {
+            const spokenText = String(promptText || '')
+                .replace(/^(please\s+)?(say in voice|speak this|read (this )?aloud|generate (a )?voice|voice of|text to speech|tts|audio of|say it out loud)\s*:?\s*/i, '')
+                .replace(/<[^>]*>/g, '').trim() || 'Hello from Nixy AI!';
+            const arabic = isArabicText(spokenText);
+            let audioUrl = '';
+            if (window.puter?.ai?.txt2speech) {
+                for (const opts of [arabic ? { language: 'ar-SA' } : { language: 'en-US' }, undefined]) {
+                    try {
+                        setAgentStatus('Generating voice with Puter.js...');
+                        const audio = await withTimeout(opts ? window.puter.ai.txt2speech(spokenText, opts) : window.puter.ai.txt2speech(spokenText), 40000, 'Puter voice');
+                        audioUrl = typeof audio === 'string' ? audio : (audio?.src || '');
+                        if (audioUrl) return { spokenText, audioUrl, provider: 'Puter.js TTS' };
+                    } catch (e) { console.warn('[Nixy] puter tts failed', e); }
+                }
+            }
+            if (!NIXY_RUNTIME.proxyDown) {
+                try {
+                    const d = await proxyCall({ action: 'tts', text: spokenText }, 30000);
+                    if (d.url) return { spokenText, audioUrl: d.url, provider: d.provider || 'Cloudflare TTS' };
+                } catch (_) {}
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(spokenText);
+                u.lang = arabic ? 'ar-SA' : 'en-US';
+                window.speechSynthesis.speak(u);
+                return { spokenText, audioUrl: '', provider: 'Browser Speech (fallback)' };
+            }
+            return { spokenText, audioUrl: '', provider: 'unavailable' };
+        }
+
+        async function nixyWeather(promptText) {
+            const place = String(promptText).replace(/(what'?s|what is|how'?s|how is|weather|forecast|temperature|the|today|tomorrow|now|right now|like|please|tell me|الطقس|طقس|درجة الحرارة|درجات الحرارة|النهارده|اليوم|ايه|إيه|عن|كام|\?|؟|\b(?:in|at|for|of)\b|\bفي\b)/gi, ' ').replace(/\s+/g, ' ').trim();
+            if (!place) return { text: isArabicText(promptText) ? 'اكتب اسم المدينة وأنا أجيب لك الطقس، مثلاً: الطقس في القاهرة.' : 'Tell me the city, e.g. "weather in Cairo".' };
+            setAgentStatus(`Looking up weather for ${place}...`);
+            const g = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(place)}&count=1&language=${isArabicText(place) ? 'ar' : 'en'}`)).json();
+            const loc = g?.results?.[0];
+            if (!loc) return { text: `I couldn't find a place called "${place}". Try the city name only.` };
+            const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4`)).json();
+            const codes = { 0: 'Clear sky', 1: 'Mostly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle', 61: 'Light rain', 63: 'Rain', 65: 'Heavy rain', 71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 80: 'Rain showers', 81: 'Rain showers', 82: 'Violent showers', 95: 'Thunderstorm', 96: 'Thunderstorm + hail', 99: 'Thunderstorm + hail' };
+            const c = w.current, d = w.daily;
+            const rows = d.time.map((t, i) => `| ${t} | ${Math.round(d.temperature_2m_min[i])}° – ${Math.round(d.temperature_2m_max[i])}° | ${d.precipitation_probability_max[i] ?? 0}% |`).join('\n');
+            return { text: `### Weather in ${loc.name}${loc.country ? ', ' + loc.country : ''}\n**${Math.round(c.temperature_2m)}°C** — ${codes[c.weather_code] || 'Unknown'} (feels like ${Math.round(c.apparent_temperature)}°C) · humidity ${c.relative_humidity_2m}% · wind ${Math.round(c.wind_speed_10m)} km/h\n\n| Day | Low – High | Rain chance |\n| --- | --- | --- |\n${rows}\n\nSource: Open-Meteo.`, provider: 'Open-Meteo' };
+        }
+
+        async function nixyWebSearch(promptText) {
+            const query = String(promptText).replace(/^(please\s+)?(search (the )?(web|internet|online)( for)?|google|look up|ابحث( لي)?( عن| في)?|دور على)\s*/i, '').trim() || promptText;
+            setAgentStatus('Searching the web...');
+            const ctx = [];
+            try { // 1) Cloudflare worker search (Tavily) if the secret is configured
+                const d = await proxyCall({ action: 'search', query }, 15000);
+                (d.results || []).slice(0, 5).forEach(r => ctx.push(`- ${r.title}: ${String(r.content || '').slice(0, 400)} (${r.url})`));
+            } catch (_) {}
+            if (!ctx.length) { // 2) free fallbacks: Wikipedia + DuckDuckGo instant answers
+                const lang = isArabicText(query) ? 'ar' : 'en';
+                try {
+                    const s = await (await withTimeout(fetch(`https://${lang}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&exchars=600&format=json&origin=*`), 8000, 'Wikipedia')).json();
+                    Object.values(s?.query?.pages || {}).forEach(p => ctx.push(`- Wikipedia · ${p.title}: ${p.extract} (https://${lang}.wikipedia.org/wiki/${encodeURIComponent(p.title.replace(/ /g, '_'))})`));
+                } catch (_) {}
+                try {
+                    const dd = await (await withTimeout(fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`), 6000, 'DuckDuckGo')).json();
+                    if (dd.AbstractText) ctx.push(`- DuckDuckGo · ${dd.Heading}: ${dd.AbstractText} (${dd.AbstractURL})`);
+                } catch (_) {}
+            }
+            return ctx.length ? `SEARCH CONTEXT for "${query}":\n${ctx.join('\n')}` : `SEARCH CONTEXT for "${query}": no results were retrieved. Say so clearly and answer only from well-established knowledge, flagged as unverified.`;
+        }
+
+        async function nixyQr(promptText) {
+            const url = String(promptText).match(/https?:\/\/\S+/i)?.[0];
+            const quoted = String(promptText).match(/["“«](.+?)["”»]/)?.[1];
+            const after = String(promptText).replace(/^(please\s+)?(make|create|generate|build|اعمل|سوي|انشاء|إنشاء)?\s*(me\s+|لي\s+)?(a\s+|an\s+)?(qr(\s?code)?|barcode|كيو آر|كود qr|باركود)\s*(for|of|to|with|لـ|ل|عن)?\s*:?\s*/i, '').trim();
+            const text = (url || quoted || after || promptText).slice(0, 1000);
+            if (!window.QRCode) throw new Error('QR library not loaded');
+            const holder = document.createElement('div');
+            holder.style.cssText = 'position:fixed;left:-9999px;top:0';
+            document.body.appendChild(holder);
+            new QRCode(holder, { text, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.H });
+            await new Promise(r => setTimeout(r, 250));
+            const canvas = holder.querySelector('canvas');
+            const dataUrl = canvas ? canvas.toDataURL('image/png') : holder.querySelector('img')?.src;
+            holder.remove();
+            if (!dataUrl) throw new Error('QR render failed');
+            return { text: `QR code ready for: \`${text}\``, imageUrl: dataUrl, provider: 'QRCode.js' };
+        }
+
+        function nixyCalculate(promptText) {
+            let q = String(promptText).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/(?<=\d)\s*[xX×✕]\s*(?=\d)/g, '*').replace(/÷/g, '/').replace(/\^/g, '**').replace(/,(?=\d{3}\b)/g, '');
+            q = q.replace(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/gi, '($2*$1/100)')
+                 .replace(/\b(plus)\b/gi, '+').replace(/\b(minus)\b/gi, '-').replace(/\b(times|multiplied by)\b/gi, '*').replace(/\b(divided by)\b/gi, '/');
+            const m = q.match(/[\d.()+\-*/%\s]{3,}/g);
+            const expr = (m || []).sort((a, b) => b.length - a.length)[0]?.trim();
+            if (!expr || !/\d/.test(expr) || !/[+\-*/%]/.test(expr) || !/^[\d.()+\-*/%\s]+$/.test(expr)) return null;
+            try {
+                const val = Function(`"use strict"; return (${expr});`)();
+                if (typeof val !== 'number' || !isFinite(val)) return null;
+                const out = Number.isInteger(val) ? val.toLocaleString('en-US') : Number(val.toFixed(8)).toString();
+                return { text: `**${expr.replace(/\*\*/g, '^')} = ${out}**`, provider: 'Nixy Calculator' };
+            } catch (_) { return null; }
+        }
+
+        async function nixyToolCatalog(promptText) {
+            if (!sheetToolLibrary.length) { try { await loadGoogleSheetWorkspaceData(); } catch (_) {} }
+            const words = String(promptText).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w => w.length > 2);
+            const scored = sheetToolLibrary.map(t => {
+                const hay = `${t.name} ${t.section}`.toLowerCase();
+                return { t, s: words.reduce((a, w) => a + (hay.includes(w) ? 1 : 0), 0) };
+            }).sort((a, b) => b.s - a.s);
+            const list = (scored[0]?.s ? scored : sheetToolLibrary.map(t => ({ t, s: 0 }))).slice(0, 60);
+            return list.length ? 'CODENIX CATALOG (name — section — link):\n' + list.map(({ t }) => `- ${t.name} — ${t.section} — ${t.link}`).join('\n') : 'CODENIX CATALOG: unavailable right now (Google Sheet could not be loaded).';
+        }
+
+        // ----- main dispatcher: every tool has a fallback chain and never throws -----
+        async function runNixyAgent(conv, promptText, tool) {
+            const history = cleanHistory(conv.messages);
+            const chat = async (extra = '', t = tool) => askModel([buildSystemMessage(t, extra), ...history], { tool: t });
+            const wrap = (r, extra = {}) => ({ text: r.text, provider: r.provider, tool, ...extra });
+            try {
+                switch (tool) {
+                    case 'image_generator': {
+                        const img = await generateImageWithTools(promptText);
+                        if (!img) return { tool, text: 'I could not generate the image right now — all image providers failed. Please try again in a moment.', provider: 'none' };
+                        return { tool, text: `Generated image for: **${promptText}**`, imageUrl: img.url, provider: img.provider, usage: 'image' };
+                    }
+                    case 'puter_voice': {
+                        const v = await generateVoiceWithPuter(promptText);
+                        return { tool, text: `Voice ready: "${v.spokenText}"`, audioUrl: v.audioUrl, provider: v.provider };
+                    }
+                    case 'qr_generator': {
+                        const q = await nixyQr(promptText);
+                        return { tool, ...q };
+                    }
+                    case 'weather': {
+                        const w = await nixyWeather(promptText);
+                        return { tool, ...w, provider: w.provider || 'Nixy' };
+                    }
+                    case 'calculator': {
+                        const c = nixyCalculate(promptText);
+                        if (c) return { tool, ...c };
+                        return wrap(await chat('', 'general_chat'), { tool: 'general_chat' });
+                    }
+                    case 'web_search': return wrap(await chat(await nixyWebSearch(promptText)));
+                    case 'tool_finder': return wrap(await chat(await nixyToolCatalog(promptText)));
+                    default: return wrap(await chat());
+                }
+            } catch (e) {
+                console.error('[Nixy] tool failed', tool, e, e.details);
+                if (tool !== 'general_chat') { // last resort: let the chat model handle it
+                    try { return wrap(await askModel([buildSystemMessage('general_chat'), ...history], { tool: 'general_chat' }), { tool: 'general_chat' }); } catch (_) {}
+                }
+                const lastUser = promptText.slice(0, 120);
+                const detail = (e.details || []).join(' • ');
+                return { tool, provider: 'offline', text: `I couldn't reach any AI provider for: "${lastUser}".\n\nTried: ${detail || e.message}.\n\nCheck that your Cloudflare secrets are set (open \`/api/nixy\` to see which are configured) or sign in to Puter.js from **Usage & Puter**, then retry.` };
+            }
+        }
+
+        async function handleSendPrompt() {
+            if (state.isSending) return;
+            const inputEl = document.getElementById('prompt-input');
+            const rawText = (inputEl?.value || '').trim();
+            const attachedNames = state.uploadedFiles.map(f => f.name);
+            const promptText = attachedNames.length
+                ? `${rawText}\n\n[Attached files: ${attachedNames.join(', ')}]`.trim()
+                : rawText;
+
+            if (!promptText) return;
+
+            let conv = state.conversations.find(c => c.id === state.activeConversationId);
+            if (!conv) {
+                await createNewChat();
+                conv = state.conversations[0];
+            }
+
+            if (conv.title === 'New Conversation' && rawText) {
+                conv.title = rawText.slice(0, 42);
+                renderConversationList();
+            }
+
+            const selectedTool = decideAllowedTool(promptText);
+            conv.messages.push({ role: 'user', content: promptText });
+            state.uploadedFiles = [];
+            renderUploadedFilesStrip();
+            if (inputEl) {
+                inputEl.value = '';
+                autoResizeTextarea(inputEl);
+            }
+            renderMessages();
+
+            state.isSending = true;
+            setNixyMood('thinking');
+            const loadingEl = document.getElementById('nixy-loading-indicator');
+            const loadingTextEl = document.getElementById('nixy-loading-text');
+            const imgGenCard = document.getElementById('nixy-image-generating-card');
+            if (loadingTextEl) loadingTextEl.textContent = `Nixy thought: using ${selectedTool}...`;
+            if (imgGenCard) imgGenCard.classList.toggle('hidden', selectedTool !== 'image_generator');
+            if (loadingEl) {
+                loadingEl.classList.remove('hidden');
+                loadingEl.classList.add('flex');
+            }
+
+            try {
+                if (state.user) {
+                    try {
+                        await supabaseClient.from('nixy_messages').insert({
+                            conversation_id: conv.id,
+                            user_id: state.user.id,
+                            role: 'user',
+                            content: promptText
+                        });
+                        await supabaseClient.from('nixy_conversations')
+                            .update({ title: conv.title, updated_at: new Date().toISOString() })
+                            .eq('id', conv.id);
+                    } catch (_) {}
+                }
+
+                let activeTool = selectedTool;
+                if (!isRouteConfident(promptText)) {
+                    setAgentStatus('Nixy is choosing the best tool...');
+                    activeTool = await routeToolWithLLM(promptText, selectedTool);
+                }
+                setAgentStatus(`Nixy thought: using ${NIXY_TOOLS[activeTool]?.label || activeTool}...`);
+                if (imgGenCard) imgGenCard.classList.toggle('hidden', activeTool !== 'image_generator');
+                const out = await runNixyAgent(conv, promptText, activeTool);
+                conv.messages.push({
+                    role: 'assistant',
+                    content: out.text,
+                    imageUrl: out.imageUrl || '',
+                    audioUrl: out.audioUrl || '',
+                    toolUsed: out.tool || activeTool,
+                    providerUsed: out.provider || ''
+                });
+                recordLocalUsage(out.usage === 'image' ? 0 : 1, out.usage === 'image' ? 1 : 0, Math.max(25, Math.round(String(out.text).length / 4)));
+
+                const latestAssistant = conv.messages[conv.messages.length - 1];
+                if (state.user && latestAssistant?.role === 'assistant') {
+                    try {
+                        await supabaseClient.from('nixy_messages').insert({
+                            conversation_id: conv.id,
+                            user_id: state.user.id,
+                            role: 'assistant',
+                            content: latestAssistant.content,
+                            tool_used: latestAssistant.toolUsed || '',
+                            provider_used: latestAssistant.providerUsed || ''
+                        });
+                    } catch (_) {}
+                }
+
+                setNixyMood('happy');
+                setTimeout(() => {
+                    if (!nixySleeping) setNixyMood('idle');
+                }, 1500);
+            } catch (_) {
+                setNixyMood('error');
+                conv.messages.push({
+                    role: 'assistant',
+                    content: 'Sorry, something unexpected went wrong. Please try again.'
+                });
+            } finally {
+                state.isSending = false;
+                if (imgGenCard) imgGenCard.classList.add('hidden');
+                if (loadingEl) {
+                    loadingEl.classList.add('hidden');
+                    loadingEl.classList.remove('flex');
+                }
+                renderMessages();
+            }
         }
 
         // ==========================================
@@ -2548,7 +2332,7 @@ EXECUTION RULES:
             if (astreyaRecognition) {
                 astreyaRecognition.stop();
                 astreyaRecognition = null;
-                if (statusEl) statusEl.textContent = 'Tap Orb to Speak';
+                if (statusEl) statusEl.textContent = 'Tap Orb to Speak or Ask Below';
                 return;
             }
             astreyaRecognition = new SpeechRec();
@@ -2566,7 +2350,7 @@ EXECUTION RULES:
             };
             astreyaRecognition.onend = () => {
                 astreyaRecognition = null;
-                if (statusEl) statusEl.textContent = 'Tap Orb to Speak';
+                if (statusEl) statusEl.textContent = 'Tap Orb to Speak or Ask Below';
             };
             astreyaRecognition.start();
         }
@@ -2647,7 +2431,7 @@ EXECUTION RULES:
                 document.getElementById('sharenix-live-banner')?.classList.remove('hidden');
                 document.getElementById('sharenix-live-banner')?.classList.add('flex');
                 shareNixStream.getVideoTracks()[0]?.addEventListener('ended', stopShareNix);
-                showToast('ShareNix active! Ask Nixy about what is on your screen.');
+                showToast('ShareNix screen share started.');
             } catch (_) {
                 showToast('Screen share cancelled.');
             }
@@ -2667,28 +2451,33 @@ EXECUTION RULES:
         // ==========================================
         const TUTORIAL_STEPS = [
             {
-                title: 'Cloudflare Secrets + Puter.js Failover',
-                body: 'Nixy connects to your Cloudflare Worker secrets first, and automatically fails over to unlimited Puter.js if any API is unavailable.',
+                title: 'Meet Nixy — Your AI Companion',
+                body: 'Click me anytime to cycle outfits & moods, or drag my floating orb around the workspace!',
+                actionLabel: 'Dance',
                 action: () => triggerNixyDance()
             },
             {
-                title: 'Autonomous Prompt Tool Selection',
-                body: 'Just ask naturally for images, voice speech, runnable code, QR codes, math calculations, or comparison tables—Nixy picks the right tool automatically.',
-                action: () => { closeNixyTutorial(); openToolsModal(); }
-            },
-            {
-                title: 'Sheet Tool Library & Nix Watches',
-                body: 'Browse synced Codenix apps directly from your connected Google Sheet.',
+                title: 'Tool Library & Google Sheet Sync',
+                body: 'Open Tool Library to browse and launch tools synced from your Codenix Google Sheet.',
+                actionLabel: 'Open Tools',
                 action: () => { closeNixyTutorial(); toggleToolLibrarySection(true); }
             },
             {
                 title: 'Astreya Voice & ShareNix Vision',
-                body: 'Speak hands-free with Astreya or share your screen so Nixy can inspect your live workspace.',
+                body: 'Use voice mode or share your screen so Nixy can help with visual context.',
+                actionLabel: 'Voice Mode',
                 action: () => { closeNixyTutorial(); openAstreyaModal(); }
+            },
+            {
+                title: 'Pomodory Focus Timer',
+                body: 'Stay focused with 15m, 25m, or 50m Pomodoro intervals right inside Nixy.',
+                actionLabel: 'Open Timer',
+                action: () => { closeNixyTutorial(); openPomodoryModal(); }
             },
             {
                 title: 'Quick Feedback & Nix Watches',
                 body: 'Let Nixy know how you discovered Codenix and check live Nix Watches.',
+                actionLabel: 'Feedback',
                 action: () => { closeNixyTutorial(); openFeedbackModal(); }
             }
         ];
@@ -2703,7 +2492,9 @@ EXECUTION RULES:
         }
 
         function closeNixyTutorial() {
-            document.getElementById('nixy-tutorial-modal')?.classList.add('hidden');
+            const modal = document.getElementById('nixy-tutorial-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
         }
 
         function renderTutorialStep() {
@@ -2760,9 +2551,8 @@ EXECUTION RULES:
                 const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
                 const res = await fetch(url);
                 const text = await res.text();
-                const jsonStart = text.indexOf('({') + 1;
-                const jsonEnd = text.lastIndexOf('})') + 1;
-                const data = JSON.parse(text.slice(jsonStart, jsonEnd));
+                const mm = text.match(/setResponse\(([\s\S]*)\);?\s*$/);
+                const data = JSON.parse(mm ? mm[1] : text.slice(text.indexOf('({') + 1, text.lastIndexOf('})') + 1));
                 const rows = data?.table?.rows || [];
 
                 const tools = [];
@@ -2798,6 +2588,7 @@ EXECUTION RULES:
                 });
 
                 sheetToolLibrary = tools;
+                try { localStorage.setItem('nixy_sheet_cache', JSON.stringify({ tools, watches })); } catch (_) {}
                 sheetNixWatches = watches.length > 0 ? watches : [
                     { title: 'Nixy Multi-Model Watch', link: '#', image: '' },
                     { title: 'Codenix Release Watch', link: '#', image: '' }
@@ -2805,7 +2596,12 @@ EXECUTION RULES:
                 renderToolLibraryUI();
                 renderNixWatchesUI();
                 if (window.lucide?.createIcons) window.lucide.createIcons();
-            } catch (_) {}
+            } catch (_) {
+                try {
+                    const c = JSON.parse(localStorage.getItem('nixy_sheet_cache') || 'null');
+                    if (c && !sheetToolLibrary.length) { sheetToolLibrary = c.tools || []; sheetNixWatches = c.watches || []; renderToolLibraryUI(); renderNixWatchesUI(); }
+                } catch (_) {}
+            }
         }
 
         function toggleToolLibrarySection(forceOpen) {
@@ -2872,7 +2668,9 @@ EXECUTION RULES:
         }
 
         function closeFeedbackModal() {
-            document.getElementById('feedback-modal')?.classList.add('hidden');
+            const modal = document.getElementById('feedback-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
         }
 
         function selectDiscoverySource(source, btnEl) {
@@ -2952,7 +2750,7 @@ EXECUTION RULES:
                 window.removeEventListener('pointermove', onMove);
                 window.removeEventListener('pointerup', onUp);
                 if (companionDragState && !companionDragState.moved) {
-                    showCompanionBubble("Hi! Drag me anywhere or ask me to generate images, voice, or code!", 3200);
+                    showCompanionBubble("Hi! Drag me anywhere or click Interactive Tutorial with Nixy!", 3200);
                 }
                 companionDragState = null;
             };
@@ -2974,7 +2772,7 @@ EXECUTION RULES:
                 if (localStorage.getItem(STORAGE_KEYS.TOUR_DONE) === 'true') return;
                 localStorage.setItem(STORAGE_KEYS.TOUR_DONE, 'true');
             } catch (_) {}
-            showCompanionBubble("Welcome! Nixy auto-selects tools & fails over to Puter.js seamlessly!", 4500);
+            showCompanionBubble("Welcome! I'm Nixy. Explore Tool Library or take the Interactive Tutorial!", 4500);
         }
 
         function openShareModal() {
@@ -2984,7 +2782,9 @@ EXECUTION RULES:
         }
 
         function closeShareModal() {
-            document.getElementById('share-modal')?.classList.add('hidden');
+            const modal = document.getElementById('share-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
         }
 
         async function publishSharedConversation() {
@@ -3017,7 +2817,9 @@ EXECUTION RULES:
         function copyShareUrl() {
             const input = document.getElementById('share-link-output');
             if (!input) return;
-            navigator.clipboard?.writeText(input.value).then(() => showToast('Share link copied!'));
+            input.select();
+            document.execCommand('copy');
+            showToast('Share link copied to clipboard!');
         }
 
         async function verifySharedPin() {
@@ -3051,14 +2853,15 @@ EXECUTION RULES:
 
         function openUsageModal() {
             updateQuotaUI();
-            updateCloudflareBadgeUI();
             const modal = document.getElementById('usage-modal');
             modal?.classList.remove('hidden');
             modal?.classList.add('flex');
         }
 
         function closeUsageModal() {
-            document.getElementById('usage-modal')?.classList.add('hidden');
+            const modal = document.getElementById('usage-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
         }
 
         function toggleSidebar() {
