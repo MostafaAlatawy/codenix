@@ -899,57 +899,619 @@
             if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
-        function formatSmartResponseHtml(rawMarkdown) {
-            const blocks = [];
-            const tokenized = String(rawMarkdown || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
-                const cleanLang = (lang || 'code').trim().toLowerCase();
-                const snippetIdx = window.__codeSnippets.push({
-                    lang: cleanLang,
-                    code: String(code || '').replace(/\n$/, '')
-                }) - 1;
-                const token = `@@CODENIX_BLOCK_${blocks.length}@@`;
-                blocks.push({ token, snippetIdx, lang: cleanLang });
-                return token;
+        function getConversationCacheKey() {
+            const uid = state.user?.id || 'guest';
+            return `codenix_chats_cache_${uid}`;
+        }
+
+        function readConversationCache() {
+            try {
+                const raw = localStorage.getItem(getConversationCacheKey());
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function writeConversationCache() {
+            try {
+                const persistable = state.conversations
+                    .filter(c => !c.isTemporary)
+                    .slice(0, 50)
+                    .map(c => ({
+                        id: c.id,
+                        title: c.title || 'New chat',
+                        messages: (c.messages || []).map(m => ({
+                            role: m.role,
+                            content: m.content,
+                            toolUsed: m.toolUsed || ''
+                        }))
+                    }));
+                localStorage.setItem(getConversationCacheKey(), JSON.stringify(persistable));
+            } catch (_) {}
+        }
+
+        async function fetchMessagesForConversation(convId) {
+            const cachedList = readConversationCache();
+            const cachedConv = cachedList.find(c => c.id === convId);
+            const cachedMsgs = Array.isArray(cachedConv?.messages) ? cachedConv.messages : [];
+
+            if (!state.user || !convId || String(convId).startsWith('temp-')) {
+                return cachedMsgs;
+            }
+
+            if (window.__inflightMsgLoads?.[convId]) {
+                return window.__inflightMsgLoads[convId];
+            }
+
+            const loadPromise = (async () => {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('nixy_messages')
+                        .select('*')
+                        .eq('conversation_id', convId)
+                        .order('created_at', { ascending: true });
+
+                    if (!error && Array.isArray(data)) {
+                        const normalized = data.map(m => ({
+                            role: m.role === 'model' || m.role === 'ai' ? 'assistant' : m.role,
+                            content: m.content ?? m.message ?? m.text ?? '',
+                            toolUsed: m.tool_used || ''
+                        })).filter(m => m.role === 'user' || m.role === 'assistant');
+
+                        if (normalized.length > 0 || cachedMsgs.length === 0) {
+                            return normalized;
+                        }
+                    }
+                } catch (_) {}
+                return cachedMsgs;
+            })().finally(() => {
+                if (window.__inflightMsgLoads) delete window.__inflightMsgLoads[convId];
             });
 
-            let html = window.marked?.parse ? window.marked.parse(tokenized) : `<p>${escapeHtml(tokenized)}</p>`;
-            html = html.replace(/\[icon:([a-z0-9-]+)\]/gi, (_, iconName) => {
-                return `<i data-lucide="${escapeHtml(iconName.toLowerCase())}" class="inline-block w-4 h-4 align-text-bottom text-codenix-600 dark:text-codenix-400"></i>`;
-            });
+            window.__inflightMsgLoads = window.__inflightMsgLoads || {};
+            window.__inflightMsgLoads[convId] = loadPromise;
+            return loadPromise;
+        }
 
-            blocks.forEach(b => {
-                const isInlineSmartUi = ['html', 'htm', 'svg'].includes(b.lang);
-                const card = isInlineSmartUi
-                    ? `
-                        <div class="my-3 rounded-2xl border border-codenix-200 dark:border-codenix-border bg-white dark:bg-codenix-panel overflow-hidden not-prose">
-                            <div class="flex items-center justify-end gap-1.5 px-3 py-1.5 bg-codenix-50/80 dark:bg-codenix-black/60 border-b border-codenix-200 dark:border-codenix-border">
-                                <button type="button" onclick="openSnippetInCanvas(${b.snippetIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">Expand</button>
-                                <button type="button" onclick="copySnippet(${b.snippetIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">Copy</button>
+        async function persistMessageToSupabase(convId, role, content, toolUsed = '') {
+            if (!state.user || !convId || state.isTemporaryMode || String(convId).startsWith('temp-')) {
+                return;
+            }
+            writeConversationCache();
+
+            const fullPayload = {
+                conversation_id: convId,
+                user_id: state.user.id,
+                role,
+                content,
+                tool_used: toolUsed || ''
+            };
+
+            try {
+                const { error } = await supabaseClient.from('nixy_messages').insert(fullPayload);
+                if (error && (error.code === '42703' || error.status === 400)) {
+                    const minimalPayload = {
+                        conversation_id: convId,
+                        user_id: state.user.id,
+                        role,
+                        content
+                    };
+                    await supabaseClient.from('nixy_messages').insert(minimalPayload);
+                }
+            } catch (_) {}
+        }
+
+        async function selectConversation(convId) {
+            if (!convId || state.activeConversationId === convId) return;
+            state.activeConversationId = convId;
+            syncConversationUrl(convId);
+            renderConversationList();
+
+            const conv = state.conversations.find(c => c.id === convId);
+            if (conv && (!Array.isArray(conv.messages) || conv.messages.length === 0)) {
+                conv.messages = await fetchMessagesForConversation(convId);
+                writeConversationCache();
+            }
+            renderMessages();
+        }
+
+        async function renameConversation(convId) {
+            const conv = state.conversations.find(c => c.id === convId);
+            if (!conv) return;
+            const currentTitle = conv.title || 'New chat';
+            const nextTitle = window.prompt('Rename conversation:', currentTitle);
+            if (nextTitle === null) return;
+            const trimmed = nextTitle.trim();
+            if (!trimmed) return;
+            conv.title = trimmed.slice(0, 80);
+            writeConversationCache();
+            renderConversationList();
+            if (state.activeConversationId === convId) {
+                const headerTitle = document.getElementById('header-chat-title');
+                if (headerTitle) headerTitle.textContent = conv.title;
+            }
+            if (state.user && !conv.isTemporary) {
+                try {
+                    await supabaseClient
+                        .from('nixy_conversations')
+                        .update({ title: conv.title, updated_at: new Date().toISOString() })
+                        .eq('id', convId)
+                        .eq('user_id', state.user.id);
+                } catch (_) {}
+            }
+            showToast('Conversation renamed');
+        }
+
+        async function deleteConversation(convId) {
+            const idx = state.conversations.findIndex(c => c.id === convId);
+            if (idx === -1) return;
+            const target = state.conversations[idx];
+            state.conversations.splice(idx, 1);
+
+            if (state.activeConversationId === convId) {
+                if (state.conversations.length > 0) {
+                    state.activeConversationId = state.conversations[0].id;
+                    syncConversationUrl(state.activeConversationId);
+                    const nextConv = state.conversations[0];
+                    if (nextConv && (!Array.isArray(nextConv.messages) || nextConv.messages.length === 0)) {
+                        nextConv.messages = await fetchMessagesForConversation(nextConv.id);
+                    }
+                } else {
+                    const freshId = generateId();
+                    state.conversations.push({ id: freshId, title: 'New chat', messages: [], isTemporary: false });
+                    state.activeConversationId = freshId;
+                    syncConversationUrl(freshId);
+                }
+            }
+
+            writeConversationCache();
+            renderConversationList();
+            renderMessages();
+
+            if (state.user && !target.isTemporary) {
+                try {
+                    await supabaseClient.from('nixy_messages').delete().eq('conversation_id', convId);
+                    await supabaseClient.from('nixy_conversations').delete().eq('id', convId).eq('user_id', state.user.id);
+                } catch (_) {}
+            }
+            showToast('Conversation deleted');
+        }
+
+        function useStarterPrompt(text) {
+            const input = document.getElementById('prompt-input');
+            if (!input) return;
+            input.value = text;
+            autoResizeTextarea(input);
+            handleSendPrompt();
+        }
+
+        function handlePromptKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendPrompt();
+            }
+        }
+
+        function autoResizeTextarea(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
+        }
+
+        function handleFileSelection(e) {
+            const files = Array.from(e.target?.files || []);
+            if (!files.length) return;
+            state.uploadedFiles = [...state.uploadedFiles, ...files].slice(0, 6);
+            renderUploadedFilesStrip();
+            e.target.value = '';
+        }
+
+        function renderUploadedFilesStrip() {
+            const strip = document.getElementById('uploaded-files-strip');
+            if (!strip) return;
+            if (!state.uploadedFiles.length) {
+                strip.classList.add('hidden');
+                strip.classList.remove('flex');
+                strip.innerHTML = '';
+                return;
+            }
+            strip.classList.remove('hidden');
+            strip.classList.add('flex');
+            strip.innerHTML = state.uploadedFiles.map((f, idx) => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-[11px] font-medium">
+                    <span class="truncate max-w-[160px]">${escapeHtml(f.name)}</span>
+                    <button type="button" onclick="removeUploadedFile(${idx})" class="text-zinc-400 hover:text-rose-500">×</button>
+                </span>
+            `).join('');
+        }
+
+        function removeUploadedFile(idx) {
+            state.uploadedFiles.splice(idx, 1);
+            renderUploadedFilesStrip();
+        }
+
+        function buildMemoryContext(activeConvId) {
+            const pastSummaries = state.conversations
+                .filter(c => !c.isTemporary && c.id !== activeConvId && Array.isArray(c.messages) && c.messages.length > 0)
+                .slice(0, 8)
+                .map(c => {
+                    const snippet = c.messages
+                        .slice(-4)
+                        .map(m => `${m.role === 'user' ? 'User' : 'Nixy'}: ${String(m.content || '').slice(0, 140)}`)
+                        .join(' | ');
+                    return `- [${c.title || 'Chat'}]: ${snippet}`;
+                });
+
+            if (!pastSummaries.length) return '';
+            return `\nEarlier saved conversations context:\n${pastSummaries.join('\n')}`;
+        }
+
+        function decideToolBeforeAnswering(promptText) {
+            const q = String(promptText || '').toLowerCase();
+            if (/(generate image|create image|draw|image of|picture of|صورة|ارسم|صمم صورة|imagen|dibujar)/i.test(q)) {
+                return 'image_generator';
+            }
+            if (/(say in voice|speak|read aloud|voice|audio|tts|بصوت|انطق|صوت|voz|leer en voz)/i.test(q)) {
+                return 'puter_voice';
+            }
+            if (/(qr code|barcode|باركود|كيو ار|codigo qr)/i.test(q)) {
+                return 'qr_generator';
+            }
+            if (/(table|comparison|schedule|spreadsheet|جدول|مقارنة|tabla|comparar)/i.test(q)) {
+                return 'table_generator';
+            }
+            if (/(pdf|document|report|guide|ملف pdf|تقرير|documento|informe)/i.test(q)) {
+                return 'pdf_generator';
+            }
+            if (/(web search|search the web|latest news|look up|ابحث|بحث|buscar en la web)/i.test(q)) {
+                return 'web_search';
+            }
+            if (/(html|widget|interactive ui|calculator|dashboard|كود|واجهة|calculadora|interfaz)/i.test(q)) {
+                return 'smart_ui';
+            }
+            return 'general_chat';
+        }
+
+        async function callCloudflareProxy(payload) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 9000);
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                const { data: sessData } = await supabaseClient.auth.getSession();
+                const token = sessData?.session?.access_token;
+                if (token) headers.Authorization = `Bearer ${token}`;
+
+                const res = await fetch(CLOUDFLARE_PROXY_URL, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timer);
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (_) {
+                clearTimeout(timer);
+                return null;
+            }
+        }
+
+        async function generateChatReply(messages, conv) {
+            const memoryBlock = buildMemoryContext(conv?.id || '');
+            const systemWithMemory = `${NIXY_SYSTEM_PROMPT}${memoryBlock}`;
+            const formatted = [
+                { role: 'system', content: systemWithMemory },
+                ...messages.slice(-14).map(m => ({ role: m.role, content: String(m.content || '') }))
+            ];
+
+            const cfData = await callCloudflareProxy({ action: 'chat', messages: formatted });
+            if (cfData?.text) return String(cfData.text);
+
+            if (window.puter?.ai?.chat) {
+                try {
+                    const puterOut = await window.puter.ai.chat(formatted);
+                    const outText = typeof puterOut === 'string'
+                        ? puterOut
+                        : (puterOut?.message?.content || puterOut?.result?.content || puterOut?.text || '');
+                    if (outText) return String(outText);
+                } catch (_) {}
+            }
+
+            const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+            return `Here is a response for: "${lastUser}".`;
+        }
+
+        async function generateImageForPrompt(promptText) {
+            const clean = String(promptText || '')
+                .replace(/^(generate image|create image|draw|image of|picture of)\s*(of|for)?\s*/i, '')
+                .trim() || promptText;
+
+            const cfData = await callCloudflareProxy({ action: 'image', prompt: clean });
+            if (cfData?.url) return String(cfData.url);
+
+            if (window.puter?.ai?.txt2img) {
+                try {
+                    const imgEl = await window.puter.ai.txt2img(clean, { testMode: false });
+                    if (imgEl?.src) return imgEl.src;
+                } catch (_) {}
+            }
+
+            return `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=768&height=512&nologo=true&seed=${Date.now()}`;
+        }
+
+        async function generateVoiceWithPuter(text, playNow = false) {
+            const cleanText = String(text || '').replace(/<[^>]*>/g, '').trim() || 'Hello from Nixy.';
+            let audioUrl = '';
+
+            if (window.puter?.ai?.txt2speech) {
+                try {
+                    const ttsOut = await window.puter.ai.txt2speech(cleanText);
+                    if (typeof ttsOut === 'string') {
+                        audioUrl = ttsOut;
+                    } else if (ttsOut?.src) {
+                        audioUrl = ttsOut.src;
+                    } else if (ttsOut && typeof ttsOut.play === 'function' && playNow) {
+                        ttsOut.play();
+                    }
+                } catch (_) {}
+            }
+
+            if (playNow && !audioUrl && 'speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(cleanText);
+                    utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
+                    window.speechSynthesis.speak(utter);
+                } catch (_) {}
+            }
+
+            return audioUrl;
+        }
+
+        function createPdfDocumentDataUrl(title, bodyText) {
+            try {
+                const JsPdfCtor = window.jspdf?.jsPDF;
+                if (!JsPdfCtor) return '';
+                const doc = new JsPdfCtor();
+                doc.setFontSize(15);
+                doc.text(String(title || 'Codenix Document').slice(0, 70), 14, 18);
+                doc.setFontSize(11);
+                const clean = String(bodyText || '').replace(/[#*`]/g, '');
+                const lines = doc.splitTextToSize(clean, 180);
+                doc.text(lines, 14, 30);
+                return doc.output('datauristring');
+            } catch (_) {
+                return '';
+            }
+        }
+
+        async function handleSendPrompt() {
+            if (state.isSending) return;
+            const input = document.getElementById('prompt-input');
+            const rawPrompt = (input?.value || '').trim();
+            const fileNames = state.uploadedFiles.map(f => f.name);
+            const fullPrompt = fileNames.length
+                ? `${rawPrompt}\n\nFiles: ${fileNames.join(', ')}`.trim()
+                : rawPrompt;
+
+            if (!fullPrompt) return;
+
+            let conv = state.conversations.find(c => c.id === state.activeConversationId);
+            if (!conv) {
+                await createNewChat();
+                conv = state.conversations[0];
+            }
+
+            if (!conv.isTemporary && conv.title === 'New chat' && rawPrompt) {
+                conv.title = rawPrompt.slice(0, 42);
+                renderConversationList();
+                if (state.user) {
+                    try {
+                        await supabaseClient
+                            .from('nixy_conversations')
+                            .update({ title: conv.title, updated_at: new Date().toISOString() })
+                            .eq('id', conv.id)
+                            .eq('user_id', state.user.id);
+                    } catch (_) {}
+                }
+            }
+
+            const chosenTool = decideToolBeforeAnswering(fullPrompt);
+            conv.messages.push({ role: 'user', content: fullPrompt });
+            state.uploadedFiles = [];
+            renderUploadedFilesStrip();
+            if (input) {
+                input.value = '';
+                autoResizeTextarea(input);
+            }
+            renderMessages();
+
+            if (!conv.isTemporary) {
+                await persistMessageToSupabase(conv.id, 'user', fullPrompt, '');
+            }
+
+            state.isSending = true;
+            const indicator = document.getElementById('thinking-indicator');
+            const statusText = document.getElementById('thinking-status-text');
+            if (statusText) statusText.textContent = `Using ${chosenTool}...`;
+            if (indicator) {
+                indicator.classList.remove('hidden');
+                indicator.classList.add('flex');
+            }
+
+            try {
+                let assistantMsg = { role: 'assistant', content: '', toolUsed: chosenTool };
+
+                if (chosenTool === 'image_generator') {
+                    const imgUrl = await generateImageForPrompt(fullPrompt);
+                    assistantMsg.content = `Generated image for: **${escapeHtml(fullPrompt)}**`;
+                    assistantMsg.imageUrl = imgUrl;
+                } else if (chosenTool === 'puter_voice') {
+                    const spokenTarget = fullPrompt.replace(/^(say in voice|speak|read aloud|voice|audio)\s*:?\s*/i, '').trim() || fullPrompt;
+                    const audioUrl = await generateVoiceWithPuter(spokenTarget, true);
+                    assistantMsg.content = `Spoken voice output for: "${spokenTarget}"`;
+                    if (audioUrl) assistantMsg.audioUrl = audioUrl;
+                } else if (chosenTool === 'qr_generator') {
+                    const qrValue = fullPrompt.replace(/^(qr code|barcode|create qr for)\s*:?\s*/i, '').trim() || fullPrompt;
+                    assistantMsg.content = `QR code generated for: \`${qrValue}\``;
+                    assistantMsg.qrText = qrValue;
+                } else {
+                    const replyText = await generateChatReply(conv.messages, conv);
+                    assistantMsg.content = replyText;
+                    if (chosenTool === 'pdf_generator') {
+                        const pdfUrl = createPdfDocumentDataUrl(conv.title || 'Codenix PDF', replyText);
+                        if (pdfUrl) assistantMsg.pdfDataUrl = pdfUrl;
+                    }
+                }
+
+                conv.messages.push(assistantMsg);
+                if (!conv.isTemporary) {
+                    await persistMessageToSupabase(conv.id, 'assistant', assistantMsg.content, chosenTool);
+                }
+            } catch (_) {
+                const fallbackReply = 'Sorry, something went wrong while generating that response.';
+                conv.messages.push({ role: 'assistant', content: fallbackReply, toolUsed: chosenTool });
+                if (!conv.isTemporary) {
+                    await persistMessageToSupabase(conv.id, 'assistant', fallbackReply, chosenTool);
+                }
+            } finally {
+                state.isSending = false;
+                if (indicator) {
+                    indicator.classList.add('hidden');
+                    indicator.classList.remove('flex');
+                }
+                renderMessages();
+            }
+        }
+
+        function renderMessages() {
+            const feed = document.getElementById('messages-feed');
+            const welcome = document.getElementById('welcome-view');
+            if (!feed) return;
+
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            const msgs = conv?.messages || [];
+            const headerTitle = document.getElementById('header-chat-title');
+            if (headerTitle) headerTitle.textContent = conv?.title || 'Codenix';
+
+            if (welcome) welcome.classList.toggle('hidden', msgs.length > 0);
+
+            if (!msgs.length) {
+                feed.innerHTML = '';
+                return;
+            }
+
+            window.__codeSnippets = [];
+            window.__assistantTexts = [];
+
+            feed.innerHTML = msgs.map((m, idx) => {
+                if (m.role === 'user') {
+                    return `
+                        <div class="flex justify-end">
+                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-xs sm:text-sm bg-codenix-600 text-white prose dark:prose-invert">
+                                <p>${escapeHtml(m.content || '').replace(/\n/g, '<br>')}</p>
                             </div>
-                            <iframe data-smart-ui-idx="${b.snippetIdx}" sandbox="allow-scripts allow-forms allow-modals" class="w-full min-h-[260px] bg-white border-none block"></iframe>
-                        </div>
-                    `
-                    : `
-                        <div class="nix-code-card not-prose">
-                            <div class="nix-code-header">
-                                <span>${escapeHtml(b.lang)}</span>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" onclick="copySnippet(${b.snippetIdx})" class="nix-code-btn">Copy</button>
-                                </div>
-                            </div>
-                            <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(b.lang)}">${escapeHtml(window.__codeSnippets[b.snippetIdx].code)}</code></pre>
                         </div>
                     `;
-                html = html.replace(new RegExp(`<p>\\s*${b.token}\\s*</p>|${b.token}`), card);
+                }
+
+                const storeIdx = window.__assistantTexts.push(String(m.content || '')) - 1;
+                const bodyHtml = formatSmartResponseHtml(String(m.content || ''));
+                const vote = state.messageVotes[idx] || null;
+
+                let extraHtml = '';
+                if (m.imageUrl) {
+                    extraHtml += `
+                        <div class="mt-3 space-y-2">
+                            <img src="${escapeHtml(m.imageUrl)}" alt="Generated image" class="max-w-full sm:max-w-md max-h-80 rounded-xl object-contain border border-codenix-200 dark:border-codenix-border">
+                            <a href="${escapeHtml(m.imageUrl)}" download="codenix-image.png" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Download Image</a>
+                        </div>
+                    `;
+                }
+                if (m.audioUrl) {
+                    extraHtml += `
+                        <div class="mt-3">
+                            <audio controls src="${escapeHtml(m.audioUrl)}" class="w-full max-w-md h-9"></audio>
+                        </div>
+                    `;
+                }
+                if (m.qrText) {
+                    extraHtml += `<div id="qr-box-${idx}" class="mt-3 p-3 rounded-xl bg-white inline-block border border-codenix-200"></div>`;
+                }
+                if (m.pdfDataUrl) {
+                    extraHtml += `
+                        <div class="mt-3">
+                            <a href="${escapeHtml(m.pdfDataUrl)}" download="codenix-document.pdf" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold">
+                                <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                                <span>Download PDF</span>
+                            </a>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="flex items-start gap-3">
+                        <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 rounded-lg object-contain shrink-0 mt-1">
+                        <div class="flex-1 min-w-0 space-y-1.5">
+                            <div class="prose dark:prose-invert max-w-none text-xs sm:text-sm">${bodyHtml}</div>
+                            ${extraHtml}
+                            <div class="relative flex items-center gap-1 pt-1 text-zinc-400">
+                                <button type="button" onclick="copyAssistantReply(${storeIdx})" title="Copy" class="p-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-panel hover:text-codenix-600 dark:hover:text-codenix-300 transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="rateAssistantReply(${idx}, 'up')" title="Good response" class="p-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-panel ${vote === 'up' ? 'text-codenix-600 dark:text-codenix-400' : ''} transition">
+                                    <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="rateAssistantReply(${idx}, 'down')" title="Bad response" class="p-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-panel ${vote === 'down' ? 'text-rose-500' : ''} transition">
+                                    <i data-lucide="thumbs-down" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="speakAssistantReply(${storeIdx})" title="Read aloud" class="p-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-panel hover:text-codenix-600 dark:hover:text-codenix-300 transition">
+                                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="shareSingleReply(${storeIdx})" title="Share response" class="p-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-panel hover:text-codenix-600 dark:hover:text-codenix-300 transition">
+                                    <i data-lucide="share" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button type="button" onclick="toggleReplyMoreMenu(${idx})" title="More actions" class="p-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-panel hover:text-codenix-600 dark:hover:text-codenix-300 transition">
+                                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <div id="reply-more-menu-${idx}" class="hidden absolute left-0 bottom-8 z-20 w-40 rounded-xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-xl p-1 text-xs">
+                                    <button type="button" onclick="toggleReplyMoreMenu(${idx}); regenerateLastReply();" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-black">Regenerate</button>
+                                    <button type="button" onclick="toggleReplyMoreMenu(${idx}); downloadReplyAsPdf(${storeIdx});" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-codenix-50 dark:hover:bg-codenix-black">Export PDF</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            msgs.forEach((m, idx) => {
+                if (m.qrText && window.QRCode) {
+                    const box = document.getElementById(`qr-box-${idx}`);
+                    if (box && !box.dataset.rendered) {
+                        box.dataset.rendered = '1';
+                        new window.QRCode(box, { text: String(m.qrText), width: 128, height: 128 });
+                    }
+                }
             });
 
-            return html;
-        }
-        function buildSmartUiFrameDocument(code) {
-            const safeStorageShim = `<script>(function(){try{window.localStorage;window.sessionStorage;}catch(_){const mem={};const store={getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=String(v);},removeItem:k=>{delete mem[k];},clear:()=>{for(const k in mem)delete mem[k];}};try{Object.defineProperty(window,'localStorage',{value:store});}catch(_2){}try{Object.defineProperty(window,'sessionStorage',{value:store});}catch(_3){}}})();<\/script>`;
-            return /<html[\s>]|<!doctype html/i.test(code)
-                ? code.replace(/<head(\s[^>]*)?>/i, m => `${m}${safeStorageShim}`)
-                : `<!DOCTYPE html><html><head><meta charset="UTF-8">${safeStorageShim}<style>body{font-family:Inter,system-ui,sans-serif;padding:16px;margin:0;color:#111827;}</style></head><body>${code}</body></html>`;
+            feed.querySelectorAll('iframe[data-smart-ui-idx]').forEach(frame => {
+                const sIdx = Number(frame.getAttribute('data-smart-ui-idx'));
+                const snippet = window.__codeSnippets?.[sIdx];
+                if (snippet && !frame.dataset.loaded) {
+                    frame.dataset.loaded = '1';
+                    frame.srcdoc = buildSmartUiFrameDocument(snippet.code);
+                }
+            });
+
+            if (window.hljs?.highlightAll) {
+                try { window.hljs.highlightAll(); } catch (_) {}
+            }
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+
+            const scrollArea = document.getElementById('chat-scroll-area');
+            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
         function renderCanvasIframe(code) {
