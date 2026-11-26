@@ -733,6 +733,97 @@
             renderConversationList();
         }
 
+        async function selectConversation(convId) {
+            if (!convId) return;
+            state.activeConversationId = convId;
+            const conv = state.conversations.find(c => c.id === convId);
+            if (conv && !conv.isTemporary) {
+                syncConversationUrl(convId);
+                if (!Array.isArray(conv.messages) || conv.messages.length === 0) {
+                    conv.messages = await fetchMessagesForConversation(convId);
+                    writeConversationCache();
+                }
+            }
+            renderConversationList();
+            renderMessages();
+        }
+
+        async function renameConversation(convId) {
+            const conv = state.conversations.find(c => c.id === convId);
+            if (!conv) return;
+            const nextTitle = window.prompt('Rename conversation:', conv.title || 'New chat');
+            if (nextTitle === null) return;
+            const trimmed = nextTitle.trim();
+            if (!trimmed) return;
+            conv.title = trimmed.slice(0, 60);
+            writeConversationCache();
+            renderConversationList();
+            if (state.activeConversationId === convId) {
+                const headerTitle = document.getElementById('header-chat-title');
+                if (headerTitle) headerTitle.textContent = conv.title;
+            }
+            if (state.user && !conv.isTemporary) {
+                try {
+                    await supabaseClient
+                        .from('nixy_conversations')
+                        .update({ title: conv.title, updated_at: new Date().toISOString() })
+                        .eq('id', conv.id)
+                        .eq('user_id', state.user.id);
+                } catch (_) {}
+            }
+            showToast('Conversation renamed');
+        }
+
+        async function deleteConversation(convId) {
+            const idx = state.conversations.findIndex(c => c.id === convId);
+            if (idx === -1) return;
+            const removed = state.conversations[idx];
+            state.conversations.splice(idx, 1);
+
+            if (!state.conversations.length) {
+                const freshId = generateId();
+                state.conversations.push({ id: freshId, title: 'New chat', messages: [], isTemporary: false });
+            }
+
+            if (state.activeConversationId === convId) {
+                state.activeConversationId = state.conversations[0].id;
+                const activeConv = state.conversations[0];
+                if (activeConv && !activeConv.isTemporary) {
+                    syncConversationUrl(activeConv.id);
+                    if (!activeConv.messages?.length) {
+                        activeConv.messages = await fetchMessagesForConversation(activeConv.id);
+                    }
+                }
+            }
+
+            writeConversationCache();
+            renderConversationList();
+            renderMessages();
+
+            if (state.user && removed && !removed.isTemporary && !String(removed.id).startsWith('temp-')) {
+                try {
+                    await supabaseClient.from('nixy_messages').delete().eq('conversation_id', removed.id);
+                    await supabaseClient.from('nixy_conversations').delete().eq('id', removed.id).eq('user_id', state.user.id);
+                } catch (_) {}
+            }
+            showToast('Conversation deleted');
+        }
+
+        function handlePromptKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendPrompt();
+            }
+        }
+
+        function useStarterPrompt(promptText) {
+            const input = document.getElementById('prompt-input');
+            if (!input) return;
+            input.value = promptText;
+            autoResizeTextarea(input);
+            handleSendPrompt();
+        }
+
         function toggleTemporaryMode() {
             state.isTemporaryMode = !state.isTemporaryMode;
             const btn = document.getElementById('temp-chat-btn');
@@ -820,22 +911,68 @@
                     isTemporary: false
                 })) : [];
 
+                const cachedList = readConversationCache();
+                const cachedMap = new Map(cachedList.map(c => [c.id, c]));
+
+                // Merge any locally cached chats that haven't synced yet
+                cachedList.forEach(cc => {
+                    if (cc && cc.id && !cc.id.startsWith('temp-') && !list.some(item => item.id === cc.id)) {
+                        list.push({
+                            id: cc.id,
+                            title: cc.title || 'New chat',
+                            messages: Array.isArray(cc.messages) ? cc.messages : [],
+                            isTemporary: false
+                        });
+                    }
+                });
+
                 if (list.length > 0) {
                     const target = list.find(c => c.id === preferredChatId) || list[0];
-                    const { data: msgs } = await supabaseClient
-                        .from('nixy_messages')
-                        .select('*')
-                        .eq('conversation_id', target.id)
-                        .order('created_at', { ascending: true });
 
-                    target.messages = Array.isArray(msgs) ? msgs.map(m => ({
-                        role: m.role,
-                        content: m.content,
-                        toolUsed: m.tool_used || ''
-                    })) : [];
+                    // Fetch messages for all saved conversations so Nixy remembers earlier chats & current chat
+                    const allIds = list.slice(0, 25).map(c => c.id);
+                    let allMsgRows = [];
+                    try {
+                        const { data: bulkMsgs, error: bulkErr } = await supabaseClient
+                            .from('nixy_messages')
+                            .select('*')
+                            .in('conversation_id', allIds)
+                            .order('created_at', { ascending: true });
+                        if (!bulkErr && Array.isArray(bulkMsgs)) {
+                            allMsgRows = bulkMsgs;
+                        }
+                    } catch (_) {}
+
+                    const grouped = new Map();
+                    allMsgRows.forEach(m => {
+                        const cid = m.conversation_id;
+                        if (!cid) return;
+                        const role = (m.role === 'model' || m.role === 'ai') ? 'assistant' : m.role;
+                        if (role !== 'user' && role !== 'assistant') return;
+                        const content = m.content ?? m.message ?? m.text ?? '';
+                        if (!grouped.has(cid)) grouped.set(cid, []);
+                        grouped.get(cid).push({
+                            role,
+                            content,
+                            toolUsed: m.tool_used || ''
+                        });
+                    });
+
+                    list.forEach(convItem => {
+                        const dbMsgs = grouped.get(convItem.id) || [];
+                        const localMsgs = Array.isArray(cachedMap.get(convItem.id)?.messages)
+                            ? cachedMap.get(convItem.id).messages
+                            : [];
+                        convItem.messages = dbMsgs.length >= localMsgs.length ? dbMsgs : localMsgs;
+                    });
+
+                    if (!Array.isArray(target.messages) || target.messages.length === 0) {
+                        target.messages = await fetchMessagesForConversation(target.id);
+                    }
 
                     state.conversations = list;
                     state.activeConversationId = target.id;
+                    writeConversationCache();
                     syncConversationUrl(target.id);
                 } else {
                     const id = generateId();
@@ -846,10 +983,15 @@
                     });
                     state.conversations = [{ id, title: 'New chat', messages: [], isTemporary: false }];
                     state.activeConversationId = id;
+                    writeConversationCache();
                     syncConversationUrl(id);
                 }
             } catch (_) {
-                if (!state.conversations.length) {
+                const cached = readConversationCache();
+                if (cached.length > 0) {
+                    state.conversations = cached.map(c => ({ ...c, isTemporary: false }));
+                    state.activeConversationId = state.conversations[0].id;
+                } else if (!state.conversations.length) {
                     const id = generateId();
                     state.conversations = [{ id, title: 'New chat', messages: [], isTemporary: false }];
                     state.activeConversationId = id;
@@ -981,116 +1123,43 @@
             }
             writeConversationCache();
 
-            const fullPayload = {
-                conversation_id: convId,
-                user_id: state.user.id,
-                role,
-                content,
-                tool_used: toolUsed || ''
-            };
-
             try {
-                const { error } = await supabaseClient.from('nixy_messages').insert(fullPayload);
-                if (error && (error.code === '42703' || error.status === 400)) {
-                    const minimalPayload = {
-                        conversation_id: convId,
+                await supabaseClient
+                    .from('nixy_conversations')
+                    .upsert({
+                        id: convId,
                         user_id: state.user.id,
-                        role,
-                        content
-                    };
-                    await supabaseClient.from('nixy_messages').insert(minimalPayload);
-                }
+                        title: (state.conversations.find(c => c.id === convId)?.title) || 'New chat',
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'id' });
             } catch (_) {}
-        }
 
-        async function selectConversation(convId) {
-            if (!convId || state.activeConversationId === convId) return;
-            state.activeConversationId = convId;
-            syncConversationUrl(convId);
-            renderConversationList();
-
-            const conv = state.conversations.find(c => c.id === convId);
-            if (conv && (!Array.isArray(conv.messages) || conv.messages.length === 0)) {
-                conv.messages = await fetchMessagesForConversation(convId);
-                writeConversationCache();
-            }
-            renderMessages();
-        }
-
-        async function renameConversation(convId) {
-            const conv = state.conversations.find(c => c.id === convId);
-            if (!conv) return;
-            const currentTitle = conv.title || 'New chat';
-            const nextTitle = window.prompt('Rename conversation:', currentTitle);
-            if (nextTitle === null) return;
-            const trimmed = nextTitle.trim();
-            if (!trimmed) return;
-            conv.title = trimmed.slice(0, 80);
-            writeConversationCache();
-            renderConversationList();
-            if (state.activeConversationId === convId) {
-                const headerTitle = document.getElementById('header-chat-title');
-                if (headerTitle) headerTitle.textContent = conv.title;
-            }
-            if (state.user && !conv.isTemporary) {
-                try {
-                    await supabaseClient
-                        .from('nixy_conversations')
-                        .update({ title: conv.title, updated_at: new Date().toISOString() })
-                        .eq('id', convId)
-                        .eq('user_id', state.user.id);
-                } catch (_) {}
-            }
-            showToast('Conversation renamed');
-        }
-
-        async function deleteConversation(convId) {
-            const idx = state.conversations.findIndex(c => c.id === convId);
-            if (idx === -1) return;
-            const target = state.conversations[idx];
-            state.conversations.splice(idx, 1);
-
-            if (state.activeConversationId === convId) {
-                if (state.conversations.length > 0) {
-                    state.activeConversationId = state.conversations[0].id;
-                    syncConversationUrl(state.activeConversationId);
-                    const nextConv = state.conversations[0];
-                    if (nextConv && (!Array.isArray(nextConv.messages) || nextConv.messages.length === 0)) {
-                        nextConv.messages = await fetchMessagesForConversation(nextConv.id);
-                    }
-                } else {
-                    const freshId = generateId();
-                    state.conversations.push({ id: freshId, title: 'New chat', messages: [], isTemporary: false });
-                    state.activeConversationId = freshId;
-                    syncConversationUrl(freshId);
+            const payloads = [
+                {
+                    conversation_id: convId,
+                    user_id: state.user.id,
+                    role,
+                    content,
+                    tool_used: toolUsed || null
+                },
+                {
+                    conversation_id: convId,
+                    user_id: state.user.id,
+                    role,
+                    content
+                },
+                {
+                    conversation_id: convId,
+                    role,
+                    content
                 }
-            }
+            ];
 
-            writeConversationCache();
-            renderConversationList();
-            renderMessages();
-
-            if (state.user && !target.isTemporary) {
+            for (const payload of payloads) {
                 try {
-                    await supabaseClient.from('nixy_messages').delete().eq('conversation_id', convId);
-                    await supabaseClient.from('nixy_conversations').delete().eq('id', convId).eq('user_id', state.user.id);
+                    const { error } = await supabaseClient.from('nixy_messages').insert(payload);
+                    if (!error) return;
                 } catch (_) {}
-            }
-            showToast('Conversation deleted');
-        }
-
-        function useStarterPrompt(text) {
-            const input = document.getElementById('prompt-input');
-            if (!input) return;
-            input.value = text;
-            autoResizeTextarea(input);
-            handleSendPrompt();
-        }
-
-        function handlePromptKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendPrompt();
             }
         }
 
@@ -1133,19 +1202,39 @@
         }
 
         function buildMemoryContext(activeConvId) {
-            const pastSummaries = state.conversations
-                .filter(c => !c.isTemporary && c.id !== activeConvId && Array.isArray(c.messages) && c.messages.length > 0)
-                .slice(0, 8)
-                .map(c => {
-                    const snippet = c.messages
-                        .slice(-4)
-                        .map(m => `${m.role === 'user' ? 'User' : 'Nixy'}: ${String(m.content || '').slice(0, 140)}`)
-                        .join(' | ');
-                    return `- [${c.title || 'Chat'}]: ${snippet}`;
+            const activeConv = state.conversations.find(c => c.id === activeConvId);
+            const activeHighlights = (activeConv?.messages || [])
+                .slice(-16)
+                .map(m => {
+                    const who = m.role === 'user' ? 'User' : 'Nixy';
+                    const details = [
+                        String(m.content || '').slice(0, 260),
+                        m.imageUrl ? '[Generated Image]' : '',
+                        m.qrText ? `[Generated QR: ${m.qrText}]` : '',
+                        m.pdfDataUrl ? '[Generated PDF]' : ''
+                    ].filter(Boolean).join(' ');
+                    return `  - ${who}${m.toolUsed ? ` (${m.toolUsed})` : ''}: ${details}`;
                 });
 
-            if (!pastSummaries.length) return '';
-            return `\nEarlier saved conversations context:\n${pastSummaries.join('\n')}`;
+            const pastSummaries = state.conversations
+                .filter(c => !c.isTemporary && c.id !== activeConvId && Array.isArray(c.messages) && c.messages.length > 0)
+                .slice(0, 15)
+                .map(c => {
+                    const snippet = c.messages
+                        .slice(-6)
+                        .map(m => `${m.role === 'user' ? 'User' : 'Nixy'}: ${String(m.content || '').slice(0, 180)}`)
+                        .join(' // ');
+                    return `- Chat "${c.title || 'Untitled'}": ${snippet}`;
+                });
+
+            const sections = [];
+            if (pastSummaries.length) {
+                sections.push(`Earlier conversations memory:\n${pastSummaries.join('\n')}`);
+            }
+            if (activeHighlights.length) {
+                sections.push(`Current conversation full timeline:\n${activeHighlights.join('\n')}`);
+            }
+            return sections.length ? `\n\n${sections.join('\n\n')}` : '';
         }
 
         function decideToolBeforeAnswering(promptText) {
@@ -1512,6 +1601,93 @@
 
             const scrollArea = document.getElementById('chat-scroll-area');
             if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
+        }
+
+        function isSmartUiInteractiveHtml(codeStr) {
+            const c = String(codeStr || '').trim();
+            if (!c) return false;
+            return /<(button|input|select|textarea|canvas|svg|form)\b/i.test(c) ||
+                /<script\b/i.test(c) ||
+                /<(style|div|section|main|h[1-6])\b[^>]*class=/i.test(c) ||
+                /<!doctype html|<html[\s>]/i.test(c);
+        }
+
+        function buildSmartUiFrameDocument(rawCode) {
+            const code = String(rawCode || '');
+            const hasFullDoc = /<!doctype html|<html[\s>]/i.test(code);
+            if (hasFullDoc) return code;
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 14px;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            background: #ffffff;
+            color: #18181b;
+        }
+        @media (prefers-color-scheme: dark) {
+            body { background: #100e18; color: #f4f4f5; }
+        }
+    </style>
+</head>
+<body>${code}</body>
+</html>`;
+        }
+
+        function formatSmartResponseHtml(markdownText) {
+            const source = String(markdownText || '');
+            const blocks = [];
+            const tokenized = source.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+                const cleanLang = (lang || 'code').trim().toLowerCase();
+                const cleanCode = String(code || '').replace(/\n$/, '');
+                const snippetIdx = window.__codeSnippets.push({ lang: cleanLang, code: cleanCode }) - 1;
+                const token = `@@CODENIX_BLOCK_${blocks.length}@@`;
+                blocks.push({ token, snippetIdx, lang: cleanLang, code: cleanCode });
+                return token;
+            });
+
+            let html = (window.marked && typeof window.marked.parse === 'function')
+                ? window.marked.parse(tokenized)
+                : `<p>${escapeHtml(tokenized).replace(/\n/g, '<br>')}</p>`;
+
+            blocks.forEach(blk => {
+                let replacement = '';
+                if ((blk.lang === 'html' || blk.lang === 'htm') && isSmartUiInteractiveHtml(blk.code)) {
+                    replacement = `
+                        <div class="my-3 rounded-2xl overflow-hidden border border-codenix-200 dark:border-codenix-border bg-white dark:bg-codenix-panel shadow-xs not-prose">
+                            <iframe data-smart-ui-idx="${blk.snippetIdx}" sandbox="allow-scripts allow-forms allow-modals" class="w-full min-h-[220px] border-none block bg-white dark:bg-codenix-panel"></iframe>
+                            <div class="px-3 py-1.5 bg-codenix-50/80 dark:bg-codenix-black/70 border-t border-codenix-200 dark:border-codenix-border flex items-center justify-between text-[11px]">
+                                <span class="font-mono text-zinc-500 dark:text-zinc-400">Interactive UI</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="openSnippetInCanvas(${blk.snippetIdx})" class="px-2 py-0.5 rounded bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 font-semibold">Canvas</button>
+                                    <button type="button" onclick="copySnippet(${blk.snippetIdx})" class="px-2 py-0.5 rounded bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 font-semibold">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    replacement = `
+                        <div class="nix-code-card not-prose">
+                            <div class="nix-code-header">
+                                <span>${escapeHtml(blk.lang)}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="openSnippetInCanvas(${blk.snippetIdx})" class="nix-code-btn">Preview</button>
+                                    <button type="button" onclick="copySnippet(${blk.snippetIdx})" class="nix-code-btn">Copy</button>
+                                </div>
+                            </div>
+                            <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(blk.lang)}">${escapeHtml(blk.code)}</code></pre>
+                        </div>
+                    `;
+                }
+                html = html.replace(new RegExp(`<p>\\s*${blk.token}\\s*</p>|${blk.token}`), replacement);
+            });
+
+            return html;
         }
 
         function renderCanvasIframe(code) {
