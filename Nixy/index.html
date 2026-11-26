@@ -2,8 +2,8 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nixy — Codenix AI Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nixy — Codenix AI Agent Studio</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,306 +16,294 @@
                         codenix: {
                             50: '#f5f3ff',
                             100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
                             500: '#8b5cf6',
                             600: '#7c3aed',
                             700: '#6d28d9',
-                            black: '#09090b',
-                            panel: '#111114',
-                            card: '#18181c',
-                            border: '#27272f'
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                            black: '#07060b',
+                            panel: '#100e18',
+                            border: '#251f38'
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace']
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
                     }
                 }
             }
         }
     </script>
 
-    <!-- Fonts & Icons -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Supabase v2 & Puter.js v2 -->
+    <!-- Supabase JS v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Puter.js v2 SDK -->
     <script>window.puter = window.puter || {}; window.puter.quiet = true;</script>
     <script src="https://js.puter.com/v2/"></script>
 
-    <!-- Markdown, Syntax Highlighting & QR -->
+    <!-- Marked.js, Highlight.js, QRCode.js & jsPDF -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.35); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.65); }
 
-        /* Voice Orb Animations */
-        .voice-orb-ring {
-            position: relative;
-            width: 190px;
-            height: 190px;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .voice-orb-core {
-            width: 124px;
-            height: 124px;
-            border-radius: 9999px;
-            background: radial-gradient(circle at 32% 30%, #c4b5fd 0%, #7c3aed 55%, #1e1b4b 100%);
-            box-shadow: 0 0 60px rgba(124, 58, 237, 0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .voice-orb-core:hover { transform: scale(1.04); }
-        .orb-listening .voice-orb-core {
-            background: radial-gradient(circle at 32% 30%, #6ee7b7 0%, #059669 60%, #064e3b 100%);
-            box-shadow: 0 0 75px rgba(16, 185, 129, 0.7);
-            animation: orbPulse 1.4s ease-in-out infinite;
-        }
-        .orb-thinking .voice-orb-core {
-            background: radial-gradient(circle at 32% 30%, #7dd3fc 0%, #0284c7 60%, #0c4a6e 100%);
-            box-shadow: 0 0 75px rgba(14, 165, 233, 0.7);
-            animation: orbSpin 1.8s linear infinite;
-        }
-        .orb-speaking .voice-orb-core {
-            background: radial-gradient(circle at 32% 30%, #fda4af 0%, #e11d48 60%, #4c0519 100%);
-            box-shadow: 0 0 85px rgba(225, 29, 72, 0.75);
-            animation: orbSpeak 0.65s ease-in-out infinite alternate;
-        }
-        @keyframes orbPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.09); }
-        }
-        @keyframes orbSpin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.06); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        @keyframes orbSpeak {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.16); }
-        }
-
-        /* Prose & Smart UI */
         .prose p { margin-bottom: 0.65rem; line-height: 1.65; }
         .prose p:last-child { margin-bottom: 0; }
+        .prose ul, .prose ol { margin: 0.5rem 0 0.75rem 1.25rem; }
+        .prose li { margin-bottom: 0.3rem; }
         .prose code:not(pre code) {
-            background: rgba(139, 92, 246, 0.14);
+            background: rgba(139, 92, 246, 0.16);
             color: #7c3aed;
-            padding: 0.12rem 0.38rem;
-            border-radius: 0.35rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.375rem;
             font-size: 0.85em;
             font-family: 'JetBrains Mono', monospace;
         }
         .dark .prose code:not(pre code) { color: #c4b5fd; }
 
-        .code-card {
-            background: #0d0c14;
-            border: 1px solid #27272f;
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 0.85rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.28);
+        }
+        .prose thead {
+            background: rgba(124, 58, 237, 0.16);
+            color: #6d28d9;
+        }
+        .dark .prose thead {
+            background: rgba(124, 58, 237, 0.28);
+            color: #ddd6fe;
+        }
+        .prose th, .prose td {
+            padding: 0.55rem 0.75rem;
+            border: 1px solid rgba(139, 92, 246, 0.18);
+            text-align: left;
+        }
+        .prose tbody tr:nth-child(even) {
+            background: rgba(139, 92, 246, 0.04);
+        }
+
+        .nix-code-card {
+            background: #0b0914;
+            border: 1px solid #251f38;
             border-radius: 0.85rem;
             margin: 0.75rem 0;
             overflow: hidden;
         }
-        .code-card-header {
+        .nix-code-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.45rem 0.75rem;
-            background: #151420;
-            border-bottom: 1px solid #27272f;
+            padding: 0.45rem 0.8rem;
+            background: #141024;
+            border-bottom: 1px solid #251f38;
             font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
             color: #c4b5fd;
+            font-family: 'JetBrains Mono', monospace;
         }
+        .nix-code-btn {
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.4rem;
+            background: rgba(139, 92, 246, 0.2);
+            color: #ede9fe;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s ease;
+        }
+        .nix-code-btn:hover { background: rgba(139, 92, 246, 0.4); }
 
-        .conv-item:hover .conv-action-btn {
-            opacity: 1;
+        .conv-row:hover .conv-actions { opacity: 1; }
+        .conv-actions { opacity: 0.85; transition: opacity 0.15s ease; }
+
+        @keyframes voicePulseRing {
+            0% { transform: scale(0.95); opacity: 0.75; }
+            100% { transform: scale(1.45); opacity: 0; }
+        }
+        .voice-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            border: 2px solid rgba(139, 92, 246, 0.55);
+            animation: voicePulseRing 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+            pointer-events: none;
         }
     </style>
 </head>
 <body class="bg-white text-zinc-900 dark:bg-codenix-black dark:text-zinc-100 h-[100dvh] flex flex-col overflow-hidden transition-colors duration-200">
 
     <!-- Auth Verification Gate -->
-    <div id="auth-gate" class="fixed inset-0 z-50 bg-white dark:bg-codenix-black flex flex-col items-center justify-center p-6">
+    <div id="auth-gate" class="fixed inset-0 z-50 bg-white dark:bg-codenix-black flex flex-col items-center justify-center p-6 transition-opacity duration-300">
         <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-12 h-12 rounded-2xl object-contain mb-3">
-        <p class="text-sm font-bold text-codenix-600 dark:text-codenix-400">Verifying Codenix Session...</p>
+        <p class="text-sm font-bold text-codenix-700 dark:text-codenix-300">Verifying Codenix Session...</p>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Redirecting to /Start if not signed in</p>
     </div>
 
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
 
-    <div class="flex h-full w-full overflow-hidden">
+    <div class="flex h-full w-full overflow-hidden relative">
 
         <!-- SIDEBAR -->
-        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-zinc-50 dark:bg-codenix-panel border-r border-zinc-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-200 -translate-x-full md:translate-x-0 shrink-0">
-            <div class="p-3.5 border-b border-zinc-200 dark:border-codenix-border space-y-2.5">
+        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-codenix-50/75 dark:bg-codenix-panel border-r border-codenix-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
+            <div class="p-3.5 border-b border-codenix-200 dark:border-codenix-border space-y-2.5">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 rounded-lg object-contain">
-                        <span class="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white">Codenix</span>
+                        <span class="font-bold text-sm tracking-tight text-codenix-700 dark:text-white">Codenix</span>
                     </div>
-                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="toggleTemporaryMode()" id="temp-chat-btn" title="Toggle Temporary Chat (Not saved to Supabase)" class="p-1.5 rounded-lg border border-codenix-200 dark:border-codenix-border text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 transition">
+                            <i data-lucide="ghost" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="openShareModal()" id="share-conv-btn" title="Share Conversation" class="p-1.5 rounded-lg border border-codenix-200 dark:border-codenix-border text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 transition">
+                            <i data-lucide="share-2" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- New Chat Button -->
-                <button type="button" onclick="createNewChat()" class="w-full py-2 px-3 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span data-i18n="newChat">New chat</span>
+                <button type="button" onclick="createNewChat()" class="w-full py-2 px-3 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                    <i data-lucide="square-pen" class="w-4 h-4"></i>
+                    <span>New chat</span>
                 </button>
 
-                <!-- Search Chats (Title-only filter, never autofilled with email) -->
+                <!-- Search input strictly by conversation title (never email) -->
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                    <input type="text" id="chat-search" name="nixy_chat_title_query" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" oninput="sanitizeSearchInput(); renderConversationList()" placeholder="Search chats..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
+                    <input
+                        type="search"
+                        id="chat-search"
+                        name="conv_title_query"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        data-lpignore="true"
+                        oninput="sanitizeAndRenderConversations()"
+                        placeholder="Search chats..."
+                        class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500"
+                    >
                 </div>
+            </div>
 
-                <!-- Library & Plugins Button -->
-                <button type="button" onclick="openLibraryModal()" class="w-full py-2 px-3 rounded-xl bg-white dark:bg-codenix-card hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border text-xs font-semibold flex items-center justify-between transition">
+            <!-- Conversations List -->
+            <div id="conversation-list" class="flex-1 overflow-y-auto p-2.5 space-y-1"></div>
+
+            <!-- Bottom Library & Profile/Settings -->
+            <div class="p-3 border-t border-codenix-200 dark:border-codenix-border space-y-2 bg-white/75 dark:bg-codenix-black/50">
+                <button type="button" onclick="openLibraryModal()" class="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel hover:border-codenix-500 border border-codenix-200 dark:border-codenix-border text-xs font-semibold transition">
                     <span class="flex items-center gap-2">
-                        <i data-lucide="library" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                        <span data-i18n="library">Library & Plugins</span>
+                        <i data-lucide="library" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                        <span>Library & Plugins</span>
                     </span>
                     <span id="library-badge-count" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0</span>
                 </button>
-            </div>
 
-            <!-- Saved Conversations List (Hover for Rename & Delete) -->
-            <div id="conversation-list" class="flex-1 overflow-y-auto p-2.5 space-y-1"></div>
+                <div class="flex items-center justify-between gap-1.5 pt-1">
+                    <button type="button" onclick="openProfileEmbeddedView()" class="flex items-center gap-2 min-w-0 flex-1 text-left p-1.5 rounded-xl hover:bg-codenix-50 dark:hover:bg-codenix-panel transition">
+                        <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-codenix-600 text-white text-xs font-bold flex items-center justify-center shrink-0">C</div>
+                        <div class="min-w-0">
+                            <p id="user-display-name" class="text-xs font-semibold truncate">Codenix Member</p>
+                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">/u/ Profile</p>
+                        </div>
+                    </button>
 
-            <!-- Footer: Profile (/u/) + Settings + Sign Out -->
-            <div class="p-3 border-t border-zinc-200 dark:border-codenix-border flex items-center justify-between gap-2 bg-white/70 dark:bg-codenix-black/60">
-                <button type="button" onclick="openProfileView()" class="flex items-center gap-2.5 min-w-0 text-left group flex-1 py-1 px-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                    <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-codenix-600 text-white text-xs font-bold flex items-center justify-center shrink-0">C</div>
-                    <div class="min-w-0">
-                        <p id="user-display-name" class="text-xs font-semibold truncate group-hover:text-codenix-600 dark:group-hover:text-codenix-400 transition">Codenix User</p>
-                        <p class="text-[10px] font-mono text-zinc-400 truncate">/u/</p>
-                    </div>
-                </button>
+                    <button type="button" onclick="openSettingsModal()" title="Settings (Language & Theme)" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition shrink-0">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                    </button>
 
-                <button type="button" onclick="openSettingsModal()" title="Settings (Language & Theme)" class="p-2 rounded-xl bg-zinc-100 dark:bg-codenix-card hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 transition shrink-0">
-                    <i data-lucide="settings" class="w-4 h-4"></i>
-                </button>
-
-                <button type="button" onclick="signOutUser()" title="Sign out" class="p-2 rounded-xl text-zinc-400 hover:text-rose-500 transition shrink-0">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                </button>
+                    <button type="button" onclick="signOutUser()" title="Sign Out" class="p-2 rounded-xl text-zinc-400 hover:text-rose-500 transition shrink-0">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
         </aside>
 
         <!-- MAIN WORKSPACE -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-codenix-black">
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-white dark:bg-codenix-black">
 
             <!-- Top Header Bar -->
-            <header class="h-14 border-b border-zinc-200 dark:border-codenix-border px-3 sm:px-5 flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-2 min-w-0">
-                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-codenix-card text-zinc-600 dark:text-zinc-300">
+            <header class="h-14 border-b border-codenix-200 dark:border-codenix-border px-4 flex items-center justify-between bg-white/90 dark:bg-codenix-black/90 backdrop-blur-md shrink-0 z-20">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-codenix-50 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
                         <i data-lucide="menu" class="w-5 h-5"></i>
                     </button>
-                    <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-5 h-5 rounded object-contain shrink-0">
-                    <span id="active-chat-title" class="text-xs sm:text-sm font-bold truncate">New chat</span>
-                    <span id="active-chat-path-badge" class="hidden sm:inline text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-codenix-card text-zinc-500 dark:text-zinc-400 truncate max-w-[160px]">/c/</span>
-                    <span id="temp-mode-pill" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30">Temporary</span>
+
+                    <div class="flex items-center gap-2 min-w-0">
+                        <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-5 h-5 rounded object-contain shrink-0">
+                        <span id="header-chat-title" class="text-sm font-bold truncate">Codenix</span>
+                    </div>
+
+                    <span id="temp-mode-pill" class="hidden items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-[10px] font-bold">
+                        <i data-lucide="ghost" class="w-3 h-3"></i>
+                        <span>Temporary</span>
+                    </span>
                 </div>
 
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <!-- Share Conversation Button (Right next to Temporary Chat button) -->
-                    <button type="button" onclick="openShareModal()" id="header-share-btn" title="Share conversation" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border text-xs font-semibold transition">
-                        <i data-lucide="share-2" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                        <span class="hidden sm:inline" data-i18n="share">Share</span>
-                    </button>
-
-                    <!-- Temporary Chat Toggle Button (Does not save to Supabase) -->
-                    <button type="button" onclick="toggleTemporaryMode()" id="temp-chat-btn" title="Toggle Temporary Chat (not saved to Supabase)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border text-xs font-semibold transition">
-                        <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
-                        <span class="hidden sm:inline" data-i18n="temporary">Temporary</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="openVoiceCompanionModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-xs font-semibold transition">
+                        <i data-lucide="audio-waveform" class="w-3.5 h-3.5"></i>
+                        <span>Voice</span>
                     </button>
                 </div>
             </header>
 
-            <!-- Workspace Split: Embedded /u/ Profile or Chat + Live Code Preview -->
+            <!-- Workspace Split: Chat + Optional Live Preview Canvas -->
             <div class="flex-1 flex overflow-hidden min-h-0">
 
-                <!-- EMBEDDED /u/ PROFILE VIEW -->
-                <section id="embedded-profile-view" class="hidden flex-1 overflow-y-auto px-4 py-8 bg-white dark:bg-codenix-black">
-                    <div class="max-w-2xl mx-auto rounded-3xl border border-zinc-200 dark:border-codenix-border bg-zinc-50 dark:bg-codenix-panel p-6 space-y-5 shadow-sm">
-                        <div class="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-codenix-border">
-                            <div>
-                                <p id="embed-profile-domain-url" class="text-[11px] font-mono text-codenix-600 dark:text-codenix-400">/u/</p>
-                                <h2 class="text-lg font-bold mt-0.5">Profile</h2>
-                            </div>
-                            <button type="button" onclick="closeEmbeddedProfileView()" class="px-3 py-1.5 rounded-xl bg-zinc-200/80 dark:bg-codenix-card hover:opacity-90 text-xs font-semibold flex items-center gap-1.5">
-                                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-                                <span>Back to chat</span>
-                            </button>
-                        </div>
-
-                        <div class="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
-                            <div id="embed-profile-avatar" class="w-14 h-14 rounded-2xl bg-codenix-600 text-white text-xl font-bold flex items-center justify-center shrink-0">C</div>
-                            <div class="min-w-0 flex-1">
-                                <p id="embed-profile-name" class="text-base font-bold truncate">Codenix User</p>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">Codenix Member • /u/</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="p-4 rounded-2xl bg-white dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
-                                <p class="text-[11px] font-semibold text-zinc-400">Saved Conversations</p>
-                                <p id="embed-profile-count" class="text-2xl font-extrabold font-mono mt-1">0</p>
-                            </div>
-                            <div class="p-4 rounded-2xl bg-white dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
-                                <p class="text-[11px] font-semibold text-zinc-400">Current Chat Route</p>
-                                <p id="embed-profile-chat-route" class="text-xs font-mono font-semibold text-codenix-600 dark:text-codenix-400 mt-2 truncate">/c/</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="copyProfileLink()" class="px-4 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold transition">
-                                Copy /u/ Link
-                            </button>
-                            <button type="button" onclick="openSettingsModal()" class="px-4 py-2.5 rounded-xl bg-white dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-semibold transition">
-                                Settings
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- CHAT STREAM -->
-                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6">
+                <!-- CHAT STREAM AREA -->
+                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth">
                     <div class="max-w-3xl mx-auto space-y-6">
 
-                        <!-- Welcome View with Codenix Logo -->
-                        <div id="welcome-hero" class="flex flex-col items-center justify-center text-center py-12 sm:py-16 space-y-5">
-                            <img src="/logo.png" alt="Codenix Logo" onerror="this.style.display='none'" class="w-16 h-16 rounded-2xl object-contain shadow-lg shadow-codenix-600/20">
-                            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight" data-i18n="welcomeTitle">How can I help you today?</h1>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl text-left pt-2">
-                                <button type="button" onclick="quickPrompt('Explain quantum computing simply with an interactive HTML card and Wikipedia summary')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-panel hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border transition">
-                                    <p class="text-xs font-bold">Smart Interactive Card</p>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Wikipedia images, icons & live HTML</p>
+                        <!-- Welcome View with Single Model Logo -->
+                        <div id="welcome-view" class="flex flex-col items-center justify-center text-center py-10 sm:py-16 space-y-6">
+                            <img src="/logo.png" alt="Codenix Logo" onerror="this.style.display='none'" class="w-12 h-12 rounded-2xl object-contain">
+                            <h1 id="welcome-heading" class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                                What can I help with?
+                            </h1>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl text-left">
+                                <button type="button" onclick="useStarterPrompt('Create a comparison table of modern web frameworks')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition">
+                                    <p class="text-xs font-bold">Generate a Table</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Structured comparisons & schedules</p>
                                 </button>
-                                <button type="button" onclick="quickPrompt('Say in voice: Welcome to Codenix AI Studio, powered by Nixy and Puter.js')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-panel hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border transition">
-                                    <p class="text-xs font-bold">Generate Voice (Puter.js)</p>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Speak text aloud & play audio</p>
+                                <button type="button" onclick="useStarterPrompt('Create a PDF summary guide on renewable energy')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition">
+                                    <p class="text-xs font-bold">Export as PDF</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Downloadable PDF reports & notes</p>
                                 </button>
-                                <button type="button" onclick="quickPrompt('Generate an image of a futuristic purple glass studio at night')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-panel hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border transition">
-                                    <p class="text-xs font-bold">Create an Image</p>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Autonomous image generation</p>
+                                <button type="button" onclick="useStarterPrompt('Search the web for latest AI developer tools')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition">
+                                    <p class="text-xs font-bold">Web Search</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Look up topics, facts & links</p>
                                 </button>
-                                <button type="button" onclick="quickPrompt('Build a clean interactive task counter in HTML and JS')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-panel hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border transition">
-                                    <p class="text-xs font-bold">Code & Live Preview</p>
-                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Inspect & run code in side canvas</p>
+                                <button type="button" onclick="useStarterPrompt('Build an interactive HTML/JS pomodory timer widget')" class="p-3.5 rounded-2xl bg-codenix-50/70 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition">
+                                    <p class="text-xs font-bold">Interactive UI & Code</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Live HTML preview, images & QR</p>
                                 </button>
                             </div>
                         </div>
@@ -324,53 +312,58 @@
                         <div id="messages-feed" class="space-y-6"></div>
 
                         <!-- Thinking Indicator -->
-                        <div id="thinking-indicator" class="hidden items-start gap-3">
-                            <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 rounded-lg object-contain shrink-0 mt-1">
-                            <div class="px-4 py-3 rounded-2xl bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-codenix-500 animate-ping"></span>
-                                <span id="thinking-status-text">Thinking...</span>
-                            </div>
+                        <div id="thinking-indicator" class="hidden items-center gap-3 px-1">
+                            <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-6 h-6 rounded-full object-contain animate-pulse shrink-0">
+                            <span id="thinking-status-text" class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Thinking...</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- LIVE CODE & PREVIEW CANVAS -->
-                <aside id="code-canvas" class="hidden w-full lg:w-[460px] border-l border-zinc-200 dark:border-codenix-border bg-zinc-50 dark:bg-codenix-panel flex-col shrink-0">
-                    <div class="h-12 px-4 border-b border-zinc-200 dark:border-codenix-border flex items-center justify-between">
-                        <span class="text-xs font-bold">Live Preview</span>
+                <!-- LIVE CODE & PREVIEW DRAWER -->
+                <aside id="live-canvas-pane" class="hidden w-full lg:w-[480px] xl:w-[540px] border-l border-codenix-200 dark:border-codenix-border bg-codenix-50 dark:bg-codenix-panel flex-col shrink-0 z-20">
+                    <div class="h-12 px-4 border-b border-codenix-200 dark:border-codenix-border flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="layout" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                            <span class="text-xs font-bold">Live Preview</span>
+                        </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="switchCanvasTab('preview')" id="canvas-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
-                            <button type="button" onclick="switchCanvasTab('code')" id="canvas-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 text-[11px] font-semibold">Code</button>
-                            <button type="button" onclick="closeCodeCanvas()" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
+                            <button type="button" onclick="switchCanvasTab('code')" id="canvas-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 dark:text-zinc-400 text-[11px] font-semibold">Code</button>
+                            <button type="button" onclick="closeCanvasPane()" class="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
-                    <iframe id="canvas-preview-frame" sandbox="allow-scripts allow-forms allow-modals" class="flex-1 w-full bg-white border-none"></iframe>
-                    <textarea id="canvas-code-view" spellcheck="false" oninput="updateLiveCanvasFromEditor()" class="hidden flex-1 w-full bg-codenix-black text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
+                    <iframe id="canvas-preview-frame" sandbox="allow-scripts allow-forms allow-modals allow-popups" class="flex-1 w-full bg-white border-none"></iframe>
+                    <textarea id="canvas-code-editor" spellcheck="false" oninput="syncCanvasCodeToPreview()" class="hidden flex-1 w-full bg-codenix-black text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
                 </aside>
             </div>
 
-            <!-- COMPOSER -->
-            <div class="p-3 sm:p-4 border-t border-zinc-200 dark:border-codenix-border bg-white dark:bg-codenix-black shrink-0">
+            <!-- COMPOSER BAR -->
+            <div class="p-3 sm:p-4 border-t border-codenix-200 dark:border-codenix-border bg-white/95 dark:bg-codenix-black/95 backdrop-blur-md shrink-0">
                 <div class="max-w-3xl mx-auto">
-                    <div id="attachments-bar" class="hidden flex-wrap gap-2 mb-2"></div>
-                    <input type="file" id="file-picker" multiple onchange="handleFilesPicked(event)" class="hidden">
+                    <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
+                    <input type="file" id="chat-file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql" onchange="handleFileSelection(event)" class="hidden">
 
-                    <div class="flex items-end gap-1.5 sm:gap-2 bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 transition">
-                        <button type="button" onclick="document.getElementById('file-picker').click()" title="Attach files" class="p-2.5 rounded-xl text-zinc-500 hover:text-codenix-600 dark:hover:text-codenix-400 transition shrink-0">
+                    <div class="flex items-end gap-1.5 sm:gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 transition">
+                        <button type="button" onclick="document.getElementById('chat-file-input').click()" title="Attach files or images" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
                         </button>
 
-                        <textarea id="prompt-input" rows="1" placeholder="Ask anything..." onkeydown="handlePromptKeydown(event)" oninput="autoResize(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
+                        <textarea
+                            id="prompt-input"
+                            rows="1"
+                            placeholder="Ask anything in any language..."
+                            onkeydown="handlePromptKeydown(event)"
+                            oninput="autoResizeTextarea(this)"
+                            class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"
+                        ></textarea>
 
-                        <!-- Voice Mode Button -->
-                        <button type="button" onclick="openVoiceMode()" title="Voice mode" class="p-2.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/70 dark:hover:bg-codenix-card transition shrink-0">
-                            <i data-lucide="audio-waveform" class="w-4 h-4"></i>
+                        <button type="button" onclick="openVoiceCompanionModal()" title="Voice Mode" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
                         </button>
 
-                        <!-- Send Button -->
-                        <button type="button" id="send-btn" onclick="handleSend()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white transition shrink-0">
+                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -379,276 +372,248 @@
         </main>
     </div>
 
-    <!-- VOICE MODE OVERLAY (ChatGPT / Gemini Style) -->
-    <div id="voice-overlay" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl hidden flex-col justify-between p-5 sm:p-8 text-white">
-        <div class="flex items-center justify-between max-w-3xl w-full mx-auto">
-            <div class="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-5 h-5 rounded object-contain">
-                <span>Codenix Voice</span>
-            </div>
-            <button type="button" onclick="closeVoiceMode()" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition">
+    <!-- EMBEDDED /u/ PROFILE MODAL -->
+    <div id="profile-modal" onclick="if(event.target===this) closeProfileModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
+            <button type="button" onclick="closeProfileModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-        </div>
-
-        <div class="flex flex-col items-center justify-center text-center my-auto max-w-xl w-full mx-auto space-y-6">
-            <div id="voice-orb" onclick="toggleVoiceMicListening()" class="voice-orb-ring orb-idle">
-                <div class="voice-orb-core">
-                    <i id="voice-orb-icon" data-lucide="mic" class="w-8 h-8 text-white"></i>
+            <div class="flex items-center gap-3">
+                <div id="profile-modal-avatar" class="w-12 h-12 rounded-2xl bg-codenix-600 text-white text-lg font-extrabold flex items-center justify-center">C</div>
+                <div class="min-w-0">
+                    <h3 id="profile-modal-name" class="text-base font-extrabold truncate">Codenix Member</h3>
+                    <p id="profile-modal-email" class="text-xs text-zinc-500 dark:text-zinc-400 truncate"></p>
+                    <p class="text-[11px] font-mono text-codenix-600 dark:text-codenix-300 mt-0.5">/u/ Profile</p>
                 </div>
             </div>
-
-            <p id="voice-status-text" class="text-xs font-bold uppercase tracking-widest text-purple-300">Tap orb to speak</p>
-
-            <div class="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 space-y-1.5 min-h-[84px] flex flex-col justify-center">
-                <p id="voice-speaker-label" class="text-[10px] font-bold uppercase tracking-wider text-purple-400">Codenix</p>
-                <p id="voice-caption-text" class="text-sm text-zinc-200 leading-relaxed">Speak naturally and I will reply out loud.</p>
+            <div class="p-3.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-zinc-500">Saved Conversations</span>
+                    <span id="profile-saved-count" class="font-bold font-mono">0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-zinc-500">Profile Route</span>
+                    <span id="profile-route-url" class="font-mono text-[11px] text-codenix-600 dark:text-codenix-300 truncate max-w-[210px]"></span>
+                </div>
             </div>
-        </div>
-
-        <div class="flex items-center justify-center gap-3 max-w-md w-full mx-auto">
-            <button type="button" onclick="toggleVoiceMicListening()" id="voice-mic-btn" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-2 transition">
-                <i data-lucide="mic" class="w-4 h-4"></i>
-                <span id="voice-mic-label">Listen</span>
-            </button>
-            <button type="button" onclick="toggleVoiceSpeakerMute()" id="voice-speaker-btn" class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-2 transition">
-                <i data-lucide="volume-2" class="w-4 h-4"></i>
-                <span id="voice-speaker-label-btn">Sound On</span>
+            <button type="button" onclick="copyProfileRouteLink()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold transition">
+                Copy /u/ Profile Link
             </button>
         </div>
     </div>
 
-    <!-- LIBRARY & PLUGINS MODAL (Google Sheet + Built-in Plugins) -->
-    <div id="library-modal" onclick="if(event.target===this) closeLibraryModal()" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-codenix-border">
-                <h3 class="text-base font-extrabold" data-i18n="library">Library & Plugins</h3>
-                <button type="button" onclick="closeLibraryModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div id="library-grid" class="overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-3 pr-1"></div>
-        </div>
-    </div>
+    <!-- SETTINGS MODAL (Language & Theme) -->
+    <div id="settings-modal" onclick="if(event.target===this) closeSettingsModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full shadow-2xl relative space-y-4">
+            <button type="button" onclick="closeSettingsModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-base font-extrabold">Settings</h3>
 
-    <!-- SETTINGS MODAL (Language + Theme) -->
-    <div id="settings-modal" onclick="if(event.target===this) closeSettingsModal()" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-5">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-extrabold" data-i18n="settings">Settings</h3>
-                <button type="button" onclick="closeSettingsModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-zinc-500 dark:text-zinc-400" data-i18n="language">Language</label>
-                <select id="settings-lang-select" onchange="applyLanguage(this.value)" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-semibold focus:outline-none focus:border-codenix-500">
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                    <option value="es">Español</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                </select>
-            </div>
-
-            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
+            <div class="space-y-3">
                 <div>
-                    <p class="text-xs font-bold" data-i18n="theme">Theme</p>
-                    <p id="settings-theme-label" class="text-[11px] text-zinc-500 dark:text-zinc-400">Dark</p>
+                    <label class="block text-xs font-semibold mb-1">Language</label>
+                    <select id="settings-lang-select" onchange="applyLanguage(this.value)" class="w-full px-3 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold focus:outline-none focus:border-codenix-500">
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
                 </div>
-                <button type="button" onclick="toggleTheme()" class="px-3.5 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold transition">
-                    Toggle
+
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border">
+                    <div>
+                        <p class="text-xs font-bold">Appearance Theme</p>
+                        <p id="settings-theme-label" class="text-[11px] text-zinc-500 dark:text-zinc-400">Dark Mode</p>
+                    </div>
+                    <button type="button" onclick="toggleTheme()" class="px-3 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i id="theme-icon" data-lucide="sun" class="w-3.5 h-3.5"></i>
+                        <span>Switch</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIBRARY & PLUGINS MODAL -->
+    <div id="library-modal" onclick="if(event.target===this) closeLibraryModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-codenix-200 dark:border-codenix-border">
+                <h3 class="text-base font-extrabold">Library & Plugins</h3>
+                <button type="button" onclick="closeLibraryModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-codenix-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
+            <div id="library-items-grid" class="overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-3 pr-1"></div>
         </div>
     </div>
 
     <!-- SHARE CONVERSATION MODAL -->
-    <div id="share-modal" onclick="if(event.target===this) closeShareModal()" class="fixed inset-0 z-50 bg-black/75 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-extrabold">Share Conversation</h3>
-                <button type="button" onclick="closeShareModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+    <div id="share-modal" onclick="if(event.target===this) closeShareModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
+            <button type="button" onclick="closeShareModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-base font-extrabold">Share Conversation</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Create a share link or protect it with an optional 4-8 digit PIN.</p>
 
             <div>
-                <label class="block text-xs font-semibold mb-1">Optional PIN (4–8 digits, leave blank for open link)</label>
-                <input type="password" id="share-pin-input" maxlength="8" placeholder="Optional PIN" class="w-full px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-mono focus:outline-none focus:border-codenix-500">
+                <label class="block text-xs font-semibold mb-1">Optional PIN (4-8 digits)</label>
+                <input type="password" id="share-pin-input" maxlength="8" placeholder="Leave blank for open link or enter PIN" class="w-full px-3.5 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-sm font-mono focus:outline-none focus:border-codenix-500">
             </div>
 
-            <button type="button" onclick="createShareLink()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold transition">
+            <button type="button" onclick="publishSharedConversation()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold transition">
                 Generate Share Link
             </button>
 
-            <div id="share-link-box" class="hidden p-3 rounded-2xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border space-y-2">
+            <div id="share-result-box" class="hidden p-3 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2">
+                <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Share URL ready:</p>
                 <div class="flex items-center gap-2">
-                    <input type="text" id="share-link-input" readonly class="flex-1 bg-transparent text-xs font-mono text-codenix-600 dark:text-codenix-300 focus:outline-none">
-                    <button type="button" onclick="copyShareLink()" class="px-3 py-1 rounded-lg bg-codenix-600 text-white text-xs font-semibold">Copy</button>
+                    <input type="text" id="share-link-output" readonly class="flex-1 bg-transparent text-xs font-mono text-codenix-600 dark:text-codenix-300 focus:outline-none">
+                    <button type="button" onclick="copyShareUrl()" class="px-3 py-1 rounded-lg bg-codenix-600 text-white text-xs font-semibold">Copy</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SHARED PIN UNLOCK MODAL -->
-    <div id="shared-pin-modal" class="fixed inset-0 z-50 bg-black/85 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
-            <h3 class="text-base font-extrabold">Protected Shared Chat</h3>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400">Enter the PIN to view this conversation.</p>
-            <input type="password" id="shared-unlock-pin" maxlength="8" placeholder="Enter PIN" class="w-full px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-center text-sm font-mono focus:outline-none focus:border-codenix-500">
-            <button type="button" onclick="unlockSharedChatWithPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock</button>
+    <!-- PIN UNLOCK MODAL -->
+    <div id="pin-unlock-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold">PIN Protected Chat</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Enter the PIN to view this shared conversation.</p>
+            <input type="password" id="unlock-pin-input" maxlength="8" placeholder="Enter PIN" class="w-full px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-center text-base font-mono focus:outline-none focus:border-codenix-500">
+            <button type="button" onclick="verifySharedPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock</button>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-600 text-white text-xs font-semibold shadow-xl"></div>
+    <!-- VOICE COMPANION MODAL -->
+    <div id="voice-modal" class="fixed inset-0 z-50 bg-codenix-black/95 backdrop-blur-md hidden flex-col items-center justify-between p-6 text-white">
+        <div class="w-full max-w-2xl flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs font-bold">
+                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-5 h-5 rounded object-contain">
+                <span>Codenix Voice</span>
+            </div>
+            <button type="button" onclick="closeVoiceCompanionModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col items-center text-center my-auto space-y-5 max-w-lg w-full">
+            <div class="relative w-28 h-28 flex items-center justify-center">
+                <span id="voice-pulse-ring" class="hidden voice-ring"></span>
+                <button type="button" onclick="toggleVoiceMicRecognition()" class="relative z-10 w-24 h-24 rounded-full bg-codenix-600 hover:bg-codenix-500 flex items-center justify-center shadow-2xl transition">
+                    <i id="voice-center-icon" data-lucide="mic" class="w-9 h-9 text-white"></i>
+                </button>
+            </div>
+            <p id="voice-status-label" class="text-xs font-bold uppercase tracking-widest text-codenix-300">Tap Mic to Speak</p>
+            <div class="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-200 min-h-[64px] flex items-center justify-center">
+                <p id="voice-caption-text">Speak naturally in any language and I will respond out loud.</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleVoiceSpeechOutput()" id="voice-mute-btn" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-2">
+                <i id="voice-speaker-icon" data-lucide="volume-2" class="w-4 h-4"></i>
+                <span id="voice-mute-label">Voice On</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-xl"></div>
 
     <script>
-        // =========================================================================
-        // CONFIGURATION (Supabase + Cloudflare Worker Proxy + Puter.js + Google Sheet)
-        // =========================================================================
         const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
         const CLOUDFLARE_PROXY_URL = '/api/nixy';
         const GOOGLE_SHEET_ID = '12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk';
-        const CODENIX_DOMAIN_BASE = 'https://codenix.pages.dev/dashboard';
+        const APP_BASE_URL = 'https://codenix.pages.dev/dashboard';
+
+        const STORAGE_KEYS = {
+            THEME: 'codenix_theme',
+            LANG: 'codenix_lang'
+        };
 
         const NIXY_SYSTEM_PROMPT = [
             'You are Nixy, the Codenix AI Agent.',
-            'Choose the best tool automatically based on user intent from [image_generator, puter_voice, code_canvas, qr_generator, smart_ui, general_chat].',
-            'When helpful for factual/educational topics, include a clear summary and structured sections.',
+            'Available tools: image_generator (visuals/drawings/pictures), puter_voice (spoken audio/reading aloud/voice notes), qr_generator (QR/barcodes), table_generator (markdown tables/comparisons/schedules/spreadsheets), pdf_generator (downloadable PDF documents/reports/guides), web_search (live web search/current facts/news/lookup), smart_ui (interactive HTML/CSS/JS widgets/code/calculators/dashboards), general_chat (explanations, facts, writing, Q&A).',
+            'You also have access to summaries of the user\'s earlier conversations and the full current conversation—reference past topics naturally when relevant.',
+            'Always understand prompts in any language (Arabic, Spanish, English, etc.) or unusual/casual wording, and when helpful for factual/educational topics, include a clear summary and structured sections.',
             'When asked for interactive UI or code, provide clean HTML/CSS/JS inside ```html blocks.'
         ].join(' ');
-
-        const UI_TEXT = {
-            en: {
-                newChat: 'New chat',
-                library: 'Library & Plugins',
-                temporary: 'Temporary',
-                share: 'Share',
-                welcomeTitle: 'How can I help you today?',
-                settings: 'Settings',
-                language: 'Language',
-                theme: 'Theme'
-            },
-            ar: {
-                newChat: 'محادثة جديدة',
-                library: 'المكتبة والإضافات',
-                temporary: 'مؤقتة',
-                share: 'مشاركة',
-                welcomeTitle: 'كيف يمكنني مساعدتك اليوم؟',
-                settings: 'الإعدادات',
-                language: 'اللغة',
-                theme: 'المظهر'
-            },
-            es: {
-                newChat: 'Nuevo chat',
-                library: 'Biblioteca y plugins',
-                temporary: 'Temporal',
-                share: 'Compartir',
-                welcomeTitle: '¿En qué puedo ayudarte hoy?',
-                settings: 'Configuración',
-                language: 'Idioma',
-                theme: 'Tema'
-            },
-            fr: {
-                newChat: 'Nouvelle discussion',
-                library: 'Bibliothèque et plugins',
-                temporary: 'Temporaire',
-                share: 'Partager',
-                welcomeTitle: 'Comment puis-je vous aider aujourd’hui ?',
-                settings: 'Paramètres',
-                language: 'Langue',
-                theme: 'Thème'
-            },
-            de: {
-                newChat: 'Neuer Chat',
-                library: 'Bibliothek & Plugins',
-                temporary: 'Temporär',
-                share: 'Teilen',
-                welcomeTitle: 'Wie kann ich dir heute helfen?',
-                settings: 'Einstellungen',
-                language: 'Sprache',
-                theme: 'Design'
-            }
-        };
-
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        });
 
         const state = {
             user: null,
             conversations: [],
             activeConversationId: null,
-            temporaryMode: false,
-            profileViewOpen: false,
-            attachments: [],
+            isTemporaryMode: false,
+            uploadedFiles: [],
             isSending: false,
-            libraryItems: []
+            sheetTools: [],
+            messageVotes: {}
         };
 
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        });
+
         // =========================================================================
-        // INITIALIZATION & AUTH
+        // INIT, AUTH GUARD & ROUTING
         // =========================================================================
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
-            initLanguage();
-            sanitizeSearchInput();
+            applyLanguage(localStorage.getItem(STORAGE_KEYS.LANG) || 'en');
             if (window.lucide?.createIcons) window.lucide.createIcons();
 
-            // Prevent browser autofill from injecting the user's email into the chat search input
             const searchInput = document.getElementById('chat-search');
             if (searchInput) {
                 searchInput.value = '';
-                setTimeout(() => {
-                    if (state.user?.email && searchInput.value.includes(state.user.email)) {
-                        searchInput.value = '';
-                    }
-                }, 150);
-                setTimeout(() => {
-                    if (state.user?.email && searchInput.value.includes(state.user.email)) {
-                        searchInput.value = '';
-                    }
-                }, 700);
+                setTimeout(() => { if (isEmailLike(searchInput.value)) searchInput.value = ''; }, 150);
             }
 
             const params = new URLSearchParams(window.location.search);
             const shareSlug = params.get('share');
+
+            // Always enforce sign-in first, even when a ?share= link is opened
+            const signedIn = await enforceAuthenticatedSession();
+            if (!signedIn) return;
+
             if (shareSlug) {
                 hideAuthGate();
                 window.__pendingShareSlug = shareSlug;
-                openModal('shared-pin-modal');
+                const unlockModal = document.getElementById('pin-unlock-modal');
+                unlockModal.classList.remove('hidden');
+                unlockModal.classList.add('flex');
                 return;
             }
 
-            const authed = await verifySession();
-            if (!authed) return;
-
-            await loadConversationsFromSupabase(params.get('chat'));
-            await loadLibraryItems();
-
-            if (window.location.pathname === '/u' || window.location.pathname === '/u/') {
-                openProfileView(true);
-            } else {
-                syncDashboardRoute();
-            }
-
+            const requestedChatId = extractChatIdFromUrl(params);
+            await loadConversationsFromSupabase(requestedChatId);
+            await loadLibraryFromGoogleSheet();
             hideAuthGate();
         });
 
-        function sanitizeSearchInput() {
-            const el = document.getElementById('chat-search');
-            if (!el) return;
-            const userEmail = String(state.user?.email || '').toLowerCase();
-            if (userEmail && el.value.toLowerCase().includes(userEmail)) {
-                el.value = '';
-            }
+        function extractChatIdFromUrl(params) {
+            const fromQuery = params.get('chat');
+            if (fromQuery) return fromQuery;
+            const pathMatch = window.location.pathname.match(/\/dashboard\/c\/([^/?#]+)/i);
+            return pathMatch ? decodeURIComponent(pathMatch[1]) : null;
         }
 
-        async function verifySession() {
+        function syncConversationUrl(convId) {
+            if (!convId || state.isTemporaryMode) return;
+            try {
+                const nextUrl = `${APP_BASE_URL}/c/${encodeURIComponent(convId)}`;
+                window.history.replaceState({}, '', nextUrl);
+            } catch (_) {}
+        }
+
+        async function enforceAuthenticatedSession() {
             try {
                 const { data } = await supabaseClient.auth.getSession();
                 let session = data?.session || null;
@@ -656,11 +621,11 @@
                 if (!session) {
                     session = await new Promise((resolve) => {
                         let done = false;
-                        const { data: sub } = supabaseClient.auth.onAuthStateChange((_, nextSess) => {
-                            if (nextSess && !done) {
+                        const { data: sub } = supabaseClient.auth.onAuthStateChange((_ev, s) => {
+                            if (s && !done) {
                                 done = true;
                                 sub?.subscription?.unsubscribe();
-                                resolve(nextSess);
+                                resolve(s);
                             }
                         });
                         setTimeout(() => {
@@ -679,17 +644,20 @@
                 }
 
                 state.user = session.user;
-                const name = session.user.user_metadata?.full_name || 'Codenix User';
+                const label = session.user.user_metadata?.full_name || 'Codenix Member';
                 const nameEl = document.getElementById('user-display-name');
                 const avatarEl = document.getElementById('user-avatar-badge');
-                if (nameEl) nameEl.textContent = name;
-                if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+                if (nameEl) nameEl.textContent = label;
+                if (avatarEl) avatarEl.textContent = label.charAt(0).toUpperCase();
 
-                supabaseClient.auth.onAuthStateChange((ev, nextSession) => {
-                    if (ev === 'SIGNED_OUT' || !nextSession?.user) {
+                supabaseClient.auth.onAuthStateChange((event, nextSession) => {
+                    if (event === 'SIGNED_OUT' || !nextSession?.user) {
                         window.location.replace('/Start');
+                    } else {
+                        state.user = nextSession.user;
                     }
                 });
+
                 return true;
             } catch (_) {
                 window.location.replace('/Start');
@@ -697,23 +665,11 @@
             }
         }
 
-        function syncDashboardRoute(conv = null) {
-            try {
-                if (state.profileViewOpen) return;
-                if (conv && !conv.isTemporary) {
-                    const url = new URL(window.location.href);
-                    url.pathname = '/dashboard';
-                    url.searchParams.set('chat', conv.id);
-                    window.history.replaceState({}, '', url.pathname + url.search);
-                } else if (window.location.pathname.startsWith('/c/')) {
-                    window.history.replaceState({}, '', '/dashboard');
-                }
-            } catch (_) {}
-        }
-
         function hideAuthGate() {
             const gate = document.getElementById('auth-gate');
-            if (gate) gate.remove();
+            if (!gate) return;
+            gate.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => gate.remove(), 250);
         }
 
         async function signOutUser() {
@@ -722,99 +678,124 @@
         }
 
         // =========================================================================
-        // THEME & LANGUAGE
+        // THEME & LANGUAGE (IN SETTINGS)
         // =========================================================================
         function initTheme() {
-            const saved = localStorage.getItem('codenix_theme');
-            const isDark = saved !== 'light';
-            document.documentElement.classList.toggle('dark', isDark);
-            updateThemeLabel(isDark);
+            const isLight = localStorage.getItem(STORAGE_KEYS.THEME) === 'light';
+            document.documentElement.classList.toggle('light', isLight);
+            document.documentElement.classList.toggle('dark', !isLight);
+            updateThemeControls(!isLight);
         }
 
         function toggleTheme() {
-            const isDark = !document.documentElement.classList.contains('dark');
-            document.documentElement.classList.toggle('dark', isDark);
-            localStorage.setItem('codenix_theme', isDark ? 'dark' : 'light');
-            updateThemeLabel(isDark);
+            const nextDark = !document.documentElement.classList.contains('dark');
+            document.documentElement.classList.toggle('dark', nextDark);
+            document.documentElement.classList.toggle('light', !nextDark);
+            localStorage.setItem(STORAGE_KEYS.THEME, nextDark ? 'dark' : 'light');
+            updateThemeControls(nextDark);
         }
 
-        function updateThemeLabel(isDark) {
-            const lbl = document.getElementById('settings-theme-label');
-            if (lbl) lbl.textContent = isDark ? 'Dark' : 'Light';
-        }
-
-        function initLanguage() {
-            const saved = localStorage.getItem('codenix_lang') || 'en';
-            applyLanguage(saved);
+        function updateThemeControls(isDark) {
+            const icon = document.getElementById('theme-icon');
+            const label = document.getElementById('settings-theme-label');
+            if (icon) icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            if (label) label.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
         function applyLanguage(code) {
-            const lang = UI_TEXT[code] ? code : 'en';
-            localStorage.setItem('codenix_lang', lang);
+            const lang = ['en', 'ar', 'es', 'fr', 'de'].includes(code) ? code : 'en';
+            localStorage.setItem(STORAGE_KEYS.LANG, lang);
             document.documentElement.lang = lang;
             document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
             const sel = document.getElementById('settings-lang-select');
             if (sel) sel.value = lang;
-            const dict = UI_TEXT[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.textContent = dict[key];
-            });
         }
 
         // =========================================================================
-        // CONVERSATIONS, TEMPORARY CHAT & SUPABASE PERSISTENCE
+        // CONVERSATIONS, SEARCH (TITLE ONLY), RENAME, DELETE & TEMPORARY MODE
         // =========================================================================
-        function genId() {
-            return (window.crypto?.randomUUID ? window.crypto.randomUUID() : 'chat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7));
+        function generateId() {
+            return (window.crypto && typeof window.crypto.randomUUID === 'function')
+                ? window.crypto.randomUUID()
+                : 'chat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
         }
 
-        function getActiveConversation() {
-            if (state.temporaryMode && state.__tempConv) {
-                return state.__tempConv;
+        function isEmailLike(val) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(String(val || '').trim());
+        }
+
+        function sanitizeAndRenderConversations() {
+            const input = document.getElementById('chat-search');
+            if (input && isEmailLike(input.value)) {
+                input.value = '';
             }
-            return state.conversations.find(c => c.id === state.activeConversationId && !c.isTemporary) || null;
+            renderConversationList();
         }
 
-        function syncConversationDomainUrl(conv) {
-            if (!conv || conv.isTemporary) return;
-            syncDashboardRoute(conv);
-        }
+        function toggleTemporaryMode() {
+            state.isTemporaryMode = !state.isTemporaryMode;
+            const btn = document.getElementById('temp-chat-btn');
+            const pill = document.getElementById('temp-mode-pill');
+            if (btn) {
+                btn.classList.toggle('bg-amber-500/20', state.isTemporaryMode);
+                btn.classList.toggle('text-amber-600', state.isTemporaryMode);
+                btn.classList.toggle('dark:text-amber-300', state.isTemporaryMode);
+            }
+            if (pill) {
+                pill.classList.toggle('hidden', !state.isTemporaryMode);
+                pill.classList.toggle('flex', state.isTemporaryMode);
+            }
 
-        function updateHeaderTitle() {
-            const conv = getActiveConversation();
-            const titleEl = document.getElementById('active-chat-title');
-            const badgeEl = document.getElementById('active-chat-path-badge');
-            if (titleEl) titleEl.textContent = conv?.title || 'New chat';
-            if (badgeEl) {
-                if (conv && !conv.isTemporary) {
-                    badgeEl.textContent = `/dashboard?chat=${conv.id.slice(0, 8)}`;
-                    badgeEl.classList.remove('hidden');
-                } else {
-                    badgeEl.classList.add('hidden');
+            if (state.isTemporaryMode) {
+                const tempId = 'temp-' + generateId();
+                state.conversations.unshift({
+                    id: tempId,
+                    title: 'Temporary Chat',
+                    messages: [],
+                    isTemporary: true
+                });
+                state.activeConversationId = tempId;
+                renderConversationList();
+                renderMessages();
+                showToast('Temporary chat active (not saved to Supabase)');
+            } else {
+                state.conversations = state.conversations.filter(c => !c.isTemporary);
+                if (!state.conversations.length) {
+                    const fallbackId = generateId();
+                    state.conversations.push({ id: fallbackId, title: 'New chat', messages: [], isTemporary: false });
                 }
+                state.activeConversationId = state.conversations[0].id;
+                syncConversationUrl(state.activeConversationId);
+                renderConversationList();
+                renderMessages();
+                showToast('Returned to normal saved chats');
             }
         }
 
         async function createNewChat() {
-            closeEmbeddedProfileView();
-            state.temporaryMode = false;
-            state.__tempConv = null;
-            updateTemporaryModeUI();
+            state.conversations = state.conversations.filter(c => !c.isTemporary);
+            state.isTemporaryMode = false;
+            const btn = document.getElementById('temp-chat-btn');
+            const pill = document.getElementById('temp-mode-pill');
+            if (btn) btn.classList.remove('bg-amber-500/20', 'text-amber-600', 'dark:text-amber-300');
+            if (pill) {
+                pill.classList.add('hidden');
+                pill.classList.remove('flex');
+            }
 
-            const id = genId();
-            const conv = { id, title: 'New chat', messages: [], isTemporary: false };
+            const newId = generateId();
+            const conv = { id: newId, title: 'New chat', messages: [], isTemporary: false };
             state.conversations.unshift(conv);
-            state.activeConversationId = id;
-            syncConversationDomainUrl(conv);
-            updateHeaderTitle();
+            state.activeConversationId = newId;
+            syncConversationUrl(newId);
             renderConversationList();
             renderMessages();
 
             if (state.user) {
                 try {
                     await supabaseClient.from('nixy_conversations').insert({
-                        id,
+                        id: newId,
                         user_id: state.user.id,
                         title: conv.title
                     });
@@ -822,56 +803,8 @@
             }
         }
 
-        function toggleTemporaryMode() {
-            closeEmbeddedProfileView();
-            state.temporaryMode = !state.temporaryMode;
-            if (state.temporaryMode) {
-                const tempId = 'temp-' + genId();
-                state.__tempConv = { id: tempId, title: 'Temporary chat', messages: [], isTemporary: true };
-                state.activeConversationId = tempId;
-                try {
-                    window.history.replaceState({}, '', '/dashboard');
-                } catch (_) {}
-                showToast('Temporary chat enabled — messages are not saved to Supabase');
-            } else {
-                state.__tempConv = null;
-                const firstSaved = state.conversations.find(c => !c.isTemporary);
-                if (firstSaved) {
-                    state.activeConversationId = firstSaved.id;
-                    syncConversationDomainUrl(firstSaved);
-                } else {
-                    createNewChat();
-                    return;
-                }
-                showToast('Returned to normal saved chat');
-            }
-            updateTemporaryModeUI();
-            updateHeaderTitle();
-            renderConversationList();
-            renderMessages();
-        }
-
-        function updateTemporaryModeUI() {
-            const btn = document.getElementById('temp-chat-btn');
-            const pill = document.getElementById('temp-mode-pill');
-            if (pill) pill.classList.toggle('hidden', !state.temporaryMode);
-            if (btn) {
-                btn.classList.toggle('bg-amber-500/15', state.temporaryMode);
-                btn.classList.toggle('border-amber-500/40', state.temporaryMode);
-                btn.classList.toggle('text-amber-600', state.temporaryMode);
-                btn.classList.toggle('dark:text-amber-300', state.temporaryMode);
-            }
-        }
-
-        async function loadConversationsFromSupabase(preferredId = null) {
-            const pathMatch = window.location.pathname.match(/^\/c\/([^/]+)$/);
-            const routeChatId = pathMatch ? decodeURIComponent(pathMatch[1]) : null;
-            const lookupId = preferredId || routeChatId;
-
-            if (!state.user) {
-                await createNewChat();
-                return;
-            }
+        async function loadConversationsFromSupabase(preferredChatId = null) {
+            if (!state.user) return;
             try {
                 const { data: rows } = await supabaseClient
                     .from('nixy_conversations')
@@ -880,157 +813,82 @@
                     .order('updated_at', { ascending: false })
                     .limit(50);
 
-                const list = Array.isArray(rows)
-                    ? rows.map(r => ({
-                        id: r.id,
-                        title: r.title || 'New chat',
-                        messages: [],
-                        isTemporary: false
-                    }))
-                    : [];
+                const list = Array.isArray(rows) ? rows.map(r => ({
+                    id: r.id,
+                    title: r.title || 'New chat',
+                    messages: [],
+                    isTemporary: false
+                })) : [];
 
                 if (list.length > 0) {
-                    state.conversations = list;
-                    const target = list.find(c => c.id === lookupId) || list[0];
-                    await selectConversation(target.id);
-                } else {
-                    await createNewChat();
-                }
-            } catch (_) {
-                await createNewChat();
-            }
-        }
-
-        async function selectConversation(convId) {
-            closeEmbeddedProfileView();
-            state.temporaryMode = false;
-            state.__tempConv = null;
-            updateTemporaryModeUI();
-            state.activeConversationId = convId;
-
-            const conv = state.conversations.find(c => c.id === convId);
-            if (conv && !conv.isTemporary) {
-                syncConversationDomainUrl(conv);
-            }
-            updateHeaderTitle();
-
-            if (conv && (!conv.messages || conv.messages.length === 0) && state.user && !conv.isTemporary) {
-                try {
-                    const { data: msgRows } = await supabaseClient
+                    const target = list.find(c => c.id === preferredChatId) || list[0];
+                    const { data: msgs } = await supabaseClient
                         .from('nixy_messages')
                         .select('*')
-                        .eq('conversation_id', convId)
+                        .eq('conversation_id', target.id)
                         .order('created_at', { ascending: true });
-                    conv.messages = Array.isArray(msgRows)
-                        ? msgRows.map(m => ({
-                            role: m.role,
-                            content: m.content,
-                            imageUrl: m.image_url || '',
-                            audioUrl: m.audio_url || '',
-                            wikiData: m.wiki_data || null
-                        }))
-                        : [];
-                } catch (_) {}
-            }
 
+                    target.messages = Array.isArray(msgs) ? msgs.map(m => ({
+                        role: m.role,
+                        content: m.content,
+                        toolUsed: m.tool_used || ''
+                    })) : [];
+
+                    state.conversations = list;
+                    state.activeConversationId = target.id;
+                    syncConversationUrl(target.id);
+                } else {
+                    const id = generateId();
+                    await supabaseClient.from('nixy_conversations').insert({
+                        id,
+                        user_id: state.user.id,
+                        title: 'New chat'
+                    });
+                    state.conversations = [{ id, title: 'New chat', messages: [], isTemporary: false }];
+                    state.activeConversationId = id;
+                    syncConversationUrl(id);
+                }
+            } catch (_) {
+                if (!state.conversations.length) {
+                    const id = generateId();
+                    state.conversations = [{ id, title: 'New chat', messages: [], isTemporary: false }];
+                    state.activeConversationId = id;
+                }
+            }
             renderConversationList();
             renderMessages();
         }
 
-        async function renameConversation(convId, ev) {
-            if (ev) ev.stopPropagation();
-            const conv = state.conversations.find(c => c.id === convId);
-            if (!conv) return;
-
-            document.getElementById('rename-modal-overlay')?.remove();
-            const modal = document.createElement('div');
-            modal.id = 'rename-modal-overlay';
-            modal.className = 'fixed inset-0 z-50 bg-black/65 flex items-center justify-center p-4';
-            modal.innerHTML = `
-                <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-2xl p-4 w-full max-w-sm shadow-2xl space-y-3">
-                    <p class="text-xs font-bold">Edit conversation name</p>
-                    <input type="text" id="rename-title-input" value="${escapeHtml(conv.title || 'New chat')}" class="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
-                    <div class="flex justify-end gap-2">
-                        <button type="button" id="rename-cancel" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-codenix-card">Cancel</button>
-                        <button type="button" id="rename-save" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-codenix-600 text-white">Save</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            const input = document.getElementById('rename-title-input');
-            input?.focus();
-            input?.select();
-
-            const closeModal = () => modal.remove();
-            document.getElementById('rename-cancel')?.addEventListener('click', closeModal);
-            document.getElementById('rename-save')?.addEventListener('click', async () => {
-                const nextTitle = (input?.value || '').trim() || 'New chat';
-                conv.title = nextTitle;
-                closeModal();
-                updateHeaderTitle();
-                renderConversationList();
-                if (state.user && !conv.isTemporary) {
-                    try {
-                        await supabaseClient
-                            .from('nixy_conversations')
-                            .update({ title: nextTitle, updated_at: new Date().toISOString() })
-                            .eq('id', conv.id);
-                    } catch (_) {}
-                }
-                showToast('Conversation name updated');
-            });
-        }
-
-        async function deleteConversation(convId, ev) {
-            if (ev) ev.stopPropagation();
-            state.conversations = state.conversations.filter(c => c.id !== convId);
-            if (state.user) {
-                try {
-                    await supabaseClient.from('nixy_messages').delete().eq('conversation_id', convId);
-                    await supabaseClient.from('nixy_conversations').delete().eq('id', convId);
-                } catch (_) {}
-            }
-            if (state.activeConversationId === convId) {
-                const next = state.conversations[0];
-                if (next) {
-                    await selectConversation(next.id);
-                } else {
-                    await createNewChat();
-                }
-            } else {
-                renderConversationList();
-            }
-            showToast('Conversation deleted');
-        }
-
         function renderConversationList() {
-            sanitizeSearchInput();
-            const listEl = document.getElementById('conversation-list');
-            if (!listEl) return;
-            const query = String(document.getElementById('chat-search')?.value || '').trim().toLowerCase();
+            const container = document.getElementById('conversation-list');
+            if (!container) return;
 
-            const items = state.conversations.filter(c => {
+            const rawSearch = document.getElementById('chat-search')?.value || '';
+            const query = isEmailLike(rawSearch) ? '' : rawSearch.trim().toLowerCase();
+
+            const visible = state.conversations.filter(c => {
                 if (c.isTemporary) return false;
-                const title = String(c.title || 'New chat').toLowerCase();
-                return !query || title.includes(query);
+                if (!query) return true;
+                return String(c.title || '').toLowerCase().includes(query);
             });
 
-            if (items.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No saved chats</p>`;
+            if (visible.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No chats found.</p>`;
                 return;
             }
 
-            listEl.innerHTML = items.map(c => {
-                const active = !state.temporaryMode && c.id === state.activeConversationId;
+            container.innerHTML = visible.map(c => {
+                const active = c.id === state.activeConversationId;
                 return `
-                    <div onclick="selectConversation('${escapeHtml(c.id)}')" class="conv-item group flex items-center justify-between gap-1 px-3 py-2 rounded-xl text-xs cursor-pointer transition ${active ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 font-semibold' : 'hover:bg-zinc-200/70 dark:hover:bg-codenix-card text-zinc-700 dark:text-zinc-300'}">
-                        <span class="truncate flex-1">${escapeHtml(c.title || 'New chat')}</span>
-                        <div class="flex items-center gap-0.5 shrink-0">
-                            <button type="button" onclick="renameConversation('${escapeHtml(c.id)}', event)" title="Rename" class="conv-action-btn opacity-0 focus:opacity-100 p-1 rounded-lg text-zinc-400 hover:text-codenix-600 dark:hover:text-codenix-400 transition">
+                    <div class="conv-row group flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-xs transition ${active ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 font-semibold border border-codenix-500/30' : 'hover:bg-white dark:hover:bg-codenix-black text-zinc-700 dark:text-zinc-300'}">
+                        <button type="button" onclick="selectConversation('${escapeHtml(c.id)}')" class="flex-1 text-left truncate py-0.5">
+                            ${escapeHtml(c.title || 'New chat')}
+                        </button>
+                        <div class="conv-actions flex items-center gap-0.5 shrink-0">
+                            <button type="button" onclick="renameConversation('${escapeHtml(c.id)}')" title="Rename chat" class="p-1 rounded hover:bg-codenix-500/20 text-zinc-400 hover:text-codenix-600 dark:hover:text-codenix-300">
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             </button>
-                            <button type="button" onclick="deleteConversation('${escapeHtml(c.id)}', event)" title="Delete" class="conv-action-btn opacity-0 focus:opacity-100 p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition">
+                            <button type="button" onclick="deleteConversation('${escapeHtml(c.id)}')" title="Delete chat" class="p-1 rounded hover:bg-rose-500/20 text-zinc-400 hover:text-rose-500">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
@@ -1041,693 +899,332 @@
             if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
-        // =========================================================================
-        // EMBEDDED /u/ PROFILE VIEW
-        // =========================================================================
-        function openProfileView(skipPushState = false) {
-            state.profileViewOpen = true;
-            document.getElementById('chat-scroll-area')?.classList.add('hidden');
-            document.getElementById('embedded-profile-view')?.classList.remove('hidden');
-
-            const name = state.user?.user_metadata?.full_name || 'Codenix User';
-            const savedCount = state.conversations.filter(c => !c.isTemporary).length;
-            const activeConv = getActiveConversation();
-            const chatRoute = activeConv && !activeConv.isTemporary ? `/c/${activeConv.id}` : '/c/new';
-
-            document.getElementById('embed-profile-domain-url').textContent = `${window.location.origin}/u/`;
-            document.getElementById('embed-profile-avatar').textContent = name.charAt(0).toUpperCase();
-            document.getElementById('embed-profile-name').textContent = name;
-            document.getElementById('embed-profile-count').textContent = String(savedCount);
-            document.getElementById('embed-profile-chat-route').textContent = chatRoute;
-
-            if (!skipPushState) {
-                try {
-                    if (window.location.pathname !== '/u/') {
-                        window.history.pushState({}, '', '/u/');
-                    }
-                } catch (_) {}
-            }
-            if (window.lucide?.createIcons) window.lucide.createIcons();
-        }
-
-        function closeEmbeddedProfileView() {
-            state.profileViewOpen = false;
-            document.getElementById('embedded-profile-view')?.classList.add('hidden');
-            document.getElementById('chat-scroll-area')?.classList.remove('hidden');
-            const activeConv = getActiveConversation();
-            if (activeConv && !activeConv.isTemporary) {
-                syncConversationDomainUrl(activeConv);
-            }
-        }
-
-        function copyProfileLink() {
-            const url = `${window.location.origin}/u/`;
-            navigator.clipboard?.writeText(url).then(() => showToast('Copied /u/ profile link'));
-        }
-
-        // =========================================================================
-        // AUTONOMOUS TOOL SELECTION, WIKIPEDIA, SMART UI & PUTER.JS VOICE
-        // =========================================================================
-        function detectToolFromPrompt(text) {
-            const q = String(text || '').toLowerCase();
-            if (/\b(generate image|create image|draw an image|image of|picture of|صورة|ارسم)\b/.test(q)) {
-                return 'image_generator';
-            }
-            if (/\b(say in voice|speak this|read aloud|generate voice|voice of|text to speech|tts|بصوت|انطق)\b/.test(q)) {
-                return 'puter_voice';
-            }
-            if (/\b(qr code|qrcode|باركود)\b/.test(q)) {
-                return 'qr_generator';
-            }
-            if (/\b(html|widget|interactive card|dashboard|code|كود)\b/.test(q)) {
-                return 'smart_ui';
-            }
-            return 'general_chat';
-        }
-
-        async function fetchWikipediaSummary(topic) {
-            try {
-                const cleaned = String(topic || '')
-                    .replace(/^(what is|who is|tell me about|explain|wikipedia|ما هو|ما هي|شرح)\s+/i, '')
-                    .trim();
-                if (!cleaned || cleaned.length > 80) return null;
-                const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleaned)}`);
-                if (!res.ok) return null;
-                const data = await res.json();
-                if (!data?.extract) return null;
-                return {
-                    title: data.title || cleaned,
-                    extract: data.extract,
-                    image: data.thumbnail?.source || '',
-                    url: data.content_urls?.desktop?.page || ''
-                };
-            } catch (_) {
-                return null;
-            }
-        }
-
-        async function generateImageAuto(promptText) {
-            const clean = String(promptText || '')
-                .replace(/^(generate image|create image|draw an image|image of|picture of)\s*(of|for)?\s*/i, '')
-                .trim() || promptText;
-
-            try {
-                const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'image', prompt: clean })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data?.url) return data.url;
-                }
-            } catch (_) {}
-
-            if (window.puter?.ai?.txt2img) {
-                try {
-                    const img = await window.puter.ai.txt2img(clean);
-                    if (img?.src) return img.src;
-                } catch (_) {}
-            }
-
-            return `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=768&height=512&nologo=true&seed=${Date.now()}`;
-        }
-
-        async function generateVoiceWithPuter(promptText) {
-            const phrase = String(promptText || '')
-                .replace(/^(say in voice|speak this|read aloud|generate voice|voice of|text to speech|tts)\s*:?\s*/i, '')
-                .trim() || 'Hello from Codenix!';
-
-            let audioUrl = '';
-            if (window.puter?.ai?.txt2speech) {
-                try {
-                    const out = await window.puter.ai.txt2speech(phrase);
-                    if (typeof out === 'string') {
-                        audioUrl = out;
-                    } else if (out?.src) {
-                        audioUrl = out.src;
-                    } else if (out && typeof out.play === 'function') {
-                        out.play();
-                    }
-                } catch (_) {}
-            }
-
-            if (!audioUrl && 'speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(phrase);
-                u.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
-                window.speechSynthesis.speak(u);
-            }
-
-            return { phrase, audioUrl };
-        }
-
-        async function generateChatReply(messages) {
-            const payload = [{ role: 'system', content: NIXY_SYSTEM_PROMPT }, ...messages];
-
-            try {
-                const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'chat', messages: payload })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data?.text) return String(data.text);
-                }
-            } catch (_) {}
-
-            if (window.puter?.ai?.chat) {
-                try {
-                    const r = await window.puter.ai.chat(payload);
-                    const out = typeof r === 'string' ? r : (r?.message?.content || r?.result?.content || r?.text || '');
-                    if (out) return String(out);
-                } catch (_) {}
-            }
-
-            const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
-            return `Here is an interactive summary for **${escapeHtml(lastUser)}**:\n\n\`\`\`html\n<div style="padding:14px;border-radius:12px;background:#f5f3ff;color:#3b0764;font-family:sans-serif;">\n  <strong>Interactive Widget</strong>\n  <p style="margin:6px 0 0;font-size:13px;">Click Preview to inspect this interactive HTML block in the side canvas.</p>\n</div>\n\`\`\``;
-        }
-
-        // =========================================================================
-        // SEND MESSAGE & RENDERING (Smart UI: Wikipedia + Icons + Interactive HTML)
-        // =========================================================================
-        function handlePromptKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-            }
-        }
-
-        function autoResize(el) {
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
-        }
-
-        function quickPrompt(text) {
-            const input = document.getElementById('prompt-input');
-            if (!input) return;
-            input.value = text;
-            autoResize(input);
-            handleSend();
-        }
-
-        function handleFilesPicked(e) {
-            const files = Array.from(e.target?.files || []);
-            state.attachments.push(...files);
-            renderAttachments();
-            e.target.value = '';
-        }
-
-        function renderAttachments() {
-            const bar = document.getElementById('attachments-bar');
-            if (!bar) return;
-            if (!state.attachments.length) {
-                bar.classList.add('hidden');
-                bar.innerHTML = '';
-                return;
-            }
-            bar.classList.remove('hidden');
-            bar.classList.add('flex');
-            bar.innerHTML = state.attachments.map((f, idx) => `
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-[11px] font-medium">
-                    <span class="truncate max-w-[140px]">${escapeHtml(f.name)}</span>
-                    <button type="button" onclick="removeAttachment(${idx})" class="text-zinc-400 hover:text-rose-500">×</button>
-                </span>
-            `).join('');
-        }
-
-        function removeAttachment(idx) {
-            state.attachments.splice(idx, 1);
-            renderAttachments();
-        }
-
-        async function handleSend() {
-            if (state.isSending) return;
-            closeEmbeddedProfileView();
-
-            const input = document.getElementById('prompt-input');
-            const raw = (input?.value || '').trim();
-            const fileNames = state.attachments.map(f => f.name);
-            const promptText = fileNames.length
-                ? `${raw}\n\n[Files: ${fileNames.join(', ')}]`.trim()
-                : raw;
-
-            if (!promptText) return;
-
-            let conv = getActiveConversation();
-            if (!conv) {
-                await createNewChat();
-                conv = getActiveConversation();
-            }
-
-            if (conv.title === 'New chat' && raw) {
-                conv.title = raw.slice(0, 42);
-                updateHeaderTitle();
-                if (!conv.isTemporary) {
-                    syncConversationDomainUrl(conv);
-                    renderConversationList();
-                }
-            }
-
-            const tool = detectToolFromPrompt(promptText);
-            conv.messages.push({ role: 'user', content: promptText });
-            state.attachments = [];
-            renderAttachments();
-            if (input) {
-                input.value = '';
-                autoResize(input);
-            }
-            renderMessages();
-
-            state.isSending = true;
-            const indicator = document.getElementById('thinking-indicator');
-            const statusText = document.getElementById('thinking-status-text');
-            if (statusText) statusText.textContent = tool === 'image_generator' ? 'Generating image...' : (tool === 'puter_voice' ? 'Generating voice...' : 'Thinking...');
-            if (indicator) {
-                indicator.classList.remove('hidden');
-                indicator.classList.add('flex');
-            }
-
-            try {
-                if (!conv.isTemporary && state.user) {
-                    try {
-                        await supabaseClient.from('nixy_messages').insert({
-                            conversation_id: conv.id,
-                            user_id: state.user.id,
-                            role: 'user',
-                            content: promptText
-                        });
-                        await supabaseClient.from('nixy_conversations')
-                            .update({ title: conv.title, updated_at: new Date().toISOString() })
-                            .eq('id', conv.id);
-                    } catch (_) {}
-                }
-
-                const assistantMsg = { role: 'assistant', content: '', imageUrl: '', audioUrl: '', qrValue: '', wikiData: null };
-
-                if (tool === 'image_generator') {
-                    assistantMsg.imageUrl = await generateImageAuto(promptText);
-                    assistantMsg.content = `Generated image for **${escapeHtml(promptText)}**.`;
-                } else if (tool === 'puter_voice') {
-                    const voiceOut = await generateVoiceWithPuter(promptText);
-                    assistantMsg.audioUrl = voiceOut.audioUrl || '';
-                    assistantMsg.content = `Spoken with Puter.js: "${escapeHtml(voiceOut.phrase)}"`;
-                } else if (tool === 'qr_generator') {
-                    const qrPayload = promptText.replace(/^(qr code|qrcode|باركود)\s*(for|of)?\s*/i, '').trim() || promptText;
-                    assistantMsg.qrValue = qrPayload;
-                    assistantMsg.content = `QR code generated for \`${escapeHtml(qrPayload)}\`.`;
-                } else {
-                    const [replyText, wikiData] = await Promise.all([
-                        generateChatReply(conv.messages),
-                        fetchWikipediaSummary(promptText)
-                    ]);
-                    assistantMsg.content = replyText;
-                    assistantMsg.wikiData = wikiData;
-                }
-
-                conv.messages.push(assistantMsg);
-
-                if (!conv.isTemporary && state.user) {
-                    try {
-                        await supabaseClient.from('nixy_messages').insert({
-                            conversation_id: conv.id,
-                            user_id: state.user.id,
-                            role: 'assistant',
-                            content: assistantMsg.content,
-                            image_url: assistantMsg.imageUrl || '',
-                            audio_url: assistantMsg.audioUrl || '',
-                            wiki_data: assistantMsg.wikiData || null
-                        });
-                    } catch (_) {}
-                }
-            } catch (_) {
-                conv.messages.push({ role: 'assistant', content: 'Unable to complete that request right now.' });
-            } finally {
-                state.isSending = false;
-                if (indicator) {
-                    indicator.classList.add('hidden');
-                    indicator.classList.remove('flex');
-                }
-                renderMessages();
-            }
-        }
-
-        function renderMessages() {
-            const feed = document.getElementById('messages-feed');
-            const hero = document.getElementById('welcome-hero');
-            if (!feed) return;
-
-            const conv = getActiveConversation();
-            const msgs = conv?.messages || [];
-
-            if (hero) hero.classList.toggle('hidden', msgs.length > 0);
-            if (!msgs.length) {
-                feed.innerHTML = '';
-                return;
-            }
-
-            window.__codeBlocks = [];
-            window.__assistantTexts = [];
-            const qrTargets = [];
-
-            feed.innerHTML = msgs.map((m, idx) => {
-                if (m.role === 'user') {
-                    return `
-                        <div class="flex justify-end">
-                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 bg-codenix-600 text-white text-xs sm:text-sm">
-                                <p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(m.content || '')}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                const msgStoreIdx = window.__assistantTexts.push(String(m.content || '')) - 1;
-                const bodyHtml = formatSmartAssistantBody(String(m.content || ''));
-
-                let wikiCard = '';
-                if (m.wikiData?.extract) {
-                    wikiCard = `
-                        <div class="mt-3 p-3 rounded-2xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border flex items-start gap-3">
-                            ${m.wikiData.image ? `<img src="${escapeHtml(m.wikiData.image)}" alt="${escapeHtml(m.wikiData.title)}" onerror="this.remove()" class="w-16 h-16 rounded-xl object-cover shrink-0">` : ''}
-                            <div class="min-w-0 flex-1 space-y-1">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-xs font-bold truncate flex items-center gap-1"><i data-lucide="book-open" class="w-3.5 h-3.5 text-codenix-500"></i>${escapeHtml(m.wikiData.title)}</span>
-                                    ${m.wikiData.url ? `<a href="${escapeHtml(m.wikiData.url)}" target="_blank" rel="noopener" class="text-[10px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline shrink-0">Wikipedia</a>` : ''}
-                                </div>
-                                <p class="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed line-clamp-3">${escapeHtml(m.wikiData.extract)}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                let mediaHtml = '';
-                if (m.imageUrl) {
-                    mediaHtml += `
-                        <div class="mt-3 space-y-2">
-                            <img src="${escapeHtml(m.imageUrl)}" alt="Generated" onerror="this.style.display='none'" class="max-w-sm w-full rounded-2xl border border-zinc-200 dark:border-codenix-border object-contain">
-                            <a href="${escapeHtml(m.imageUrl)}" download="codenix-image.png" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-codenix-600 text-white text-[11px] font-semibold">Download image</a>
-                        </div>
-                    `;
-                }
-                if (m.audioUrl) {
-                    mediaHtml += `
-                        <div class="mt-3 p-2.5 rounded-2xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border space-y-1.5">
-                            <audio controls src="${escapeHtml(m.audioUrl)}" class="w-full h-9"></audio>
-                        </div>
-                    `;
-                }
-                if (m.qrValue) {
-                    const qrId = `qr-box-${idx}`;
-                    qrTargets.push({ id: qrId, value: m.qrValue });
-                    mediaHtml += `<div id="${qrId}" class="mt-3 p-3 rounded-2xl bg-white inline-block"></div>`;
-                }
-
-                const voteUpClass = m.reaction === 'up' ? 'text-codenix-600 dark:text-codenix-400 bg-codenix-600/15' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200';
-                const voteDownClass = m.reaction === 'down' ? 'text-rose-500 bg-rose-500/15' : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200';
-
-                return `
-                    <div class="flex items-start gap-3">
-                        <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 rounded-lg object-contain shrink-0 mt-1">
-                        <div class="max-w-[90%] flex-1 space-y-1.5">
-                            <div class="rounded-2xl rounded-tl-sm px-4 py-3 bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-xs sm:text-sm">
-                                <div class="prose dark:prose-invert max-w-none">${bodyHtml}</div>
-                                ${wikiCard}
-                                ${mediaHtml}
-                            </div>
-
-                            <!-- Message Action Row: Copy, Thumbs Up/Down, Listen, Share, More -->
-                            <div class="relative flex items-center gap-1 px-1">
-                                <button type="button" onclick="copyAssistantReply(${msgStoreIdx})" title="Copy" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="rateAssistantReply(${idx}, 'up')" title="Good response" class="p-1.5 rounded-lg ${voteUpClass} hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                                    <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="rateAssistantReply(${idx}, 'down')" title="Bad response" class="p-1.5 rounded-lg ${voteDownClass} hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                                    <i data-lucide="thumbs-down" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="speakAssistantReply(${msgStoreIdx})" title="Read aloud" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="openShareModal()" title="Share" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                                    <i data-lucide="share" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="toggleReplyMoreMenu(${idx})" title="More actions" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-codenix-card transition">
-                                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
-                                </button>
-
-                                <div id="reply-more-menu-${idx}" class="hidden absolute left-0 top-8 z-30 w-44 rounded-xl bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border shadow-xl p-1 text-xs">
-                                    <button type="button" onclick="downloadAssistantReplyText(${msgStoreIdx}); toggleReplyMoreMenu(${idx})" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-card transition">Download text</button>
-                                    <button type="button" onclick="openVoiceMode(); toggleReplyMoreMenu(${idx})" class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-card transition">Open Voice Mode</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            qrTargets.forEach(item => {
-                const target = document.getElementById(item.id);
-                if (target && window.QRCode) {
-                    target.innerHTML = '';
-                    new window.QRCode(target, { text: item.value, width: 128, height: 128 });
-                }
-            });
-
-            if (window.hljs?.highlightAll) {
-                try { window.hljs.highlightAll(); } catch (_) {}
-            }
-            if (window.lucide?.createIcons) window.lucide.createIcons();
-
-            const scroll = document.getElementById('chat-scroll-area');
-            if (scroll) scroll.scrollTop = scroll.scrollHeight;
-        }
-
-        function formatSmartAssistantBody(markdown) {
+        function formatSmartResponseHtml(rawMarkdown) {
             const blocks = [];
-            const withTokens = String(markdown || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+            const tokenized = String(rawMarkdown || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
                 const cleanLang = (lang || 'code').trim().toLowerCase();
-                const idx = window.__codeBlocks.push({ lang: cleanLang, code: String(code || '').replace(/\n$/, '') }) - 1;
-                const token = `@@BLOCK_${idx}@@`;
-                blocks.push({ token, idx, lang: cleanLang });
+                const snippetIdx = window.__codeSnippets.push({
+                    lang: cleanLang,
+                    code: String(code || '').replace(/\n$/, '')
+                }) - 1;
+                const token = `@@CODENIX_BLOCK_${blocks.length}@@`;
+                blocks.push({ token, snippetIdx, lang: cleanLang });
                 return token;
             });
 
-            let html = window.marked?.parse ? window.marked.parse(withTokens) : `<p>${escapeHtml(withTokens)}</p>`;
-
-            // Replace inline :icon-name: tokens with Lucide icons
-            html = html.replace(/:([a-z0-9-]+):/gi, (_, iconName) => {
-                return `<i data-lucide="${escapeHtml(iconName.toLowerCase())}" class="inline w-4 h-4 text-codenix-600 dark:text-codenix-400 align-text-bottom"></i>`;
+            let html = window.marked?.parse ? window.marked.parse(tokenized) : `<p>${escapeHtml(tokenized)}</p>`;
+            html = html.replace(/\[icon:([a-z0-9-]+)\]/gi, (_, iconName) => {
+                return `<i data-lucide="${escapeHtml(iconName.toLowerCase())}" class="inline-block w-4 h-4 align-text-bottom text-codenix-600 dark:text-codenix-400"></i>`;
             });
 
             blocks.forEach(b => {
-                const snippet = window.__codeBlocks[b.idx];
-                const canPreview = ['html', 'htm', 'svg'].includes(b.lang) || /<div|<button|<svg|<canvas|<section/i.test(snippet.code);
-                const card = `
-                    <div class="code-card not-prose">
-                        <div class="code-card-header">
-                            <span>${escapeHtml(b.lang)}</span>
-                            <div class="flex items-center gap-1.5">
-                                ${canPreview ? `<button type="button" onclick="openCodeInCanvas(${b.idx})" class="px-2 py-0.5 rounded bg-codenix-600 text-white font-sans text-[11px] font-semibold">Interactive Preview</button>` : ''}
-                                <button type="button" onclick="copyCodeBlock(${b.idx})" class="px-2 py-0.5 rounded bg-white/10 text-white font-sans text-[11px]">Copy</button>
+                const isInlineSmartUi = ['html', 'htm', 'svg'].includes(b.lang);
+                const card = isInlineSmartUi
+                    ? `
+                        <div class="my-3 rounded-2xl border border-codenix-200 dark:border-codenix-border bg-white dark:bg-codenix-panel overflow-hidden not-prose">
+                            <div class="flex items-center justify-end gap-1.5 px-3 py-1.5 bg-codenix-50/80 dark:bg-codenix-black/60 border-b border-codenix-200 dark:border-codenix-border">
+                                <button type="button" onclick="openSnippetInCanvas(${b.snippetIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">Expand</button>
+                                <button type="button" onclick="copySnippet(${b.snippetIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold transition">Copy</button>
                             </div>
+                            <iframe data-smart-ui-idx="${b.snippetIdx}" sandbox="allow-scripts allow-forms allow-modals" class="w-full min-h-[260px] bg-white border-none block"></iframe>
                         </div>
-                        <pre class="!m-0 !p-3.5 overflow-x-auto"><code class="language-${escapeHtml(b.lang)}">${escapeHtml(snippet.code)}</code></pre>
-                    </div>
-                `;
+                    `
+                    : `
+                        <div class="nix-code-card not-prose">
+                            <div class="nix-code-header">
+                                <span>${escapeHtml(b.lang)}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="copySnippet(${b.snippetIdx})" class="nix-code-btn">Copy</button>
+                                </div>
+                            </div>
+                            <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(b.lang)}">${escapeHtml(window.__codeSnippets[b.snippetIdx].code)}</code></pre>
+                        </div>
+                    `;
                 html = html.replace(new RegExp(`<p>\\s*${b.token}\\s*</p>|${b.token}`), card);
             });
 
             return html;
         }
-
-        function openCodeInCanvas(idx) {
-            const item = window.__codeBlocks?.[idx];
-            if (!item) return;
-            const canvas = document.getElementById('code-canvas');
-            const editor = document.getElementById('canvas-code-view');
-            if (!canvas) return;
-            canvas.classList.remove('hidden');
-            canvas.classList.add('flex');
-            if (editor) editor.value = item.code;
-            renderCanvasFrame(item.code);
-            switchCanvasTab('preview');
+        function buildSmartUiFrameDocument(code) {
+            const safeStorageShim = `<script>(function(){try{window.localStorage;window.sessionStorage;}catch(_){const mem={};const store={getItem:k=>mem[k]??null,setItem:(k,v)=>{mem[k]=String(v);},removeItem:k=>{delete mem[k];},clear:()=>{for(const k in mem)delete mem[k];}};try{Object.defineProperty(window,'localStorage',{value:store});}catch(_2){}try{Object.defineProperty(window,'sessionStorage',{value:store});}catch(_3){}}})();<\/script>`;
+            return /<html[\s>]|<!doctype html/i.test(code)
+                ? code.replace(/<head(\s[^>]*)?>/i, m => `${m}${safeStorageShim}`)
+                : `<!DOCTYPE html><html><head><meta charset="UTF-8">${safeStorageShim}<style>body{font-family:Inter,system-ui,sans-serif;padding:16px;margin:0;color:#111827;}</style></head><body>${code}</body></html>`;
         }
 
-        function updateLiveCanvasFromEditor() {
-            const editor = document.getElementById('canvas-code-view');
-            if (editor) renderCanvasFrame(editor.value);
-        }
-
-        function renderCanvasFrame(code) {
+        function renderCanvasIframe(code) {
             const frame = document.getElementById('canvas-preview-frame');
             if (!frame) return;
-            const doc = /<html[\s>]|<!doctype html/i.test(code)
-                ? code
-                : `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Inter,system-ui,sans-serif;padding:16px;margin:0;}</style></head><body>${code}</body></html>`;
-            frame.srcdoc = doc;
+            frame.srcdoc = buildSmartUiFrameDocument(code);
+        }
+
+        function openSnippetInCanvas(snippetIdx) {
+            const snippet = window.__codeSnippets?.[snippetIdx];
+            if (!snippet) return;
+            const pane = document.getElementById('live-canvas-pane');
+            const editor = document.getElementById('canvas-code-editor');
+            if (!pane) return;
+            pane.classList.remove('hidden');
+            pane.classList.add('flex');
+            if (editor) editor.value = snippet.code;
+            renderCanvasIframe(snippet.code);
+            switchCanvasTab('preview');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
         function switchCanvasTab(tab) {
+            const previewBtn = document.getElementById('canvas-tab-preview');
+            const codeBtn = document.getElementById('canvas-tab-code');
+            const frame = document.getElementById('canvas-preview-frame');
+            const editor = document.getElementById('canvas-code-editor');
             const isPreview = tab === 'preview';
-            document.getElementById('canvas-preview-frame')?.classList.toggle('hidden', !isPreview);
-            document.getElementById('canvas-code-view')?.classList.toggle('hidden', isPreview);
-            document.getElementById('canvas-tab-preview')?.classList.toggle('bg-codenix-600', isPreview);
-            document.getElementById('canvas-tab-preview')?.classList.toggle('text-white', isPreview);
-            document.getElementById('canvas-tab-code')?.classList.toggle('bg-codenix-600', !isPreview);
-            document.getElementById('canvas-tab-code')?.classList.toggle('text-white', !isPreview);
+            frame?.classList.toggle('hidden', !isPreview);
+            editor?.classList.toggle('hidden', isPreview);
+            if (previewBtn) previewBtn.className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500 dark:text-zinc-400'}`;
+            if (codeBtn) codeBtn.className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${!isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500 dark:text-zinc-400'}`;
         }
 
-        function closeCodeCanvas() {
-            const canvas = document.getElementById('code-canvas');
-            canvas?.classList.add('hidden');
-            canvas?.classList.remove('flex');
+        function syncCanvasCodeToPreview() {
+            const editor = document.getElementById('canvas-code-editor');
+            if (editor) renderCanvasIframe(editor.value);
         }
 
-        function copyCodeBlock(idx) {
-            const item = window.__codeBlocks?.[idx];
-            if (!item) return;
-            navigator.clipboard?.writeText(item.code).then(() => showToast('Code copied'));
+        function closeCanvasPane() {
+            const pane = document.getElementById('live-canvas-pane');
+            pane?.classList.add('hidden');
+            pane?.classList.remove('flex');
         }
 
-        function copyAssistantReply(idx) {
-            const raw = window.__assistantTexts?.[idx] || '';
-            navigator.clipboard?.writeText(raw).then(() => showToast('Copied response'));
+        function copySnippet(snippetIdx) {
+            const snippet = window.__codeSnippets?.[snippetIdx];
+            if (!snippet) return;
+            copyTextSafe(snippet.code, 'Code copied');
+        }
+
+        function copyAssistantReply(msgStoreIdx) {
+            const text = window.__assistantTexts?.[msgStoreIdx] || '';
+            copyTextSafe(text, 'Response copied');
         }
 
         function rateAssistantReply(msgIdx, dir) {
-            const conv = getActiveConversation();
-            if (!conv?.messages?.[msgIdx]) return;
-            const current = conv.messages[msgIdx].reaction;
-            conv.messages[msgIdx].reaction = current === dir ? null : dir;
+            state.messageVotes[msgIdx] = state.messageVotes[msgIdx] === dir ? null : dir;
             renderMessages();
         }
 
-        async function speakAssistantReply(idx) {
-            const raw = window.__assistantTexts?.[idx] || '';
-            const plain = raw.replace(/```[\s\S]*?```/g, '').replace(/[#*`]/g, '').trim();
-            if (!plain) return;
-            showToast('Playing audio...');
-            await speakVoiceReply(plain);
+        async function speakAssistantReply(msgStoreIdx) {
+            const text = window.__assistantTexts?.[msgStoreIdx] || '';
+            if (!text) return;
+            await generateVoiceWithPuter(text.slice(0, 420), true);
+        }
+
+        function shareSingleReply(msgStoreIdx) {
+            const text = window.__assistantTexts?.[msgStoreIdx] || '';
+            if (!text) return;
+            copyTextSafe(text, 'Response copied to share');
         }
 
         function toggleReplyMoreMenu(msgIdx) {
-            const menu = document.getElementById(`reply-more-menu-${msgIdx}`);
-            if (!menu) return;
-            document.querySelectorAll('[id^="reply-more-menu-"]').forEach(el => {
-                if (el.id !== `reply-more-menu-${msgIdx}`) el.classList.add('hidden');
-            });
-            menu.classList.toggle('hidden');
+            document.getElementById(`reply-more-menu-${msgIdx}`)?.classList.toggle('hidden');
         }
 
-        function downloadAssistantReplyText(idx) {
-            const raw = window.__assistantTexts?.[idx] || '';
-            const blob = new Blob([raw], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
+        async function regenerateLastReply() {
+            if (state.isSending) return;
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            if (!conv || !conv.messages.length) return;
+            while (conv.messages.length && conv.messages[conv.messages.length - 1].role === 'assistant') {
+                conv.messages.pop();
+            }
+            const lastUser = [...conv.messages].reverse().find(m => m.role === 'user');
+            if (!lastUser) return;
+            conv.messages.pop();
+            renderMessages();
+            const input = document.getElementById('prompt-input');
+            if (input) {
+                input.value = lastUser.content;
+                handleSendPrompt();
+            }
+        }
+
+        function downloadReplyAsPdf(msgStoreIdx) {
+            const text = window.__assistantTexts?.[msgStoreIdx] || '';
+            if (!text) return;
+            const dataUrl = createPdfDocumentDataUrl('Codenix Response', text);
+            if (!dataUrl) {
+                showToast('PDF generator unavailable.');
+                return;
+            }
             const a = document.createElement('a');
-            a.href = url;
-            a.download = 'codenix-response.txt';
+            a.href = dataUrl;
+            a.download = 'codenix-response.pdf';
             a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
-        // =========================================================================
-        // LIBRARY & PLUGINS (Google Sheet + Built-in Tools)
-        // =========================================================================
-        async function loadLibraryItems() {
-            const builtIn = [
-                { name: 'NixCode Studio', section: 'Plugin', url: '/NixCode' },
-                { name: 'Voice Companion', section: 'Plugin', action: 'openVoiceMode()' }
-            ];
-            const sheetItems = [];
+        function copyTextSafe(text, toastMsg = 'Copied') {
+            if (!text) return;
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast(toastMsg)).catch(() => fallbackCopy(text, toastMsg));
+            } else {
+                fallbackCopy(text, toastMsg);
+            }
+        }
 
+        function fallbackCopy(text, toastMsg = 'Copied') {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showToast(toastMsg);
+            } catch (_) {
+                showToast('Copy failed.');
+            }
+        }
+
+        async function loadLibraryFromGoogleSheet() {
             try {
                 const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
                 const res = await fetch(url);
-                const raw = await res.text();
-                const s = raw.indexOf('({') + 1;
-                const e = raw.lastIndexOf('})') + 1;
-                const parsed = JSON.parse(raw.slice(s, e));
-                const rows = parsed?.table?.rows || [];
+                const text = await res.text();
+                const start = text.indexOf('({') + 1;
+                const end = text.lastIndexOf('})') + 1;
+                if (start <= 0 || end <= start) return;
+                const json = JSON.parse(text.slice(start, end));
+                const rows = json?.table?.rows || [];
+                const items = [];
 
-                rows.forEach(r => {
-                    const c = r.c || [];
-                    const val = (i) => (c[i] ? (c[i].v ?? c[i].f ?? '') : '');
-                    const sec = String(val(0) || '').trim();
-                    if (!sec || sec.toLowerCase() === 'section type') return;
-                    for (let i = 1; i + 1 < c.length; i += 3) {
+                rows.forEach(row => {
+                    const cells = row.c || [];
+                    const val = (i) => (cells[i] ? (cells[i].v ?? cells[i].f ?? '') : '');
+                    const section = String(val(0) || '').trim();
+                    if (!section || section.toLowerCase() === 'section type') return;
+                    for (let i = 1; i + 1 < cells.length; i += 3) {
                         const name = String(val(i) || '').trim();
                         const link = String(val(i + 1) || '').trim();
                         if (name) {
-                            sheetItems.push({ name, section: sec, url: link || '#' });
+                            items.push({ section, name, url: link || '#' });
                         }
                     }
                 });
-            } catch (_) {}
 
-            state.libraryItems = [...builtIn, ...sheetItems];
-            const countBadge = document.getElementById('library-badge-count');
-            if (countBadge) countBadge.textContent = String(state.libraryItems.length);
-            renderLibraryGrid();
+                state.sheetTools = items;
+                const badge = document.getElementById('library-badge-count');
+                if (badge) badge.textContent = String(items.length);
+                renderLibraryModalGrid();
+            } catch (_) {}
         }
 
-        function renderLibraryGrid() {
-            const grid = document.getElementById('library-grid');
+        function renderLibraryModalGrid() {
+            const grid = document.getElementById('library-items-grid');
             if (!grid) return;
-            grid.innerHTML = state.libraryItems.map(item => {
-                if (item.action) {
-                    return `
-                        <button type="button" onclick="closeLibraryModal(); ${item.action}" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border text-left transition">
-                            <p class="text-xs font-bold truncate">${escapeHtml(item.name)}</p>
-                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">${escapeHtml(item.section)}</p>
-                        </button>
-                    `;
-                }
-                return `
-                    <a href="${escapeHtml(item.url)}" class="block p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card hover:border-codenix-500 border border-zinc-200 dark:border-codenix-border transition">
+            if (!state.sheetTools.length) {
+                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-400 text-center py-6">No library plugins found.</p>`;
+                return;
+            }
+            grid.innerHTML = state.sheetTools.map(item => `
+                <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0">
                         <p class="text-xs font-bold truncate">${escapeHtml(item.name)}</p>
-                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">${escapeHtml(item.section)}</p>
-                    </a>
-                `;
-            }).join('');
+                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(item.section)}</p>
+                    </div>
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
+                </a>
+            `).join('');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
         function openLibraryModal() {
-            renderLibraryGrid();
-            openModal('library-modal');
+            if (!state.sheetTools.length) loadLibraryFromGoogleSheet();
+            renderLibraryModalGrid();
+            const m = document.getElementById('library-modal');
+            m?.classList.remove('hidden');
+            m?.classList.add('flex');
         }
 
         function closeLibraryModal() {
-            closeModal('library-modal');
+            const m = document.getElementById('library-modal');
+            m?.classList.add('hidden');
+            m?.classList.remove('flex');
         }
 
-        // =========================================================================
-        // SETTINGS & SHARE CONVERSATION
-        // =========================================================================
+        function openProfileEmbeddedView() {
+            const user = state.user;
+            const displayName = user?.user_metadata?.full_name || user?.email || 'Codenix Member';
+            const profileSlug = encodeURIComponent((user?.id || 'member').slice(0, 12));
+            const profileUrl = `${APP_BASE_URL}/u/${profileSlug}`;
+
+            document.getElementById('profile-modal-avatar').textContent = displayName.charAt(0).toUpperCase();
+            document.getElementById('profile-modal-name').textContent = displayName;
+            document.getElementById('profile-modal-email').textContent = user?.email || '';
+            document.getElementById('profile-saved-count').textContent = String(state.conversations.filter(c => !c.isTemporary).length);
+            document.getElementById('profile-route-url').textContent = profileUrl;
+
+            try {
+                window.history.pushState({ profile: true }, '', `/dashboard/u/${profileSlug}`);
+            } catch (_) {}
+
+            const modal = document.getElementById('profile-modal');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
+            if (state.activeConversationId) {
+                syncConversationUrl(state.activeConversationId);
+            } else {
+                try { window.history.replaceState({}, '', APP_BASE_URL); } catch (_) {}
+            }
+        }
+
+        function copyProfileRouteLink() {
+            const text = document.getElementById('profile-route-url')?.textContent || '';
+            if (!text) return;
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast('Profile link copied!')).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
         function openSettingsModal() {
-            openModal('settings-modal');
+            const m = document.getElementById('settings-modal');
+            m?.classList.remove('hidden');
+            m?.classList.add('flex');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
         function closeSettingsModal() {
-            closeModal('settings-modal');
+            const m = document.getElementById('settings-modal');
+            m?.classList.add('hidden');
+            m?.classList.remove('flex');
         }
 
         function openShareModal() {
-            document.getElementById('share-link-box')?.classList.add('hidden');
-            openModal('share-modal');
+            document.getElementById('share-result-box')?.classList.add('hidden');
+            const m = document.getElementById('share-modal');
+            m?.classList.remove('hidden');
+            m?.classList.add('flex');
         }
 
         function closeShareModal() {
-            closeModal('share-modal');
+            const m = document.getElementById('share-modal');
+            m?.classList.add('hidden');
+            m?.classList.remove('flex');
         }
 
-        async function createShareLink() {
-            const conv = getActiveConversation();
-            if (!conv || !state.user) return;
+        async function publishSharedConversation() {
             const pin = (document.getElementById('share-pin-input')?.value || '').trim();
-            const slug = 'c-' + Math.random().toString(36).slice(2, 9);
-
+            if (pin && pin.length < 4) {
+                showToast('PIN must be 4-8 digits.');
+                return;
+            }
+            const conv = state.conversations.find(c => c.id === state.activeConversationId);
+            if (!conv || !state.user) return;
+            const slug = 'share-' + Math.random().toString(36).slice(2, 9);
             try {
                 await supabaseClient.from('nixy_shared_chats').insert({
                     slug,
@@ -1737,23 +1234,23 @@
                     title: conv.title,
                     messages_snapshot: conv.messages
                 });
-                const url = `${CODENIX_DOMAIN_BASE}?share=${encodeURIComponent(slug)}`;
-                document.getElementById('share-link-input').value = url;
-                document.getElementById('share-link-box').classList.remove('hidden');
-                showToast('Share link ready');
+                const url = `${APP_BASE_URL}?share=${slug}`;
+                document.getElementById('share-link-output').value = url;
+                document.getElementById('share-result-box').classList.remove('hidden');
+                showToast('Share link generated!');
             } catch (_) {
-                showToast('Unable to generate share link');
+                showToast('Could not generate share link.');
             }
         }
 
-        function copyShareLink() {
-            const input = document.getElementById('share-link-input');
-            if (!input) return;
-            navigator.clipboard?.writeText(input.value).then(() => showToast('Link copied'));
+        function copyShareUrl() {
+            const input = document.getElementById('share-link-output');
+            if (!input?.value) return;
+            fallbackCopy(input.value);
         }
 
-        async function unlockSharedChatWithPin() {
-            const pin = (document.getElementById('shared-unlock-pin')?.value || '').trim();
+        async function verifySharedPin() {
+            const pin = (document.getElementById('unlock-pin-input')?.value || '').trim();
             const slug = window.__pendingShareSlug;
             if (!slug) return;
             try {
@@ -1762,57 +1259,131 @@
                     .select('*')
                     .eq('slug', slug)
                     .maybeSingle();
-                if (!data || (data.pin_code && data.pin_code !== pin)) {
-                    showToast('Invalid PIN');
+                if (!data) {
+                    showToast('Shared chat not found.');
                     return;
                 }
-                closeModal('shared-pin-modal');
+                if (data.pin_code && data.pin_code !== pin) {
+                    showToast('Incorrect PIN.');
+                    return;
+                }
+                document.getElementById('pin-unlock-modal').classList.add('hidden');
                 state.conversations = [{
                     id: data.conversation_id || slug,
-                    title: data.title || 'Shared chat',
+                    title: data.title || 'Shared Chat',
                     messages: data.messages_snapshot || [],
                     isTemporary: true
                 }];
                 state.activeConversationId = state.conversations[0].id;
-                updateHeaderTitle();
+                renderConversationList();
                 renderMessages();
             } catch (_) {
-                showToast('Could not open shared chat');
+                showToast('Unable to open shared chat.');
             }
         }
 
         // =========================================================================
-        // UI HELPERS
+        // VOICE COMPANION MODE
         // =========================================================================
-        function openModal(id) {
-            const m = document.getElementById(id);
+        let voiceRecognition = null;
+        let voiceMuted = false;
+
+        function openVoiceCompanionModal() {
+            const m = document.getElementById('voice-modal');
             m?.classList.remove('hidden');
             m?.classList.add('flex');
             if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
-        function closeModal(id) {
-            const m = document.getElementById(id);
+        function closeVoiceCompanionModal() {
+            if (voiceRecognition) {
+                try { voiceRecognition.stop(); } catch (_) {}
+                voiceRecognition = null;
+            }
+            const m = document.getElementById('voice-modal');
             m?.classList.add('hidden');
             m?.classList.remove('flex');
         }
 
+        function toggleVoiceMicRecognition() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const statusEl = document.getElementById('voice-status-label');
+            const captionEl = document.getElementById('voice-caption-text');
+            const ringEl = document.getElementById('voice-pulse-ring');
+
+            if (!SpeechRec) {
+                if (captionEl) captionEl.textContent = 'Speech recognition is not supported in this browser.';
+                return;
+            }
+
+            if (voiceRecognition) {
+                voiceRecognition.stop();
+                voiceRecognition = null;
+                ringEl?.classList.add('hidden');
+                if (statusEl) statusEl.textContent = 'Tap Mic to Speak';
+                return;
+            }
+
+            voiceRecognition = new SpeechRec();
+            voiceRecognition.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
+            ringEl?.classList.remove('hidden');
+            if (statusEl) statusEl.textContent = 'Listening...';
+
+            voiceRecognition.onresult = async (ev) => {
+                const spoken = ev.results?.[0]?.[0]?.transcript || '';
+                if (!spoken) return;
+                if (captionEl) captionEl.textContent = `You: "${spoken}"`;
+                if (statusEl) statusEl.textContent = 'Thinking...';
+
+                const conv = state.conversations.find(c => c.id === state.activeConversationId);
+                const contextMsgs = conv ? [...conv.messages, { role: 'user', content: spoken }] : [{ role: 'user', content: spoken }];
+                const reply = await generateChatReply(contextMsgs, conv);
+                if (captionEl) captionEl.textContent = reply;
+                if (statusEl) statusEl.textContent = 'Tap Mic to Speak';
+                ringEl?.classList.add('hidden');
+
+                if (!voiceMuted) {
+                    await generateVoiceWithPuter(reply.slice(0, 420), true);
+                }
+            };
+
+            voiceRecognition.onend = () => {
+                voiceRecognition = null;
+                ringEl?.classList.add('hidden');
+                if (statusEl) statusEl.textContent = 'Tap Mic to Speak';
+            };
+
+            voiceRecognition.start();
+        }
+
+        function toggleVoiceSpeechOutput() {
+            voiceMuted = !voiceMuted;
+            const label = document.getElementById('voice-mute-label');
+            const icon = document.getElementById('voice-speaker-icon');
+            if (label) label.textContent = voiceMuted ? 'Muted' : 'Voice On';
+            if (icon) icon.setAttribute('data-lucide', voiceMuted ? 'volume-x' : 'volume-2');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
+        // =========================================================================
+        // UI HELPERS
+        // =========================================================================
         function toggleSidebar() {
-            const sb = document.getElementById('app-sidebar');
-            const bd = document.getElementById('sidebar-backdrop');
-            if (!sb) return;
-            const closed = sb.classList.contains('-translate-x-full');
-            sb.classList.toggle('-translate-x-full', !closed);
-            bd?.classList.toggle('hidden', !closed);
+            const sidebar = document.getElementById('app-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar) return;
+            const closed = sidebar.classList.contains('-translate-x-full');
+            sidebar.classList.toggle('-translate-x-full', !closed);
+            backdrop?.classList.toggle('hidden', !closed);
         }
 
         function showToast(msg) {
-            const el = document.getElementById('toast');
-            if (!el) return;
-            el.textContent = String(msg || '');
-            el.classList.remove('hidden');
+            const box = document.getElementById('toast-box');
+            if (!box) return;
+            box.textContent = String(msg || '');
+            box.classList.remove('hidden');
             clearTimeout(window.__toastTimer);
-            window.__toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+            window.__toastTimer = setTimeout(() => box.classList.add('hidden'), 2600);
         }
 
         function escapeHtml(str) {
