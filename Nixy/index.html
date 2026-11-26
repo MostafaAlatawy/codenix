@@ -313,12 +313,15 @@
 
                         <!-- Welcome View with Single Model Logo -->
                         <div id="welcome-hero" class="flex flex-col items-center justify-center text-center py-12 sm:py-16">
-                            <div class="w-11 h-11 rounded-2xl bg-codenix-600 text-white flex items-center justify-center shadow-md shadow-codenix-600/25 mb-4">
-                                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-6 h-6 object-contain">
+                            <div class="w-12 h-12 rounded-2xl bg-codenix-600 text-white flex items-center justify-center shadow-lg shadow-codenix-600/25 mb-4">
+                                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 object-contain">
                             </div>
                             <h1 id="welcome-heading" data-i18n="welcomeTitle" class="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
                                 What can I help with?
                             </h1>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 max-w-md">
+                                Ask anything — responses can include interactive widgets, icons, Wikipedia visuals, code previews, and Puter.js voice.
+                            </p>
                         </div>
 
                         <!-- Messages -->
@@ -632,8 +635,9 @@
         });
 
         const CODENIX_SYSTEM_PROMPT = [
-            'You are Codenix, a helpful, clear, and direct AI assistant.',
-            'Analyze the user prompt naturally and respond clearly using markdown, lists, tables, or code blocks when helpful.',
+            'You are Codenix (Nixy), a helpful, clear, and interactive AI assistant.',
+            'Respond cleanly using markdown, structured lists, tables, and code blocks.',
+            'When helpful for interactive UI, icons, or visual topics, include clear headings, Lucide icon names in brackets like [icon:sparkles], or interactive HTML/JS snippets inside ```html blocks.',
             'Match the user language naturally.'
         ].join(' ');
 
@@ -972,8 +976,13 @@
         function renderConversationList() {
             const listEl = document.getElementById('conversation-list');
             if (!listEl) return;
+            // Search only by conversation title, never by user email
             const q = (document.getElementById('chat-search')?.value || '').trim().toLowerCase();
-            const savedOnly = state.conversations.filter(c => !c.isTemporary && (!q || (c.title || '').toLowerCase().includes(q)));
+            const savedOnly = state.conversations.filter(c => {
+                if (c.isTemporary) return false;
+                const title = String(c.title || 'New chat').toLowerCase();
+                return !q || title.includes(q);
+            });
 
             if (savedOnly.length === 0) {
                 listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No chats yet</p>`;
@@ -1095,6 +1104,31 @@
                     `;
                 }
 
+                if (m.wikiCard) {
+                    extraMedia += `
+                        <div class="mt-3 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border flex items-start gap-3">
+                            ${m.wikiCard.thumbnail ? `<img src="${escapeHtml(m.wikiCard.thumbnail)}" alt="${escapeHtml(m.wikiCard.title)}" onerror="this.remove()" class="w-16 h-16 rounded-xl object-cover shrink-0">` : `<div class="w-11 h-11 rounded-xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-300 flex items-center justify-center shrink-0"><i data-lucide="book-open" class="w-5 h-5"></i></div>`}
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-bold text-zinc-900 dark:text-white truncate">${escapeHtml(m.wikiCard.title)}</p>
+                                <p class="text-[11px] text-zinc-600 dark:text-zinc-300 line-clamp-2 mt-0.5">${escapeHtml(m.wikiCard.extract)}</p>
+                                ${m.wikiCard.url ? `<a href="${escapeHtml(m.wikiCard.url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 mt-1 hover:underline">Wikipedia <i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (m.interactiveHtml) {
+                    extraMedia += `
+                        <div class="mt-3 rounded-2xl overflow-hidden border border-zinc-200 dark:border-codenix-border bg-white dark:bg-codenix-card">
+                            <div class="px-3 py-1.5 bg-zinc-100 dark:bg-codenix-panel border-b border-zinc-200 dark:border-codenix-border flex items-center justify-between text-[11px] font-semibold">
+                                <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i> Interactive Widget</span>
+                                <button type="button" onclick="openInteractiveInCanvas(${aIdx})" class="text-codenix-600 dark:text-codenix-400 hover:underline">Expand</button>
+                            </div>
+                            <iframe sandbox="allow-scripts allow-forms" srcdoc="${escapeHtml(m.interactiveHtml)}" class="w-full h-44 border-none bg-white"></iframe>
+                        </div>
+                    `;
+                }
+
                 const bodyHtml = renderAssistantRichContent(String(m.content || ''));
 
                 return `
@@ -1152,6 +1186,12 @@
             });
 
             let html = window.marked?.parse ? window.marked.parse(protectedText) : `<p>${escapeHtml(protectedText)}</p>`;
+
+            // Replace inline [icon:name] tokens with crisp Lucide icons
+            html = html.replace(/\[icon:([a-z0-9-]+)\]/gi, (_, iconName) => {
+                const safeIcon = String(iconName || 'sparkles').replace(/[^a-z0-9-]/gi, '');
+                return `<i data-lucide="${safeIcon}" class="inline w-4 h-4 text-codenix-600 dark:text-codenix-400 align-text-bottom mx-0.5"></i>`;
+            });
 
             blocks.forEach(b => {
                 const bodyId = `code-body-${b.sIdx}`;
@@ -1261,8 +1301,94 @@
         }
 
         function speakAssistantMessage(idx) {
-            const txt = (window.__assistantStore?.[idx] || '').replace(/```[\s\S]*?```/g, ' ').replace(/[#*`]/g, '').trim();
-            if (txt) speakVoiceText(txt.slice(0, 320));
+            const txt = (window.__assistantStore?.[idx] || '').replace(/```[\s\S]*?```/g, ' ').replace(/\[icon:[^\]]+\]/gi, '').replace(/[#*`]/g, '').trim();
+            if (txt) generatePuterVoiceAudio(txt.slice(0, 320));
+        }
+
+        async function generatePuterVoiceAudio(text) {
+            const cleanText = String(text || '').trim();
+            if (!cleanText) return '';
+            if (window.puter?.ai?.txt2speech) {
+                try {
+                    const res = await window.puter.ai.txt2speech(cleanText);
+                    if (typeof res === 'string') {
+                        const a = new Audio(res);
+                        a.play().catch(() => {});
+                        return res;
+                    }
+                    if (res?.src) {
+                        const a = new Audio(res.src);
+                        a.play().catch(() => {});
+                        return res.src;
+                    }
+                    if (res && typeof res.play === 'function') {
+                        await res.play();
+                        return '';
+                    }
+                } catch (_) {}
+            }
+            speakBrowserFallback(cleanText, () => {});
+            return '';
+        }
+
+        async function fetchWikipediaSummary(queryText) {
+            try {
+                const topic = String(queryText || '')
+                    .replace(/^(what is|who is|tell me about|explain|wikipedia|ما هو|من هو|تكلم عن)\s+/i, '')
+                    .replace(/[?!.]+$/g, '')
+                    .trim();
+                if (!topic || topic.length < 2) return null;
+                const endpoint = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic.split(/\s+/).slice(0, 4).join('_'))}`;
+                const res = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) return null;
+                const data = await res.json();
+                if (data?.type === 'disambiguation' || !data?.extract) return null;
+                return {
+                    title: data.title || topic,
+                    extract: String(data.extract || '').slice(0, 220),
+                    thumbnail: data.thumbnail?.source || '',
+                    url: data.content_urls?.desktop?.page || ''
+                };
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function buildInteractiveWidgetHtml(promptText, replyText) {
+            const cleanTitle = String(promptText || 'Interactive View').replace(/<[^>]*>/g, '').slice(0, 60);
+            const codeMatch = String(replyText || '').match(/```html\n([\s\S]*?)```/i);
+            if (codeMatch && codeMatch[1]) {
+                return codeMatch[1];
+            }
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+                body{margin:0;font-family:Inter,system-ui,sans-serif;background:#f8f7ff;color:#18181b;padding:14px;}
+                .card{background:#fff;border:1px solid #e4e4e7;border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(124,58,237,0.06);}
+                .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;}
+                .title{font-weight:700;font-size:13px;color:#5b21b6;}
+                button{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+                button:hover{background:#6d28d9;}
+                #out{margin-top:10px;font-size:12px;color:#3f3f46;line-height:1.5;}
+            </style></head><body><div class="card">
+                <div class="top"><span class="title">${escapeHtml(cleanTitle)}</span><button onclick="runDemo()">Interactive Check</button></div>
+                <div id="out">Click "Interactive Check" to test this interactive view.</div>
+            </div><script>
+                let n = 0;
+                function runDemo(){ n++; document.getElementById('out').textContent = 'Interactive state updated #' + n + ' — ready.'; }
+            <\/script></body></html>`;
+        }
+
+        function openInteractiveInCanvas(assistantIdx) {
+            const rawReply = window.__assistantStore?.[assistantIdx] || '';
+            const html = buildInteractiveWidgetHtml('Interactive View', rawReply);
+            const pane = document.getElementById('cody-canvas-pane');
+            const frame = document.getElementById('cody-preview-frame');
+            const editor = document.getElementById('cody-code-editor');
+            if (!pane || !frame) return;
+            pane.classList.remove('hidden');
+            pane.classList.add('flex');
+            if (editor) editor.value = html;
+            switchCodyTab('preview');
+            frame.srcdoc = html;
         }
 
         function exportAssistantDoc(idx, fmt) {
@@ -1457,10 +1583,22 @@
                     assistantMsg = { role: 'assistant', content: `Here is the generated image for **${promptText}**.`, imageUrl: imgUrl };
                 } else {
                     const replyText = await runChatCompletion(conv.messages, fromVoice);
-                    assistantMsg = { role: 'assistant', content: replyText };
-                    if (tool === 'voice') {
-                        speakVoiceText(replyText.replace(/[#*`]/g, '').slice(0, 320));
-                    }
+                    const isVoiceRequest = tool === 'voice' || /\b(voice|speak|read aloud|audio|بصوت|انطق)\b/i.test(promptText);
+                    const isInteractiveRequest = /\b(interactive|widget|game|quiz|calculator|simulate|dashboard|تفاعلي)\b/i.test(promptText);
+                    const isTopicLookup = /\b(what is|who is|tell me about|history of|explain|ما هو|من هو)\b/i.test(promptText);
+
+                    const [audioUrl, wikiCard] = await Promise.all([
+                        isVoiceRequest ? generatePuterVoiceAudio(replyText.replace(/[#*`]/g, '').slice(0, 320)) : Promise.resolve(''),
+                        isTopicLookup ? fetchWikipediaSummary(promptText) : Promise.resolve(null)
+                    ]);
+
+                    assistantMsg = {
+                        role: 'assistant',
+                        content: replyText,
+                        audioUrl: audioUrl || '',
+                        wikiCard: wikiCard || null,
+                        interactiveHtml: isInteractiveRequest ? buildInteractiveWidgetHtml(promptText, replyText) : ''
+                    };
                 }
 
                 conv.messages.push(assistantMsg);
