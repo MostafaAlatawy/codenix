@@ -1203,6 +1203,9 @@
             if (/(generate image|create image|draw|make an image|image of|picture of|photo of|illustration|صورة|ارسم|انشئ صورة|صمم صورة|genera una imagen|crear imagen|dibujar)/i.test(q)) {
                 return 'image_generator';
             }
+            if (/(generate video|create video|make a video|video of|motion graphic|animation|vidy|فيديو|انشئ فيديو|تحريك|حركة|generar video|crear video|animacion)/i.test(q)) {
+                return 'vidy_video';
+            }
             if (/(say in voice|speak|read aloud|voice of|audio|text to speech|tts|بصوت|انطق|اقرأ بصوت|en voz alta|hablar)/i.test(q)) {
                 return 'puter_voice';
             }
@@ -1217,6 +1220,9 @@
             }
             if (/(table|spreadsheet|comparison table|جدول|مقارنة جدول|tabla)/i.test(q)) {
                 return 'data_table';
+            }
+            if (/(write code|code for|script|function|component|program|كود|برمجة|ملف|escribir codigo|programa)/i.test(q)) {
+                return 'code_file';
             }
             if (/(interactive ui|widget|dashboard ui|calculator ui|واجهة تفاعلية|interfaz interactiva)/i.test(q)) {
                 return 'smart_ui';
@@ -1348,7 +1354,9 @@
             if (loadingStatus) {
                 loadingStatus.textContent = selectedTool === 'image_generator'
                     ? 'Generating image...'
-                    : (selectedTool === 'web_search' ? 'Searching the web...' : 'Thinking...');
+                    : (selectedTool === 'vidy_video'
+                        ? 'Directing Vidy 60fps video...'
+                        : (selectedTool === 'web_search' ? 'Searching the web...' : 'Thinking...'));
             }
             if (imgSkeleton) {
                 imgSkeleton.classList.toggle('hidden', selectedTool !== 'image_generator');
@@ -1374,6 +1382,13 @@
                         content: `Here is your generated image for **${fullPrompt}**.`,
                         imageUrl: imgUrl
                     };
+                } else if (selectedTool === 'vidy_video') {
+                    const vidyResult = await runVidyVideoTool(fullPrompt);
+                    assistantMsg = {
+                        role: 'assistant',
+                        content: vidyResult.summary,
+                        vidyScene: vidyResult.scene
+                    };
                 } else if (selectedTool === 'puter_voice') {
                     const voiceResult = await runVoiceTool(fullPrompt);
                     assistantMsg = {
@@ -1396,105 +1411,231 @@
                     assistantMsg = {
                         role: 'assistant',
                         content: replyData.text,
-                        wikiCard: replyData.wikiCard || null
+                        wikiCard: replyData.wikiCard || null,
+                        toolMode: selectedTool
                     };
                 }
 
                 getActiveMessages().push(assistantMsg);
+                renderMessages();
 
                 if (!state.temporaryMode && conv) {
                     await persistMessageToSupabase(conv.id, assistantMsg);
                     await persistConversationMeta(conv);
                 }
-            } catch (_) {
+            } catch (err) {
+                console.error('Send prompt error:', err);
                 getActiveMessages().push({
                     role: 'assistant',
-                    content: 'I ran into an issue completing that request. Please try again.'
+                    content: `Sorry, something went wrong while processing your request (${err?.message || 'error'}).`
                 });
+                renderMessages();
             } finally {
                 state.isSending = false;
-                if (imgSkeleton) imgSkeleton.classList.add('hidden');
+                const loadingEl = document.getElementById('loading-indicator');
+                const imgSkeleton = document.getElementById('image-loading-skeleton');
                 if (loadingEl) {
                     loadingEl.classList.add('hidden');
                     loadingEl.classList.remove('flex');
                 }
-                renderMessages();
+                if (imgSkeleton) imgSkeleton.classList.add('hidden');
             }
         }
 
         async function runImageTool(promptText) {
-            const cleanPrompt = String(promptText || '')
-                .replace(/^(generate image|create image|draw|make an image|image of|picture of|photo of|صورة|ارسم|انشئ صورة)\s*(of|for)?\s*/i, '')
-                .trim() || promptText;
-
+            const cleanPrompt = promptText.replace(/^(generate image|create image|draw|make an image|image of|picture of|photo of|illustration|صورة|ارسم|انشئ صورة|صمم صورة|genera una imagen|crear imagen|dibujar)\s*(of|for)?\s*/i, '').trim() || promptText;
             if (window.puter?.ai?.txt2img) {
                 try {
                     const imgEl = await window.puter.ai.txt2img(cleanPrompt);
                     if (imgEl?.src) return imgEl.src;
                 } catch (_) {}
             }
-
-            return `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=768&height=512&nologo=true&seed=${Date.now()}`;
+            return `https://placehold.co/768x512/1e1b4b/ede9fe?text=${encodeURIComponent(cleanPrompt.slice(0, 32))}`;
         }
 
         async function runVoiceTool(promptText) {
-            const spokenText = String(promptText || '')
-                .replace(/^(say in voice|speak|read aloud|voice of|audio|text to speech|tts|بصوت|انطق|اقرأ بصوت|en voz alta|hablar)\s*:?\s*/i, '')
-                .trim() || 'Hello from Codenix.';
-
+            const spokenText = promptText.replace(/^(say in voice|speak|read aloud|voice of|audio|text to speech|tts|بصوت|انطق|اقرأ بصوت|en voz alta|hablar)\s*(that|this)?\s*/i, '').trim() || promptText;
             let audioUrl = '';
             if (window.puter?.ai?.txt2speech) {
                 try {
-                    const audioObj = await window.puter.ai.txt2speech(spokenText);
-                    if (typeof audioObj === 'string') {
-                        audioUrl = audioObj;
-                    } else if (audioObj?.src) {
-                        audioUrl = audioObj.src;
-                    } else if (audioObj && typeof audioObj.play === 'function') {
-                        audioObj.play();
+                    const audioEl = await window.puter.ai.txt2speech(spokenText);
+                    if (audioEl?.src) {
+                        audioUrl = audioEl.src;
+                        try { audioEl.play(); } catch (_) {}
                     }
                 } catch (_) {}
             }
-
             if (!audioUrl && 'speechSynthesis' in window) {
                 try {
-                    window.speechSynthesis.cancel();
                     const utter = new SpeechSynthesisUtterance(spokenText);
-                    utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
                     window.speechSynthesis.speak(utter);
                 } catch (_) {}
             }
-
             return {
-                text: `**Voice output:** ${spokenText}`,
+                text: spokenText,
                 audioUrl
             };
         }
 
-        async function runWebSearchTool(queryText) {
-            const cleaned = String(queryText || '')
-                .replace(/^(search web|look up|latest news|بحث|ابحث|buscar en internet)\s*(for|about)?\s*/i, '')
-                .trim() || queryText;
-
-            let webSnippet = '';
+        async function runWebSearchTool(promptText) {
+            const query = promptText.replace(/^(search web|look up|latest news|بحث|ابحث|buscar en internet|noticias)\s*(for|about)?\s*/i, '').trim() || promptText;
             try {
-                const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleaned)}&format=json&no_html=1&skip_disambig=1`);
+                const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*`;
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data?.AbstractText) {
-                        webSnippet = `${data.AbstractText}${data.AbstractURL ? `\nSource: [${data.AbstractSource || 'Reference'}](${data.AbstractURL})` : ''}`;
-                    } else if (Array.isArray(data?.RelatedTopics) && data.RelatedTopics.length) {
-                        const top = data.RelatedTopics.filter(t => t.Text).slice(0, 4).map(t => `- ${t.Text}`).join('\n');
-                        webSnippet = top;
+                    const hits = (data?.query?.search || []).slice(0, 3);
+                    if (hits.length) {
+                        const rows = hits.map(h => {
+                            const plainSnippet = String(h.snippet || '').replace(/<[^>]+>/g, '');
+                            const link = `https://en.wikipedia.org/wiki/${encodeURIComponent(h.title)}`;
+                            return `- **[${escapeHtml(h.title)}](${link})**: ${plainSnippet}`;
+                        }).join('\n');
+                        return `### Web Results for "${escapeHtml(query)}"\n${rows}`;
                     }
                 }
             } catch (_) {}
+            return `### Web Search\nSearched for **${escapeHtml(query)}**. Ask a follow-up question to explore specific details.`;
+        }
 
-            const contextPrompt = webSnippet
-                ? `${cleaned}\n\nWeb search results:\n${webSnippet}\n\nSynthesize a clear Smart UI answer with sources.`
-                : `${cleaned}\n\nProvide a clear Smart UI answer with structured sections.`;
+        async function runVidyVideoTool(promptText) {
+            const fallbackScene = {
+                title: 'Vidy Motion Sequence',
+                duration: 4,
+                code: `const bg = ctx.createLinearGradient(0, 0, w, h);
+bg.addColorStop(0, '#140c29');
+bg.addColorStop(1, '#07060b');
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, w, h);
 
-            return await runSmartChatTool(contextPrompt, 'web_search');
+const cx = w * 0.5;
+const cy = h * 0.5;
+const rs = Math.min(w, h) / 720;
+const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2);
+
+ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)';
+ctx.lineWidth = 4 * rs;
+ctx.beginPath();
+ctx.arc(cx, cy - 20 * rs, (90 + pulse * 18) * rs, 0, Math.PI * 2);
+ctx.stroke();
+
+ctx.fillStyle = '#ffffff';
+ctx.font = '700 ' + Math.round(30 * rs) + 'px Inter, sans-serif';
+ctx.textAlign = 'center';
+ctx.fillText('VIDY MOTION STUDIO', cx, cy + 95 * rs);
+
+ctx.fillStyle = 'rgba(216, 180, 254, 0.85)';
+ctx.font = '500 ' + Math.round(15 * rs) + 'px Inter, sans-serif';
+ctx.fillText('${String(promptText || 'Looping 60fps Scene').replace(/'/g, '').slice(0, 56)}', cx, cy + 126 * rs);`
+            };
+
+            let sceneObj = fallbackScene;
+            if (window.puter?.ai?.chat) {
+                try {
+                    const aiPrompt = `Create a seamless looping HTML5 Canvas 2D motion graphic script for: "${promptText}".
+Return ONLY valid JSON: {"title":"Short Title","duration":4,"code":"// JS using ctx, w, h, t (0..1)"}`;
+                    const res = await window.puter.ai.chat(aiPrompt);
+                    const raw = typeof res === 'string' ? res : (res?.message?.content || res?.text || '');
+                    const match = String(raw).match(/\{[\s\S]*\}/);
+                    if (match) {
+                        const parsed = JSON.parse(match[0]);
+                        if (parsed?.code) {
+                            sceneObj = {
+                                title: parsed.title || 'Vidy Motion Sequence',
+                                duration: Number(parsed.duration) || 4,
+                                code: String(parsed.code)
+                            };
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            openVidySceneInCanvas(sceneObj);
+            return {
+                scene: sceneObj,
+                summary: `### Vidy Video Ready: **${sceneObj.title}**\n- **Engine:** Vidy 60fps Motion Canvas\n- **Loop Duration:** ${sceneObj.duration}s seamless loop\n- Opened in **Live Preview** with MP4 export ready.`
+            };
+        }
+
+        function openVidySceneInCanvas(sceneObj) {
+            if (!sceneObj?.code) return;
+            const pane = document.getElementById('canvas-pane');
+            const frame = document.getElementById('canvas-preview-frame');
+            const editor = document.getElementById('canvas-code-editor');
+            if (!pane || !frame) return;
+
+            pane.classList.remove('hidden');
+            pane.classList.add('flex');
+
+            const duration = Number(sceneObj.duration) || 4;
+            const htmlDoc = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #07060b; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: Inter, system-ui, sans-serif; color: #fff; overflow: hidden; }
+  canvas { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .bar { position: fixed; bottom: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; }
+  button { background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  button:hover { background: #6d28d9; }
+</style>
+</head>
+<body>
+<canvas id="vidyCanvas" width="1280" height="720"></canvas>
+<div class="bar"><button id="recBtn" onclick="recordMp4()">Export Video</button></div>
+<script>
+const canvas = document.getElementById('vidyCanvas');
+const ctx = canvas.getContext('2d');
+const loopSec = ${duration};
+function drawFrame(t) {
+  const w = canvas.width, h = canvas.height;
+  ctx.save();
+  try {
+    ${sceneObj.code}
+  } catch (e) {
+    ctx.fillStyle = '#07060b';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#f87171';
+    ctx.font = '600 18px Inter, sans-serif';
+    ctx.fillText('Vidy render error: ' + e.message, 32, 60);
+  }
+  ctx.restore();
+}
+function tick(now) {
+  const t = ((now / 1000) % loopSec) / loopSec;
+  drawFrame(t);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+function recordMp4() {
+  const mime = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)) || '';
+  if (!mime) return;
+  const btn = document.getElementById('recBtn');
+  btn.textContent = 'Recording...';
+  const stream = canvas.captureStream(60);
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  rec.onstop = () => {
+    const blob = new Blob(chunks, { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vidy-motion.mp4';
+    a.click();
+    URL.revokeObjectURL(url);
+    btn.textContent = 'Export Video';
+  };
+  rec.start();
+  setTimeout(() => rec.stop(), loopSec * 1000);
+}
+<\/script>
+</body>
+</html>`;
+
+            if (editor) editor.value = htmlDoc;
+            frame.srcdoc = htmlDoc;
+            switchCanvasTab('preview');
         }
 
         async function runSmartChatTool(promptText, toolName) {
@@ -1503,7 +1644,9 @@
                 ? 'Include a clear Markdown table presenting the requested comparison or data.'
                 : (toolName === 'smart_ui'
                     ? 'Include a clean, self-contained ```html block that renders an interactive UI widget.'
-                    : 'Use Smart UI formatting: clear structure, tables when helpful, and interactive ```html blocks when a visual widget adds value.');
+                    : (toolName === 'code_file'
+                        ? 'Provide a complete, clean code block with a clear file name comment or heading so the user can open and edit the file.'
+                        : 'Use Smart UI formatting: clear structure, tables when helpful, and when a visual or HTML snippet is relevant, include a ```html block so both the HTML code and UI are clear.'));
 
             const messages = [
                 { role: 'system', content: `${CODENIX_SYSTEM_PROMPT}\n${extraInstruction}` },
@@ -1623,17 +1766,30 @@
                 }
 
                 const replyIdx = window.__replyStore.push(String(msg.content || '')) - 1;
-                const bodyHtml = formatSmartResponseHtml(String(msg.content || ''));
+                const bodyHtml = formatSmartResponseHtml(String(msg.content || ''), msg.toolMode || 'general_chat');
 
                 let mediaHtml = '';
+                if (msg.vidyScene) {
+                    const sceneJson = escapeHtml(JSON.stringify(msg.vidyScene));
+                    mediaHtml += `
+                        <div class="mt-3 p-3 rounded-2xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border max-w-md flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">Vidy • ${escapeHtml(msg.vidyScene.title || 'Motion Video')}</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">${Number(msg.vidyScene.duration) || 4}s loop • Ready to preview or export</p>
+                            </div>
+                            <button type="button" onclick='openVidySceneInCanvas(JSON.parse(this.dataset.scene))' data-scene="${sceneJson}" class="px-3 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold shrink-0">Open Vidy</button>
+                        </div>
+                    `;
+                }
                 if (msg.wikiCard && msg.wikiCard.imageUrl) {
                     mediaHtml += `
-                        <div class="mt-3 p-3 rounded-2xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border max-w-md flex items-start gap-3">
-                            <img src="${escapeHtml(msg.wikiCard.imageUrl)}" alt="${escapeHtml(msg.wikiCard.title || 'Wikipedia')}" loading="lazy" onerror="this.closest('div').remove()" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-codenix-200 dark:border-codenix-border">
-                            <div class="min-w-0 flex-1 space-y-1">
-                                <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">${escapeHtml(msg.wikiCard.title || 'Wikipedia')}</p>
-                                ${msg.wikiCard.extract ? `<p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-3 leading-snug">${escapeHtml(msg.wikiCard.extract)}</p>` : ''}
-                                ${msg.wikiCard.pageUrl ? `<a href="${escapeHtml(msg.wikiCard.pageUrl)}" target="_blank" rel="noopener" class="inline-block text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline">Wikipedia</a>` : ''}
+                        <div class="mt-3 p-2.5 rounded-2xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border max-w-md space-y-2">
+                            <a href="${escapeHtml(msg.wikiCard.pageUrl || '#')}" target="_blank" rel="noopener" class="block overflow-hidden rounded-xl">
+                                <img src="${escapeHtml(msg.wikiCard.imageUrl)}" alt="${escapeHtml(msg.wikiCard.title || 'Wikipedia')}" loading="lazy" class="w-full h-44 object-cover">
+                            </a>
+                            <div class="px-1">
+                                <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100">${escapeHtml(msg.wikiCard.title || '')}</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5">${escapeHtml(msg.wikiCard.extract || '')}</p>
                             </div>
                         </div>
                     `;
@@ -1732,32 +1888,45 @@
             if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
-        function formatSmartResponseHtml(rawMarkdown) {
+        function formatSmartResponseHtml(rawMarkdown, toolMode = 'general_chat') {
             const blocks = [];
             const masked = String(rawMarkdown || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
                 const cleanLang = (lang || 'code').trim().toLowerCase();
                 const trimmedCode = String(code || '').replace(/\n$/, '');
                 const token = `@@SMART_BLOCK_${blocks.length}@@`;
+                const snippetIdx = window.__snippetStore.push({ lang: cleanLang, code: trimmedCode }) - 1;
 
-                // Render Smart UI HTML blocks directly as interactive UI inside the conversation
                 if (cleanLang === 'html' || cleanLang === 'htm') {
                     const frameId = `smart-ui-frame-${blocks.length}-${Date.now()}`;
                     const srcdoc = buildSmartUiDocument(trimmedCode);
+                    const showCodeFirst = toolMode === 'general_chat' || toolMode === 'code_file';
+                    const codeCardHtml = `
+                        <div class="code-card not-prose">
+                            <div class="code-card-header">
+                                <span>${escapeHtml(toolMode === 'code_file' ? 'index.html' : cleanLang)}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="copySnippet(${snippetIdx})" class="code-card-btn">Copy HTML</button>
+                                    <button type="button" onclick="openSnippetInCanvas(${snippetIdx})" class="code-card-btn">Open File</button>
+                                </div>
+                            </div>
+                            <pre class="!m-0 !border-0 !rounded-none"><code class="language-html">${escapeHtml(trimmedCode)}</code></pre>
+                        </div>
+                    `;
                     const uiHtml = `
                         <div class="not-prose my-3 rounded-2xl border border-codenix-200 dark:border-codenix-border bg-white dark:bg-codenix-panel overflow-hidden shadow-xs">
                             <iframe id="${frameId}" sandbox="allow-scripts allow-forms" srcdoc="${escapeHtml(srcdoc)}" class="w-full h-64 border-none bg-white"></iframe>
                         </div>
                     `;
-                    blocks.push({ token, html: uiHtml });
+                    blocks.push({ token, html: showCodeFirst ? `${codeCardHtml}${uiHtml}` : `${uiHtml}${codeCardHtml}` });
                 } else {
-                    const snippetIdx = window.__snippetStore.push({ lang: cleanLang, code: trimmedCode }) - 1;
+                    const fileLabel = toolMode === 'code_file' ? getSuggestedFileName(cleanLang) : cleanLang;
                     const cardHtml = `
                         <div class="code-card not-prose">
                             <div class="code-card-header">
-                                <span>${escapeHtml(cleanLang)}</span>
+                                <span>${escapeHtml(fileLabel)}</span>
                                 <div class="flex items-center gap-1.5">
                                     <button type="button" onclick="copySnippet(${snippetIdx})" class="code-card-btn">Copy</button>
-                                    <button type="button" onclick="openSnippetInCanvas(${snippetIdx})" class="code-card-btn">Preview</button>
+                                    <button type="button" onclick="openSnippetInCanvas(${snippetIdx})" class="code-card-btn">${toolMode === 'code_file' ? 'Show File' : 'Preview'}</button>
                                 </div>
                             </div>
                             <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(cleanLang)}">${escapeHtml(trimmedCode)}</code></pre>
@@ -1778,6 +1947,22 @@
             });
 
             return html;
+        }
+
+        function getSuggestedFileName(lang) {
+            const map = {
+                js: 'script.js',
+                javascript: 'script.js',
+                ts: 'app.ts',
+                typescript: 'app.ts',
+                py: 'main.py',
+                python: 'main.py',
+                html: 'index.html',
+                css: 'styles.css',
+                json: 'data.json',
+                sql: 'query.sql'
+            };
+            return map[lang] || `file.${lang || 'txt'}`;
         }
 
         function buildSmartUiDocument(rawHtml) {
