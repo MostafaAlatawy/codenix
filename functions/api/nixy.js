@@ -1,227 +1,162 @@
 /**
- * Cloudflare Pages Function: /api/nixy
- * Automatically reads your Cloudflare Pages Secrets:
- * NVIDIA_API, GEMINI_API_1, DEEPSEEK_API, COHERE_API, GROQ_API, OPEN_API, STAB_API, POLL_API, ELEVEN_API
+ * Nixy — Cloudflare Pages Function  →  served at  /api/nixy
+ * Place this file at:  <project-root>/functions/api/nixy.js
+ *
+ * SECRETS (never put keys in index.html). Add any of these, then REDEPLOY:
+ *   Dashboard → Workers & Pages → your project → Settings → Variables and Secrets → Add (type: Secret)
+ *   or CLI:  npx wrangler pages secret put GROQ_API_KEY --project-name <project>
+ *
+ *   GROQ_API_KEY        chat (fast, free tier)
+ *   OPENROUTER_API_KEY  chat (many models)
+ *   GEMINI_API_KEY      chat + fallback
+ *   TAVILY_API_KEY      web search tool (optional)
+ *   HF_TOKEN            image fallback (optional)
+ * OPTIONAL BINDING (no key needed): Settings → Functions → Bindings → Workers AI → variable name "AI"
+ *   enables chat + FLUX image generation + TTS directly on Cloudflare.
+ *
+ * Open  /api/nixy  in the browser (GET) to see which secrets are detected (booleans only).
  */
-export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type'
+};
+const json = (obj, status = 200) =>
+  new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...CORS } });
+
+const val = (env, k) => (typeof env[k] === 'string' && env[k].trim() ? env[k].trim() : '');
+
+export const onRequestOptions = () => new Response(null, { status: 204, headers: CORS });
+
+export async function onRequestGet({ env }) {
+  return json({
+    ok: true,
+    service: 'nixy-proxy',
+    configured: {
+      workers_ai_binding: !!env.AI,
+      GROQ_API_KEY: !!val(env, 'GROQ_API_KEY'),
+      OPENROUTER_API_KEY: !!val(env, 'OPENROUTER_API_KEY'),
+      GEMINI_API_KEY: !!val(env, 'GEMINI_API_KEY'),
+      TAVILY_API_KEY: !!val(env, 'TAVILY_API_KEY'),
+      HF_TOKEN: !!val(env, 'HF_TOKEN')
+    },
+    hint: 'Secrets are only visible to Functions after a new deployment. Missing ones show false.'
   });
 }
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
-  const corsHeaders = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'
-  };
-
+async function fetchJson(url, init, ms = 30000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
   try {
-    const body = await request.json();
-    const action = body.action || 'chat';
+    const r = await fetch(url, { ...init, signal: ctl.signal });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(`${r.status} ${body?.error?.message || body?.error || ''}`.trim());
+    return body;
+  } finally { clearTimeout(t); }
+}
 
-    if (action === 'image') {
-      const prompt = String(body.prompt || 'futuristic purple digital art');
-
-      // 1. Stability AI (STAB_API)
-      if (env.STAB_API) {
-        try {
-          const form = new FormData();
-          form.append('prompt', prompt);
-          form.append('output_format', 'png');
-          const res = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${env.STAB_API}`,
-              Accept: 'application/json'
-            },
-            body: form
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.image) {
-              return new Response(JSON.stringify({
-                url: `data:image/png;base64,${data.image}`,
-                provider: 'Stability AI'
-              }), { headers: corsHeaders });
-            }
-          }
-        } catch (_) {}
-      }
-
-      // 2. Pollinations API (POLL_API)
-      const encoded = encodeURIComponent(prompt);
-      const pollHeaders = env.POLL_API ? { Authorization: `Bearer ${env.POLL_API}` } : {};
-      const pollUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true`;
-      return new Response(JSON.stringify({
-        url: pollUrl,
-        provider: env.POLL_API ? 'Pollinations Pro' : 'Pollinations',
-        authHint: Boolean(pollHeaders.Authorization)
-      }), { headers: corsHeaders });
-    }
-
-    // Chat fallback cascade: NVIDIA_API -> GEMINI_API_1 -> DEEPSEEK_API -> COHERE_API -> GROQ_API -> OPEN_API
-    const rawMessages = Array.isArray(body.messages) ? body.messages : [];
-    const cleanMessages = rawMessages.map(m => ({
-      role: m.role === 'assistant' ? 'assistant' : (m.role === 'system' ? 'system' : 'user'),
-      content: String(m.content || '')
-    }));
-
-    // 1. NVIDIA NIM (NVIDIA_API)
-    if (env.NVIDIA_API) {
-      try {
-        const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.NVIDIA_API}`
-          },
-          body: JSON.stringify({
-            model: 'meta/llama-3.1-70b-instruct',
-            messages: cleanMessages,
-            temperature: 0.6,
-            max_tokens: 2048
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.choices?.[0]?.message?.content;
-          if (text) return new Response(JSON.stringify({ text, provider: 'NVIDIA NIM' }), { headers: corsHeaders });
-        }
-      } catch (_) {}
-    }
-
-    // 2. Google Gemini (GEMINI_API_1)
-    if (env.GEMINI_API_1) {
-      try {
-        const systemMsg = cleanMessages.find(m => m.role === 'system')?.content || '';
-        const contents = cleanMessages
-          .filter(m => m.role !== 'system')
-          .map(m => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }]
-          }));
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_1}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: systemMsg ? { parts: [{ text: systemMsg }] } : undefined,
-            contents
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) return new Response(JSON.stringify({ text, provider: 'Gemini 2.0' }), { headers: corsHeaders });
-        }
-      } catch (_) {}
-    }
-
-    // 3. DeepSeek (DEEPSEEK_API)
-    if (env.DEEPSEEK_API) {
-      try {
-        const res = await fetch('https://api.deepseek.com/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.DEEPSEEK_API}`
-          },
-          body: JSON.stringify({
-            model: 'deepseek-chat',
-            messages: cleanMessages
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.choices?.[0]?.message?.content;
-          if (text) return new Response(JSON.stringify({ text, provider: 'DeepSeek' }), { headers: corsHeaders });
-        }
-      } catch (_) {}
-    }
-
-    // 4. Cohere (COHERE_API)
-    if (env.COHERE_API) {
-      try {
-        const res = await fetch('https://api.cohere.com/v2/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.COHERE_API}`
-          },
-          body: JSON.stringify({
-            model: 'command-r-plus',
-            messages: cleanMessages
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.message?.content?.[0]?.text;
-          if (text) return new Response(JSON.stringify({ text, provider: 'Cohere' }), { headers: corsHeaders });
-        }
-      } catch (_) {}
-    }
-
-    // 5. Groq (GROQ_API)
-    if (env.GROQ_API) {
-      try {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.GROQ_API}`
-          },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: cleanMessages
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.choices?.[0]?.message?.content;
-          if (text) return new Response(JSON.stringify({ text, provider: 'Groq' }), { headers: corsHeaders });
-        }
-      } catch (_) {}
-    }
-
-    // 6. OpenRouter / OpenAI (OPEN_API)
-    if (env.OPEN_API) {
-      try {
-        const isOpenRouter = env.OPEN_API.startsWith('sk-or-');
-        const endpoint = isOpenRouter
-          ? 'https://openrouter.ai/api/v1/chat/completions'
-          : 'https://api.openai.com/v1/chat/completions';
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.OPEN_API}`
-          },
-          body: JSON.stringify({
-            model: isOpenRouter ? 'meta-llama/llama-3.1-8b-instruct:free' : 'gpt-4o-mini',
-            messages: cleanMessages
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.choices?.[0]?.message?.content;
-          if (text) return new Response(JSON.stringify({ text, provider: isOpenRouter ? 'OpenRouter' : 'OpenAI' }), { headers: corsHeaders });
-        }
-      } catch (_) {}
-    }
-
-    return new Response(JSON.stringify({ error: 'All upstream APIs unavailable, falling back to Puter.js' }), {
-      status: 502,
-      headers: corsHeaders
+const chatProviders = [
+  ['Workers AI', async (env, messages) => {
+    if (!env.AI) throw new Error('binding AI not set');
+    const r = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', { messages, max_tokens: 4096 });
+    return r.response;
+  }],
+  ['Groq', async (env, messages) => {
+    const key = val(env, 'GROQ_API_KEY'); if (!key) throw new Error('GROQ_API_KEY missing');
+    const d = await fetchJson('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages, temperature: 0.6, max_tokens: 4096 })
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message || 'Server error' }), {
-      status: 500,
-      headers: corsHeaders
+    return d.choices?.[0]?.message?.content;
+  }],
+  ['OpenRouter', async (env, messages) => {
+    const key = val(env, 'OPENROUTER_API_KEY'); if (!key) throw new Error('OPENROUTER_API_KEY missing');
+    const d = await fetchJson('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}`, 'X-Title': 'Nixy' },
+      body: JSON.stringify({ model: 'meta-llama/llama-3.3-70b-instruct:free', messages, max_tokens: 4096 })
     });
+    return d.choices?.[0]?.message?.content;
+  }],
+  ['Gemini', async (env, messages) => {
+    const key = val(env, 'GEMINI_API_KEY'); if (!key) throw new Error('GEMINI_API_KEY missing');
+    const sys = messages.filter(m => m.role === 'system').map(m => m.content).join('\n\n');
+    const contents = messages.filter(m => m.role !== 'system').map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+    const d = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents })
+    });
+    return d.candidates?.[0]?.content?.parts?.map(p => p.text).join('');
+  }]
+];
+
+async function handleChat(env, body) {
+  const messages = (body.messages || []).filter(m => m && m.role && m.content).slice(-30);
+  if (!messages.length) return json({ error: 'messages required' }, 400);
+  const tried = [];
+  for (const [name, fn] of chatProviders) {
+    try {
+      const text = await fn(env, messages);
+      if (text && String(text).trim()) return json({ text: String(text), provider: name });
+      tried.push(`${name}: empty`);
+    } catch (e) { tried.push(`${name}: ${e.message}`); }
+  }
+  return json({ error: 'No configured provider answered', tried }, 502);
+}
+
+async function handleImage(env, body) {
+  const prompt = String(body.prompt || '').slice(0, 1000);
+  if (!prompt) return json({ error: 'prompt required' }, 400);
+  const tried = [];
+  if (env.AI) {
+    try {
+      const r = await env.AI.run('@cf/black-forest-labs/flux-1-schnell', { prompt, steps: 6 });
+      if (r?.image) return json({ url: `data:image/jpeg;base64,${r.image}`, provider: 'Cloudflare FLUX' });
+    } catch (e) { tried.push(`workers-ai: ${e.message}`); }
+  }
+  const hf = val(env, 'HF_TOKEN');
+  if (hf) {
+    try {
+      const r = await fetch('https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell', {
+        method: 'POST', headers: { Authorization: `Bearer ${hf}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ inputs: prompt })
+      });
+      if (!r.ok) throw new Error(String(r.status));
+      const buf = new Uint8Array(await r.arrayBuffer());
+      let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      return json({ url: `data:image/jpeg;base64,${btoa(bin)}`, provider: 'HuggingFace FLUX' });
+    } catch (e) { tried.push(`hf: ${e.message}`); }
+  }
+  return json({ error: 'No image provider configured', tried }, 502);
+}
+
+async function handleTts(env, body) {
+  if (!env.AI) return json({ error: 'Workers AI binding "AI" not set' }, 502);
+  try {
+    const r = await env.AI.run('@cf/myshell-ai/melotts', { prompt: String(body.text || '').slice(0, 1000), lang: 'en' });
+    if (r?.audio) return json({ url: `data:audio/mpeg;base64,${r.audio}`, provider: 'Cloudflare MeloTTS' });
+    return json({ error: 'no audio' }, 502);
+  } catch (e) { return json({ error: e.message }, 502); }
+}
+
+async function handleSearch(env, body) {
+  const key = val(env, 'TAVILY_API_KEY');
+  if (!key) return json({ error: 'TAVILY_API_KEY missing' }, 502);
+  try {
+    const d = await fetchJson('https://api.tavily.com/search', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ query: String(body.query || '').slice(0, 300), max_results: 5, search_depth: 'basic' })
+    }, 15000);
+    return json({ results: d.results || [] });
+  } catch (e) { return json({ error: e.message }, 502); }
+}
+
+export async function onRequestPost({ request, env }) {
+  let body;
+  try { body = await request.json(); } catch (_) { return json({ error: 'invalid JSON' }, 400); }
+  switch (body.action) {
+    case 'chat': return handleChat(env, body);
+    case 'image': return handleImage(env, body);
+    case 'tts': return handleTts(env, body);
+    case 'search': return handleSearch(env, body);
+    default: return json({ error: 'unknown action' }, 400);
   }
 }
