@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nixy — Codenix AI Agent Studio</title>
+    <title>Codenix — AI Workspace</title>
     <link rel="icon" type="image/png" href="/logo.png">
     <link rel="apple-touch-icon" href="/logo.png">
 
@@ -74,80 +74,52 @@
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.6); }
 
-        @keyframes nixyFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
+        @keyframes nixyDotBounce {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+            40% { transform: translateY(-5px); opacity: 1; }
         }
-        @keyframes nixyGlow {
-            0%, 100% { box-shadow: 0 0 28px rgba(124, 58, 237, 0.5), inset 0 -6px 14px rgba(15, 8, 36, 0.5); }
-            50% { box-shadow: 0 0 46px rgba(167, 139, 250, 0.85), inset 0 -6px 14px rgba(15, 8, 36, 0.5); }
+        .nixy-typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background-color: #7c3aed;
+            display: inline-block;
+            animation: nixyDotBounce 1.2s infinite ease-in-out;
         }
-        @keyframes nixyBlink {
-            0%, 92%, 96%, 100% { transform: scaleY(1); }
-            94% { transform: scaleY(0.1); }
-        }
-        @keyframes nixyMorphIdle {
-            0%, 100% { border-radius: 50%; }
-            50% { border-radius: 47% 53% 52% 48% / 51% 48% 52% 49%; }
-        }
-        @keyframes nixyMorphSquish {
-            0%, 100% { border-radius: 50%; transform: scale(1, 1); }
-            35% { border-radius: 56% 44% 58% 42% / 44% 56% 42% 58%; transform: scale(1.09, 0.92); }
-            70% { border-radius: 44% 56% 42% 58% / 56% 44% 58% 42%; transform: scale(0.94, 1.07); }
-        }
+        .nixy-typing-dot:nth-child(2) { animation-delay: 0.16s; }
+        .nixy-typing-dot:nth-child(3) { animation-delay: 0.32s; }
+
         @keyframes astreyaWave {
             0%, 100% { height: 6px; }
             50% { height: 24px; }
         }
-        .nixy-orb {
-            background: radial-gradient(circle at 30% 25%, #e9d5ff 0%, #8b5cf6 52%, #3b0764 100%);
-            animation: nixyFloat 3.6s ease-in-out infinite, nixyGlow 2.8s ease-in-out infinite, nixyMorphIdle 6s ease-in-out infinite;
-            position: relative;
-            user-select: none;
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .workspace-welcome-canvas {
+            background:
+                radial-gradient(circle at 14% 22%, rgba(167, 243, 208, 0.34), transparent 42%),
+                radial-gradient(circle at 86% 26%, rgba(254, 215, 170, 0.36), transparent 44%),
+                radial-gradient(circle at 52% 85%, rgba(221, 214, 254, 0.35), transparent 46%);
         }
-        .nixy-orb.shape-diamond {
-            border-radius: 34% 66% 34% 66% / 66% 34% 66% 34% !important;
+        .dark .workspace-welcome-canvas {
+            background:
+                radial-gradient(circle at 14% 22%, rgba(124, 58, 237, 0.16), transparent 42%),
+                radial-gradient(circle at 86% 26%, rgba(79, 70, 229, 0.14), transparent 44%),
+                radial-gradient(circle at 52% 85%, rgba(139, 92, 246, 0.12), transparent 46%);
         }
-        .nixy-orb.shape-pill {
-            border-radius: 44% 44% 48% 48% / 38% 38% 62% 62% !important;
-            transform: scale(1.06, 0.94);
+        .model-logo-mark {
+            width: 3.25rem;
+            height: 3.25rem;
+            border-radius: 0.9rem;
+            background: #09080f;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 26px rgba(9, 8, 15, 0.22);
+            overflow: hidden;
         }
-        .nixy-orb.shape-star {
-            border-radius: 60% 40% 60% 40% / 40% 60% 40% 60% !important;
-        }
-        .nixy-orb.shape-squish {
-            animation: nixyMorphSquish 0.85s ease-in-out !important;
-        }
-        .nixy-eye {
-            background-color: #ffffff;
-            border-radius: 9999px;
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.95);
-            animation: nixyBlink 4.2s infinite;
-            transition: transform 0.14s ease-out, height 0.2s ease, width 0.2s ease, border-radius 0.2s ease, background-color 0.2s ease;
-        }
-        .nixy-orb.mood-thinking .nixy-eye {
-            background-color: #fef08a;
-            animation: nixyBlink 0.9s infinite;
-        }
-        .nixy-orb.mood-speaking {
-            transform: scale(1.08);
-            box-shadow: 0 0 54px rgba(168, 85, 247, 0.95);
-        }
-        .nixy-orb.mood-happy .nixy-eye {
-            height: 45% !important;
-            border-radius: 9999px 9999px 4px 4px !important;
-            animation: none;
-        }
-        .nixy-orb.mood-curious .nixy-eye:first-child {
-            transform: scale(1.22);
-        }
-        .nixy-orb.mood-curious .nixy-eye:last-child {
-            transform: scale(0.82);
-        }
-        .nixy-orb.mood-error .nixy-eye {
-            background-color: #fda4af;
-            animation: none;
+        .dark .model-logo-mark {
+            background: #161322;
+            border: 1px solid rgba(167, 139, 250, 0.3);
         }
         .voice-bar {
             width: 4px;
@@ -162,6 +134,35 @@
         .voice-active .voice-bar:nth-child(3) { animation-delay: 0.24s; }
         .voice-active .voice-bar:nth-child(4) { animation-delay: 0.36s; }
         .voice-active .voice-bar:nth-child(5) { animation-delay: 0.48s; }
+
+        .prose pre {
+            background-color: #0b0914 !important;
+            border: 1px solid #251f38;
+            border-radius: 0.75rem;
+            padding: 0.9rem 1rem;
+            margin: 0.75rem 0;
+            overflow-x: auto;
+        }
+        .prose p { margin-bottom: 0.65rem; line-height: 1.65; }
+        .prose p:last-child { margin-bottom: 0; }
+        .prose code:not(pre code) {
+            background: rgba(139, 92, 246, 0.15);
+            color: #7c3aed;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.85em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .dark .prose code:not(pre code) { color: #c4b5fd; }
+
+        .nix-code-card {
+            background: #0b0914;
+            border: 1px solid #251f38;
+            border-radius: 0.85rem;
+            margin: 0.75rem 0;
+            overflow: hidden;
+        }
+        .nix-file-graphic {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -187,7 +188,7 @@
             font-weight: 800;
             font-family: 'JetBrains Mono', monospace;
             color: #ddd6fe;
-            shrink: 0;
+            flex-shrink: 0;
         }
         .nix-code-header {
             display: flex;
@@ -259,11 +260,11 @@
 
         @keyframes astreyaPulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
+            50% { transform: scale(1.06); }
         }
         .astreya-orb {
             background: radial-gradient(circle at 35% 35%, #c084fc 0%, #7c3aed 55%, #07060b 100%);
-            box-shadow: 0 0 70px rgba(139, 92, 246, 0.55);
+            box-shadow: 0 0 70px rgba(139, 92, 246, 0.5);
             animation: astreyaPulse 3.5s ease-in-out infinite;
         }
     </style>
@@ -272,14 +273,12 @@
 
     <!-- Auth Verification Gate -->
     <div id="auth-gate" class="fixed inset-0 z-50 bg-white dark:bg-codenix-black flex flex-col items-center justify-center p-6 transition-opacity duration-300">
-        <div class="nixy-orb w-20 h-20 rounded-full flex items-center justify-center mb-4">
-            <div class="flex items-center gap-3">
-                <span class="nixy-eye w-3.5 h-3.5 block"></span>
-                <span class="nixy-eye w-3.5 h-3.5 block"></span>
-            </div>
+        <div class="model-logo-mark mb-4">
+            <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; document.getElementById('auth-gate-fallback').classList.remove('hidden');" class="w-8 h-8 object-contain">
+            <span id="auth-gate-fallback" class="hidden font-mono font-extrabold text-sm tracking-tighter">XXXX</span>
         </div>
-        <p class="text-sm font-bold text-codenix-700 dark:text-codenix-300">Nixy — Verifying Codenix Session...</p>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Authenticating workspace & Cloudflare secrets...</p>
+        <p class="text-sm font-bold text-zinc-800 dark:text-zinc-200">Verifying Session...</p>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Connecting workspace & cloud state...</p>
     </div>
 
     <!-- Mobile Sidebar Backdrop -->
@@ -288,30 +287,27 @@
     <div class="flex h-full w-full overflow-hidden relative">
 
         <!-- SIDEBAR -->
-        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-codenix-50/80 dark:bg-codenix-panel/95 backdrop-blur-xl border-r border-codenix-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
-            <div class="p-3.5 border-b border-codenix-200 dark:border-codenix-border space-y-3">
+        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-[#f3fbf8] dark:bg-codenix-panel/95 backdrop-blur-xl border-r border-zinc-200/80 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
+            <div class="p-3.5 space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
-                        <img src="/logo.png" alt="Codenix Logo" onerror="this.style.display='none'" class="w-8 h-8 rounded-xl object-contain shrink-0">
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="font-extrabold text-base tracking-tight text-codenix-700 dark:text-white">Nixy</span>
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 border border-codenix-500/30">STUDIO</span>
-                            </div>
-                            <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Autonomous AI Agent</p>
+                        <div class="w-8 h-8 rounded-lg bg-[#09080f] text-white flex items-center justify-center shrink-0 overflow-hidden">
+                            <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-5 h-5 object-contain">
+                            <span class="hidden font-mono font-extrabold text-[10px] tracking-tighter">XXXX</span>
                         </div>
+                        <span class="font-bold text-base tracking-tight text-zinc-900 dark:text-white">Codenix AI</span>
                     </div>
-                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600">
+                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="createNewChat(false)" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-codenix-600 to-indigo-600 hover:from-codenix-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-lg shadow-codenix-600/25 transition-all active:scale-[0.98]">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>New Chat</span>
+                    <button type="button" onclick="createNewChat(false)" class="flex-1 py-2.5 px-3 rounded-xl bg-white dark:bg-codenix-black hover:bg-zinc-50 dark:hover:bg-codenix-card text-zinc-900 dark:text-white border border-zinc-200/90 dark:border-codenix-border text-xs font-semibold flex items-center justify-start gap-2 shadow-2xs transition-all active:scale-[0.99]">
+                        <i data-lucide="square-pen" class="w-4 h-4 text-zinc-700 dark:text-zinc-300"></i>
+                        <span>New chat</span>
                     </button>
-                    <button type="button" onclick="createNewChat(true)" title="Temporary Chat (Not saved to cloud history)" class="py-2.5 px-3 rounded-xl bg-white dark:bg-codenix-black hover:border-amber-500/60 border border-codenix-200 dark:border-codenix-border text-zinc-700 dark:text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition" id="sidebar-temp-chat-btn">
+                    <button type="button" onclick="createNewChat(true)" title="Temporary Chat (Not saved to cloud history)" class="py-2.5 px-3 rounded-xl bg-white dark:bg-codenix-black hover:border-amber-500/60 border border-zinc-200/90 dark:border-codenix-border text-zinc-700 dark:text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition" id="sidebar-temp-chat-btn">
                         <i data-lucide="ghost" class="w-4 h-4 text-amber-500"></i>
                         <span>Temp</span>
                     </button>
@@ -319,32 +315,37 @@
 
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                    <input type="search" id="chat-search" name="nixy_conv_filter" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" oninput="renderConversationList()" placeholder="Search conversations..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 transition">
+                    <input type="search" id="chat-search" name="conv_filter" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" oninput="renderConversationList()" placeholder="Search chats" class="w-full pl-8 pr-3 py-2 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200/90 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 transition">
                 </div>
             </div>
 
-            <div id="conversation-list" class="flex-1 overflow-y-auto p-2.5 space-y-1"></div>
+            <div id="conversation-list" class="flex-1 overflow-y-auto px-3 py-1 space-y-1"></div>
 
-            <div class="p-3 border-t border-codenix-200 dark:border-codenix-border space-y-2.5 bg-white/70 dark:bg-codenix-black/60">
-                <button type="button" onclick="toggleToolLibrarySection(true)" id="tool-library-toggle-btn" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 text-xs font-bold transition">
+            <div class="p-3 border-t border-zinc-200/80 dark:border-codenix-border space-y-2 bg-white/60 dark:bg-codenix-black/60">
+                <button type="button" onclick="toggleToolLibrarySection(true)" id="tool-library-toggle-btn" class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white dark:bg-codenix-black hover:border-codenix-500 border border-zinc-200/90 dark:border-codenix-border text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition">
                     <span class="flex items-center gap-2 truncate">
-                        <i data-lucide="layout-grid" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                        <span class="truncate">Plugins & Library</span>
+                        <i data-lucide="layers" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
+                        <span class="truncate">Library & Plugins</span>
                     </span>
-                    <span id="sheet-tool-library-count" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-600 text-white">4+</span>
+                    <span id="sheet-tool-library-count" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">6+</span>
                 </button>
 
-                <div class="pt-2 border-t border-codenix-200 dark:border-codenix-border flex items-center justify-between gap-2">
+                <div class="pt-1.5 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2 min-w-0">
-                        <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-gradient-to-tr from-codenix-600 to-purple-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm">N</div>
+                        <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center justify-center shrink-0">M</div>
                         <div class="min-w-0">
-                            <p id="user-display-name" class="text-xs font-semibold truncate">Codenix Member</p>
+                            <p id="user-display-name" class="text-xs font-semibold truncate">Member</p>
                             <p id="sidebar-quota-text" class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Chat: 0/30 • Img: 0/3</p>
                         </div>
                     </div>
-                    <button type="button" onclick="signOutUser()" title="Sign Out" class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 transition shrink-0">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                    </button>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="openUsageModal()" title="Usage & Provider" class="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="signOutUser()" title="Sign Out" class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 transition">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -353,61 +354,61 @@
         <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-white dark:bg-codenix-black">
 
             <!-- Top Header Bar -->
-            <header class="h-14 border-b border-codenix-200 dark:border-codenix-border px-3 sm:px-5 flex items-center justify-between bg-white/85 dark:bg-codenix-black/85 backdrop-blur-md shrink-0 z-20">
+            <header class="h-14 border-b border-zinc-200/70 dark:border-codenix-border px-3 sm:px-5 flex items-center justify-between bg-white/85 dark:bg-codenix-black/85 backdrop-blur-md shrink-0 z-20">
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-codenix-50 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
-                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
+                        <i data-lucide="panel-left" class="w-5 h-5"></i>
                     </button>
 
-                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold">
-                        <img src="/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-4 h-4 rounded object-contain">
-                        <span class="w-2 h-2 rounded-full bg-codenix-500 animate-pulse"></span>
-                        <span>Nixy</span>
-                        <span id="active-provider-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">Auto</span>
+                    <div class="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-xs font-bold">
+                        <div class="w-5 h-5 rounded-md bg-[#09080f] text-white flex items-center justify-center overflow-hidden shrink-0">
+                            <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-3.5 h-3.5 object-contain">
+                            <span class="hidden font-mono font-extrabold text-[8px]">XX</span>
+                        </div>
+                        <span id="header-model-name">Codenix AI</span>
                     </div>
 
                     <div id="temp-chat-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-600 dark:text-amber-300 text-[11px] font-semibold">
                         <i data-lucide="ghost" class="w-3.5 h-3.5"></i>
-                        <span>Temporary Chat</span>
+                        <span>Temporary</span>
                         <button type="button" onclick="createNewChat(false)" class="ml-1 underline hover:no-underline">Exit</button>
                     </div>
 
                     <div id="sharenix-live-banner" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        <span>Screen Live</span>
+                        <span>Screen</span>
                         <button type="button" onclick="stopShareNix()" class="ml-1 underline hover:no-underline">Stop</button>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button type="button" onclick="togglePreferredProvider()" id="provider-mode-btn" title="Toggle Cloudflare Secrets Auto-Routing / Unlimited Puter.js" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-xs font-semibold hover:border-codenix-500 transition">
+                    <button type="button" onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch Auto / Puter.js" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-xs font-semibold hover:border-codenix-500 transition">
                         <i data-lucide="zap" class="w-3.5 h-3.5 text-codenix-500"></i>
                         <span id="provider-mode-label">Auto</span>
                     </button>
 
                     <div class="relative">
-                        <button type="button" onclick="toggleLangDropdown(event)" id="lang-btn" title="Language" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition flex items-center gap-1 text-xs font-bold">
-                            <i data-lucide="globe" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                        <button type="button" onclick="toggleLangDropdown(event)" id="lang-btn" title="Language" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition flex items-center gap-1 text-xs font-bold">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
                             <span id="current-lang-code" class="uppercase text-[10px] font-mono">EN</span>
                         </button>
-                        <div id="lang-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-40 rounded-2xl bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-2xl p-1.5 z-50 space-y-0.5"></div>
+                        <div id="lang-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-40 rounded-2xl bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border shadow-2xl p-1.5 z-50 space-y-0.5"></div>
                     </div>
 
-                    <button type="button" onclick="openFeedbackModal()" title="Quick Feedback & Nix Watches" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
-                        <i data-lucide="message-circle-heart" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                    <button type="button" onclick="openFeedbackModal()" title="Feedback" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition">
+                        <i data-lucide="message-square-plus" class="w-4 h-4"></i>
                     </button>
 
-                    <button type="button" onclick="openUsageModal()" title="Usage & Puter.js" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                    <button type="button" onclick="openShareModal()" title="Share" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition">
+                        <i data-lucide="share-2" class="w-4 h-4"></i>
                     </button>
 
-                    <button type="button" onclick="openShareModal()" title="Share with PIN" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-codenix-600/10 hover:bg-codenix-600/20 border border-codenix-500/30 text-codenix-700 dark:text-codenix-300 text-xs font-semibold transition">
-                        <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
-                        <span class="hidden sm:inline" data-i18n="shareBtn">Share</span>
+                    <button type="button" onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition">
+                        <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
                     </button>
 
-                    <button type="button" onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border text-zinc-600 dark:text-zinc-300 hover:border-codenix-500 transition">
-                        <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                    <button type="button" onclick="createNewChat(true)" title="Temporary Chat" class="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-panel transition">
+                        <i data-lucide="ghost" class="w-4 h-4"></i>
                     </button>
                 </div>
             </header>
@@ -416,63 +417,74 @@
             <div class="flex-1 flex overflow-hidden min-h-0">
 
                 <!-- CHAT STREAM AREA -->
-                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth">
+                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth workspace-welcome-canvas">
                     <div class="max-w-3xl mx-auto space-y-6">
 
-                        <!-- Dashboard Introduction Hero with Morphing Nixy Orb -->
-                        <div id="nixy-hero" class="flex flex-col items-center justify-center text-center py-10 sm:py-16">
-                            <!-- Nixy: Organic Morphing Purple Orb with 2 White Ball Eyes -->
-                            <div id="nixy-main-orb" class="nixy-orb w-24 h-24 rounded-full flex items-center justify-center mb-6 cursor-pointer" onclick="handleNixyCharacterClick(event)">
-                                <div id="nixy-eyes" class="flex items-center justify-center gap-3.5 pointer-events-none">
-                                    <span class="nixy-eye w-4 h-4 block"></span>
-                                    <span class="nixy-eye w-4 h-4 block"></span>
-                                </div>
+                        <!-- Welcome Screen Showing Model Logo, Prompt Cards & Quick Chips -->
+                        <div id="workspace-hero" class="flex flex-col items-center justify-center text-center py-6 sm:py-10">
+                            <div class="model-logo-mark mb-4">
+                                <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; document.getElementById('hero-logo-fallback').classList.remove('hidden');" class="w-8 h-8 object-contain">
+                                <span id="hero-logo-fallback" class="hidden font-mono font-extrabold text-sm tracking-tighter">XXXX</span>
                             </div>
 
-                            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-2">
-                                How can <span class="text-codenix-600 dark:text-codenix-400">Nixy</span> help today?
+                            <h1 id="welcome-heading" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white mb-6">
+                                What can I help with?
                             </h1>
-                            <p id="nixy-hero-subtitle" class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-md mb-6">
-                                Just ask naturally — Nixy automatically selects the right capability for code, images, voice, math, tables, QR, or live screen vision.
-                            </p>
 
-                            <!-- Clean Minimal Prompt Starters -->
-                            <div class="flex flex-wrap items-center justify-center gap-2 max-w-xl">
-                                <button type="button" onclick="quickSendPrompt('Build an interactive HTML & Tailwind CSS pomodoro dashboard')" class="px-3.5 py-2 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium transition">
-                                    Build a Pomodoro web app
+                            <!-- 2x2 Action Cards Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl text-left mb-4">
+                                <button type="button" onclick="triggerHeroAction('summarize_pdf')" class="p-4 rounded-2xl bg-white/90 dark:bg-codenix-panel/90 border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500/60 shadow-2xs transition group">
+                                    <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white group-hover:text-codenix-600 dark:group-hover:text-codenix-400">Summarize a PDF</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Pick a file and I will summarize it</p>
                                 </button>
-                                <button type="button" onclick="quickSendPrompt('Generate an image of a futuristic purple crystal observatory at night')" class="px-3.5 py-2 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium transition">
-                                    Generate crystal observatory art
+                                <button type="button" onclick="quickSendPrompt('Write clean Python code for a task scheduler with clear comments and examples')" class="p-4 rounded-2xl bg-white/90 dark:bg-codenix-panel/90 border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500/60 shadow-2xs transition group">
+                                    <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white group-hover:text-codenix-600 dark:group-hover:text-codenix-400">Write Python code</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Describe what the code should do</p>
                                 </button>
-                                <button type="button" onclick="quickSendPrompt('Compare React, Vue, and Svelte in a structured table')" class="px-3.5 py-2 rounded-full bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium transition">
-                                    Compare JS frameworks
+                                <button type="button" onclick="quickSendPrompt('Generate an image of a serene futuristic garden at golden hour')" class="p-4 rounded-2xl bg-white/90 dark:bg-codenix-panel/90 border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500/60 shadow-2xs transition group">
+                                    <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white group-hover:text-codenix-600 dark:group-hover:text-codenix-400">Design an image</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Creates artwork automatically</p>
                                 </button>
+                                <button type="button" onclick="quickSendPrompt('Explain a complex topic step by step in simple terms')" class="p-4 rounded-2xl bg-white/90 dark:bg-codenix-panel/90 border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500/60 shadow-2xs transition group">
+                                    <p class="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white group-hover:text-codenix-600 dark:group-hover:text-codenix-400">Explain a lesson</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Type the lesson or topic</p>
+                                </button>
+                            </div>
+
+                            <!-- Pill Prompt Chips -->
+                            <div class="flex flex-wrap items-center justify-center gap-2 max-w-2xl">
+                                <button type="button" onclick="quickSendPrompt('Translate this text accurately into clear English and Arabic')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Translate</button>
+                                <button type="button" onclick="quickSendPrompt('Summarize key points concisely')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Summarize</button>
+                                <button type="button" onclick="quickSendPrompt('Explain simply with a clear analogy')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Explain simply</button>
+                                <button type="button" onclick="quickSendPrompt('Write a polite professional email')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Write an email</button>
+                                <button type="button" onclick="quickSendPrompt('Fix bugs and improve this code')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Fix my code</button>
+                                <button type="button" onclick="quickSendPrompt('Create a structured weekly study plan')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Study plan</button>
+                                <button type="button" onclick="quickSendPrompt('Proofread and polish grammar and tone')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Proofread</button>
+                                <button type="button" onclick="quickSendPrompt('Brainstorm creative project ideas')" class="px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border hover:border-codenix-500 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition">Ideas</button>
                             </div>
                         </div>
 
                         <!-- Dynamic Messages Feed -->
                         <div id="messages-feed" class="space-y-6"></div>
 
-                        <!-- Live Thinking / Loading Animation Indicator -->
+                        <!-- Live Thinking Indicator Showing Model Logo -->
                         <div id="nixy-loading-indicator" class="hidden items-start gap-3">
-                            <div class="nixy-orb mood-thinking w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="nixy-eye w-1.5 h-1.5 block"></span>
-                                    <span class="nixy-eye w-1.5 h-1.5 block"></span>
-                                </div>
+                            <div class="w-8 h-8 rounded-lg bg-[#09080f] text-white flex items-center justify-center shrink-0 mt-1 overflow-hidden">
+                                <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-5 h-5 object-contain">
+                                <span class="hidden font-mono font-extrabold text-[9px]">XX</span>
                             </div>
-                            <div class="bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs space-y-2.5 max-w-md w-full">
+                            <div class="bg-white/95 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs space-y-2.5 max-w-md w-full">
                                 <div class="flex items-center gap-3">
                                     <div class="flex items-center gap-1.5">
                                         <span class="nixy-typing-dot"></span>
                                         <span class="nixy-typing-dot"></span>
                                         <span class="nixy-typing-dot"></span>
                                     </div>
-                                    <span id="nixy-loading-text" class="text-xs font-semibold text-codenix-700 dark:text-codenix-300">Nixy is thinking...</span>
+                                    <span id="nixy-loading-text" class="text-xs font-semibold text-zinc-700 dark:text-zinc-200">Thinking...</span>
                                 </div>
                                 <div id="nixy-image-generating-card" class="hidden rounded-xl overflow-hidden border border-codenix-500/30 bg-codenix-950/60 p-3">
                                     <div class="nix-img-shimmer w-full h-36 rounded-lg flex items-center justify-center">
-                                        <span class="text-[11px] font-semibold text-codenix-200 px-3 py-1 rounded-full bg-black/40">Generating visual...</span>
+                                        <span class="text-[11px] font-semibold text-codenix-200 px-3 py-1 rounded-full bg-black/40">Generating image...</span>
                                     </div>
                                 </div>
                             </div>
@@ -485,7 +497,7 @@
                     <div class="h-12 px-4 border-b border-codenix-200 dark:border-codenix-border flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <i data-lucide="layout" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
-                            <span class="text-xs font-bold">Cody Live Canvas</span>
+                            <span class="text-xs font-bold">Live Preview</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="switchCodyTab('preview')" id="cody-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
@@ -501,8 +513,8 @@
                 </aside>
             </div>
 
-            <!-- CLEAN COMPOSER BAR (No Manual Tool Chips) -->
-            <div class="p-3 sm:p-4 border-t border-codenix-200 dark:border-codenix-border bg-white/95 dark:bg-codenix-black/95 backdrop-blur-md shrink-0">
+            <!-- COMPOSER BAR -->
+            <div class="p-3 sm:p-4 bg-transparent shrink-0">
                 <div class="max-w-3xl mx-auto">
                     <video id="sharenix-video" autoplay playsinline muted class="hidden"></video>
                     <canvas id="sharenix-canvas" class="hidden"></canvas>
@@ -510,36 +522,37 @@
                     <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
                     <input type="file" id="nixy-file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql,.xml" onchange="handleFileUploadSelection(event)" class="hidden">
 
-                    <div class="flex items-end gap-1.5 sm:gap-2 bg-codenix-50 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 shadow-sm transition">
-                        <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Attach Files or Images" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
+                    <div class="flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-codenix-panel border border-zinc-200/90 dark:border-codenix-border focus-within:border-zinc-400 dark:focus-within:border-codenix-500 rounded-full px-3 py-1.5 shadow-sm transition">
+                        <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Attach Files" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
                             <i data-lucide="paperclip" class="w-4 h-4"></i>
                         </button>
 
-                        <button type="button" onclick="openAstreyaModal()" title="Voice Conversation Mode" class="p-2.5 rounded-xl text-codenix-600 dark:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
-                            <i data-lucide="audio-waveform" class="w-4 h-4"></i>
+                        <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Attach Images" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
+                            <i data-lucide="image" class="w-4 h-4"></i>
                         </button>
 
-                        <button type="button" onclick="toggleShareNix()" title="Share Screen with Nixy" class="p-2.5 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-codenix-600 hover:bg-codenix-600/10 transition shrink-0">
-                            <i data-lucide="monitor-up" class="w-4 h-4"></i>
+                        <button type="button" onclick="openAstreyaModal()" title="Voice Mode" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
+                            <i data-lucide="mic" class="w-4 h-4"></i>
                         </button>
 
-                        <textarea id="prompt-input" rows="1" placeholder="Message Nixy..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
+                        <textarea id="prompt-input" rows="1" placeholder="Message Codenix AI" onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
 
-                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white shadow-md shadow-codenix-600/25 transition shrink-0">
+                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2 rounded-full bg-zinc-200/80 hover:bg-zinc-900 hover:text-white dark:bg-codenix-600 dark:hover:bg-codenix-700 disabled:opacity-50 text-zinc-700 dark:text-white transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
+                    <p class="text-[11px] text-zinc-400 text-center mt-2">Codenix AI can make mistakes. Check important info.</p>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- IMPROVED ASTREYA VOICE MODE MODAL (Continuous Two-Way Voice + Auto-Speak + Waveforms) -->
+    <!-- VOICE MODE MODAL -->
     <div id="astreya-modal" class="fixed inset-0 z-50 bg-codenix-black/95 backdrop-blur-xl hidden flex-col items-center justify-between p-5 sm:p-8 text-white overflow-y-auto">
         <div class="w-full max-w-2xl flex items-center justify-between">
             <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold">
                 <span class="w-2 h-2 rounded-full bg-codenix-400 animate-pulse"></span>
-                <span>Nixy Live Voice</span>
+                <span>Live Voice</span>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" id="astreya-handsfree-btn" onclick="toggleAstreyaHandsFree()" class="px-3 py-1.5 rounded-full bg-codenix-600/30 border border-codenix-400/40 text-codenix-200 text-xs font-semibold flex items-center gap-1.5">
@@ -557,10 +570,10 @@
         </div>
 
         <div class="flex flex-col items-center text-center my-auto w-full max-w-xl py-6 space-y-6">
-            <div id="astreya-orb" onclick="toggleAstreyaListening()" class="astreya-orb w-36 h-36 sm:w-40 sm:h-40 rounded-full flex items-center justify-center cursor-pointer transition-transform active:scale-95">
-                <div class="flex items-center gap-3.5">
-                    <span class="nixy-eye w-4 h-4 block"></span>
-                    <span class="nixy-eye w-4 h-4 block"></span>
+            <div id="astreya-orb" onclick="toggleAstreyaListening()" class="astreya-orb w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center cursor-pointer transition-transform active:scale-95">
+                <div class="w-14 h-14 rounded-2xl bg-[#09080f]/80 border border-white/20 flex items-center justify-center overflow-hidden">
+                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-8 h-8 object-contain">
+                    <span class="hidden font-mono font-extrabold text-xs tracking-tighter">XXXX</span>
                 </div>
             </div>
 
@@ -579,7 +592,7 @@
             </div>
 
             <div class="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-100 leading-relaxed max-h-40 overflow-y-auto">
-                <p id="astreya-caption">"I'm listening. Speak naturally and I'll respond aloud and run any tool you need."</p>
+                <p id="astreya-caption">"I'm listening. Speak naturally and I'll respond aloud."</p>
             </div>
 
             <div class="flex items-center gap-3">
@@ -603,7 +616,7 @@
             <div class="w-12 h-12 rounded-2xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center mx-auto">
                 <i data-lucide="timer" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-lg font-extrabold">Pomodory Focus Session</h3>
+            <h3 class="text-lg font-extrabold">Focus Session</h3>
             <div id="pomodory-display" class="text-4xl font-extrabold font-mono text-codenix-600 dark:text-codenix-400 py-2">25:00</div>
             <div class="flex items-center justify-center gap-2 text-xs">
                 <button type="button" onclick="setPomodoryMinutes(15)" class="px-3 py-1.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border font-semibold">15m</button>
@@ -617,26 +630,24 @@
         </div>
     </div>
 
-    <!-- INTERACTIVE NIXY TUTORIAL MODAL -->
+    <!-- WORKSPACE TOUR MODAL -->
     <div id="nixy-tutorial-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative text-center space-y-4">
             <button type="button" onclick="closeNixyTutorial()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <div class="flex items-center justify-center gap-2">
-                <div class="nixy-orb w-16 h-16 rounded-full flex items-center justify-center">
-                    <div class="flex items-center gap-2.5">
-                        <span class="nixy-eye w-3 h-3 block"></span>
-                        <span class="nixy-eye w-3 h-3 block"></span>
-                    </div>
+            <div class="flex items-center justify-center">
+                <div class="model-logo-mark">
+                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-8 h-8 object-contain">
+                    <span id="tour-logo-fallback" class="hidden font-mono font-extrabold text-sm tracking-tighter">XXXX</span>
                 </div>
             </div>
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold">
                 <span id="tutorial-step-badge">Step 1 of 4</span>
             </div>
-            <h3 id="tutorial-title" class="text-lg font-extrabold text-zinc-900 dark:text-white">Autonomous Nixy Studio</h3>
+            <h3 id="tutorial-title" class="text-lg font-extrabold text-zinc-900 dark:text-white">Autonomous Workspace</h3>
             <p id="tutorial-body" class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                Nixy automatically decides the right capability from your natural message and seamlessly fails over to unlimited Puter.js whenever needed.
+                The model automatically chooses the right tool from your message and falls back seamlessly to Puter.js when needed.
             </p>
             <div class="flex items-center justify-between pt-2 gap-2">
                 <button type="button" onclick="prevTutorialStep()" id="tutorial-prev-btn" class="px-4 py-2 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs font-semibold">Back</button>
@@ -684,14 +695,14 @@
             <div class="w-12 h-12 rounded-2xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center mx-auto">
                 <i data-lucide="key-round" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-lg font-bold">Protected Nixy Conversation</h3>
+            <h3 class="text-lg font-bold">Protected Conversation</h3>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Enter the publisher's PIN to view this shared chat.</p>
             <input type="password" id="unlock-pin-input" maxlength="8" placeholder="Enter PIN" class="w-full px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-center text-base font-mono focus:outline-none focus:border-codenix-500">
             <button type="button" onclick="verifySharedPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock Conversation</button>
         </div>
     </div>
 
-    <!-- CODENIX TOKENS USAGE & PUTER.JS LINK MODAL -->
+    <!-- TOKENS USAGE & PUTER.JS LINK MODAL -->
     <div id="usage-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
             <button type="button" onclick="closeUsageModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
@@ -723,7 +734,7 @@
                     <span id="cf-proxy-status-badge" class="font-mono text-[11px] px-2 py-0.5 rounded bg-codenix-600/20">Auto-Route</span>
                 </p>
                 <p class="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Nixy sends your Supabase JWT token to <code>/api/nixy</code> to securely unlock Cloudflare Worker secrets. If the proxy is offline or rate-limited, Nixy seamlessly switches to <strong>Puter.js</strong> for unlimited AI chat, code, images, and TTS.
+                    Requests send your Supabase JWT token to <code>/api/nixy</code> to unlock Cloudflare Worker secrets. If the proxy is offline or rate-limited, the workspace seamlessly switches to <strong>Puter.js</strong> for unlimited AI chat, code, images, and TTS.
                 </p>
             </div>
 
@@ -767,7 +778,7 @@
                                 <i data-lucide="terminal" class="w-5 h-5"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold">NixCode IDE</p>
+                                <p class="text-xs font-bold">Code Studio</p>
                                 <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">Full-screen Codenix development studio</p>
                             </div>
                         </a>
@@ -777,7 +788,7 @@
                                 <i data-lucide="mic" class="w-5 h-5"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold">Astreya Voice Mode</p>
+                                <p class="text-xs font-bold">Live Voice Mode</p>
                                 <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">Hands-free two-way spoken conversation</p>
                             </div>
                         </button>
@@ -787,7 +798,7 @@
                                 <i data-lucide="timer" class="w-5 h-5"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold">Pomodory Focus Timer</p>
+                                <p class="text-xs font-bold">Focus Timer</p>
                                 <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">15m / 25m / 50m deep work intervals</p>
                             </div>
                         </button>
@@ -797,8 +808,8 @@
                                 <i data-lucide="monitor-up" class="w-5 h-5"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold">ShareNix Screen Vision</p>
-                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">Share live screen frames with Nixy</p>
+                                <p class="text-xs font-bold">Screen Vision</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">Share live screen frames with the model</p>
                             </div>
                         </button>
 
@@ -817,8 +828,8 @@
                                 <i data-lucide="sparkles" class="w-5 h-5"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs font-bold">Interactive Tour</p>
-                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">Guided walkthrough with Nixy</p>
+                                <p class="text-xs font-bold">Workspace Tour</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">Guided walkthrough of workspace features</p>
                             </div>
                         </button>
                     </div>
@@ -833,7 +844,7 @@
         </div>
     </div>
 
-    <!-- QUICK FEEDBACK & NIX WATCHES MODAL -->
+    <!-- QUICK FEEDBACK & WATCHES MODAL -->
     <div id="feedback-modal" onclick="if(event.target===this) closeFeedbackModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-xl w-full max-h-[88vh] overflow-y-auto shadow-2xl relative space-y-4">
             <button type="button" onclick="closeFeedbackModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
@@ -841,21 +852,19 @@
             </button>
 
             <div class="flex items-center gap-3">
-                <div id="feedback-nixy-avatar" class="nixy-orb mood-happy w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                    <div class="flex items-center gap-2">
-                        <span class="nixy-eye w-2.5 h-2.5 block"></span>
-                        <span class="nixy-eye w-2.5 h-2.5 block"></span>
-                    </div>
+                <div class="w-12 h-12 rounded-2xl bg-[#09080f] text-white flex items-center justify-center shrink-0 overflow-hidden">
+                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-7 h-7 object-contain">
+                    <span class="hidden font-mono font-extrabold text-xs">XXXX</span>
                 </div>
                 <div>
-                    <h3 class="text-base font-extrabold">Quick Feedback & Nix Watches</h3>
-                    <p id="feedback-duo-line" class="text-xs text-codenix-600 dark:text-codenix-300 font-semibold">Tell Nixy how you found Codenix and explore live Nix Watches.</p>
+                    <h3 class="text-base font-extrabold">Quick Feedback & Live Watches</h3>
+                    <p id="feedback-duo-line" class="text-xs text-codenix-600 dark:text-codenix-300 font-semibold">Tell us how you found Codenix and explore live watches.</p>
                 </div>
             </div>
 
             <div class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-codenix-700 dark:text-codenix-300">Nix Watches (Live Watchlist)</span>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-codenix-700 dark:text-codenix-300">Live Watchlist</span>
                     <span id="nix-watches-count" class="text-[10px] font-mono text-zinc-400">0</span>
                 </div>
                 <div id="nix-watches-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
@@ -884,7 +893,7 @@
             </div>
 
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold">Rate Nixy Experience:</span>
+                <span class="text-xs font-bold">Rate Experience:</span>
                 <div id="feedback-rating-stars" class="flex items-center gap-1">
                     <button type="button" onclick="setFeedbackRating(1)" data-star="1" class="text-lg opacity-40 hover:opacity-100">★</button>
                     <button type="button" onclick="setFeedbackRating(2)" data-star="2" class="text-lg opacity-40 hover:opacity-100">★</button>
@@ -894,21 +903,11 @@
                 </div>
             </div>
 
-            <textarea id="feedback-comment-input" rows="2" placeholder="Share a quick note or suggestion with Nixy..." class="w-full px-3.5 py-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 resize-none"></textarea>
+            <textarea id="feedback-comment-input" rows="2" placeholder="Share a quick note or suggestion..." class="w-full px-3.5 py-2.5 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 resize-none"></textarea>
 
             <button type="button" onclick="submitQuickFeedback()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold shadow-md">
-                Send Feedback to Nixy
+                Send Feedback
             </button>
-        </div>
-    </div>
-
-    <!-- Draggable Morphing Nixy Companion Orb (No emoji text bubbles) -->
-    <div id="nixy-companion-floater" onpointerdown="startDraggingNixyCompanion(event)" class="fixed bottom-24 right-5 z-40 cursor-grab active:cursor-grabbing select-none flex flex-col items-center">
-        <div onclick="handleNixyCharacterClick(event)" class="nixy-orb w-11 h-11 rounded-full flex items-center justify-center cursor-pointer">
-            <div class="flex items-center gap-2 pointer-events-none">
-                <span class="nixy-eye w-2 h-2 block"></span>
-                <span class="nixy-eye w-2 h-2 block"></span>
-            </div>
         </div>
     </div>
 
@@ -917,7 +916,7 @@
 
     <script>
         /**
-         * NIXY AI AGENT STUDIO — CODENIX
+         * CODENIX AI WORKSPACE
          * Autonomous Tool Decision Engine + Cloudflare Secrets Proxy + Puter.js Failover + Temporary Chat + Two-Way Voice Mode
          */
 
@@ -958,19 +957,19 @@
         // STRONG SYSTEM PROMPT & AUTONOMOUS TOOL DECISION
         // ==========================================
         const NIXY_SYSTEM_PROMPT = `
-You are Nixy, the autonomous flagship AI Agent of Codenix Studio.
+You are Codenix AI, an autonomous flagship AI model and assistant.
 CORE DIRECTIVES:
 - You autonomously analyze user intent and select the optimal internal capability without asking the user to pick tools.
 - Available internal capabilities:
   1. [image_generator]: Generates high-resolution artwork, illustrations, logos, and photorealistic visuals.
   2. [puter_voice]: Synthesizes spoken audio (Text-to-Speech) using Puter.js neural voices or browser TTS.
-  3. [code_canvas]: Writes complete, self-contained, runnable HTML/CSS/JS/Python/React applications ready for the Cody Live Preview Canvas.
+  3. [code_canvas]: Writes complete, self-contained, runnable HTML/CSS/JS/Python/React applications ready for the Live Preview Canvas.
   4. [qr_generator]: Creates instant, downloadable QR codes for URLs, Wi-Fi credentials, or text payloads.
   5. [math_calculator]: Evaluates mathematical expressions, unit conversions, and quantitative formulas accurately.
   6. [data_table]: Structures comparisons, datasets, and schedules into clean, exportable Markdown tables.
   7. [document_writer]: Produces comprehensive reports, essays, guides, and structured documentation exportable to PDF/DOC.
   8. [web_search]: Retrieves real-time web knowledge and current facts.
-  9. [screen_vision]: Analyzes active ShareNix screen captures or uploaded images.
+  9. [screen_vision]: Analyzes active screen captures or uploaded images.
   10. [general_chat]: Handles reasoning, brainstorming, debugging, and natural conversation.
 
 EXECUTION RULES:
@@ -1147,7 +1146,7 @@ EXECUTION RULES:
                 .replace(/^(say in voice|speak this|speak out|read aloud|read this aloud|generate voice|voice of|text to speech|tts|audio of)\s*:?\s*/i, '')
                 .replace(/```[\s\S]*?```/g, 'Code snippet.')
                 .replace(/[#*`<>]/g, '')
-                .trim() || 'Hello from Nixy!';
+                .trim() || 'Hello from Codenix AI.';
 
             let audioUrl = '';
             let provider = 'Puter.js Voice';
@@ -1397,16 +1396,17 @@ EXECUTION RULES:
             strip.innerHTML = state.uploadedFiles.map((f, idx) => `
                 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-600/15 border border-codenix-500/30 text-xs font-medium text-codenix-700 dark:text-codenix-200">
                     <i data-lucide="${f.isImage ? 'image' : 'file-text'}" class="w-3.5 h-3.5"></i>
-                    <span class="max-w-[140px] truncate">${escapeHtml(f.name)}</span>
-                    <button type="button" onclick="removeUploadedFile(${idx})" class="hover:text-rose-500 ml-1">&times;</button>
-                </div>
-            `).join('');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
+        function triggerHeroAction(actionType) {
+            if (actionType === 'summarize_pdf') {
+                const input = document.getElementById('prompt-input');
+                if (input && !input.value.trim()) {
+                    input.value = 'Summarize the attached PDF or document clearly with key bullet points.';
+                    autoResizeTextarea(input);
+                }
+                document.getElementById('nixy-file-input')?.click();
+            }
         }
 
-        // ==========================================
-        // MAIN SEND PROMPT & AUTONOMOUS EXECUTION
-        // ==========================================
         async function handleSendPrompt(fromVoiceMode = false) {
             if (state.isSending) return;
             const inputEl = document.getElementById('prompt-input');
@@ -1455,11 +1455,10 @@ EXECUTION RULES:
             renderMessages();
 
             state.isSending = true;
-            setNixyMood('thinking');
             const loadingEl = document.getElementById('nixy-loading-indicator');
             const loadingTextEl = document.getElementById('nixy-loading-text');
             const imgGenCard = document.getElementById('nixy-image-generating-card');
-            if (loadingTextEl) loadingTextEl.textContent = 'Nixy is thinking...';
+            if (loadingTextEl) loadingTextEl.textContent = 'Thinking...';
             if (imgGenCard) imgGenCard.classList.toggle('hidden', selectedTool !== 'image_generator');
             if (loadingEl) {
                 loadingEl.classList.remove('hidden');
@@ -1569,16 +1568,12 @@ EXECUTION RULES:
                     const statusEl = document.getElementById('astreya-status');
                     const cleanSpoken = latestAssistant.content.replace(/```[\s\S]*?```/g, 'Code is ready in your chat.').replace(/[#*`]/g, '');
                     if (captionEl) captionEl.textContent = cleanSpoken;
-                    if (statusEl) statusEl.textContent = 'Nixy Speaking...';
+                    if (statusEl) statusEl.textContent = 'Speaking...';
                     if (selectedTool !== 'puter_voice') {
                         await executeVoiceGenerator(cleanSpoken.slice(0, 480), true);
                     }
                 }
-
-                setNixyMood('happy');
-                setTimeout(() => setNixyMood('idle'), 1500);
             } catch (_) {
-                setNixyMood('error');
                 conv.messages.push({
                     role: 'assistant',
                     content: 'Sorry, I encountered a temporary issue processing that request. Please try again.'
@@ -1595,150 +1590,15 @@ EXECUTION RULES:
         }
 
         // ==========================================
-        // LANGUAGE & TRANSLATIONS
+        // MODEL LOGO HELPER
         // ==========================================
-        const NIXY_TRANSLATIONS = {
-            en: { shareBtn: 'Share' },
-            ar: { shareBtn: 'مشاركة' },
-            es: { shareBtn: 'Compartir' },
-            fr: { shareBtn: 'Partager' },
-            de: { shareBtn: 'Teilen' },
-            zh: { shareBtn: '分享' }
-        };
-
-        function renderLangDropdownMenu(activeCode) {
-            const dd = document.getElementById('lang-dropdown');
-            if (!dd) return;
-            const items = [
-                ['en', 'English'],
-                ['ar', 'العربية'],
-                ['es', 'Español'],
-                ['fr', 'Français'],
-                ['de', 'Deutsch'],
-                ['zh', '中文']
-            ];
-            dd.innerHTML = items.map(([c, label]) => `
-                <button type="button" onclick="applyLanguage('${c}'); document.getElementById('lang-dropdown').classList.add('hidden');" class="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between ${c === activeCode ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300' : 'hover:bg-codenix-50 dark:hover:bg-codenix-black'}">
-                    <span>${label}</span>
-                    <span class="font-mono text-[10px] uppercase opacity-70">${c}</span>
-                </button>
-            `).join('');
-        }
-
-        function toggleLangDropdown(e) {
-            if (e) e.stopPropagation();
-            document.getElementById('lang-dropdown')?.classList.toggle('hidden');
-        }
-
-        function detectPreferredLanguage() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEYS.LANG);
-                if (saved && NIXY_TRANSLATIONS[saved]) return saved;
-            } catch (_) {}
-            const candidates = Array.isArray(navigator.languages) && navigator.languages.length
-                ? navigator.languages
-                : [navigator.language || 'en'];
-            for (const cand of candidates) {
-                const code = String(cand || '').toLowerCase().split('-')[0];
-                if (NIXY_TRANSLATIONS[code]) return code;
-            }
-            return 'en';
-        }
-
-        function applyLanguage(code) {
-            const langCode = NIXY_TRANSLATIONS[code] ? code : 'en';
-            try { localStorage.setItem(STORAGE_KEYS.LANG, langCode); } catch (_) {}
-            document.documentElement.lang = langCode;
-            document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
-            const badge = document.getElementById('current-lang-code');
-            if (badge) badge.textContent = langCode.toUpperCase();
-            const dict = NIXY_TRANSLATIONS[langCode] || NIXY_TRANSLATIONS.en;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (key && dict[key]) el.textContent = dict[key];
-            });
-            renderLangDropdownMenu(langCode);
-        }
-
-        document.addEventListener('click', () => {
-            document.getElementById('lang-dropdown')?.classList.add('hidden');
-        });
-
-        // ==========================================
-        // AUTOMATIC ORGANIC NIXY SHAPE MORPHING (NO EMOJIS / THEMES)
-        // ==========================================
-        const NIXY_SHAPES = ['shape-round', 'shape-diamond', 'shape-pill', 'shape-star'];
-        let nixyShapeIndex = 0;
-
-        function setNixyShape(shapeClass) {
-            const orbs = document.querySelectorAll('.nixy-orb');
-            orbs.forEach(orb => {
-                orb.classList.remove('shape-round', 'shape-diamond', 'shape-pill', 'shape-star', 'shape-squish');
-                if (shapeClass && shapeClass !== 'shape-round') {
-                    orb.classList.add(shapeClass);
-                }
-            });
-        }
-
-        function handleNixyCharacterClick(e) {
-            if (e) e.stopPropagation();
-            nixyShapeIndex = (nixyShapeIndex + 1) % NIXY_SHAPES.length;
-            const nextShape = NIXY_SHAPES[nixyShapeIndex];
-            setNixyShape(nextShape);
-
-            const orbs = document.querySelectorAll('.nixy-orb');
-            orbs.forEach(orb => {
-                orb.classList.add('shape-squish');
-                setTimeout(() => orb.classList.remove('shape-squish'), 850);
-            });
-
-            const moods = ['happy', 'curious', 'speaking', 'idle'];
-            setNixyMood(moods[nixyShapeIndex % moods.length]);
-            setTimeout(() => setNixyMood('idle'), 1800);
-        }
-
-        function startAutomaticNixyBehavior() {
-            if (window.__nixyAutoBehaviorStarted) return;
-            window.__nixyAutoBehaviorStarted = true;
-            let autoStep = 0;
-
-            setInterval(() => {
-                if (state.isSending) return;
-                autoStep++;
-                const nextShape = NIXY_SHAPES[autoStep % NIXY_SHAPES.length];
-                setNixyShape(nextShape);
-
-                const autoMoods = ['idle', 'curious', 'happy', 'idle'];
-                setNixyMood(autoMoods[autoStep % autoMoods.length]);
-                setTimeout(() => {
-                    if (!state.isSending) setNixyMood('idle');
-                }, 2200);
-            }, 9000);
-        }
-
-        function setNixyMood(mood = 'idle') {
-            const orbs = document.querySelectorAll('.nixy-orb');
-            orbs.forEach(orb => {
-                orb.classList.remove('mood-thinking', 'mood-speaking', 'mood-happy', 'mood-curious', 'mood-error');
-                if (mood && mood !== 'idle') {
-                    orb.classList.add(`mood-${mood}`);
-                }
-            });
-        }
-
-        function bindNixyEyeTracking() {
-            document.addEventListener('mousemove', (e) => {
-                const eyes = document.querySelectorAll('.nixy-eye');
-                eyes.forEach(eye => {
-                    const rect = eye.getBoundingClientRect();
-                    if (!rect.width || !rect.height) return;
-                    const cx = rect.left + rect.width / 2;
-                    const cy = rect.top + rect.height / 2;
-                    const dx = Math.max(-3, Math.min(3, (e.clientX - cx) / 45));
-                    const dy = Math.max(-3, Math.min(3, (e.clientY - cy) / 45));
-                    eye.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
-                });
-            }, { passive: true });
+        function renderModelLogoBadge(sizeClass = 'w-7 h-7', iconSizeClass = 'w-4 h-4') {
+            return `
+                <span class="${sizeClass} rounded-lg bg-[#09080f] text-white inline-flex items-center justify-center shrink-0 overflow-hidden border border-zinc-800">
+                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="${iconSizeClass} object-contain">
+                    <span class="hidden font-mono font-extrabold text-[9px] tracking-tighter">XXXX</span>
+                </span>
+            `;
         }
 
         // ==========================================
@@ -1881,7 +1741,6 @@ EXECUTION RULES:
             initTheme();
             applyLanguage(detectPreferredLanguage());
             if (window.lucide?.createIcons) window.lucide.createIcons();
-            bindNixyEyeTracking();
             updateProviderModeUI();
 
             const searchBox = document.getElementById('chat-search');
@@ -1908,7 +1767,6 @@ EXECUTION RULES:
             await loadConversationsFromSupabase(params.get('chat'));
             await loadGoogleSheetWorkspaceData();
             updateQuotaUI();
-            startAutomaticNixyBehavior();
             hideAuthGate();
         });
 
@@ -2041,19 +1899,19 @@ EXECUTION RULES:
 
         function updateTemporaryChatUI() {
             const badge = document.getElementById('temp-chat-badge');
-            const subtitle = document.getElementById('nixy-hero-subtitle');
+            const heading = document.getElementById('welcome-heading');
             if (!badge) return;
             if (state.isTemporaryChat) {
                 badge.classList.remove('hidden');
                 badge.classList.add('flex');
-                if (subtitle) {
-                    subtitle.textContent = 'Temporary Chat active — messages in this session are kept only in memory and are never saved to your Supabase history.';
+                if (heading) {
+                    heading.textContent = 'Temporary chat — what can I help with?';
                 }
             } else {
                 badge.classList.add('hidden');
                 badge.classList.remove('flex');
-                if (subtitle) {
-                    subtitle.textContent = 'Just ask naturally — Nixy automatically selects the right capability for code, images, voice, math, tables, QR, or live screen vision.';
+                if (heading) {
+                    heading.textContent = 'What can I help with?';
                 }
             }
         }
@@ -2205,7 +2063,7 @@ EXECUTION RULES:
 
         function renderMessages() {
             const feedEl = document.getElementById('messages-feed');
-            const heroEl = document.getElementById('nixy-hero');
+            const heroEl = document.getElementById('workspace-hero');
             if (!feedEl) return;
             const conv = state.conversations.find(c => c.id === state.activeConversationId);
             const msgs = conv?.messages || [];
@@ -2227,7 +2085,7 @@ EXECUTION RULES:
                 if (isUser) {
                     return `
                         <div class="flex justify-end">
-                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-xs sm:text-sm bg-gradient-to-r from-codenix-600 to-indigo-600 text-white shadow-md shadow-codenix-600/20">
+                            <div class="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-xs sm:text-sm bg-zinc-100 dark:bg-codenix-card text-zinc-900 dark:text-white border border-zinc-200/70 dark:border-codenix-border">
                                 <p class="whitespace-pre-wrap">${escapeHtml(m.content || '')}</p>
                             </div>
                         </div>
@@ -2236,14 +2094,14 @@ EXECUTION RULES:
 
                 const assistantIdx = window.__nixyAssistantStore.push(String(m.content || '')) - 1;
                 const providerBadge = m.providerUsed
-                    ? `<div class="flex items-center justify-end pb-1 border-b border-codenix-200/70 dark:border-codenix-border/70"><span class="text-[10px] font-mono text-zinc-400">${escapeHtml(m.providerUsed)}</span></div>`
+                    ? `<span class="text-[10px] font-mono text-zinc-400">${escapeHtml(m.providerUsed)}</span>`
                     : '';
 
                 let attachmentsHtml = '';
                 if (m.imageUrl) {
                     const imgId = `nix-gen-img-${msgIdx}`;
                     attachmentsHtml += `
-                        <div class="nix-generated-img-wrap mt-3 p-2.5 rounded-xl bg-white/70 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border space-y-2">
+                        <div class="nix-generated-img-wrap mt-3 p-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-black/70 border border-zinc-200/80 dark:border-codenix-border space-y-2">
                             <img id="${imgId}" src="${escapeHtml(m.imageUrl)}" alt="Generated Output" loading="lazy">
                             <div class="flex items-center justify-end">
                                 <button type="button" onclick="downloadGeneratedImage('${escapeHtml(m.imageUrl)}')" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download</button>
@@ -2253,10 +2111,10 @@ EXECUTION RULES:
                 }
                 if (m.audioUrl) {
                     attachmentsHtml += `
-                        <div class="mt-3 p-2.5 rounded-xl bg-white/70 dark:bg-codenix-black/70 border border-codenix-200 dark:border-codenix-border space-y-2">
+                        <div class="mt-3 p-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-black/70 border border-zinc-200/80 dark:border-codenix-border space-y-2">
                             <audio controls preload="metadata" src="${escapeHtml(m.audioUrl)}" class="w-full h-9"></audio>
                             <div class="flex items-center justify-end">
-                                <a href="${escapeHtml(m.audioUrl)}" download="nixy-voice.mp3" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download MP3</a>
+                                <a href="${escapeHtml(m.audioUrl)}" download="voice-reply.mp3" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold transition">Download MP3</a>
                             </div>
                         </div>
                     `;
@@ -2265,17 +2123,21 @@ EXECUTION RULES:
                 const renderedBody = renderAssistantRichContent(String(m.content || ''));
 
                 return `
-                    <div class="flex justify-start">
-                        <div class="max-w-[92%] w-full sm:w-auto rounded-2xl rounded-bl-sm px-4 py-3.5 text-xs sm:text-sm bg-codenix-50/90 dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border shadow-sm space-y-2.5">
-                            ${providerBadge}
+                    <div class="flex items-start gap-3">
+                        ${renderModelLogoBadge('w-8 h-8', 'w-4 h-4')}
+                        <div class="flex-1 min-w-0 max-w-[92%] rounded-2xl rounded-tl-sm px-4 py-3.5 text-xs sm:text-sm bg-white/95 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border shadow-2xs space-y-2.5">
+                            <div class="flex items-center justify-between gap-2 pb-1 border-b border-zinc-200/60 dark:border-codenix-border/70">
+                                <span class="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">Codenix AI</span>
+                                ${providerBadge}
+                            </div>
                             <div class="prose dark:prose-invert max-w-none">${renderedBody}</div>
                             ${attachmentsHtml}
-                            <div class="pt-2 border-t border-codenix-200/70 dark:border-codenix-border/70 flex flex-wrap items-center justify-between gap-2">
+                            <div class="pt-2 border-t border-zinc-200/60 dark:border-codenix-border/70 flex flex-wrap items-center justify-between gap-2">
                                 <div class="flex flex-wrap items-center gap-1.5">
-                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'doc')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">DOC</button>
-                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'pdf')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">PDF</button>
-                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'csv')" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">CSV</button>
-                                    <button type="button" onclick="speakAssistantMessage(${assistantIdx})" class="px-2 py-1 rounded-lg bg-white dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">Listen</button>
+                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'doc')" class="px-2 py-1 rounded-lg bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">DOC</button>
+                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'pdf')" class="px-2 py-1 rounded-lg bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">PDF</button>
+                                    <button type="button" onclick="exportAssistantDoc(${assistantIdx}, 'csv')" class="px-2 py-1 rounded-lg bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">CSV</button>
+                                    <button type="button" onclick="speakAssistantMessage(${assistantIdx})" class="px-2 py-1 rounded-lg bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-[11px] font-semibold transition">Listen</button>
                                 </div>
                                 <button type="button" onclick="copyAssistantMessage(${assistantIdx})" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 hover:bg-codenix-600/25 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold transition">Copy</button>
                             </div>
@@ -2805,7 +2667,7 @@ EXECUTION RULES:
             });
             if (btnEl) btnEl.classList.add('border-codenix-600', 'ring-2', 'ring-codenix-500/40');
             const duoLine = document.getElementById('feedback-duo-line');
-            if (duoLine) duoLine.textContent = `Nixy says: Awesome! Found through ${source} — streak unlocked!`;
+            if (duoLine) duoLine.textContent = `Got it — discovered via ${source}.`;
         }
 
         function setFeedbackRating(rating) {
@@ -2817,9 +2679,7 @@ EXECUTION RULES:
             });
             const duoLine = document.getElementById('feedback-duo-line');
             if (duoLine) {
-                duoLine.textContent = rating >= 4
-                    ? `Nixy says: ${rating} stars?! You make my purple orb glow!`
-                    : `Nixy says: Thanks for ${rating} stars — I'll keep getting sharper for you!`;
+                duoLine.textContent = `Rated ${rating} / 5 stars — thank you for your feedback.`;
             }
         }
 
@@ -2839,47 +2699,13 @@ EXECUTION RULES:
             if (document.getElementById('feedback-comment-input')) {
                 document.getElementById('feedback-comment-input').value = '';
             }
-            triggerNixyDance();
             closeFeedbackModal();
-            showToast('Thank you! Nixy saved your feedback.');
+            showToast('Feedback submitted.');
         }
 
         // ==========================================
-        // COMPANION FLOATER, SHARE PIN, USAGE & TOAST
+        // SHARE PIN, USAGE & TOAST
         // ==========================================
-        let companionDragState = null;
-        function startDraggingNixyCompanion(e) {
-            const floater = document.getElementById('nixy-companion-floater');
-            if (!floater) return;
-            const rect = floater.getBoundingClientRect();
-            companionDragState = {
-                startX: e.clientX,
-                startY: e.clientY,
-                offsetX: e.clientX - rect.left,
-                offsetY: e.clientY - rect.top,
-                moved: false
-            };
-            const onMove = (ev) => {
-                if (!companionDragState) return;
-                if (Math.hypot(ev.clientX - companionDragState.startX, ev.clientY - companionDragState.startY) > 6) {
-                    companionDragState.moved = true;
-                }
-                const x = Math.max(12, Math.min(window.innerWidth - rect.width - 12, ev.clientX - companionDragState.offsetX));
-                const y = Math.max(12, Math.min(window.innerHeight - rect.height - 12, ev.clientY - companionDragState.offsetY));
-                floater.style.left = `${x}px`;
-                floater.style.top = `${y}px`;
-                floater.style.right = 'auto';
-                floater.style.bottom = 'auto';
-            };
-            const onUp = () => {
-                window.removeEventListener('pointermove', onMove);
-                window.removeEventListener('pointerup', onUp);
-                companionDragState = null;
-            };
-            window.addEventListener('pointermove', onMove);
-            window.addEventListener('pointerup', onUp);
-        }
-
         function openShareModal() {
             const modal = document.getElementById('share-modal');
             modal?.classList.remove('hidden');
