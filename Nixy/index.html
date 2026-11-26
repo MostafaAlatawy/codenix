@@ -307,8 +307,8 @@
                         <i data-lucide="square-pen" class="w-4 h-4 text-zinc-700 dark:text-zinc-300"></i>
                         <span>New chat</span>
                     </button>
-                    <button type="button" onclick="createNewChat(true)" title="Temporary Chat (Not saved to cloud history)" class="py-2.5 px-3 rounded-xl bg-white dark:bg-codenix-black hover:border-amber-500/60 border border-zinc-200/90 dark:border-codenix-border text-zinc-700 dark:text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition" id="sidebar-temp-chat-btn">
-                        <i data-lucide="ghost" class="w-4 h-4 text-amber-500"></i>
+                    <button type="button" onclick="toggleTemporaryChatMode()" title="Toggle Temporary Chat (Does not save messages to Supabase)" class="py-2.5 px-3 rounded-xl bg-white dark:bg-codenix-black hover:border-amber-500/60 border border-zinc-200/90 dark:border-codenix-border text-zinc-700 dark:text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition" id="sidebar-temp-chat-btn">
+                        <i data-lucide="ghost" class="w-4 h-4 text-zinc-500 dark:text-zinc-400"></i>
                         <span>Temp</span>
                     </button>
                 </div>
@@ -339,7 +339,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="openUsageModal()" title="Usage & Provider" class="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">
+                        <button type="button" onclick="openUsageModal()" title="Settings, Language & Theme" class="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">
                             <i data-lucide="settings" class="w-4 h-4"></i>
                         </button>
                         <button type="button" onclick="signOutUser()" title="Sign Out" class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 transition">
@@ -360,18 +360,12 @@
                         <i data-lucide="panel-left" class="w-5 h-5"></i>
                     </button>
 
-                    <div class="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-xs font-bold">
-                        <div class="w-5 h-5 rounded-md bg-[#09080f] text-white flex items-center justify-center overflow-hidden shrink-0">
-                            <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-3.5 h-3.5 object-contain">
-                            <span class="hidden font-mono font-extrabold text-[8px]">XX</span>
-                        </div>
-                        <span id="header-model-name">Codenix AI</span>
-                    </div>
+                    <span id="header-model-name" class="text-sm font-bold tracking-tight text-zinc-900 dark:text-white px-1">Codenix AI</span>
 
                     <div id="temp-chat-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-600 dark:text-amber-300 text-[11px] font-semibold">
                         <i data-lucide="ghost" class="w-3.5 h-3.5"></i>
                         <span>Temporary</span>
-                        <button type="button" onclick="createNewChat(false)" class="ml-1 underline hover:no-underline">Exit</button>
+                        <button type="button" onclick="toggleTemporaryChatMode()" class="ml-1 underline hover:no-underline">Normal</button>
                     </div>
 
                     <div id="sharenix-live-banner" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
@@ -382,19 +376,6 @@
                 </div>
 
                 <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button type="button" onclick="togglePreferredProvider()" id="provider-mode-btn" title="Switch Auto / Puter.js" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-xs font-semibold hover:border-codenix-500 transition">
-                        <i data-lucide="zap" class="w-3.5 h-3.5 text-codenix-500"></i>
-                        <span id="provider-mode-label">Auto</span>
-                    </button>
-
-                    <div class="relative">
-                        <button type="button" onclick="toggleLangDropdown(event)" id="lang-btn" title="Language" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition flex items-center gap-1 text-xs font-bold">
-                            <i data-lucide="globe" class="w-4 h-4"></i>
-                            <span id="current-lang-code" class="uppercase text-[10px] font-mono">EN</span>
-                        </button>
-                        <div id="lang-dropdown" onclick="event.stopPropagation()" class="hidden absolute right-0 mt-2 w-40 rounded-2xl bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border shadow-2xl p-1.5 z-50 space-y-0.5"></div>
-                    </div>
-
                     <button type="button" onclick="openFeedbackModal()" title="Feedback" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition">
                         <i data-lucide="message-square-plus" class="w-4 h-4"></i>
                     </button>
@@ -403,11 +384,7 @@
                         <i data-lucide="share-2" class="w-4 h-4"></i>
                     </button>
 
-                    <button type="button" onclick="toggleTheme()" title="Toggle Theme" class="p-2 rounded-xl bg-zinc-100/80 dark:bg-codenix-panel border border-zinc-200/70 dark:border-codenix-border text-zinc-700 dark:text-zinc-300 hover:border-codenix-500 transition">
-                        <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
-                    </button>
-
-                    <button type="button" onclick="createNewChat(true)" title="Temporary Chat" class="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-panel transition">
+                    <button type="button" onclick="toggleTemporaryChatMode()" id="header-temp-btn" title="Toggle Temporary Chat" class="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-panel transition">
                         <i data-lucide="ghost" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -420,7 +397,7 @@
                 <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth workspace-welcome-canvas">
                     <div class="max-w-3xl mx-auto space-y-6">
 
-                        <!-- Welcome Screen Showing Model Logo, Prompt Cards & Quick Chips -->
+                        <!-- Welcome Screen Showing Single Clean Model Logo, Prompt Cards & Quick Chips -->
                         <div id="workspace-hero" class="flex flex-col items-center justify-center text-center py-6 sm:py-10">
                             <div class="model-logo-mark mb-4">
                                 <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; document.getElementById('hero-logo-fallback').classList.remove('hidden');" class="w-8 h-8 object-contain">
@@ -467,11 +444,10 @@
                         <!-- Dynamic Messages Feed -->
                         <div id="messages-feed" class="space-y-6"></div>
 
-                        <!-- Live Thinking Indicator Showing Model Logo -->
+                        <!-- Live Thinking Indicator -->
                         <div id="nixy-loading-indicator" class="hidden items-start gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-[#09080f] text-white flex items-center justify-center shrink-0 mt-1 overflow-hidden">
-                                <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-5 h-5 object-contain">
-                                <span class="hidden font-mono font-extrabold text-[9px]">XX</span>
+                            <div class="w-8 h-8 rounded-xl bg-codenix-600/15 border border-codenix-500/30 text-codenix-600 dark:text-codenix-300 flex items-center justify-center shrink-0 mt-1">
+                                <i data-lucide="sparkles" class="w-4 h-4 animate-pulse"></i>
                             </div>
                             <div class="bg-white/95 dark:bg-codenix-panel border border-zinc-200/80 dark:border-codenix-border rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs space-y-2.5 max-w-md w-full">
                                 <div class="flex items-center gap-3">
@@ -524,20 +500,20 @@
 
                     <div class="flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-codenix-panel border border-zinc-200/90 dark:border-codenix-border focus-within:border-zinc-400 dark:focus-within:border-codenix-500 rounded-full px-3 py-1.5 shadow-sm transition">
                         <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Attach Files" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
-                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                            <i data-lucide="plus" class="w-4 h-4"></i>
                         </button>
 
-                        <button type="button" onclick="document.getElementById('nixy-file-input').click()" title="Attach Images" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
-                            <i data-lucide="image" class="w-4 h-4"></i>
-                        </button>
+                        <textarea id="prompt-input" rows="1" placeholder="Ask anything" onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
 
-                        <button type="button" onclick="openAstreyaModal()" title="Voice Mode" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
+                        <button type="button" onclick="openAstreyaModal()" title="Voice Input" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-black transition shrink-0">
                             <i data-lucide="mic" class="w-4 h-4"></i>
                         </button>
 
-                        <textarea id="prompt-input" rows="1" placeholder="Message Codenix AI" onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
+                        <button type="button" onclick="openAstreyaModal()" title="Live Voice Mode" class="p-2 rounded-full bg-zinc-900 text-white dark:bg-codenix-600 hover:opacity-90 transition shrink-0">
+                            <i data-lucide="audio-waveform" class="w-4 h-4"></i>
+                        </button>
 
-                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2 rounded-full bg-zinc-200/80 hover:bg-zinc-900 hover:text-white dark:bg-codenix-600 dark:hover:bg-codenix-700 disabled:opacity-50 text-zinc-700 dark:text-white transition shrink-0">
+                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" title="Send" class="p-2 rounded-full bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -547,37 +523,33 @@
         </main>
     </div>
 
-    <!-- VOICE MODE MODAL -->
-    <div id="astreya-modal" class="fixed inset-0 z-50 bg-codenix-black/95 backdrop-blur-xl hidden flex-col items-center justify-between p-5 sm:p-8 text-white overflow-y-auto">
+    <!-- GEMINI / CHATGPT-STYLE LIVE VOICE MODE MODAL -->
+    <div id="astreya-modal" class="fixed inset-0 z-50 bg-zinc-50/95 dark:bg-codenix-black/95 backdrop-blur-2xl hidden flex-col items-center justify-between p-5 sm:p-8 text-zinc-900 dark:text-white overflow-y-auto">
         <div class="w-full max-w-2xl flex items-center justify-between">
-            <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-semibold">
-                <span class="w-2 h-2 rounded-full bg-codenix-400 animate-pulse"></span>
-                <span>Live Voice</span>
+            <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-200/80 dark:bg-white/10 text-xs font-semibold">
+                <span id="voice-live-dot" class="w-2 h-2 rounded-full bg-codenix-500"></span>
+                <span id="astreya-mode-pill">Live Voice</span>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" id="astreya-handsfree-btn" onclick="toggleAstreyaHandsFree()" class="px-3 py-1.5 rounded-full bg-codenix-600/30 border border-codenix-400/40 text-codenix-200 text-xs font-semibold flex items-center gap-1.5">
+                <button type="button" id="astreya-handsfree-btn" onclick="toggleAstreyaHandsFree()" class="px-3 py-1.5 rounded-full bg-codenix-600/15 border border-codenix-500/30 text-codenix-700 dark:text-codenix-200 text-xs font-semibold flex items-center gap-1.5">
                     <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
-                    <span id="astreya-handsfree-label">Hands-Free: ON</span>
+                    <span id="astreya-handsfree-label">Continuous: ON</span>
                 </button>
-                <button type="button" onclick="toggleShareNix()" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5">
-                    <i data-lucide="monitor-up" class="w-3.5 h-3.5"></i>
-                    <span class="hidden sm:inline">Screen</span>
+                <button type="button" onclick="toggleShareNix()" class="p-2 rounded-full bg-zinc-200/80 dark:bg-white/10 hover:opacity-80" title="Share Screen">
+                    <i data-lucide="monitor-up" class="w-4 h-4"></i>
                 </button>
-                <button type="button" onclick="closeAstreyaModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
+                <button type="button" onclick="closeAstreyaModal()" class="p-2 rounded-full bg-zinc-200/80 dark:bg-white/10 hover:opacity-80" title="Close Voice Mode">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
 
         <div class="flex flex-col items-center text-center my-auto w-full max-w-xl py-6 space-y-6">
-            <div id="astreya-orb" onclick="toggleAstreyaListening()" class="astreya-orb w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center cursor-pointer transition-transform active:scale-95">
-                <div class="w-14 h-14 rounded-2xl bg-[#09080f]/80 border border-white/20 flex items-center justify-center overflow-hidden">
-                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-8 h-8 object-contain">
-                    <span class="hidden font-mono font-extrabold text-xs tracking-tighter">XXXX</span>
-                </div>
-            </div>
+            <button type="button" id="astreya-orb" onclick="toggleAstreyaListening()" class="astreya-orb w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center cursor-pointer transition-transform active:scale-95 text-white shadow-2xl">
+                <i id="astreya-orb-icon" data-lucide="mic" class="w-9 h-9"></i>
+            </button>
 
-            <!-- Live Audio Waveform Visualizer -->
+            <!-- Animated Equalizer Bars -->
             <div id="astreya-waveform" class="flex items-center justify-center gap-1.5 h-7">
                 <span class="voice-bar"></span>
                 <span class="voice-bar"></span>
@@ -586,22 +558,22 @@
                 <span class="voice-bar"></span>
             </div>
 
-            <div class="space-y-1.5">
-                <p id="astreya-status" class="text-xs font-bold uppercase tracking-widest text-codenix-300">Tap Orb to Start Speaking</p>
-                <p id="astreya-interim" class="text-xs text-zinc-400 min-h-[18px] italic"></p>
+            <div class="space-y-1">
+                <p id="astreya-status" class="text-xs font-bold uppercase tracking-widest text-codenix-600 dark:text-codenix-300">Listening</p>
+                <p id="astreya-interim" class="text-xs text-zinc-500 dark:text-zinc-400 min-h-[18px] italic"></p>
             </div>
 
-            <div class="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-100 leading-relaxed max-h-40 overflow-y-auto">
-                <p id="astreya-caption">"I'm listening. Speak naturally and I'll respond aloud."</p>
+            <div class="w-full px-5 py-4 rounded-2xl bg-white/80 dark:bg-white/5 border border-zinc-200/80 dark:border-white/10 text-sm text-zinc-800 dark:text-zinc-100 leading-relaxed max-h-40 overflow-y-auto shadow-2xs">
+                <p id="astreya-caption">Speak naturally and I will respond aloud.</p>
             </div>
 
             <div class="flex items-center gap-3">
-                <button type="button" onclick="toggleAstreyaListening()" id="astreya-mic-btn" class="px-5 py-2.5 rounded-full bg-codenix-600 hover:bg-codenix-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-codenix-600/30">
+                <button type="button" onclick="toggleAstreyaListening()" id="astreya-mic-btn" class="px-5 py-2.5 rounded-full bg-codenix-600 hover:bg-codenix-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-codenix-600/25">
                     <i data-lucide="mic" class="w-4 h-4"></i>
-                    <span id="astreya-mic-label">Start Listening</span>
+                    <span id="astreya-mic-label">Mute / Pause</span>
                 </button>
-                <button type="button" onclick="stopVoicePlayback()" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">
-                    Stop Audio
+                <button type="button" onclick="stopVoicePlayback()" class="px-4 py-2.5 rounded-full bg-zinc-200/80 dark:bg-white/10 hover:opacity-85 text-xs font-semibold">
+                    Stop Speech
                 </button>
             </div>
         </div>
@@ -636,12 +608,6 @@
             <button type="button" onclick="closeNixyTutorial()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <div class="flex items-center justify-center">
-                <div class="model-logo-mark">
-                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-8 h-8 object-contain">
-                    <span id="tour-logo-fallback" class="hidden font-mono font-extrabold text-sm tracking-tighter">XXXX</span>
-                </div>
-            </div>
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-[11px] font-bold">
                 <span id="tutorial-step-badge">Step 1 of 4</span>
             </div>
@@ -682,36 +648,36 @@
             <div id="share-result-box" class="hidden p-3 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-2">
                 <p class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Published to Supabase! Share this link:</p>
                 <div class="flex items-center gap-2">
-                    <input type="text" id="share-link-output" readonly class="flex-1 bg-transparent text-xs font-mono text-codenix-600 dark:text-codenix-300 focus:outline-none">
-                    <button type="button" onclick="copyShareUrl()" class="px-3 py-1 rounded-lg bg-codenix-600 text-white text-xs font-semibold">Copy</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PIN UNLOCK MODAL -->
-    <div id="pin-unlock-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-400 flex items-center justify-center mx-auto">
-                <i data-lucide="key-round" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-lg font-bold">Protected Conversation</h3>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400">Enter the publisher's PIN to view this shared chat.</p>
-            <input type="password" id="unlock-pin-input" maxlength="8" placeholder="Enter PIN" class="w-full px-4 py-2.5 rounded-xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border text-center text-base font-mono focus:outline-none focus:border-codenix-500">
-            <button type="button" onclick="verifySharedPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock Conversation</button>
-        </div>
-    </div>
-
-    <!-- TOKENS USAGE & PUTER.JS LINK MODAL -->
+    <!-- SETTINGS (THEME, LANGUAGE, PROVIDER & PUTER.JS) MODAL -->
     <div id="usage-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-codenix-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
             <button type="button" onclick="closeUsageModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <h3 class="text-base font-bold flex items-center gap-2">
-                <i data-lucide="coins" class="w-5 h-5 text-codenix-600 dark:text-codenix-400"></i>
-                <span>Cloudflare Secrets & Puter.js Failover</span>
+                <i data-lucide="settings" class="w-5 h-5 text-codenix-600 dark:text-codenix-400"></i>
+                <span>Workspace Settings</span>
             </h3>
+
+            <!-- Theme & Language Controls Inside Settings -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" onclick="toggleTheme(); updateSettingsModalControls();" class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border hover:border-codenix-500 text-left transition space-y-1">
+                    <span class="text-[10px] font-bold uppercase text-zinc-500 block">Theme</span>
+                    <span id="settings-theme-label" class="text-xs font-extrabold text-codenix-700 dark:text-codenix-300">Dark Mode</span>
+                </button>
+
+                <div class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border space-y-1">
+                    <label for="settings-lang-select" class="text-[10px] font-bold uppercase text-zinc-500 block">Language</label>
+                    <select id="settings-lang-select" onchange="applyLanguage(this.value)" class="w-full bg-transparent text-xs font-extrabold text-codenix-700 dark:text-codenix-300 focus:outline-none">
+                        <option value="en">English (EN)</option>
+                        <option value="ar">العربية (AR)</option>
+                        <option value="es">Español (ES)</option>
+                        <option value="fr">Français (FR)</option>
+                        <option value="de">Deutsch (DE)</option>
+                        <option value="zh">中文 (ZH)</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="p-3 rounded-2xl bg-codenix-50 dark:bg-codenix-black border border-codenix-200 dark:border-codenix-border">
@@ -734,7 +700,7 @@
                     <span id="cf-proxy-status-badge" class="font-mono text-[11px] px-2 py-0.5 rounded bg-codenix-600/20">Auto-Route</span>
                 </p>
                 <p class="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Requests send your Supabase JWT token to <code>/api/nixy</code> to unlock Cloudflare Worker secrets. If the proxy is offline or rate-limited, the workspace seamlessly switches to <strong>Puter.js</strong> for unlimited AI chat, code, images, and TTS.
+                    Requests send your Supabase JWT token to <code>/api/nixy</code> to unlock Cloudflare Worker secrets. If unavailable or limited, the workspace falls back to <strong>Puter.js</strong>.
                 </p>
             </div>
 
@@ -851,11 +817,10 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-[#09080f] text-white flex items-center justify-center shrink-0 overflow-hidden">
-                    <img src="/logo.png" alt="Model Logo" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" class="w-7 h-7 object-contain">
-                    <span class="hidden font-mono font-extrabold text-xs">XXXX</span>
-                </div>
+            <div>
+                <h3 class="text-base font-extrabold">Quick Feedback & Live Watches</h3>
+                <p id="feedback-duo-line" class="text-xs text-codenix-600 dark:text-codenix-300 font-semibold">Tell us how you found Codenix and explore live watches.</p>
+            </div>
                 <div>
                     <h3 class="text-base font-extrabold">Quick Feedback & Live Watches</h3>
                     <p id="feedback-duo-line" class="text-xs text-codenix-600 dark:text-codenix-300 font-semibold">Tell us how you found Codenix and explore live watches.</p>
@@ -940,6 +905,7 @@
             conversations: [],
             activeConversationId: null,
             isTemporaryChat: false,
+            shareNixStream: null,
             uploadedFiles: [],
             isSending: false,
             cloudflareHealthy: null
@@ -1001,8 +967,8 @@
             try { localStorage.setItem(STORAGE_KEYS.LANG, langCode); } catch (_) {}
             document.documentElement.lang = langCode;
             document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
-            const badge = document.getElementById('current-lang-code');
-            if (badge) badge.textContent = langCode.toUpperCase();
+            const selectEl = document.getElementById('settings-lang-select');
+            if (selectEl) selectEl.value = langCode;
             const dict = NIXY_TRANSLATIONS[langCode] || NIXY_TRANSLATIONS.en;
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
@@ -1056,7 +1022,7 @@ EXECUTION RULES:
             const raw = String(promptText || '').trim();
             const q = raw.toLowerCase();
 
-            if (hasAttachedImages || shareNixStream || /\b(my screen|on screen|analyze this image|describe this image|what is in this picture|screenshot|شاشة|حلل الصورة)\b/.test(q)) {
+            if (hasAttachedImages || state.shareNixStream || /\b(my screen|on screen|analyze this image|describe this image|what is in this picture|screenshot|شاشة|حلل الصورة)\b/.test(q)) {
                 return 'screen_vision';
             }
             if (/\b(qr\s*code|qrcode|generate qr|create qr|make a qr|رمز استجابة|باركود)\b/.test(q)) {
@@ -1320,7 +1286,7 @@ EXECUTION RULES:
         function captureActiveScreenFrame() {
             const video = document.getElementById('sharenix-video');
             const canvas = document.getElementById('sharenix-canvas');
-            if (!shareNixStream || !video || !canvas || !video.videoWidth) return null;
+            if (!state.shareNixStream || !video || !canvas || !video.videoWidth) return null;
             canvas.width = Math.min(video.videoWidth, 1280);
             canvas.height = Math.round(canvas.width * (video.videoHeight / video.videoWidth));
             const ctx = canvas.getContext('2d');
@@ -1543,7 +1509,7 @@ EXECUTION RULES:
             }
 
             try {
-                // Skip Supabase persistence when in Temporary Chat mode
+                // Only save non-temporary conversations to Supabase
                 if (state.user && !isTemp) {
                     try {
                         await supabaseClient.from('nixy_messages').insert({
@@ -1700,9 +1666,17 @@ EXECUTION RULES:
 
         function updateThemeIcon(isDark) {
             const icon = document.getElementById('theme-icon');
-            if (!icon) return;
-            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (window.lucide?.createIcons) window.lucide.createIcons();
+            }
+            updateSettingsModalControls();
+        }
+
+        function updateSettingsModalControls() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeLabel = document.getElementById('settings-theme-label');
+            if (themeLabel) themeLabel.textContent = isDark ? 'Dark Mode' : 'Light Mode';
         }
 
         function getPreferredProviderMode() {
@@ -1977,19 +1951,59 @@ EXECUTION RULES:
         function updateTemporaryChatUI() {
             const badge = document.getElementById('temp-chat-badge');
             const heading = document.getElementById('welcome-heading');
-            if (!badge) return;
+            const sidebarTempBtn = document.getElementById('sidebar-temp-chat-btn');
+            const headerTempBtn = document.getElementById('header-temp-btn');
+
             if (state.isTemporaryChat) {
-                badge.classList.remove('hidden');
-                badge.classList.add('flex');
-                if (heading) {
-                    heading.textContent = 'Temporary chat — what can I help with?';
+                badge?.classList.remove('hidden');
+                badge?.classList.add('flex');
+                if (heading) heading.textContent = 'Temporary chat — what can I help with?';
+                if (sidebarTempBtn) {
+                    sidebarTempBtn.className = 'py-2.5 px-3 rounded-xl bg-amber-500/20 border border-amber-500 text-amber-600 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 transition';
+                }
+                if (headerTempBtn) {
+                    headerTempBtn.className = 'p-2 rounded-xl bg-amber-500/20 text-amber-500 transition';
                 }
             } else {
-                badge.classList.add('hidden');
-                badge.classList.remove('flex');
-                if (heading) {
-                    heading.textContent = 'What can I help with?';
+                badge?.classList.add('hidden');
+                badge?.classList.remove('flex');
+                if (heading) heading.textContent = 'What can I help with?';
+                if (sidebarTempBtn) {
+                    sidebarTempBtn.className = 'py-2.5 px-3 rounded-xl bg-white dark:bg-codenix-black hover:border-amber-500/60 border border-zinc-200/90 dark:border-codenix-border text-zinc-700 dark:text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition';
                 }
+                if (headerTempBtn) {
+                    headerTempBtn.className = 'p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-codenix-panel transition';
+                }
+            }
+        }
+
+        async function toggleTemporaryChatMode() {
+            const nextTemp = !state.isTemporaryChat;
+            state.isTemporaryChat = nextTemp;
+
+            if (nextTemp) {
+                const tempId = generateId();
+                state.conversations.unshift({
+                    id: tempId,
+                    title: 'Temporary Chat',
+                    isTemporary: true,
+                    messages: []
+                });
+                state.activeConversationId = tempId;
+                updateTemporaryChatUI();
+                renderConversationList();
+                renderMessages();
+                showToast('Temporary mode ON — messages will not be saved to Supabase');
+            } else {
+                state.conversations = state.conversations.filter(c => !c.isTemporary);
+                const firstSaved = state.conversations[0];
+                if (firstSaved) {
+                    await selectConversation(firstSaved.id);
+                } else {
+                    await createNewChat(false);
+                }
+                updateTemporaryChatUI();
+                showToast('Temporary mode OFF — returned to normal chat');
             }
         }
 
@@ -2440,10 +2454,11 @@ EXECUTION RULES:
                 astreyaRecognition = null;
             }
             document.getElementById('astreya-waveform')?.classList.remove('voice-active');
+            document.getElementById('voice-live-dot')?.classList.remove('animate-ping');
             const micLabel = document.getElementById('astreya-mic-label');
             const statusEl = document.getElementById('astreya-status');
-            if (micLabel) micLabel.textContent = 'Start Listening';
-            if (statusEl) statusEl.textContent = 'Tap Orb to Speak';
+            if (micLabel) micLabel.textContent = 'Resume';
+            if (statusEl) statusEl.textContent = 'Paused';
         }
 
         function startAstreyaListening() {
@@ -2452,10 +2467,11 @@ EXECUTION RULES:
             const captionEl = document.getElementById('astreya-caption');
             const micLabel = document.getElementById('astreya-mic-label');
             const waveform = document.getElementById('astreya-waveform');
+            const liveDot = document.getElementById('voice-live-dot');
 
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) {
-                if (captionEl) captionEl.textContent = 'Speech recognition is not supported in this browser. Type your message in the main chat bar.';
+                if (captionEl) captionEl.textContent = 'Speech recognition is not supported in this browser. Type your message in the composer.';
                 return;
             }
 
@@ -2467,9 +2483,10 @@ EXECUTION RULES:
             astreyaRecognition.interimResults = true;
             astreyaRecognition.continuous = false;
 
-            if (statusEl) statusEl.textContent = 'Listening... Speak Now';
-            if (micLabel) micLabel.textContent = 'Stop Listening';
+            if (statusEl) statusEl.textContent = 'Listening';
+            if (micLabel) micLabel.textContent = 'Pause';
             waveform?.classList.add('voice-active');
+            liveDot?.classList.add('animate-ping');
 
             let finalTranscript = '';
 
@@ -2486,6 +2503,7 @@ EXECUTION RULES:
                     if (captionEl) captionEl.textContent = `"${spoken}"`;
                     if (interimEl) interimEl.textContent = '';
                     stopAstreyaListening();
+                    if (statusEl) statusEl.textContent = 'Thinking...';
                     const input = document.getElementById('prompt-input');
                     if (input) {
                         input.value = spoken;
@@ -2501,7 +2519,8 @@ EXECUTION RULES:
             astreyaRecognition.onend = () => {
                 astreyaRecognition = null;
                 waveform?.classList.remove('voice-active');
-                if (micLabel) micLabel.textContent = 'Start Listening';
+                liveDot?.classList.remove('animate-ping');
+                if (micLabel) micLabel.textContent = 'Resume';
                 if (!state.isSending && statusEl) statusEl.textContent = 'Tap Orb to Speak';
             };
 
@@ -2520,10 +2539,32 @@ EXECUTION RULES:
             }
         }
 
+        async function toggleShareNix() {
+            if (state.shareNixStream) {
+                stopShareNix();
+                return;
+            }
+            if (!navigator.mediaDevices?.getDisplayMedia) {
+                showToast('Screen sharing is not supported in this browser.');
+                return;
+            }
+            try {
+                state.shareNixStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                const video = document.getElementById('sharenix-video');
+                if (video) video.srcObject = state.shareNixStream;
+                document.getElementById('sharenix-live-banner')?.classList.remove('hidden');
+                document.getElementById('sharenix-live-banner')?.classList.add('flex');
+                state.shareNixStream.getVideoTracks()[0]?.addEventListener('ended', stopShareNix);
+                showToast('Screen sharing started.');
+            } catch (_) {
+                showToast('Screen share cancelled.');
+            }
+        }
+
         function stopShareNix() {
-            if (shareNixStream) {
-                shareNixStream.getTracks().forEach(t => t.stop());
-                shareNixStream = null;
+            if (state.shareNixStream) {
+                state.shareNixStream.getTracks().forEach(t => t.stop());
+                state.shareNixStream = null;
             }
             document.getElementById('sharenix-live-banner')?.classList.add('hidden');
             document.getElementById('sharenix-live-banner')?.classList.remove('flex');
@@ -2611,10 +2652,19 @@ EXECUTION RULES:
         function cleanSheetImageUrl(url) {
             if (!url) return '';
             let cleaned = String(url).trim();
-            cleaned = cleaned.replace(/^=IMAGE\((["']?)(.*?)\1\)$/i, '$2');
-            cleaned = cleaned.replace(/^<img[^>]*src=["']?([^"'>]+)["']?[^>]*>/i, '$1');
-            cleaned = cleaned.replace(/['">]+$/g, '').replace(/^['">]+/g, '');
-            return cleaned.trim();
+            if (/^=IMAGE\(/i.test(cleaned)) {
+                cleaned = cleaned.replace(/^=IMAGE\((["']?)(.*?)\1\)$/i, '$2');
+            }
+            if (/<img/i.test(cleaned)) {
+                cleaned = cleaned.replace(/^<img[^>]*src=["']?([^"'>]+)["']?[^>]*>/i, '$1');
+            }
+            cleaned = cleaned.replace(/['">]+$/g, '').replace(/^['">]+/g, '').trim();
+            if (!/^https?:\/\//i.test(cleaned)) return '';
+            // Avoid hotlink-blocked or local unreachable URLs that trigger console network errors
+            if (/cdn\.fbsbx\.com|facebook\.com|localhost|127\.0\.0\.1/i.test(cleaned)) {
+                return '';
+            }
+            return cleaned;
         }
 
         async function loadGoogleSheetWorkspaceData() {
@@ -2858,6 +2908,9 @@ EXECUTION RULES:
         function openUsageModal() {
             updateQuotaUI();
             updateCloudflareBadgeUI();
+            updateSettingsModalControls();
+            const selectEl = document.getElementById('settings-lang-select');
+            if (selectEl) selectEl.value = document.documentElement.lang || 'en';
             const modal = document.getElementById('usage-modal');
             modal?.classList.remove('hidden');
             modal?.classList.add('flex');
