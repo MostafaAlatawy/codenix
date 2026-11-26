@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nixy — Codenix AI Studio</title>
-    <link rel="icon" type="image/png" href="/logo.png">
-    <link rel="apple-touch-icon" href="/logo.png">
+    <title>Codenix — AI Agent Studio</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,10 +25,10 @@
                             800: '#5b21b6',
                             900: '#4c1d95',
                             950: '#2e1065',
-                            black: '#09090b',
-                            panel: '#121216',
-                            card: '#18181f',
-                            border: '#27272f'
+                            black: '#07060b',
+                            panel: '#100e18',
+                            card: '#161322',
+                            border: '#251f38'
                         }
                     },
                     fontFamily: {
@@ -39,15 +37,13 @@
                     }
                 }
             }
-        };
+        }
     </script>
 
-    <!-- Google Fonts -->
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <!-- Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Supabase JS v2 -->
@@ -57,12 +53,10 @@
     <script>window.puter = window.puter || {}; window.puter.quiet = true;</script>
     <script src="https://js.puter.com/v2/"></script>
 
-    <!-- Marked.js + Highlight.js -->
+    <!-- Marked + Highlight.js + QRCode + jsPDF -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
-    <!-- QRCode.js & jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -70,170 +64,108 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.55); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.6); }
 
         .prose pre {
-            background-color: #0b0914 !important;
-            border: 1px solid #27272f;
+            background: #0b0914 !important;
+            border: 1px solid #251f38;
             border-radius: 0.75rem;
             padding: 0.9rem 1rem;
-            margin: 0.5rem 0;
+            margin: 0.65rem 0;
             overflow-x: auto;
         }
-        .prose p { margin-bottom: 0.65rem; line-height: 1.7; }
+        .prose p { margin-bottom: 0.6rem; line-height: 1.65; }
         .prose p:last-child { margin-bottom: 0; }
-        .prose ul, .prose ol { margin: 0.45rem 0 0.75rem 1.25rem; }
-        .prose li { margin-bottom: 0.3rem; line-height: 1.6; }
-        .prose strong { font-weight: 700; }
         .prose code:not(pre code) {
             background: rgba(139, 92, 246, 0.14);
             color: #6d28d9;
-            padding: 0.15rem 0.4rem;
-            border-radius: 0.375rem;
+            padding: 0.12rem 0.38rem;
+            border-radius: 0.35rem;
             font-size: 0.85em;
             font-family: 'JetBrains Mono', monospace;
         }
         .dark .prose code:not(pre code) { color: #c4b5fd; }
-
-        .nix-code-card {
-            background: #0b0914;
-            border: 1px solid #27272f;
-            border-radius: 0.85rem;
-            margin: 0.6rem 0;
-            overflow: hidden;
-        }
-        .nix-code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.45rem 0.8rem;
-            background: #141122;
-            border-bottom: 1px solid #27272f;
-            font-size: 11px;
-            color: #c4b5fd;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .nix-code-btn {
-            padding: 0.2rem 0.55rem;
-            border-radius: 0.4rem;
-            background: rgba(139, 92, 246, 0.18);
-            color: #ede9fe;
-            font-size: 11px;
-            font-family: 'Inter', sans-serif;
-            transition: background 0.15s ease;
-        }
-        .nix-code-btn:hover { background: rgba(139, 92, 246, 0.36); }
 
         .prose table {
             width: 100%;
             border-collapse: collapse;
             margin: 0.65rem 0;
             font-size: 0.82rem;
-            border-radius: 0.75rem;
-            overflow: hidden;
             border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 0.65rem;
+            overflow: hidden;
         }
         .prose thead {
-            background: rgba(124, 58, 237, 0.14);
+            background: rgba(124, 58, 237, 0.15);
             color: #5b21b6;
         }
         .dark .prose thead {
-            background: rgba(124, 58, 237, 0.24);
+            background: rgba(124, 58, 237, 0.25);
             color: #ddd6fe;
         }
         .prose th, .prose td {
-            padding: 0.55rem 0.75rem;
+            padding: 0.5rem 0.7rem;
             border: 1px solid rgba(139, 92, 246, 0.18);
             text-align: left;
         }
 
-        .nix-generated-img-wrap img {
-            max-width: min(100%, 420px);
-            max-height: 300px;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            border-radius: 0.75rem;
-            display: block;
+        .conv-item:hover .conv-delete-btn {
+            opacity: 1;
         }
 
-        /* Voice Mode Fluid Orb */
-        .voice-orb-container {
-            position: relative;
-            width: 220px;
-            height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        @keyframes voicePulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(139, 92, 246, 0.45); }
+            50% { transform: scale(1.1); box-shadow: 0 0 70px rgba(168, 85, 247, 0.8); }
         }
-        .voice-orb-core {
-            width: 132px;
-            height: 132px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #c084fc 0%, #7c3aed 55%, #09090b 100%);
-            box-shadow: 0 0 70px rgba(124, 58, 237, 0.5), inset 0 0 24px rgba(255, 255, 255, 0.35);
-            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            z-index: 10;
+        .voice-orb-active {
+            animation: voicePulse 1.6s ease-in-out infinite;
         }
-        .orb-idle .voice-orb-core { animation: orbBreath 3.6s ease-in-out infinite; }
-        .orb-listening .voice-orb-core {
-            transform: scale(1.12);
-            background: radial-gradient(circle at 35% 35%, #34d399 0%, #059669 60%, #022c22 100%);
-            box-shadow: 0 0 85px rgba(16, 185, 129, 0.65);
+
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.65); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
         }
-        .orb-thinking .voice-orb-core {
-            animation: orbSpin 1.8s linear infinite;
-            background: radial-gradient(circle at 35% 35%, #a78bfa 0%, #6d28d9 60%, #1e1b4b 100%);
-            box-shadow: 0 0 85px rgba(139, 92, 246, 0.75);
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background: #8b5cf6;
+            display: inline-block;
+            animation: dotPulse 1.2s infinite ease-in-out;
         }
-        .orb-speaking .voice-orb-core {
-            animation: orbSpeakPulse 0.65s ease-in-out infinite alternate;
-            background: radial-gradient(circle at 35% 35%, #f472b6 0%, #9333ea 60%, #2e1065 100%);
-            box-shadow: 0 0 95px rgba(192, 132, 252, 0.85);
-        }
-        @keyframes orbBreath {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.06); }
-        }
-        @keyframes orbSpin {
-            0% { transform: rotate(0deg) scale(1.04); }
-            100% { transform: rotate(360deg) scale(1.04); }
-        }
-        @keyframes orbSpeakPulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.18); }
-        }
+        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
     </style>
 </head>
 <body class="bg-white text-zinc-900 dark:bg-codenix-black dark:text-zinc-100 h-[100dvh] flex flex-col overflow-hidden transition-colors duration-200">
 
-    <!-- Auth Gate -->
+    <!-- Auth Verification Gate -->
     <div id="auth-gate" class="fixed inset-0 z-50 bg-white dark:bg-codenix-black flex flex-col items-center justify-center p-6 transition-opacity duration-300">
-        <div class="w-12 h-12 rounded-2xl bg-codenix-600 text-white flex items-center justify-center shadow-lg shadow-codenix-600/30 mb-3">
+        <div class="w-12 h-12 rounded-2xl bg-codenix-600/15 border border-codenix-500/30 flex items-center justify-center mb-3">
             <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 object-contain">
         </div>
-        <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Checking session...</p>
+        <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-300">Verifying session...</p>
     </div>
 
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
 
-    <div class="flex h-full w-full overflow-hidden relative">
+    <div class="flex h-full w-full overflow-hidden">
 
         <!-- SIDEBAR -->
-        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-zinc-50 dark:bg-codenix-panel border-r border-zinc-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
+        <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 bg-zinc-50/90 dark:bg-codenix-panel border-r border-zinc-200 dark:border-codenix-border flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 shrink-0">
             <div class="p-3.5 border-b border-zinc-200 dark:border-codenix-border space-y-2.5">
                 <div class="flex items-center justify-between">
-                    <button type="button" onclick="createNewChat(false)" class="flex items-center gap-2 text-left">
-                        <span class="w-7 h-7 rounded-xl bg-codenix-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                            <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-4 h-4 object-contain">
-                        </span>
-                        <span class="font-bold text-sm tracking-tight text-zinc-900 dark:text-white">Codenix</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-6 h-6 rounded-lg object-contain shrink-0">
+                        <span class="font-bold text-sm tracking-tight text-codenix-700 dark:text-white">Codenix</span>
+                    </div>
                     <div class="flex items-center gap-1">
                         <button type="button" onclick="toggleTemporaryChatMode()" id="temp-chat-toggle-btn" title="Toggle Temporary Chat (not saved)" class="p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600 dark:hover:text-codenix-400 transition">
                             <i data-lucide="ghost" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="openShareModal()" id="sidebar-share-conv-btn" title="Share conversation" class="p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600 dark:hover:text-codenix-400 transition">
+                            <i data-lucide="share-2" class="w-4 h-4"></i>
                         </button>
                         <button type="button" onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg text-zinc-500 hover:text-codenix-600">
                             <i data-lucide="x" class="w-4 h-4"></i>
@@ -241,41 +173,45 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="createNewChat(false)" class="w-full py-2 px-3 rounded-xl bg-white dark:bg-codenix-card hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-codenix-border text-xs font-semibold flex items-center gap-2 transition">
-                    <i data-lucide="square-pen" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                    <span data-i18n="newChat">New chat</span>
+                <button type="button" onclick="createNewChat()" class="w-full py-2 px-3 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>New chat</span>
                 </button>
 
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                    <input type="search" id="chat-search" name="codenix_chat_search" autocomplete="off" oninput="renderConversationList()" placeholder="Search chats" data-i18n-placeholder="searchChats" class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
+                    <input type="search" id="chat-search" name="codenix_chat_title_query" autocomplete="off" data-lpignore="true" data-form-type="other" oninput="renderConversationList()" placeholder="Search chats..." class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500">
                 </div>
 
-                <button type="button" onclick="openLibraryModal()" class="w-full py-2 px-3 rounded-xl hover:bg-white dark:hover:bg-codenix-card text-xs font-medium text-zinc-700 dark:text-zinc-200 flex items-center justify-between transition">
-                    <span class="flex items-center gap-2">
-                        <i data-lucide="library" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                        <span data-i18n="library">Library</span>
-                    </span>
-                    <span id="library-badge-count" class="text-[10px] font-mono text-zinc-400">0</span>
-                </button>
+                <!-- Sidebar Quick Navigation -->
+                <div class="space-y-0.5 pt-1 text-xs">
+                    <button type="button" onclick="openLibraryModal()" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-zinc-200/70 dark:hover:bg-codenix-card text-zinc-700 dark:text-zinc-200 font-medium transition">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="library" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                            <span>Library & Plugins</span>
+                        </span>
+                        <span id="library-count-badge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-codenix-600/15 text-codenix-700 dark:text-codenix-300">0</span>
+                    </button>
+                </div>
             </div>
 
+            <!-- Conversations List (Hover to Delete) -->
             <div id="conversation-list" class="flex-1 overflow-y-auto p-2.5 space-y-1"></div>
 
             <!-- Bottom Profile + Settings Next to Profile -->
             <div class="p-3 border-t border-zinc-200 dark:border-codenix-border flex items-center justify-between gap-2 bg-zinc-50/90 dark:bg-codenix-panel">
-                <div class="flex items-center gap-2 min-w-0">
+                <button type="button" onclick="openProfileView()" title="Open /u/ Profile" class="flex items-center gap-2 min-w-0 text-left rounded-xl p-1 -ml-1 hover:bg-zinc-200/60 dark:hover:bg-codenix-card transition">
                     <div id="user-avatar-badge" class="w-8 h-8 rounded-full bg-codenix-600 text-white text-xs font-bold flex items-center justify-center shrink-0">C</div>
                     <div class="min-w-0">
                         <p id="user-display-name" class="text-xs font-semibold truncate">Codenix User</p>
-                        <p id="user-sub-label" class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Codenix Workspace</p>
+                        <p id="user-sub-label" class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">/u/ Profile</p>
                     </div>
-                </div>
+                </button>
                 <div class="flex items-center gap-1 shrink-0">
-                    <button type="button" onclick="openSettingsModal()" title="Settings" class="p-2 rounded-xl hover:bg-zinc-200/70 dark:hover:bg-codenix-card text-zinc-600 dark:text-zinc-300 transition">
+                    <button type="button" onclick="openSettingsModal()" title="Settings (Language & Theme)" class="p-2 rounded-xl hover:bg-zinc-200/70 dark:hover:bg-codenix-card text-zinc-600 dark:text-zinc-300 transition">
                         <i data-lucide="settings" class="w-4 h-4"></i>
                     </button>
-                    <button type="button" onclick="signOutUser()" title="Sign Out" class="p-2 rounded-xl hover:bg-rose-500/10 text-zinc-500 hover:text-rose-500 transition">
+                    <button type="button" onclick="signOutUser()" title="Sign out" class="p-2 rounded-xl hover:bg-rose-500/10 text-zinc-400 hover:text-rose-500 transition">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -283,16 +219,16 @@
         </aside>
 
         <!-- MAIN WORKSPACE -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-white dark:bg-codenix-black">
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-codenix-black">
 
-            <!-- Minimal Top Bar -->
-            <header class="h-13 border-b border-zinc-100 dark:border-codenix-border/70 px-3 sm:px-5 flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-2">
+            <!-- Clean Top Bar -->
+            <header class="h-14 border-b border-zinc-200/80 dark:border-codenix-border px-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
                     <button type="button" onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300">
                         <i data-lucide="menu" class="w-5 h-5"></i>
                     </button>
-                    <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Codenix</span>
-                    <span id="temp-mode-pill" class="hidden text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                    <span id="active-chat-title" class="text-sm font-semibold truncate">New chat</span>
+                    <span id="temp-chat-badge" class="hidden text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30">
                         Temporary Chat
                     </span>
                 </div>
@@ -301,84 +237,100 @@
                     <button type="button" onclick="toggleTemporaryChatMode()" id="header-temp-btn" title="Temporary Chat" class="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-codenix-panel text-zinc-600 dark:text-zinc-300 transition">
                         <i data-lucide="ghost" class="w-4 h-4"></i>
                     </button>
+                    <button type="button" onclick="openShareModal()" id="header-share-conv-btn" title="Share conversation" class="p-2 rounded-xl hover:bg-zinc-100 dark:bg-codenix-panel text-zinc-600 dark:text-zinc-300 transition">
+                        <i data-lucide="share-2" class="w-4 h-4"></i>
+                    </button>
                 </div>
             </header>
 
-            <!-- Split View: Chat + Live Preview Canvas -->
+            <!-- Workspace Split: Messages + Optional Live Preview Canvas -->
             <div class="flex-1 flex overflow-hidden min-h-0">
 
-                <!-- Messages Feed -->
-                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6 scroll-smooth">
+                <!-- CHAT STREAM -->
+                <div id="chat-scroll-area" class="flex-1 overflow-y-auto px-4 py-6">
                     <div class="max-w-3xl mx-auto space-y-6">
 
                         <!-- Welcome View with Single Model Logo -->
-                        <div id="welcome-hero" class="flex flex-col items-center justify-center text-center py-12 sm:py-16">
-                            <div class="w-12 h-12 rounded-2xl bg-codenix-600 text-white flex items-center justify-center shadow-lg shadow-codenix-600/25 mb-4">
-                                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-7 h-7 object-contain">
+                        <div id="welcome-view" class="flex flex-col items-center justify-center text-center py-10 sm:py-16 space-y-6">
+                            <div class="w-14 h-14 rounded-2xl bg-codenix-600/15 border border-codenix-500/30 flex items-center justify-center shadow-sm">
+                                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-9 h-9 object-contain">
                             </div>
-                            <h1 id="welcome-heading" data-i18n="welcomeTitle" class="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-                                What can I help with?
-                            </h1>
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-2 max-w-md">
-                                Ask anything — responses can include interactive widgets, icons, Wikipedia visuals, code previews, and Puter.js voice.
-                            </p>
+                            <h1 id="welcome-heading" class="text-2xl sm:text-3xl font-bold tracking-tight">What can I help with?</h1>
+
+                            <!-- Clean Prompt Starters -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl text-left">
+                                <button type="button" onclick="useStarterPrompt('Explain quantum computing with a Wikipedia summary, icons, and a table')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500/60 transition">
+                                    <p class="text-xs font-semibold">Smart UI & Research</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Wikipedia images, icons & tables</p>
+                                </button>
+                                <button type="button" onclick="useStarterPrompt('Create an interactive HTML calculator widget')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500/60 transition">
+                                    <p class="text-xs font-semibold">Interactive HTML Widget</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Live interactive UI & code preview</p>
+                                </button>
+                                <button type="button" onclick="useStarterPrompt('Say in voice: Welcome to Codenix AI Studio, ready to help you build faster.')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500/60 transition">
+                                    <p class="text-xs font-semibold">Generate Voice (Puter.js)</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Spoken audio output in chat</p>
+                                </button>
+                                <button type="button" onclick="useStarterPrompt('Generate image of a futuristic purple glass studio at dusk')" class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500/60 transition">
+                                    <p class="text-xs font-semibold">Generate Image</p>
+                                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Create artwork with Puter.js</p>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Messages -->
+                        <!-- Messages Feed -->
                         <div id="messages-feed" class="space-y-6"></div>
 
-                        <!-- Loading State -->
-                        <div id="loading-indicator" class="hidden items-start gap-3">
-                            <div class="w-7 h-7 rounded-xl bg-codenix-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-                                <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-4 h-4 object-contain">
+                        <!-- Thinking Indicator -->
+                        <div id="thinking-indicator" class="hidden items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-codenix-600/15 border border-codenix-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                                <img src="/logo.png" alt="" onerror="this.style.display='none'" class="w-4 h-4 object-contain">
                             </div>
-                            <div class="flex items-center gap-2 py-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                <span class="w-2 h-2 rounded-full bg-codenix-500 animate-bounce"></span>
-                                <span id="loading-status-text">Thinking...</span>
+                            <div class="px-4 py-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border flex items-center gap-2">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span id="thinking-label" class="text-xs text-zinc-500 dark:text-zinc-400 ml-1">Thinking...</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Live Code & Preview Drawer -->
-                <aside id="cody-canvas-pane" class="hidden w-full lg:w-[460px] xl:w-[520px] border-l border-zinc-200 dark:border-codenix-border bg-zinc-50 dark:bg-codenix-panel flex-col shrink-0">
+                <!-- LIVE PREVIEW / CODE CANVAS -->
+                <aside id="canvas-drawer" class="hidden w-full lg:w-[460px] xl:w-[520px] border-l border-zinc-200 dark:border-codenix-border bg-zinc-50 dark:bg-codenix-panel flex-col shrink-0">
                     <div class="h-12 px-4 border-b border-zinc-200 dark:border-codenix-border flex items-center justify-between">
-                        <span class="text-xs font-semibold">Live Preview</span>
+                        <span class="text-xs font-semibold">Interactive Preview</span>
                         <div class="flex items-center gap-1.5">
-                            <button type="button" onclick="switchCodyTab('preview')" id="cody-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
-                            <button type="button" onclick="switchCodyTab('code')" id="cody-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 dark:text-zinc-400 text-[11px] font-semibold">Code</button>
-                            <button type="button" onclick="runEditedCodyCode()" class="px-2.5 py-1 rounded-lg bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 text-[11px] font-semibold">Run</button>
-                            <button type="button" onclick="closeCodyCanvas()" class="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
+                            <button type="button" onclick="switchCanvasTab('preview')" id="canvas-tab-preview" class="px-2.5 py-1 rounded-lg bg-codenix-600 text-white text-[11px] font-semibold">Preview</button>
+                            <button type="button" onclick="switchCanvasTab('code')" id="canvas-tab-code" class="px-2.5 py-1 rounded-lg text-zinc-500 text-[11px] font-semibold">Code</button>
+                            <button type="button" onclick="closeCanvasDrawer()" class="p-1 text-zinc-400 hover:text-zinc-800 dark:hover:text-white">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
-                    <iframe id="cody-preview-frame" sandbox="allow-scripts allow-forms allow-modals allow-popups" class="flex-1 w-full bg-white border-none"></iframe>
-                    <textarea id="cody-code-editor" spellcheck="false" class="hidden flex-1 w-full bg-codenix-black text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
+                    <iframe id="canvas-iframe" sandbox="allow-scripts allow-forms allow-modals" class="flex-1 w-full bg-white border-none"></iframe>
+                    <textarea id="canvas-code-view" spellcheck="false" class="hidden flex-1 w-full bg-codenix-black text-purple-200 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
                 </aside>
             </div>
 
-            <!-- Composer -->
-            <div class="p-3 sm:p-4 bg-white dark:bg-codenix-black shrink-0">
+            <!-- COMPOSER -->
+            <div class="p-3 sm:p-4 border-t border-zinc-200/80 dark:border-codenix-border bg-white dark:bg-codenix-black shrink-0">
                 <div class="max-w-3xl mx-auto">
-                    <video id="sharenix-video" autoplay playsinline muted class="hidden"></video>
-                    <canvas id="sharenix-canvas" class="hidden"></canvas>
+                    <div id="attachments-bar" class="hidden flex-wrap gap-2 mb-2"></div>
+                    <input type="file" id="file-picker" multiple accept="image/*,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css" onchange="handleFileSelection(event)" class="hidden">
 
-                    <div id="uploaded-files-strip" class="hidden flex-wrap gap-2 mb-2"></div>
-                    <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.sql,.xml" onchange="handleFileUploadSelection(event)" class="hidden">
-
-                    <div class="flex items-end gap-2 bg-zinc-100/90 dark:bg-codenix-card border border-zinc-200/90 dark:border-codenix-border focus-within:border-codenix-500 rounded-3xl px-3 py-2 shadow-xs transition">
-                        <button type="button" onclick="document.getElementById('file-input').click()" title="Attach files" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition shrink-0">
+                    <div class="flex items-end gap-1.5 bg-zinc-50 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border focus-within:border-codenix-500 rounded-2xl p-2 transition">
+                        <button type="button" onclick="document.getElementById('file-picker').click()" title="Attach files" class="p-2.5 rounded-xl text-zinc-500 hover:text-codenix-600 dark:hover:text-codenix-400 hover:bg-codenix-600/10 transition shrink-0">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                         </button>
 
-                        <textarea id="prompt-input" rows="1" data-i18n-placeholder="askAnything" placeholder="Ask anything" onkeydown="handlePromptKeydown(event)" oninput="autoResizeTextarea(this)" class="flex-1 bg-transparent px-1.5 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
+                        <textarea id="prompt-input" rows="1" placeholder="Ask anything..." onkeydown="handlePromptKeydown(event)" oninput="autoResizeInput(this)" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"></textarea>
 
-                        <button type="button" onclick="openVoiceModeModal()" title="Voice mode" class="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition shrink-0">
+                        <button type="button" onclick="openVoiceMode()" title="Voice Mode" class="p-2.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-codenix-600/10 hover:text-codenix-600 dark:hover:text-codenix-400 transition shrink-0">
                             <i data-lucide="audio-waveform" class="w-4 h-4"></i>
                         </button>
 
-                        <button type="button" id="send-prompt-btn" onclick="handleSendPrompt()" class="p-2 rounded-full bg-codenix-600 hover:bg-codenix-700 disabled:opacity-40 text-white transition shrink-0">
+                        <button type="button" id="send-btn" onclick="handleSendPrompt()" class="p-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 disabled:opacity-50 text-white transition shrink-0">
                             <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -387,49 +339,42 @@
         </main>
     </div>
 
-    <!-- VOICE MODE MODAL (FAST CHATGPT / GEMINI STYLE) -->
-    <div id="voice-mode-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex-col items-center justify-between p-5 text-white">
+    <!-- VOICE MODE MODAL (GEMINI / CHATGPT STYLE FAST VOICE) -->
+    <div id="voice-mode-modal" class="fixed inset-0 z-50 bg-codenix-black/95 backdrop-blur-md hidden flex-col items-center justify-between p-6 text-white">
         <div class="w-full max-w-2xl flex items-center justify-between">
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs font-semibold">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Codenix Voice</span>
+            <div class="flex items-center gap-2 text-xs font-semibold text-purple-200">
+                <img src="/logo.png" alt="" onerror="this.style.display='none'" class="w-5 h-5 object-contain">
+                <span>Live Voice</span>
+                <span id="voice-status-pill" class="px-2 py-0.5 rounded-full bg-white/10 text-[10px]">Ready</span>
             </div>
-            <button type="button" onclick="closeVoiceModeModal()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
+            <button type="button" onclick="closeVoiceMode()" class="p-2 rounded-full bg-white/10 hover:bg-white/20">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
 
-        <div class="flex flex-col items-center justify-center text-center my-auto w-full max-w-xl px-4">
-            <div id="voice-orb-wrapper" onclick="toggleVoiceRecording()" class="voice-orb-container orb-idle mb-5">
-                <div class="voice-orb-core flex items-center justify-center">
-                    <i data-lucide="mic" id="voice-orb-lucide" class="w-7 h-7 text-white"></i>
-                </div>
-            </div>
+        <div class="flex flex-col items-center text-center my-auto max-w-xl w-full space-y-6">
+            <button type="button" id="voice-orb-btn" onclick="toggleVoiceCapture()" class="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 via-codenix-600 to-codenix-950 flex items-center justify-center shadow-2xl transition-transform">
+                <i id="voice-orb-icon" data-lucide="mic" class="w-10 h-10 text-white"></i>
+            </button>
 
-            <p id="voice-status-label" class="text-xs font-semibold uppercase tracking-widest text-purple-300 mb-3">
-                Tap Orb to Speak
-            </p>
-
-            <div class="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-100">
-                <p id="voice-live-role" class="text-[10px] font-bold uppercase tracking-wider text-purple-300 mb-1">Codenix</p>
-                <p id="voice-live-caption" class="leading-relaxed">Ready for fast voice conversation.</p>
+            <div class="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
+                <p id="voice-speaker-label" class="text-[10px] font-bold uppercase tracking-widest text-purple-300">Tap orb to speak</p>
+                <p id="voice-caption-text" class="text-sm sm:text-base text-zinc-100 leading-relaxed">Fast voice replies powered by Puter.js.</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-3 bg-white/10 border border-white/10 px-4 py-2.5 rounded-full">
-            <button type="button" onclick="toggleVoiceMic()" id="voice-mic-btn" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition" title="Toggle mic">
-                <i data-lucide="mic" class="w-4 h-4 text-emerald-400"></i>
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleVoiceSpeakerMute()" id="voice-mute-btn" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold flex items-center gap-2">
+                <i id="voice-mute-icon" data-lucide="volume-2" class="w-4 h-4"></i>
+                <span id="voice-mute-label">Audio On</span>
             </button>
-            <button type="button" onclick="toggleVoiceMute()" id="voice-speaker-btn" class="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition" title="Toggle audio">
-                <i data-lucide="volume-2" class="w-4 h-4 text-purple-300"></i>
-            </button>
-            <button type="button" onclick="resetVoiceSession()" class="px-4 py-1.5 rounded-full bg-rose-600/30 hover:bg-rose-600/50 text-rose-200 text-xs font-semibold transition">
-                End
+            <button type="button" onclick="closeVoiceMode()" class="px-5 py-2.5 rounded-full bg-rose-600/25 hover:bg-rose-600/35 border border-rose-500/30 text-rose-200 text-xs font-semibold">
+                End Voice
             </button>
         </div>
     </div>
 
-    <!-- LIBRARY & PLUGINS MODAL -->
+    <!-- LIBRARY & PLUGINS MODAL (GOOGLE SHEETS + BUILT-IN PLUGINS) -->
     <div id="library-modal" onclick="if(event.target===this) closeLibraryModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-codenix-border">
@@ -437,7 +382,7 @@
                     <i data-lucide="library" class="w-5 h-5 text-codenix-600 dark:text-codenix-400"></i>
                     <h3 class="text-base font-bold">Library & Plugins</h3>
                 </div>
-                <button type="button" onclick="closeLibraryModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
+                <button type="button" onclick="closeLibraryModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-800 dark:hover:text-white">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -445,37 +390,41 @@
             <div class="overflow-y-auto space-y-5 pr-1">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Built-in Plugins</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                        <a href="/NixCode" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5">
-                            <i data-lucide="terminal" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="text-xs font-semibold truncate">NixCode</span>
-                        </a>
-                        <button type="button" onclick="closeLibraryModal(); openVoiceModeModal();" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5 text-left">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <button type="button" onclick="closeLibraryModal(); openVoiceMode();" class="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-left transition">
                             <i data-lucide="audio-waveform" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="text-xs font-semibold truncate">Voice Mode</span>
+                            <div>
+                                <p class="text-xs font-semibold">Live Voice</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Fast spoken conversation</p>
+                            </div>
                         </button>
-                        <button type="button" onclick="closeLibraryModal(); openPomodoryModal();" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5 text-left">
+                        <button type="button" onclick="closeLibraryModal(); openPomodoryModal();" class="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-left transition">
                             <i data-lucide="timer" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="text-xs font-semibold truncate">Pomodory</span>
+                            <div>
+                                <p class="text-xs font-semibold">Pomodory Timer</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Focus timer intervals</p>
+                            </div>
                         </button>
-                        <button type="button" onclick="closeLibraryModal(); toggleShareNix();" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5 text-left">
-                            <i data-lucide="monitor-up" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="text-xs font-semibold truncate">Screen Share</span>
+                        <button type="button" onclick="closeLibraryModal(); toggleTemporaryChatMode();" class="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-left transition">
+                            <i data-lucide="ghost" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
+                            <div>
+                                <p class="text-xs font-semibold">Temporary Chat</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Toggle unsaved session</p>
+                            </div>
                         </button>
-                        <button type="button" onclick="closeLibraryModal(); openShareModal();" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5 text-left">
-                            <i data-lucide="lock" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="text-xs font-semibold truncate">PIN Share</span>
-                        </button>
-                        <button type="button" onclick="closeLibraryModal(); openFeedbackModal();" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5 text-left">
-                            <i data-lucide="message-square" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
-                            <span class="text-xs font-semibold truncate">Feedback</span>
+                        <button type="button" onclick="closeLibraryModal(); openShareModal();" class="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 text-left transition">
+                            <i data-lucide="share-2" class="w-4 h-4 text-codenix-600 dark:text-codenix-400 shrink-0"></i>
+                            <div>
+                                <p class="text-xs font-semibold">Share with PIN</p>
+                                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Publish protected chat link</p>
+                            </div>
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Sheet Tools</p>
-                    <div id="tool-library-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2">Sheet Library</p>
+                    <div id="sheet-library-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
                 </div>
             </div>
         </div>
@@ -485,16 +434,19 @@
     <div id="settings-modal" onclick="if(event.target===this) closeSettingsModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold">Settings</h3>
-                <button type="button" onclick="closeSettingsModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="settings" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                    <h3 class="text-base font-bold">Settings</h3>
+                </div>
+                <button type="button" onclick="closeSettingsModal()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-800 dark:hover:text-white">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold mb-1.5">Language</label>
-                    <select id="settings-lang-select" onchange="applyLanguage(this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-xs font-medium">
+                    <label class="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">Language</label>
+                    <select id="settings-lang-select" onchange="applyLanguage(this.value)" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-semibold focus:outline-none focus:border-codenix-500">
                         <option value="en">English</option>
                         <option value="ar">العربية</option>
                         <option value="es">Español</option>
@@ -504,62 +456,104 @@
                     </select>
                 </div>
 
-                <div class="flex items-center justify-between py-1">
-                    <span class="text-xs font-semibold">Theme</span>
-                    <button type="button" onclick="toggleTheme()" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-semibold flex items-center gap-1.5">
-                        <i id="theme-icon" data-lucide="sun" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i>
-                        <span id="theme-label">Dark</span>
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
+                    <div>
+                        <p class="text-xs font-semibold">Theme</p>
+                        <p id="settings-theme-label" class="text-[11px] text-zinc-500 dark:text-zinc-400">Dark Mode</p>
+                    </div>
+                    <button type="button" onclick="toggleTheme()" class="px-3 py-1.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i id="settings-theme-icon" data-lucide="sun" class="w-3.5 h-3.5"></i>
+                        <span>Switch</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div>
-                    <label class="block text-xs font-semibold mb-1.5">Provider</label>
-                    <select id="settings-provider-select" onchange="setProviderMode(this.value)" class="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-xs font-medium">
-                        <option value="auto">Auto (Cloudflare + Puter)</option>
-                        <option value="puter">Puter.js Direct</option>
-                    </select>
+    <!-- PROFILE VIEW MODAL (/u/) -->
+    <div id="profile-view-modal" onclick="if(event.target===this) closeProfileView()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="user" class="w-4 h-4 text-codenix-600 dark:text-codenix-400"></i>
+                    <h3 class="text-base font-bold">Profile (/u/)</h3>
                 </div>
+                <button type="button" onclick="closeProfileView()" class="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
+                <div id="profile-modal-avatar" class="w-12 h-12 rounded-2xl bg-codenix-600 text-white text-base font-bold flex items-center justify-center shrink-0">C</div>
+                <div class="min-w-0 flex-1">
+                    <p id="profile-modal-name" class="text-sm font-bold truncate">Codenix User</p>
+                    <p id="profile-modal-handle" class="text-xs font-mono text-codenix-600 dark:text-codenix-400 truncate">/u/member</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 text-center">
+                <div class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
+                    <p class="text-[10px] uppercase font-bold text-zinc-400">Saved Chats</p>
+                    <p id="profile-saved-chats-count" class="text-base font-extrabold font-mono mt-0.5">0</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border">
+                    <p class="text-[10px] uppercase font-bold text-zinc-400">Path</p>
+                    <p id="profile-route-path" class="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-200 mt-1 truncate">/u/</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+                <button type="button" onclick="copyProfileUrl()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold transition">
+                    Copy /u/ Link
+                </button>
+                <button type="button" onclick="closeProfileView(); openSettingsModal();" class="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-semibold transition">
+                    Settings
+                </button>
             </div>
         </div>
     </div>
 
     <!-- POMODORY MODAL -->
-    <div id="pomodory-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative space-y-4">
-            <button type="button" onclick="closePomodoryModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <h3 class="text-base font-bold">Pomodory Timer</h3>
+    <div id="pomodory-modal" onclick="if(event.target===this) closePomodoryModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold">Pomodory Timer</h3>
+                <button type="button" onclick="closePomodoryModal()" class="text-zinc-400 hover:text-zinc-800 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
             <div id="pomodory-display" class="text-4xl font-extrabold font-mono text-codenix-600 dark:text-codenix-400 py-2">25:00</div>
             <div class="flex items-center justify-center gap-2 text-xs">
-                <button type="button" onclick="setPomodoryMinutes(15)" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card font-semibold">15m</button>
-                <button type="button" onclick="setPomodoryMinutes(25)" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card font-semibold">25m</button>
-                <button type="button" onclick="setPomodoryMinutes(50)" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card font-semibold">50m</button>
+                <button type="button" onclick="setPomodoryMinutes(15)" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border font-semibold">15m</button>
+                <button type="button" onclick="setPomodoryMinutes(25)" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border font-semibold">25m</button>
+                <button type="button" onclick="setPomodoryMinutes(50)" class="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border font-semibold">50m</button>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" id="pomodory-start-btn" onclick="togglePomodoryTimer()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Start</button>
-                <button type="button" onclick="resetPomodoryTimer()" class="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-codenix-card text-xs font-semibold">Reset</button>
+                <button type="button" id="pomodory-toggle-btn" onclick="togglePomodoryTimer()" class="flex-1 py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Start</button>
+                <button type="button" onclick="setPomodoryMinutes(25)" class="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs font-semibold">Reset</button>
             </div>
         </div>
     </div>
 
-    <!-- SHARE PIN MODAL -->
-    <div id="share-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
-            <button type="button" onclick="closeShareModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <h3 class="text-base font-bold">Share Conversation</h3>
+    <!-- SHARE WITH PIN MODAL -->
+    <div id="share-modal" onclick="if(event.target===this) closeShareModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold">Share Conversation</h3>
+                <button type="button" onclick="closeShareModal()" class="text-zinc-400 hover:text-zinc-800 dark:hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
             <div>
-                <label class="block text-xs font-semibold mb-1">Access PIN (4-8 digits)</label>
-                <input type="password" id="share-pin-input" maxlength="8" placeholder="e.g. 2486" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-sm font-mono focus:outline-none focus:border-codenix-500">
+                <label class="block text-xs font-semibold mb-1">PIN (4-8 digits)</label>
+                <input type="password" id="share-pin-input" maxlength="8" placeholder="1234" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-sm font-mono focus:outline-none focus:border-codenix-500">
             </div>
             <button type="button" onclick="publishSharedConversation()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">
                 Create Share Link
             </button>
-            <div id="share-result-box" class="hidden p-3 rounded-xl bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border space-y-2">
+            <div id="share-result-box" class="hidden p-3 rounded-xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border space-y-2">
                 <div class="flex items-center gap-2">
-                    <input type="text" id="share-link-output" readonly class="flex-1 bg-transparent text-xs font-mono text-codenix-600 dark:text-codenix-300 focus:outline-none">
+                    <input type="text" id="share-link-output" readonly class="flex-1 bg-transparent text-xs font-mono focus:outline-none">
                     <button type="button" onclick="copyShareUrl()" class="px-3 py-1 rounded-lg bg-codenix-600 text-white text-xs font-semibold">Copy</button>
                 </div>
             </div>
@@ -570,60 +564,40 @@
     <div id="pin-unlock-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
             <h3 class="text-lg font-bold">Protected Conversation</h3>
-            <input type="password" id="unlock-pin-input" maxlength="8" placeholder="Enter PIN" class="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-center text-base font-mono focus:outline-none focus:border-codenix-500">
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Enter the PIN to view this conversation.</p>
+            <input type="password" id="unlock-pin-input" maxlength="8" placeholder="PIN" class="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-center text-base font-mono focus:outline-none focus:border-codenix-500">
             <button type="button" onclick="verifySharedPin()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">Unlock</button>
         </div>
     </div>
 
-    <!-- FEEDBACK MODAL -->
-    <div id="feedback-modal" onclick="if(event.target===this) closeFeedbackModal()" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative space-y-4">
-            <button type="button" onclick="closeFeedbackModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-codenix-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <h3 class="text-base font-bold">Feedback</h3>
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold">Rating</span>
-                <div id="feedback-rating-stars" class="flex items-center gap-1">
-                    <button type="button" onclick="setFeedbackRating(1)" data-star="1" class="text-lg opacity-40 hover:opacity-100">★</button>
-                    <button type="button" onclick="setFeedbackRating(2)" data-star="2" class="text-lg opacity-40 hover:opacity-100">★</button>
-                    <button type="button" onclick="setFeedbackRating(3)" data-star="3" class="text-lg opacity-40 hover:opacity-100">★</button>
-                    <button type="button" onclick="setFeedbackRating(4)" data-star="4" class="text-lg opacity-40 hover:opacity-100">★</button>
-                    <button type="button" onclick="setFeedbackRating(5)" data-star="5" class="text-lg text-amber-400">★</button>
-                </div>
-            </div>
-            <textarea id="feedback-comment-input" rows="3" placeholder="Write your feedback..." class="w-full px-3.5 py-2.5 rounded-2xl bg-zinc-50 dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border text-xs focus:outline-none focus:border-codenix-500 resize-none"></textarea>
-            <button type="button" onclick="submitQuickFeedback()" class="w-full py-2.5 rounded-xl bg-codenix-600 hover:bg-codenix-700 text-white text-xs font-bold">
-                Send
-            </button>
-        </div>
-    </div>
-
     <!-- Toast -->
-    <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-xl"></div>
+    <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2 rounded-full bg-codenix-700 text-white text-xs font-semibold shadow-lg"></div>
 
     <script>
         const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
-        const CLOUDFLARE_PROXY_URL = '/api/nixy';
+        const CLOUDFLARE_WORKER_URL = '/api/nixy';
         const GOOGLE_SHEET_ID = '12phMCFeemaAH40VLakGFPiE75vjymurDG4KJsrLj-lk';
-        const ELEVENLABS_API_KEY = 'sk_1c16a2b6b9df8191415254b5270b24991175f45e9911cc75';
 
         const STORAGE_KEYS = {
             THEME: 'codenix_theme',
-            LANG: 'codenix_lang',
-            PREFERRED_PROVIDER: 'codenix_provider'
+            LANG: 'codenix_lang'
         };
+
+        const SYSTEM_PROMPT = [
+            'You are Codenix AI, a helpful, concise, and clear assistant.',
+            'When helpful, you may include clean inline icon tokens like [icon:sparkles], [icon:cpu], [icon:globe], [icon:code], [icon:check-circle], [icon:layers], or [icon:book-open],',
+            'and when the user asks about a notable topic, place, person, or concept, you may include a Wikipedia lookup tag like [wiki:Topic Name] so an image and summary card can be attached.',
+            'Use clear markdown headings, bullet lists, and tables when appropriate.'
+        ].join(' ');
 
         const state = {
             user: null,
             conversations: [],
             activeConversationId: null,
             temporaryMode: false,
-            __activeTempConv: null,
-            uploadedFiles: [],
-            isSending: false,
-            cloudflareHealthy: true
+            attachments: [],
+            isSending: false
         };
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -634,91 +608,14 @@
             }
         });
 
-        const CODENIX_SYSTEM_PROMPT = [
-            'You are Codenix (Nixy), a helpful, clear, and interactive AI assistant.',
-            'Respond cleanly using markdown, structured lists, tables, and code blocks.',
-            'When helpful for interactive UI, icons, or visual topics, include clear headings, Lucide icon names in brackets like [icon:sparkles], or interactive HTML/JS snippets inside ```html blocks.',
-            'Match the user language naturally.'
-        ].join(' ');
-
-        const UI_TRANSLATIONS = {
-            en: {
-                newChat: 'New chat',
-                searchChats: 'Search chats',
-                library: 'Library',
-                welcomeTitle: 'What can I help with?',
-                askAnything: 'Ask anything'
-            },
-            ar: {
-                newChat: 'محادثة جديدة',
-                searchChats: 'بحث في المحادثات',
-                library: 'المكتبة',
-                welcomeTitle: 'كيف يمكنني مساعدتك؟',
-                askAnything: 'اسأل أي شيء'
-            },
-            es: {
-                newChat: 'Nuevo chat',
-                searchChats: 'Buscar chats',
-                library: 'Biblioteca',
-                welcomeTitle: '¿En qué puedo ayudarte?',
-                askAnything: 'Pregunta lo que sea'
-            },
-            fr: {
-                newChat: 'Nouveau chat',
-                searchChats: 'Rechercher',
-                library: 'Bibliothèque',
-                welcomeTitle: 'Comment puis-je vous aider ?',
-                askAnything: 'Posez une question'
-            },
-            de: {
-                newChat: 'Neuer Chat',
-                searchChats: 'Chats suchen',
-                library: 'Bibliothek',
-                welcomeTitle: 'Wie kann ich helfen?',
-                askAnything: 'Frag anything'
-            },
-            zh: {
-                newChat: '新对话',
-                searchChats: '搜索对话',
-                library: '库',
-                welcomeTitle: '有什么我可以帮你的？',
-                askAnything: '随便问点什么'
-            }
-        };
-
-        function detectPreferredLanguage() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEYS.LANG);
-                if (saved && UI_TRANSLATIONS[saved]) return saved;
-            } catch (_) {}
-            const code = String(navigator.language || 'en').toLowerCase().split('-')[0];
-            return UI_TRANSLATIONS[code] ? code : 'en';
-        }
-
-        function applyLanguage(code) {
-            const lang = UI_TRANSLATIONS[code] ? code : 'en';
-            try { localStorage.setItem(STORAGE_KEYS.LANG, lang); } catch (_) {}
-            document.documentElement.lang = lang;
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            const sel = document.getElementById('settings-lang-select');
-            if (sel) sel.value = lang;
-            const dict = UI_TRANSLATIONS[lang] || UI_TRANSLATIONS.en;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if (k && dict[k]) el.textContent = dict[k];
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const k = el.getAttribute('data-i18n-placeholder');
-                if (k && dict[k]) el.setAttribute('placeholder', dict[k]);
-            });
-        }
-
+        // ==========================================
+        // THEME & LANGUAGE
+        // ==========================================
         function initTheme() {
-            const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-            const isLight = saved === 'light';
+            const isLight = localStorage.getItem(STORAGE_KEYS.THEME) === 'light';
             document.documentElement.classList.toggle('light', isLight);
             document.documentElement.classList.toggle('dark', !isLight);
-            updateThemeUI(!isLight);
+            syncThemeControls(!isLight);
         }
 
         function toggleTheme() {
@@ -726,72 +623,83 @@
             document.documentElement.classList.toggle('dark', nextDark);
             document.documentElement.classList.toggle('light', !nextDark);
             localStorage.setItem(STORAGE_KEYS.THEME, nextDark ? 'dark' : 'light');
-            updateThemeUI(nextDark);
+            syncThemeControls(nextDark);
         }
 
-        function updateThemeUI(isDark) {
-            const icon = document.getElementById('theme-icon');
-            const label = document.getElementById('theme-label');
+        function syncThemeControls(isDark) {
+            const label = document.getElementById('settings-theme-label');
+            const icon = document.getElementById('settings-theme-icon');
+            if (label) label.textContent = isDark ? 'Dark Mode' : 'Light Mode';
             if (icon) icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            if (label) label.textContent = isDark ? 'Dark' : 'Light';
             if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
-        function getProviderMode() {
-            return localStorage.getItem(STORAGE_KEYS.PREFERRED_PROVIDER) === 'puter' ? 'puter' : 'auto';
+        function applyLanguage(code) {
+            const supported = ['en', 'ar', 'es', 'fr', 'de', 'zh'];
+            const lang = supported.includes(code) ? code : 'en';
+            localStorage.setItem(STORAGE_KEYS.LANG, lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            const sel = document.getElementById('settings-lang-select');
+            if (sel) sel.value = lang;
         }
 
-        function setProviderMode(mode) {
-            localStorage.setItem(STORAGE_KEYS.PREFERRED_PROVIDER, mode === 'puter' ? 'puter' : 'auto');
-            const sel = document.getElementById('settings-provider-select');
-            if (sel) sel.value = mode === 'puter' ? 'puter' : 'auto';
+        function openSettingsModal() {
+            applyLanguage(localStorage.getItem(STORAGE_KEYS.LANG) || 'en');
+            syncThemeControls(document.documentElement.classList.contains('dark'));
+            const m = document.getElementById('settings-modal');
+            m?.classList.remove('hidden');
+            m?.classList.add('flex');
         }
 
-        function renderModelLogoBadge(boxClass = 'w-7 h-7', iconClass = 'w-3.5 h-3.5') {
-            return `
-                <div class="${boxClass} rounded-xl bg-codenix-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                    <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="${iconClass} object-contain">
-                </div>
-            `;
+        function closeSettingsModal() {
+            const m = document.getElementById('settings-modal');
+            m?.classList.add('hidden');
+            m?.classList.remove('flex');
         }
 
         // ==========================================
-        // BOOT & AUTH
+        // BOOT & SUPABASE AUTH
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
-            applyLanguage(detectPreferredLanguage());
-            setProviderMode(getProviderMode());
+            applyLanguage(localStorage.getItem(STORAGE_KEYS.LANG) || 'en');
             if (window.lucide?.createIcons) window.lucide.createIcons();
 
-            const searchEl = document.getElementById('chat-search');
-            if (searchEl) searchEl.value = '';
+            const searchInput = document.getElementById('chat-search');
+            if (searchInput) {
+                searchInput.value = '';
+                setTimeout(() => { searchInput.value = ''; }, 150);
+            }
 
             const params = new URLSearchParams(window.location.search);
             const shareSlug = params.get('share');
             if (shareSlug) {
                 hideAuthGate();
                 window.__pendingShareSlug = shareSlug;
-                document.getElementById('pin-unlock-modal').classList.remove('hidden');
-                document.getElementById('pin-unlock-modal').classList.add('flex');
+                const unlockModal = document.getElementById('pin-unlock-modal');
+                unlockModal?.classList.remove('hidden');
+                unlockModal?.classList.add('flex');
                 return;
             }
 
-            const ok = await verifySupabaseSession();
-            if (!ok) return;
+            const authed = await verifySupabaseSession();
+            if (!authed) return;
 
             await loadConversationsFromSupabase(params.get('chat'));
-            await loadGoogleSheetTools();
+            await loadGoogleSheetLibrary();
             hideAuthGate();
         });
 
         async function verifySupabaseSession() {
             try {
-                let session = (await supabaseClient.auth.getSession())?.data?.session || null;
+                const { data } = await supabaseClient.auth.getSession();
+                let session = data?.session || null;
+
                 if (!session) {
-                    session = await new Promise(resolve => {
+                    session = await new Promise((resolve) => {
                         let done = false;
-                        const { data: sub } = supabaseClient.auth.onAuthStateChange((_, s) => {
+                        const { data: sub } = supabaseClient.auth.onAuthStateChange((_ev, s) => {
                             if (s && !done) {
                                 done = true;
                                 sub?.subscription?.unsubscribe();
@@ -804,7 +712,7 @@
                                 sub?.subscription?.unsubscribe();
                                 resolve(null);
                             }
-                        }, 1100);
+                        }, 1200);
                     });
                 }
 
@@ -818,9 +726,9 @@
                 document.getElementById('user-display-name').textContent = displayName;
                 document.getElementById('user-avatar-badge').textContent = displayName.charAt(0).toUpperCase();
 
-                supabaseClient.auth.onAuthStateChange((ev, s) => {
-                    if (ev === 'SIGNED_OUT') window.location.replace('/Start');
-                    else if (s?.user) state.user = s.user;
+                supabaseClient.auth.onAuthStateChange((event, nextSession) => {
+                    if (event === 'SIGNED_OUT') window.location.replace('/Start');
+                    else if (nextSession?.user) state.user = nextSession.user;
                 });
                 return true;
             } catch (_) {
@@ -831,9 +739,10 @@
 
         function hideAuthGate() {
             const gate = document.getElementById('auth-gate');
-            if (!gate) return;
-            gate.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => gate.remove(), 250);
+            if (gate) {
+                gate.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => gate.remove(), 250);
+            }
         }
 
         async function signOutUser() {
@@ -841,90 +750,89 @@
             window.location.replace('/Start');
         }
 
-        async function getAuthHeaders() {
-            const headers = { 'Content-Type': 'application/json' };
-            try {
-                const { data } = await supabaseClient.auth.getSession();
-                const token = data?.session?.access_token;
-                if (token) headers['Authorization'] = `Bearer ${token}`;
-            } catch (_) {}
-            return headers;
-        }
-
-        function generateId() {
-            return (window.crypto?.randomUUID)
+        // ==========================================
+        // CONVERSATIONS & TEMPORARY MODE
+        // ==========================================
+        function makeId() {
+            return (window.crypto && typeof window.crypto.randomUUID === 'function')
                 ? window.crypto.randomUUID()
-                : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+                : 'chat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
         }
 
-        // ==========================================
-        // CONVERSATIONS, TEMPORARY MODE & HOVER DELETE
-        // ==========================================
-        function toggleTemporaryChatMode() {
-            state.temporaryMode = !state.temporaryMode;
-            const active = state.temporaryMode;
-
-            const pill = document.getElementById('temp-mode-pill');
-            if (pill) pill.classList.toggle('hidden', !active);
-
+        function updateTemporaryModeUI() {
+            const badge = document.getElementById('temp-chat-badge');
             const sideBtn = document.getElementById('temp-chat-toggle-btn');
-            if (sideBtn) sideBtn.classList.toggle('text-amber-500', active);
-
             const headBtn = document.getElementById('header-temp-btn');
-            if (headBtn) headBtn.classList.toggle('text-amber-500', active);
+            badge?.classList.toggle('hidden', !state.temporaryMode);
 
-            if (active) {
-                createNewChat(true);
-                showToast('Temporary chat enabled — messages are not saved');
+            [sideBtn, headBtn].forEach(btn => {
+                if (!btn) return;
+                btn.classList.toggle('text-amber-500', state.temporaryMode);
+                btn.classList.toggle('bg-amber-500/15', state.temporaryMode);
+            });
+        }
+
+        async function toggleTemporaryChatMode() {
+            state.temporaryMode = !state.temporaryMode;
+            updateTemporaryModeUI();
+            if (state.temporaryMode) {
+                const tempConv = {
+                    id: 'temp-' + makeId(),
+                    title: 'Temporary chat',
+                    messages: [],
+                    isTemporary: true
+                };
+                state.__activeTempConv = tempConv;
+                state.activeConversationId = tempConv.id;
+                updateHeaderTitle();
+                renderConversationList();
+                renderMessages();
+                showToast('Temporary chat enabled (not saved)');
             } else {
                 state.__activeTempConv = null;
                 const firstSaved = state.conversations.find(c => !c.isTemporary);
                 if (firstSaved) {
-                    selectConversation(firstSaved.id);
+                    await selectConversation(firstSaved.id);
                 } else {
-                    createNewChat(false);
+                    await createNewChat();
                 }
-                showToast('Temporary chat off — normal chat');
+                showToast('Temporary chat off (normal history)');
             }
         }
 
-        async function createNewChat(forceTemp = false) {
-            const isTemp = Boolean(forceTemp || state.temporaryMode);
-            if (!isTemp && state.temporaryMode) {
-                state.temporaryMode = false;
-                document.getElementById('temp-mode-pill')?.classList.add('hidden');
-                document.getElementById('temp-chat-toggle-btn')?.classList.remove('text-amber-500');
-                document.getElementById('header-temp-btn')?.classList.remove('text-amber-500');
+        async function createNewChat() {
+            if (state.temporaryMode) {
+                const tempConv = {
+                    id: 'temp-' + makeId(),
+                    title: 'Temporary chat',
+                    messages: [],
+                    isTemporary: true
+                };
+                state.__activeTempConv = tempConv;
+                state.activeConversationId = tempConv.id;
+                updateHeaderTitle();
+                renderConversationList();
+                renderMessages();
+                return;
             }
 
-            const newId = generateId();
-            const conv = {
-                id: newId,
-                title: isTemp ? 'Temporary Chat' : 'New chat',
-                messages: [],
-                isTemporary: isTemp
-            };
-
-            if (isTemp) {
-                state.__activeTempConv = conv;
-                state.activeConversationId = newId;
-            } else {
-                state.__activeTempConv = null;
-                state.conversations.unshift(conv);
-                state.activeConversationId = newId;
-                if (state.user) {
-                    try {
-                        await supabaseClient.from('nixy_conversations').insert({
-                            id: newId,
-                            user_id: state.user.id,
-                            title: conv.title
-                        });
-                    } catch (_) {}
-                }
-            }
-
+            const newId = makeId();
+            const conv = { id: newId, title: 'New chat', messages: [], isTemporary: false };
+            state.conversations.unshift(conv);
+            state.activeConversationId = newId;
+            updateHeaderTitle();
             renderConversationList();
             renderMessages();
+
+            if (state.user) {
+                try {
+                    await supabaseClient.from('nixy_conversations').insert({
+                        id: newId,
+                        user_id: state.user.id,
+                        title: conv.title
+                    });
+                } catch (_) {}
+            }
         }
 
         function getActiveConversation() {
@@ -934,105 +842,112 @@
             return state.conversations.find(c => c.id === state.activeConversationId && !c.isTemporary) || null;
         }
 
+        function openProfileView() {
+            const name = state.user?.user_metadata?.full_name || state.user?.email || 'Codenix User';
+            const slugBase = String(state.user?.email || name).split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'member';
+            const profilePath = `/u/${slugBase}`;
+
+            document.getElementById('profile-modal-avatar').textContent = name.charAt(0).toUpperCase();
+            document.getElementById('profile-modal-name').textContent = name;
+            document.getElementById('profile-modal-handle').textContent = profilePath;
+            document.getElementById('profile-saved-chats-count').textContent = String(state.conversations.filter(c => !c.isTemporary).length);
+            document.getElementById('profile-route-path').textContent = profilePath;
+
+            try {
+                if (window.location.pathname !== profilePath && !window.location.search) {
+                    window.history.replaceState({}, '', profilePath);
+                }
+            } catch (_) {}
+
+            const modal = document.getElementById('profile-view-modal');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
+        function closeProfileView() {
+            const modal = document.getElementById('profile-view-modal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
+        }
+
+        function copyProfileUrl() {
+            const handle = document.getElementById('profile-modal-handle')?.textContent || '/u/';
+            const fullUrl = `${window.location.origin}${handle}`;
+            navigator.clipboard?.writeText(fullUrl).then(() => showToast('Profile link copied'));
+        }
+
         async function loadConversationsFromSupabase(preferredId = null) {
-            if (!state.user) return;
+            if (!state.user) {
+                await createNewChat();
+                return;
+            }
             try {
                 const { data: rows } = await supabaseClient
                     .from('nixy_conversations')
                     .select('*')
                     .eq('user_id', state.user.id)
                     .order('updated_at', { ascending: false })
-                    .limit(40);
+                    .limit(50);
 
                 const list = Array.isArray(rows)
-                    ? rows.map(r => ({ id: r.id, title: r.title || 'New chat', messages: [], isTemporary: false }))
+                    ? rows.map(r => ({
+                        id: r.id,
+                        title: r.title || 'New chat',
+                        messages: [],
+                        isTemporary: false
+                    }))
                     : [];
 
                 if (list.length > 0) {
-                    const current = list.find(c => c.id === preferredId) || list[0];
-                    const { data: msgs } = await supabaseClient
-                        .from('nixy_messages')
-                        .select('*')
-                        .eq('conversation_id', current.id)
-                        .order('created_at', { ascending: true });
-
-                    current.messages = Array.isArray(msgs)
-                        ? msgs.map(m => ({ role: m.role, content: m.content }))
-                        : [];
-
                     state.conversations = list;
-                    state.activeConversationId = current.id;
+                    const target = list.find(c => c.id === preferredId) || list[0];
+                    await selectConversation(target.id);
                 } else {
-                    await createNewChat(false);
-                    return;
+                    await createNewChat();
                 }
             } catch (_) {
-                if (!state.conversations.length) await createNewChat(false);
+                await createNewChat();
             }
-            renderConversationList();
-            renderMessages();
-        }
-
-        function renderConversationList() {
-            const listEl = document.getElementById('conversation-list');
-            if (!listEl) return;
-            // Search only by conversation title, never by user email
-            const q = (document.getElementById('chat-search')?.value || '').trim().toLowerCase();
-            const savedOnly = state.conversations.filter(c => {
-                if (c.isTemporary) return false;
-                const title = String(c.title || 'New chat').toLowerCase();
-                return !q || title.includes(q);
-            });
-
-            if (savedOnly.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No chats yet</p>`;
-                return;
-            }
-
-            listEl.innerHTML = savedOnly.map(c => {
-                const active = c.id === state.activeConversationId && !state.__activeTempConv;
-                return `
-                    <div class="group relative flex items-center justify-between gap-1 rounded-xl transition ${active ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 font-semibold' : 'hover:bg-zinc-200/60 dark:hover:bg-codenix-card text-zinc-700 dark:text-zinc-300'}">
-                        <button type="button" onclick="selectConversation('${escapeHtml(c.id)}')" class="flex-1 min-w-0 text-left px-3 py-2 text-xs truncate">
-                            ${escapeHtml(c.title || 'New chat')}
-                        </button>
-                        <button type="button" onclick="deleteConversation(event, '${escapeHtml(c.id)}')" title="Delete" class="opacity-0 group-hover:opacity-100 focus:opacity-100 mr-1.5 p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition shrink-0">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                `;
-            }).join('');
-            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
         async function selectConversation(convId) {
-            state.__activeTempConv = null;
             state.temporaryMode = false;
-            document.getElementById('temp-mode-pill')?.classList.add('hidden');
-            document.getElementById('temp-chat-toggle-btn')?.classList.remove('text-amber-500');
-            document.getElementById('header-temp-btn')?.classList.remove('text-amber-500');
-
+            state.__activeTempConv = null;
+            updateTemporaryModeUI();
             state.activeConversationId = convId;
+
             const conv = state.conversations.find(c => c.id === convId);
             if (conv && (!conv.messages || conv.messages.length === 0) && state.user) {
                 try {
-                    const { data: msgs } = await supabaseClient
+                    const { data: msgRows } = await supabaseClient
                         .from('nixy_messages')
                         .select('*')
                         .eq('conversation_id', convId)
                         .order('created_at', { ascending: true });
-                    conv.messages = Array.isArray(msgs) ? msgs.map(m => ({ role: m.role, content: m.content })) : [];
+
+                    conv.messages = Array.isArray(msgRows)
+                        ? msgRows.map(m => ({
+                            role: m.role,
+                            content: m.content,
+                            imageUrl: m.image_url || '',
+                            audioUrl: m.audio_url || '',
+                            wikiQuery: m.wiki_query || ''
+                        }))
+                        : [];
                 } catch (_) {}
             }
+
+            updateHeaderTitle();
             renderConversationList();
             renderMessages();
         }
 
-        async function deleteConversation(e, convId) {
-            if (e) e.stopPropagation();
+        async function deleteConversation(convId, ev) {
+            if (ev) ev.stopPropagation();
             state.conversations = state.conversations.filter(c => c.id !== convId);
 
-            if (state.user) {
+            if (state.user && !String(convId).startsWith('temp-')) {
                 try {
                     await supabaseClient.from('nixy_messages').delete().eq('conversation_id', convId);
                     await supabaseClient.from('nixy_conversations').delete().eq('id', convId);
@@ -1040,175 +955,182 @@
             }
 
             if (state.activeConversationId === convId) {
-                if (state.conversations.length > 0) {
-                    await selectConversation(state.conversations[0].id);
-                } else {
-                    await createNewChat(false);
-                }
+                const next = state.conversations[0];
+                if (next) await selectConversation(next.id);
+                else await createNewChat();
             } else {
                 renderConversationList();
             }
-            showToast('Deleted');
         }
 
-        // ==========================================
-        // MESSAGE UI (CLEAN IMAGE_E38BEC STYLE)
-        // ==========================================
-        function renderMessages() {
-            const feedEl = document.getElementById('messages-feed');
-            const heroEl = document.getElementById('welcome-hero');
-            if (!feedEl) return;
-
+        function updateHeaderTitle() {
             const conv = getActiveConversation();
-            const msgs = conv?.messages || [];
-            if (heroEl) heroEl.classList.toggle('hidden', msgs.length > 0);
+            const titleEl = document.getElementById('active-chat-title');
+            if (titleEl) titleEl.textContent = conv?.title || 'New chat';
+        }
 
-            if (msgs.length === 0) {
-                feedEl.innerHTML = '';
+        function renderConversationList() {
+            const listEl = document.getElementById('conversation-list');
+            if (!listEl) return;
+            // Search only by conversation title, never by user email or other fields
+            const rawQuery = String(document.getElementById('chat-search')?.value || '').trim().toLowerCase();
+            const userEmailLower = String(state.user?.email || '').trim().toLowerCase();
+            const q = (rawQuery && userEmailLower && rawQuery.includes(userEmailLower)) ? '' : rawQuery;
+
+            const savedOnly = state.conversations.filter(c => {
+                if (c.isTemporary) return false;
+                const title = String(c.title || 'New chat').toLowerCase();
+                return !q || title.includes(q);
+            });
+
+            if (savedOnly.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-zinc-400 text-center py-6">No chats</p>`;
                 return;
             }
 
-            window.__snippetStore = [];
-            window.__assistantStore = [];
+            listEl.innerHTML = savedOnly.map(c => {
+                const isActive = c.id === state.activeConversationId && !state.temporaryMode;
+                return `
+                    <div onclick="selectConversation('${escapeHtml(c.id)}')" class="conv-item group flex items-center justify-between gap-1.5 px-3 py-2 rounded-xl text-xs cursor-pointer transition ${isActive ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300 font-semibold' : 'hover:bg-zinc-200/70 dark:hover:bg-codenix-card text-zinc-700 dark:text-zinc-300'}">
+                        <span class="truncate flex-1">${escapeHtml(c.title || 'New chat')}</span>
+                        <button type="button" onclick="deleteConversation('${escapeHtml(c.id)}', event)" title="Delete chat" class="conv-delete-btn opacity-0 focus:opacity-100 p-1 rounded-lg text-zinc-400 hover:text-rose-500 transition shrink-0">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
 
-            feedEl.innerHTML = msgs.map((m, idx) => {
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
+        // ==========================================
+        // SMART UI RENDERING (WIKIPEDIA + ICONS + HTML)
+        // ==========================================
+        window.__codeStore = [];
+        window.__msgStore = [];
+
+        function renderMessages() {
+            const feed = document.getElementById('messages-feed');
+            const welcome = document.getElementById('welcome-view');
+            if (!feed) return;
+
+            const conv = getActiveConversation();
+            const msgs = conv?.messages || [];
+            welcome?.classList.toggle('hidden', msgs.length > 0);
+
+            if (msgs.length === 0) {
+                feed.innerHTML = '';
+                return;
+            }
+
+            window.__codeStore = [];
+            window.__msgStore = [];
+
+            feed.innerHTML = msgs.map((m, idx) => {
                 if (m.role === 'user') {
                     return `
                         <div class="flex justify-end">
-                            <div class="max-w-[82%] rounded-3xl px-4 py-2.5 text-xs sm:text-sm bg-[#f1effb] dark:bg-codenix-card text-zinc-900 dark:text-white">
-                                <p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(m.content || '')}</p>
+                            <div class="max-w-[82%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm bg-codenix-600 text-white leading-relaxed">
+                                ${escapeHtml(m.content || '')}
                             </div>
                         </div>
                     `;
                 }
 
-                const aIdx = window.__assistantStore.push(String(m.content || '')) - 1;
-                let extraMedia = '';
+                const msgIndex = window.__msgStore.push(String(m.content || '')) - 1;
+                const formattedBody = formatSmartAssistantContent(String(m.content || ''));
+                const wikiSlotId = `wiki-card-${idx}`;
 
+                let mediaHtml = '';
+                if (m.wikiQuery) {
+                    mediaHtml += `<div id="${wikiSlotId}" class="mt-3"></div>`;
+                }
                 if (m.imageUrl) {
-                    extraMedia += `
-                        <div class="nix-generated-img-wrap mt-3 p-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border space-y-2">
-                            <img src="${escapeHtml(m.imageUrl)}" alt="Generated image" loading="lazy">
-                            <div class="flex justify-end">
-                                <button type="button" onclick="downloadGeneratedImage('${escapeHtml(m.imageUrl)}')" class="px-2.5 py-1 rounded-lg bg-codenix-600 hover:bg-codenix-700 text-white text-[11px] font-semibold">Download</button>
-                            </div>
+                    mediaHtml += `
+                        <div class="mt-3 p-2 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border space-y-2">
+                            <img src="${escapeHtml(m.imageUrl)}" alt="Generated" class="max-w-full sm:max-w-md max-h-80 rounded-lg object-contain block">
+                            <a href="${escapeHtml(m.imageUrl)}" download="codenix-image.png" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                <span>Download image</span>
+                            </a>
                         </div>
                     `;
                 }
-
                 if (m.audioUrl) {
-                    extraMedia += `
-                        <div class="mt-3 p-2.5 rounded-xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border space-y-2">
-                            <audio controls preload="metadata" src="${escapeHtml(m.audioUrl)}" class="w-full h-9"></audio>
+                    mediaHtml += `
+                        <div class="mt-3 p-2.5 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border space-y-1.5">
+                            <audio controls autoplay src="${escapeHtml(m.audioUrl)}" class="w-full h-9"></audio>
                         </div>
                     `;
                 }
-
-                if (m.wikiCard) {
-                    extraMedia += `
-                        <div class="mt-3 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border flex items-start gap-3">
-                            ${m.wikiCard.thumbnail ? `<img src="${escapeHtml(m.wikiCard.thumbnail)}" alt="${escapeHtml(m.wikiCard.title)}" onerror="this.remove()" class="w-16 h-16 rounded-xl object-cover shrink-0">` : `<div class="w-11 h-11 rounded-xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-300 flex items-center justify-center shrink-0"><i data-lucide="book-open" class="w-5 h-5"></i></div>`}
-                            <div class="min-w-0 flex-1">
-                                <p class="text-xs font-bold text-zinc-900 dark:text-white truncate">${escapeHtml(m.wikiCard.title)}</p>
-                                <p class="text-[11px] text-zinc-600 dark:text-zinc-300 line-clamp-2 mt-0.5">${escapeHtml(m.wikiCard.extract)}</p>
-                                ${m.wikiCard.url ? `<a href="${escapeHtml(m.wikiCard.url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 mt-1 hover:underline">Wikipedia <i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (m.interactiveHtml) {
-                    extraMedia += `
-                        <div class="mt-3 rounded-2xl overflow-hidden border border-zinc-200 dark:border-codenix-border bg-white dark:bg-codenix-card">
-                            <div class="px-3 py-1.5 bg-zinc-100 dark:bg-codenix-panel border-b border-zinc-200 dark:border-codenix-border flex items-center justify-between text-[11px] font-semibold">
-                                <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-codenix-600 dark:text-codenix-400"></i> Interactive Widget</span>
-                                <button type="button" onclick="openInteractiveInCanvas(${aIdx})" class="text-codenix-600 dark:text-codenix-400 hover:underline">Expand</button>
-                            </div>
-                            <iframe sandbox="allow-scripts allow-forms" srcdoc="${escapeHtml(m.interactiveHtml)}" class="w-full h-44 border-none bg-white"></iframe>
-                        </div>
-                    `;
-                }
-
-                const bodyHtml = renderAssistantRichContent(String(m.content || ''));
 
                 return `
                     <div class="flex items-start gap-3">
-                        ${renderModelLogoBadge('w-7 h-7', 'w-3.5 h-3.5')}
-                        <div class="flex-1 min-w-0 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 space-y-2">
-                            <div class="prose dark:prose-invert max-w-none">${bodyHtml}</div>
-                            ${extraMedia}
-                            <div id="msg-more-${aIdx}" class="hidden flex-wrap items-center gap-1.5 pt-1">
-                                <button type="button" onclick="exportAssistantDoc(${aIdx}, 'doc')" class="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-[11px] font-medium">DOC</button>
-                                <button type="button" onclick="exportAssistantDoc(${aIdx}, 'pdf')" class="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-[11px] font-medium">PDF</button>
-                                <button type="button" onclick="exportAssistantDoc(${aIdx}, 'csv')" class="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-codenix-panel border border-zinc-200 dark:border-codenix-border text-[11px] font-medium">CSV</button>
-                            </div>
-                            <div class="flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
-                                <button type="button" onclick="copyAssistantMessage(${aIdx})" title="Copy" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-panel hover:text-zinc-900 dark:hover:text-white transition">
-                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="reactAssistantMessage(this, 'like')" title="Good" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-panel hover:text-emerald-500 transition">
-                                    <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="reactAssistantMessage(this, 'dislike')" title="Bad" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-panel hover:text-rose-500 transition">
-                                    <i data-lucide="thumbs-down" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="speakAssistantMessage(${aIdx})" title="Read aloud" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-panel hover:text-codenix-500 transition">
-                                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="openShareModal()" title="Share" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-panel hover:text-codenix-500 transition">
-                                    <i data-lucide="share" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" onclick="toggleAssistantMore(${aIdx})" title="More" class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-codenix-panel hover:text-zinc-900 dark:hover:text-white transition">
-                                    <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
-                                </button>
+                        <div class="w-8 h-8 rounded-full bg-codenix-600/15 border border-codenix-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                            <img src="/logo.png" alt="Codenix" onerror="this.style.display='none'" class="w-4 h-4 object-contain">
+                        </div>
+                        <div class="flex-1 min-w-0 rounded-2xl rounded-tl-sm px-4 py-3 bg-zinc-50 dark:bg-codenix-card border border-zinc-200/80 dark:border-codenix-border text-sm">
+                            <div class="prose dark:prose-invert max-w-none">${formattedBody}</div>
+                            ${mediaHtml}
+                            <div class="mt-3 pt-2 border-t border-zinc-200/70 dark:border-codenix-border/70 flex items-center justify-between gap-2 text-[11px]">
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="exportMessage(${msgIndex}, 'doc')" class="px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-codenix-panel font-medium">DOC</button>
+                                    <button type="button" onclick="exportMessage(${msgIndex}, 'pdf')" class="px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-codenix-panel font-medium">PDF</button>
+                                    <button type="button" onclick="exportMessage(${msgIndex}, 'csv')" class="px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-codenix-panel font-medium">CSV</button>
+                                </div>
+                                <button type="button" onclick="copyMessageText(${msgIndex})" class="text-zinc-500 hover:text-codenix-600 dark:hover:text-codenix-400 font-semibold">Copy</button>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            if (window.lucide?.createIcons) window.lucide.createIcons();
+            msgs.forEach((m, idx) => {
+                if (m.role === 'assistant' && m.wikiQuery) {
+                    hydrateWikipediaCard(m.wikiQuery, `wiki-card-${idx}`);
+                }
+            });
+
             if (window.hljs?.highlightAll) {
                 try { window.hljs.highlightAll(); } catch (_) {}
             }
-            const scroller = document.getElementById('chat-scroll-area');
-            if (scroller) scroller.scrollTop = scroller.scrollHeight;
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+
+            const scrollArea = document.getElementById('chat-scroll-area');
+            if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
         }
 
-        function renderAssistantRichContent(raw) {
+        function formatSmartAssistantContent(markdownText) {
             const blocks = [];
-            const protectedText = String(raw || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
-                const cleanLang = (lang || 'code').trim().toLowerCase();
-                const sIdx = window.__snippetStore.push({ lang: cleanLang, code: String(code || '').replace(/\n$/, '') }) - 1;
-                const token = `@@CODE_BLOCK_${blocks.length}@@`;
-                blocks.push({ token, sIdx, lang: cleanLang });
+            const withTokens = String(markdownText || '').replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+                const cleanLang = (lang || 'code').toLowerCase().trim();
+                const snippetId = window.__codeStore.push({ lang: cleanLang, code: String(code || '').replace(/\n$/, '') }) - 1;
+                const token = `@@BLOCK_${blocks.length}@@`;
+                blocks.push({ token, snippetId, lang: cleanLang });
                 return token;
             });
 
-            let html = window.marked?.parse ? window.marked.parse(protectedText) : `<p>${escapeHtml(protectedText)}</p>`;
+            let html = window.marked?.parse ? window.marked.parse(withTokens) : `<p>${escapeHtml(withTokens)}</p>`;
 
             // Replace inline [icon:name] tokens with crisp Lucide icons
             html = html.replace(/\[icon:([a-z0-9-]+)\]/gi, (_, iconName) => {
-                const safeIcon = String(iconName || 'sparkles').replace(/[^a-z0-9-]/gi, '');
-                return `<i data-lucide="${safeIcon}" class="inline w-4 h-4 text-codenix-600 dark:text-codenix-400 align-text-bottom mx-0.5"></i>`;
+                const safeName = iconName.replace(/[^a-z0-9-]/gi, '');
+                return `<i data-lucide="${safeName}" class="inline-block w-4 h-4 align-text-bottom text-codenix-600 dark:text-codenix-400 mx-0.5"></i>`;
             });
 
             blocks.forEach(b => {
-                const bodyId = `code-body-${b.sIdx}`;
+                const isInteractiveHtml = b.lang === 'html' || b.lang === 'htm';
                 const card = `
-                    <div class="nix-code-card not-prose">
-                        <div class="nix-code-header">
+                    <div class="not-prose my-3 rounded-xl border border-zinc-200 dark:border-codenix-border bg-zinc-950 overflow-hidden">
+                        <div class="flex items-center justify-between px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-[11px] font-mono text-zinc-300">
                             <span>${escapeHtml(b.lang)}</span>
                             <div class="flex items-center gap-1.5">
-                                <button type="button" onclick="toggleCodeBlock('${bodyId}')" class="nix-code-btn">Toggle</button>
-                                <button type="button" onclick="previewCodeSnippet(${b.sIdx})" class="nix-code-btn">Preview</button>
-                                <button type="button" onclick="copyCodeSnippet(${b.sIdx})" class="nix-code-btn">Copy</button>
-                                <button type="button" onclick="downloadCodeSnippet(${b.sIdx})" class="nix-code-btn">Download</button>
+                                ${isInteractiveHtml ? `<button type="button" onclick="openInteractiveHtml(${b.snippetId})" class="px-2.5 py-0.5 rounded-md bg-codenix-600 hover:bg-codenix-700 text-white font-sans font-semibold">Interactive</button>` : ''}
+                                <button type="button" onclick="previewSnippet(${b.snippetId})" class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white font-sans font-semibold">Preview</button>
+                                <button type="button" onclick="copySnippet(${b.snippetId})" class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white font-sans font-semibold">Copy</button>
                             </div>
                         </div>
-                        <div id="${bodyId}">
-                            <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(b.lang)}">${escapeHtml(window.__snippetStore[b.sIdx].code)}</code></pre>
-                        </div>
+                        <pre class="!m-0 !border-0 !rounded-none"><code class="language-${escapeHtml(b.lang)}">${escapeHtml(window.__codeStore[b.snippetId].code)}</code></pre>
                     </div>
                 `;
                 html = html.replace(new RegExp(`<p>\\s*${b.token}\\s*</p>|${b.token}`), card);
@@ -1217,353 +1139,309 @@
             return html;
         }
 
-        function toggleCodeBlock(id) {
-            document.getElementById(id)?.classList.toggle('hidden');
-        }
-
-        function previewCodeSnippet(idx) {
-            const item = window.__snippetStore?.[idx];
-            if (!item) return;
-            const pane = document.getElementById('cody-canvas-pane');
-            const frame = document.getElementById('cody-preview-frame');
-            const editor = document.getElementById('cody-code-editor');
-            if (!pane || !frame) return;
-            pane.classList.remove('hidden');
-            pane.classList.add('flex');
-            if (editor) editor.value = item.code;
-            switchCodyTab('preview');
-            frame.srcdoc = /<html[\s>]|<!doctype html/i.test(item.code)
-                ? item.code
-                : `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Inter,sans-serif;padding:16px;}</style></head><body>${item.code}</body></html>`;
-        }
-
-        function runEditedCodyCode() {
-            const editor = document.getElementById('cody-code-editor');
-            const frame = document.getElementById('cody-preview-frame');
-            if (!editor || !frame) return;
-            switchCodyTab('preview');
-            frame.srcdoc = editor.value;
-        }
-
-        function switchCodyTab(tab) {
-            const isPreview = tab === 'preview';
-            document.getElementById('cody-preview-frame')?.classList.toggle('hidden', !isPreview);
-            document.getElementById('cody-code-editor')?.classList.toggle('hidden', isPreview);
-            const pBtn = document.getElementById('cody-tab-preview');
-            const cBtn = document.getElementById('cody-tab-code');
-            if (pBtn) pBtn.className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500 dark:text-zinc-400'}`;
-            if (cBtn) cBtn.className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${!isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500 dark:text-zinc-400'}`;
-        }
-
-        function closeCodyCanvas() {
-            const pane = document.getElementById('cody-canvas-pane');
-            pane?.classList.add('hidden');
-            pane?.classList.remove('flex');
-        }
-
-        function copyCodeSnippet(idx) {
-            const item = window.__snippetStore?.[idx];
-            if (!item) return;
-            navigator.clipboard?.writeText(item.code).then(() => showToast('Copied'));
-        }
-
-        function downloadCodeSnippet(idx) {
-            const item = window.__snippetStore?.[idx];
-            if (!item) return;
-            const extMap = { html: 'html', js: 'js', javascript: 'js', py: 'py', python: 'py', css: 'css', json: 'json', sql: 'sql' };
-            const ext = extMap[item.lang] || 'txt';
-            const blob = new Blob([item.code], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `code.${ext}`;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-        }
-
-        function copyAssistantMessage(idx) {
-            const txt = window.__assistantStore?.[idx] || '';
-            navigator.clipboard?.writeText(txt).then(() => showToast('Copied'));
-        }
-
-        function reactAssistantMessage(btn, kind) {
-            if (!btn) return;
-            const active = btn.classList.toggle('text-codenix-600');
-            btn.classList.toggle('dark:text-codenix-400', active);
-            showToast(active ? (kind === 'like' ? 'Liked' : 'Noted') : 'Cleared');
-        }
-
-        function toggleAssistantMore(idx) {
-            const el = document.getElementById(`msg-more-${idx}`);
-            if (!el) return;
-            el.classList.toggle('hidden');
-            el.classList.toggle('flex');
-        }
-
-        function speakAssistantMessage(idx) {
-            const txt = (window.__assistantStore?.[idx] || '').replace(/```[\s\S]*?```/g, ' ').replace(/\[icon:[^\]]+\]/gi, '').replace(/[#*`]/g, '').trim();
-            if (txt) generatePuterVoiceAudio(txt.slice(0, 320));
-        }
-
-        async function generatePuterVoiceAudio(text) {
-            const cleanText = String(text || '').trim();
-            if (!cleanText) return '';
-            if (window.puter?.ai?.txt2speech) {
-                try {
-                    const res = await window.puter.ai.txt2speech(cleanText);
-                    if (typeof res === 'string') {
-                        const a = new Audio(res);
-                        a.play().catch(() => {});
-                        return res;
-                    }
-                    if (res?.src) {
-                        const a = new Audio(res.src);
-                        a.play().catch(() => {});
-                        return res.src;
-                    }
-                    if (res && typeof res.play === 'function') {
-                        await res.play();
-                        return '';
-                    }
-                } catch (_) {}
-            }
-            speakBrowserFallback(cleanText, () => {});
-            return '';
-        }
-
-        async function fetchWikipediaSummary(queryText) {
+        async function hydrateWikipediaCard(topic, targetElementId) {
+            const target = document.getElementById(targetElementId);
+            if (!target || !topic) return;
             try {
-                const topic = String(queryText || '')
-                    .replace(/^(what is|who is|tell me about|explain|wikipedia|ما هو|من هو|تكلم عن)\s+/i, '')
-                    .replace(/[?!.]+$/g, '')
-                    .trim();
-                if (!topic || topic.length < 2) return null;
-                const endpoint = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic.split(/\s+/).slice(0, 4).join('_'))}`;
-                const res = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
-                if (!res.ok) return null;
+                const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`);
+                if (!res.ok) return;
                 const data = await res.json();
-                if (data?.type === 'disambiguation' || !data?.extract) return null;
-                return {
-                    title: data.title || topic,
-                    extract: String(data.extract || '').slice(0, 220),
-                    thumbnail: data.thumbnail?.source || '',
-                    url: data.content_urls?.desktop?.page || ''
-                };
-            } catch (_) {
-                return null;
-            }
+                const thumb = data?.thumbnail?.source || '';
+                const extract = data?.extract || '';
+                const pageUrl = data?.content_urls?.desktop?.page || '';
+                if (!extract && !thumb) return;
+
+                target.innerHTML = `
+                    <div class="flex flex-col sm:flex-row gap-3 p-3 rounded-xl bg-white dark:bg-codenix-black border border-zinc-200 dark:border-codenix-border">
+                        ${thumb ? `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(data.title || topic)}" class="w-full sm:w-28 h-28 object-cover rounded-lg shrink-0">` : ''}
+                        <div class="min-w-0 flex-1 space-y-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold truncate">${escapeHtml(data.title || topic)}</span>
+                                <span class="text-[10px] font-mono text-zinc-400 shrink-0">Wikipedia</span>
+                            </div>
+                            <p class="text-xs text-zinc-600 dark:text-zinc-300 line-clamp-3 leading-relaxed">${escapeHtml(extract)}</p>
+                            ${pageUrl ? `<a href="${escapeHtml(pageUrl)}" target="_blank" rel="noopener" class="inline-block text-[11px] font-semibold text-codenix-600 dark:text-codenix-400 hover:underline pt-0.5">Read article</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            } catch (_) {}
         }
 
-        function buildInteractiveWidgetHtml(promptText, replyText) {
-            const cleanTitle = String(promptText || 'Interactive View').replace(/<[^>]*>/g, '').slice(0, 60);
-            const codeMatch = String(replyText || '').match(/```html\n([\s\S]*?)```/i);
-            if (codeMatch && codeMatch[1]) {
-                return codeMatch[1];
-            }
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-                body{margin:0;font-family:Inter,system-ui,sans-serif;background:#f8f7ff;color:#18181b;padding:14px;}
-                .card{background:#fff;border:1px solid #e4e4e7;border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(124,58,237,0.06);}
-                .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;}
-                .title{font-weight:700;font-size:13px;color:#5b21b6;}
-                button{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;}
-                button:hover{background:#6d28d9;}
-                #out{margin-top:10px;font-size:12px;color:#3f3f46;line-height:1.5;}
-            </style></head><body><div class="card">
-                <div class="top"><span class="title">${escapeHtml(cleanTitle)}</span><button onclick="runDemo()">Interactive Check</button></div>
-                <div id="out">Click "Interactive Check" to test this interactive view.</div>
-            </div><script>
-                let n = 0;
-                function runDemo(){ n++; document.getElementById('out').textContent = 'Interactive state updated #' + n + ' — ready.'; }
-            <\/script></body></html>`;
+        function openInteractiveHtml(snippetId) {
+            const item = window.__codeStore?.[snippetId];
+            if (!item) return;
+            const drawer = document.getElementById('canvas-drawer');
+            const iframe = document.getElementById('canvas-iframe');
+            const codeView = document.getElementById('canvas-code-view');
+            if (!drawer || !iframe) return;
+
+            drawer.classList.remove('hidden');
+            drawer.classList.add('flex');
+            if (codeView) codeView.value = item.code;
+            switchCanvasTab('preview');
+
+            const raw = item.code;
+            iframe.srcdoc = /<html[\s>]|<!doctype html/i.test(raw)
+                ? raw
+                : `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Inter,system-ui,sans-serif;padding:16px;margin:0;}</style></head><body>${raw}</body></html>`;
         }
 
-        function openInteractiveInCanvas(assistantIdx) {
-            const rawReply = window.__assistantStore?.[assistantIdx] || '';
-            const html = buildInteractiveWidgetHtml('Interactive View', rawReply);
-            const pane = document.getElementById('cody-canvas-pane');
-            const frame = document.getElementById('cody-preview-frame');
-            const editor = document.getElementById('cody-code-editor');
-            if (!pane || !frame) return;
-            pane.classList.remove('hidden');
-            pane.classList.add('flex');
-            if (editor) editor.value = html;
-            switchCodyTab('preview');
-            frame.srcdoc = html;
+        function previewSnippet(snippetId) {
+            openInteractiveHtml(snippetId);
         }
 
-        function exportAssistantDoc(idx, fmt) {
-            const txt = window.__assistantStore?.[idx] || '';
-            if (!txt) return;
-            if (fmt === 'csv') {
-                const blob = new Blob([txt], { type: 'text/csv;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'export.csv';
-                a.click();
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
+        function copySnippet(snippetId) {
+            const item = window.__codeStore?.[snippetId];
+            if (!item) return;
+            navigator.clipboard?.writeText(item.code).then(() => showToast('Copied code'));
+        }
+
+        function switchCanvasTab(tab) {
+            const isPreview = tab === 'preview';
+            document.getElementById('canvas-iframe')?.classList.toggle('hidden', !isPreview);
+            document.getElementById('canvas-code-view')?.classList.toggle('hidden', isPreview);
+            document.getElementById('canvas-tab-preview').className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500'}`;
+            document.getElementById('canvas-tab-code').className = `px-2.5 py-1 rounded-lg text-[11px] font-semibold ${!isPreview ? 'bg-codenix-600 text-white' : 'text-zinc-500'}`;
+        }
+
+        function closeCanvasDrawer() {
+            const drawer = document.getElementById('canvas-drawer');
+            drawer?.classList.add('hidden');
+            drawer?.classList.remove('flex');
+        }
+
+        function copyMessageText(msgIndex) {
+            const text = window.__msgStore?.[msgIndex] || '';
+            navigator.clipboard?.writeText(text).then(() => showToast('Copied'));
+        }
+
+        function exportMessage(msgIndex, format) {
+            const text = window.__msgStore?.[msgIndex] || '';
+            if (!text) return;
+            if (format === 'csv') {
+                const lines = text.split('\n').filter(l => l.includes('|') && !/^\s*\|?[\s:-]+\|[\s|:-]*$/.test(l));
+                const csv = (lines.length ? lines : text.split('\n'))
+                    .map(r => r.replace(/^\||\|$/g, '').split('|').map(c => `"${c.trim().replace(/"/g, '""')}"`).join(','))
+                    .join('\n');
+                downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'codenix-export.csv');
                 return;
             }
-            if (fmt === 'pdf' && window.jspdf?.jsPDF) {
+            if (format === 'pdf' && window.jspdf?.jsPDF) {
                 const doc = new window.jspdf.jsPDF();
-                doc.text(doc.splitTextToSize(txt.replace(/[#*`]/g, ''), 180), 14, 18);
-                doc.save('response.pdf');
+                doc.text(doc.splitTextToSize(text.replace(/[#*`]/g, ''), 180), 14, 18);
+                doc.save('codenix-export.pdf');
                 return;
             }
-            const blob = new Blob([`<html><body><pre>${escapeHtml(txt)}</pre></body></html>`], { type: 'application/msword' });
+            downloadBlob(
+                new Blob([`<html><body style="font-family:sans-serif;white-space:pre-wrap;">${escapeHtml(text)}</body></html>`], { type: 'application/msword' }),
+                'codenix-export.doc'
+            );
+        }
+
+        function downloadBlob(blob, filename) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'response.doc';
+            a.download = filename;
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
-        function downloadGeneratedImage(url) {
-            if (!url) return;
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `image-${Date.now()}.png`;
-            a.target = '_blank';
-            a.rel = 'noopener';
-            a.click();
+        // ==========================================
+        // AUTONOMOUS AGENT ROUTING + PUTER.JS VOICE
+        // ==========================================
+        function useStarterPrompt(text) {
+            const inp = document.getElementById('prompt-input');
+            if (!inp) return;
+            inp.value = text;
+            autoResizeInput(inp);
+            handleSendPrompt();
         }
 
-        // ==========================================
-        // AGENT ROUTING, CLOUDFLARE & PUTER.JS
-        // ==========================================
-        function decideToolFromPrompt(prompt) {
-            const q = String(prompt || '').toLowerCase();
-            if (/\b(generate image|create image|draw an image|make an image|image of|picture of|artwork|صورة|ارسم)\b/.test(q)) {
+        function handlePromptKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendPrompt();
+            }
+        }
+
+        function autoResizeInput(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+        }
+
+        function handleFileSelection(e) {
+            const files = Array.from(e.target?.files || []);
+            if (!files.length) return;
+            state.attachments.push(...files);
+            renderAttachmentsBar();
+            e.target.value = '';
+        }
+
+        function renderAttachmentsBar() {
+            const bar = document.getElementById('attachments-bar');
+            if (!bar) return;
+            if (!state.attachments.length) {
+                bar.classList.add('hidden');
+                bar.classList.remove('flex');
+                bar.innerHTML = '';
+                return;
+            }
+            bar.classList.remove('hidden');
+            bar.classList.add('flex');
+            bar.innerHTML = state.attachments.map((f, i) => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-xs">
+                    <span class="truncate max-w-[160px]">${escapeHtml(f.name)}</span>
+                    <button type="button" onclick="removeAttachment(${i})" class="text-zinc-400 hover:text-rose-500">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function removeAttachment(index) {
+            state.attachments.splice(index, 1);
+            renderAttachmentsBar();
+        }
+
+        function detectIntent(promptText) {
+            const q = String(promptText || '').toLowerCase();
+            if (/\b(generate image|create image|draw an image|make an image|image of|picture of|صورة|ارسم)\b/.test(q)) {
                 return 'image';
             }
-            if (/\b(say in voice|speak this|read aloud|voice of|text to speech|tts|بصوت|انطق)\b/.test(q)) {
+            if (/\b(say in voice|speak this|read aloud|generate voice|voice of|text to speech|tts|بصوت|انطق)\b/.test(q)) {
                 return 'voice';
             }
             return 'chat';
         }
 
-        async function callCloudflareWorker(payload) {
-            if (getProviderMode() === 'puter' || state.cloudflareHealthy === false) {
-                throw new Error('Skipped worker');
-            }
-            const headers = await getAuthHeaders();
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 3000);
-            try {
-                const res = await fetch(CLOUDFLARE_PROXY_URL, {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify({
-                        ...payload,
-                        userId: state.user?.id || '',
-                        userEmail: state.user?.email || ''
-                    }),
-                    signal: controller.signal
-                });
-                clearTimeout(timer);
-                if (!res.ok) {
-                    state.cloudflareHealthy = false;
-                    throw new Error(`HTTP ${res.status}`);
-                }
-                const data = await res.json();
-                if (data?.error) {
-                    state.cloudflareHealthy = false;
-                    throw new Error(data.error);
-                }
-                state.cloudflareHealthy = true;
-                return data;
-            } catch (err) {
-                clearTimeout(timer);
-                state.cloudflareHealthy = false;
-                throw err;
-            }
+        function extractWikiTopic(promptText) {
+            const match = String(promptText || '').match(/\b(?:who is|what is|explain|history of|about|wikipedia)\s+([a-zA-Z0-9\s-]{3,40})/i);
+            if (!match) return '';
+            const candidate = match[1].replace(/\b(with a wikipedia summary|icons|and a table|please)\b/gi, '').trim();
+            return candidate.length >= 3 ? candidate : '';
         }
 
-        async function runChatCompletion(messages, fastMode = false) {
-            const payloadMessages = [{ role: 'system', content: CODENIX_SYSTEM_PROMPT }, ...messages];
+        async function generatePuterVoiceAudio(rawText) {
+            const cleanText = String(rawText || '')
+                .replace(/^(say in voice|speak this|read aloud|generate voice|voice of|text to speech|tts)\s*:?\s*/i, '')
+                .trim() || 'Hello from Codenix AI.';
 
-            try {
-                const cfData = await callCloudflareWorker({ action: 'chat', messages: payloadMessages });
-                if (cfData?.text) return String(cfData.text);
-            } catch (_) {}
-
-            if (window.puter?.ai?.chat) {
+            if (window.puter?.ai?.txt2speech) {
                 try {
-                    const model = fastMode ? 'gpt-5.6-luna' : 'gpt-5.6-terra';
-                    const out = await window.puter.ai.chat(payloadMessages, { model });
-                    const text = typeof out === 'string'
-                        ? out
-                        : (out?.message?.content || out?.result?.content || out?.text || '');
-                    if (text) return String(text);
+                    const out = await window.puter.ai.txt2speech(cleanText);
+                    if (typeof out === 'string') return { text: cleanText, audioUrl: out };
+                    if (out?.src) return { text: cleanText, audioUrl: out.src };
+                    if (out && typeof out.play === 'function') {
+                        out.play();
+                        return { text: cleanText, audioUrl: '' };
+                    }
                 } catch (_) {}
             }
 
-            const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
-            return `I got your message: "${lastUser}".`;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(cleanText);
+                utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
+                window.speechSynthesis.speak(utter);
+            }
+            return { text: cleanText, audioUrl: '' };
         }
 
-        async function runImageGeneration(promptText) {
+        async function generatePuterImage(promptText) {
             const clean = String(promptText || '')
                 .replace(/^(generate image|create image|draw an image|make an image|image of|picture of)\s*(of|for)?\s*/i, '')
                 .trim() || promptText;
 
-            try {
-                const cfData = await callCloudflareWorker({ action: 'image', prompt: clean });
-                if (cfData?.url) return cfData.url;
-            } catch (_) {}
-
             if (window.puter?.ai?.txt2img) {
                 try {
-                    const imgEl = await window.puter.ai.txt2img(clean, { testMode: false });
-                    if (imgEl?.src) return imgEl.src;
+                    const img = await window.puter.ai.txt2img(clean);
+                    if (img?.src) return img.src;
                 } catch (_) {}
             }
-
             return `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=768&height=512&nologo=true&seed=${Date.now()}`;
         }
 
-        async function handleSendPrompt(fromVoice = false) {
+        async function runAssistantChat(messages) {
+            const payload = [{ role: 'system', content: SYSTEM_PROMPT }, ...messages];
+
+            // Try worker route if available, otherwise fall back cleanly to Puter.js
+            try {
+                const { data: sessData } = await supabaseClient.auth.getSession();
+                const token = sessData?.session?.access_token || '';
+                const res = await fetch(CLOUDFLARE_WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({ action: 'chat', messages: payload })
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json?.text) return String(json.text);
+                }
+            } catch (_) {}
+
+            if (window.puter?.ai?.chat) {
+                try {
+                    const puterRes = await window.puter.ai.chat(payload);
+                    const reply = typeof puterRes === 'string'
+                        ? puterRes
+                        : (puterRes?.message?.content || puterRes?.result?.content || puterRes?.text || '');
+                    if (reply) return String(reply);
+                } catch (_) {}
+            }
+
+            const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || '';
+            return `[icon:sparkles] I received your message: **${escapeHtml(lastUser)}**.`;
+        }
+
+        async function handleSendPrompt() {
             if (state.isSending) return;
             const input = document.getElementById('prompt-input');
-            const raw = (input?.value || '').trim();
-            const files = state.uploadedFiles.map(f => f.name);
-            const promptText = files.length ? `${raw}\n\n[Files: ${files.join(', ')}]`.trim() : raw;
+            const rawText = (input?.value || '').trim();
+            const fileNames = state.attachments.map(f => f.name);
+            const promptText = fileNames.length
+                ? `${rawText}\n\n[Files: ${fileNames.join(', ')}]`.trim()
+                : rawText;
+
             if (!promptText) return;
 
             let conv = getActiveConversation();
             if (!conv) {
-                await createNewChat(state.temporaryMode);
+                await createNewChat();
                 conv = getActiveConversation();
             }
 
-            const isTemp = Boolean(conv.isTemporary || state.temporaryMode);
-            if (!isTemp && conv.title === 'New chat' && raw) {
-                conv.title = raw.slice(0, 42);
-                renderConversationList();
+            if (conv.title === 'New chat' && rawText) {
+                conv.title = rawText.slice(0, 40);
+                updateHeaderTitle();
+                if (!conv.isTemporary) renderConversationList();
             }
 
-            const tool = decideToolFromPrompt(promptText);
+            const intent = detectIntent(promptText);
+            const wikiQuery = intent === 'chat' ? extractWikiTopic(promptText) : '';
+
             conv.messages.push({ role: 'user', content: promptText });
-            state.uploadedFiles = [];
-            renderUploadedFilesStrip();
+            state.attachments = [];
+            renderAttachmentsBar();
             if (input) {
                 input.value = '';
-                autoResizeTextarea(input);
+                autoResizeInput(input);
             }
             renderMessages();
 
             state.isSending = true;
-            const loader = document.getElementById('loading-indicator');
-            const loaderText = document.getElementById('loading-status-text');
-            if (loaderText) loaderText.textContent = tool === 'image' ? 'Generating image...' : 'Thinking...';
-            if (loader) {
-                loader.classList.remove('hidden');
-                loader.classList.add('flex');
+            const thinkingEl = document.getElementById('thinking-indicator');
+            const thinkingLabel = document.getElementById('thinking-label');
+            if (thinkingLabel) {
+                thinkingLabel.textContent = intent === 'image' ? 'Generating image...' : (intent === 'voice' ? 'Generating voice...' : 'Thinking...');
             }
+            thinkingEl?.classList.remove('hidden');
+            thinkingEl?.classList.add('flex');
 
             try {
-                if (!isTemp && state.user) {
+                // Temporary chats never write to Supabase
+                if (!conv.isTemporary && state.user) {
                     try {
                         await supabaseClient.from('nixy_messages').insert({
                             conversation_id: conv.id,
@@ -1577,33 +1455,25 @@
                     } catch (_) {}
                 }
 
-                let assistantMsg = { role: 'assistant', content: '' };
-                if (tool === 'image') {
-                    const imgUrl = await runImageGeneration(promptText);
-                    assistantMsg = { role: 'assistant', content: `Here is the generated image for **${promptText}**.`, imageUrl: imgUrl };
+                let assistantMsg = { role: 'assistant', content: '', imageUrl: '', audioUrl: '', wikiQuery: '' };
+
+                if (intent === 'image') {
+                    const imgUrl = await generatePuterImage(promptText);
+                    assistantMsg.content = `[icon:sparkles] Image generated for **${promptText}**.`;
+                    assistantMsg.imageUrl = imgUrl;
+                } else if (intent === 'voice') {
+                    const voiceOut = await generatePuterVoiceAudio(promptText);
+                    assistantMsg.content = `[icon:volume-2] "${voiceOut.text}"`;
+                    assistantMsg.audioUrl = voiceOut.audioUrl;
                 } else {
-                    const replyText = await runChatCompletion(conv.messages, fromVoice);
-                    const isVoiceRequest = tool === 'voice' || /\b(voice|speak|read aloud|audio|بصوت|انطق)\b/i.test(promptText);
-                    const isInteractiveRequest = /\b(interactive|widget|game|quiz|calculator|simulate|dashboard|تفاعلي)\b/i.test(promptText);
-                    const isTopicLookup = /\b(what is|who is|tell me about|history of|explain|ما هو|من هو)\b/i.test(promptText);
-
-                    const [audioUrl, wikiCard] = await Promise.all([
-                        isVoiceRequest ? generatePuterVoiceAudio(replyText.replace(/[#*`]/g, '').slice(0, 320)) : Promise.resolve(''),
-                        isTopicLookup ? fetchWikipediaSummary(promptText) : Promise.resolve(null)
-                    ]);
-
-                    assistantMsg = {
-                        role: 'assistant',
-                        content: replyText,
-                        audioUrl: audioUrl || '',
-                        wikiCard: wikiCard || null,
-                        interactiveHtml: isInteractiveRequest ? buildInteractiveWidgetHtml(promptText, replyText) : ''
-                    };
+                    const replyText = await runAssistantChat(conv.messages);
+                    assistantMsg.content = replyText;
+                    assistantMsg.wikiQuery = wikiQuery;
                 }
 
                 conv.messages.push(assistantMsg);
 
-                if (!isTemp && state.user) {
+                if (!conv.isTemporary && state.user) {
                     try {
                         await supabaseClient.from('nixy_messages').insert({
                             conversation_id: conv.id,
@@ -1613,322 +1483,209 @@
                         });
                     } catch (_) {}
                 }
-
-                if (fromVoice && assistantMsg.content) {
-                    const spoken = assistantMsg.content
-                        .replace(/```[\s\S]*?```/g, ' ')
-                        .replace(/[#*`]/g, '')
-                        .trim()
-                        .slice(0, 260);
-                    if (spoken) speakVoiceText(spoken);
-                }
-            } catch (_) {
-                conv.messages.push({ role: 'assistant', content: 'Could not complete that request right now.' });
             } finally {
                 state.isSending = false;
-                if (loader) {
-                    loader.classList.add('hidden');
-                    loader.classList.remove('flex');
-                }
+                thinkingEl?.classList.add('hidden');
+                thinkingEl?.classList.remove('flex');
                 renderMessages();
             }
         }
 
         // ==========================================
-        // FAST VOICE MODE (CHATGPT / GEMINI STYLE)
+        // FAST VOICE MODE (PUTER.JS + SPEECH)
         // ==========================================
-        let voiceRec = null;
-        let voiceMicOn = true;
-        let voiceMuted = false;
-        let isVoiceListening = false;
-        let isVoiceSpeaking = false;
-        let voiceSilenceTimer = null;
-        let currentVoiceAudio = null;
+        let voiceRecognition = null;
+        let voiceListening = false;
+        let voiceAudioMuted = false;
 
-        function openVoiceModeModal() {
+        function openVoiceMode() {
             const m = document.getElementById('voice-mode-modal');
             m?.classList.remove('hidden');
             m?.classList.add('flex');
-            setVoiceOrbState('idle', 'Listening...');
-            if (voiceMicOn) startVoiceListening();
+            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
-        function closeVoiceModeModal() {
-            stopVoiceListening();
-            stopVoiceAudio();
+        function closeVoiceMode() {
+            stopVoiceCapture();
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             const m = document.getElementById('voice-mode-modal');
             m?.classList.add('hidden');
             m?.classList.remove('flex');
         }
 
-        function setVoiceOrbState(mode, statusText) {
-            const wrap = document.getElementById('voice-orb-wrapper');
-            const status = document.getElementById('voice-status-label');
-            if (wrap) wrap.className = `voice-orb-container orb-${mode} mb-5`;
-            if (status && statusText) status.textContent = statusText;
-        }
-
-        function setVoiceCaption(role, text) {
-            const rEl = document.getElementById('voice-live-role');
-            const tEl = document.getElementById('voice-live-caption');
-            if (rEl) rEl.textContent = role;
-            if (tEl) tEl.textContent = text;
-        }
-
-        function toggleVoiceRecording() {
-            if (!voiceMicOn) {
-                voiceMicOn = true;
-                updateVoiceButtons();
-            }
-            if (isVoiceListening) {
-                stopVoiceListening();
-                setVoiceOrbState('idle', 'Paused');
-            } else {
-                stopVoiceAudio();
-                startVoiceListening();
-            }
-        }
-
-        function startVoiceListening() {
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRec) {
-                setVoiceCaption('System', 'Speech recognition is unavailable in this browser.');
-                return;
-            }
-            if (isVoiceListening || state.isSending || isVoiceSpeaking) return;
-
-            voiceRec = new SpeechRec();
-            voiceRec.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
-            voiceRec.interimResults = true;
-            voiceRec.continuous = false;
-
-            let transcript = '';
-            const submitUtterance = (text) => {
-                clearTimeout(voiceSilenceTimer);
-                const clean = String(text || '').trim();
-                if (!clean || state.isSending) return;
-                stopVoiceListening();
-                setVoiceCaption('You', clean);
-                setVoiceOrbState('thinking', 'Thinking...');
-                const input = document.getElementById('prompt-input');
-                if (input) {
-                    input.value = clean;
-                    handleSendPrompt(true);
-                }
-            };
-
-            voiceRec.onstart = () => {
-                isVoiceListening = true;
-                setVoiceOrbState('listening', 'Listening...');
-            };
-
-            voiceRec.onresult = (ev) => {
-                let interim = '';
-                for (let i = ev.resultIndex; i < ev.results.length; i++) {
-                    const part = ev.results[i][0].transcript;
-                    if (ev.results[i].isFinal) transcript += part;
-                    else interim += part;
-                }
-                const live = (transcript || interim).trim();
-                if (live) setVoiceCaption('You', live);
-
-                clearTimeout(voiceSilenceTimer);
-                if (transcript.trim()) {
-                    submitUtterance(transcript.trim());
-                } else if (interim.trim()) {
-                    voiceSilenceTimer = setTimeout(() => submitUtterance(interim.trim()), 650);
-                }
-            };
-
-            voiceRec.onerror = () => {
-                isVoiceListening = false;
-                if (voiceMicOn && !state.isSending && !isVoiceSpeaking) {
-                    setTimeout(startVoiceListening, 350);
-                }
-            };
-
-            voiceRec.onend = () => {
-                isVoiceListening = false;
-                if (voiceMicOn && !state.isSending && !isVoiceSpeaking) {
-                    setTimeout(startVoiceListening, 250);
-                }
-            };
-
-            try { voiceRec.start(); } catch (_) {}
-        }
-
-        function stopVoiceListening() {
-            clearTimeout(voiceSilenceTimer);
-            if (voiceRec) {
-                try { voiceRec.stop(); } catch (_) {}
-                voiceRec = null;
-            }
-            isVoiceListening = false;
-        }
-
-        function stopVoiceAudio() {
-            if (currentVoiceAudio) {
-                try { currentVoiceAudio.pause(); } catch (_) {}
-                currentVoiceAudio = null;
-            }
-            if ('speechSynthesis' in window) {
-                try { window.speechSynthesis.cancel(); } catch (_) {}
-            }
-            isVoiceSpeaking = false;
-        }
-
-        function toggleVoiceMic() {
-            voiceMicOn = !voiceMicOn;
-            updateVoiceButtons();
-            if (voiceMicOn) startVoiceListening();
-            else {
-                stopVoiceListening();
-                setVoiceOrbState('idle', 'Mic Off');
-            }
-        }
-
-        function toggleVoiceMute() {
-            voiceMuted = !voiceMuted;
-            if (voiceMuted) stopVoiceAudio();
-            updateVoiceButtons();
-        }
-
-        function updateVoiceButtons() {
-            const micBtn = document.getElementById('voice-mic-btn');
-            const spkBtn = document.getElementById('voice-speaker-btn');
-            if (micBtn) micBtn.innerHTML = `<i data-lucide="${voiceMicOn ? 'mic' : 'mic-off'}" class="w-4 h-4 ${voiceMicOn ? 'text-emerald-400' : 'text-rose-400'}"></i>`;
-            if (spkBtn) spkBtn.innerHTML = `<i data-lucide="${voiceMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4 ${voiceMuted ? 'text-rose-400' : 'text-purple-300'}"></i>`;
+        function toggleVoiceSpeakerMute() {
+            voiceAudioMuted = !voiceAudioMuted;
+            if (voiceAudioMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+            document.getElementById('voice-mute-icon')?.setAttribute('data-lucide', voiceAudioMuted ? 'volume-x' : 'volume-2');
+            document.getElementById('voice-mute-label').textContent = voiceAudioMuted ? 'Muted' : 'Audio On';
             if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
-        function resetVoiceSession() {
-            stopVoiceListening();
-            stopVoiceAudio();
-            setVoiceOrbState('idle', 'Tap Orb to Speak');
-            setVoiceCaption('Codenix', 'Session reset.');
+        function toggleVoiceCapture() {
+            if (voiceListening) stopVoiceCapture();
+            else startVoiceCapture();
         }
 
-        async function speakVoiceText(text) {
-            if (voiceMuted || !text) {
-                if (voiceMicOn) setTimeout(startVoiceListening, 250);
+        function startVoiceCapture() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) {
+                document.getElementById('voice-caption-text').textContent = 'Speech recognition is not supported in this browser.';
                 return;
             }
-            stopVoiceAudio();
-            isVoiceSpeaking = true;
-            setVoiceOrbState('speaking', 'Speaking...');
-            setVoiceCaption('Codenix', text);
+            stopVoiceCapture();
+            voiceRecognition = new SR();
+            voiceRecognition.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
+            voiceRecognition.interimResults = true;
 
-            const done = () => {
-                isVoiceSpeaking = false;
-                if (voiceMicOn) {
-                    setTimeout(startVoiceListening, 250);
-                } else {
-                    setVoiceOrbState('idle', 'Tap Orb to Speak');
+            voiceListening = true;
+            document.getElementById('voice-orb-btn')?.classList.add('voice-orb-active');
+            document.getElementById('voice-status-pill').textContent = 'Listening';
+            document.getElementById('voice-speaker-label').textContent = 'You';
+
+            let finalTranscript = '';
+            voiceRecognition.onresult = (ev) => {
+                let interim = '';
+                for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                    const part = ev.results[i][0].transcript;
+                    if (ev.results[i].isFinal) finalTranscript += part;
+                    else interim += part;
                 }
+                document.getElementById('voice-caption-text').textContent = (finalTranscript || interim || 'Listening...');
             };
 
-            if (window.puter?.ai?.txt2speech) {
+            voiceRecognition.onend = async () => {
+                voiceListening = false;
+                document.getElementById('voice-orb-btn')?.classList.remove('voice-orb-active');
+                const spoken = finalTranscript.trim();
+                if (!spoken) {
+                    document.getElementById('voice-status-pill').textContent = 'Ready';
+                    return;
+                }
+                await respondInVoiceMode(spoken);
+            };
+
+            voiceRecognition.onerror = () => {
+                voiceListening = false;
+                document.getElementById('voice-orb-btn')?.classList.remove('voice-orb-active');
+                document.getElementById('voice-status-pill').textContent = 'Ready';
+            };
+
+            voiceRecognition.start();
+        }
+
+        function stopVoiceCapture() {
+            voiceListening = false;
+            document.getElementById('voice-orb-btn')?.classList.remove('voice-orb-active');
+            if (voiceRecognition) {
+                try { voiceRecognition.stop(); } catch (_) {}
+                voiceRecognition = null;
+            }
+        }
+
+        async function respondInVoiceMode(userSpokenText) {
+            document.getElementById('voice-status-pill').textContent = 'Thinking';
+            document.getElementById('voice-speaker-label').textContent = 'Assistant';
+
+            let replyText = '';
+            if (window.puter?.ai?.chat) {
                 try {
-                    const audio = await window.puter.ai.txt2speech(text);
-                    if (audio && typeof audio.play === 'function') {
-                        currentVoiceAudio = audio;
-                        audio.onended = done;
-                        audio.onerror = () => speakBrowserFallback(text, done);
-                        await audio.play();
-                        return;
-                    }
+                    const res = await window.puter.ai.chat([
+                        { role: 'system', content: 'Be concise, natural, and conversational in 1-2 short sentences suitable for voice.' },
+                        { role: 'user', content: userSpokenText }
+                    ]);
+                    replyText = typeof res === 'string' ? res : (res?.message?.content || res?.text || '');
                 } catch (_) {}
             }
+            if (!replyText) replyText = `Got it: ${userSpokenText}.`;
 
-            speakBrowserFallback(text, done);
-        }
+            document.getElementById('voice-caption-text').textContent = replyText;
+            document.getElementById('voice-status-pill').textContent = 'Speaking';
 
-        function speakBrowserFallback(text, onDone) {
-            if (!('speechSynthesis' in window)) {
-                onDone();
-                return;
+            if (!voiceAudioMuted) {
+                let played = false;
+                if (window.puter?.ai?.txt2speech) {
+                    try {
+                        const audioObj = await window.puter.ai.txt2speech(replyText);
+                        if (typeof audioObj === 'string') {
+                            await new Audio(audioObj).play();
+                            played = true;
+                        } else if (audioObj?.src) {
+                            await new Audio(audioObj.src).play();
+                            played = true;
+                        } else if (audioObj && typeof audioObj.play === 'function') {
+                            audioObj.play();
+                            played = true;
+                        }
+                    } catch (_) {}
+                }
+                if (!played && 'speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(replyText);
+                    utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
+                    window.speechSynthesis.speak(utter);
+                }
             }
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = document.documentElement.lang === 'ar' ? 'ar-SA' : 'en-US';
-            utter.onend = onDone;
-            utter.onerror = onDone;
-            window.speechSynthesis.speak(utter);
+            document.getElementById('voice-status-pill').textContent = 'Ready';
         }
 
         // ==========================================
-        // LIBRARY (GOOGLE SHEET), PLUGINS & MODALS
+        // GOOGLE SHEETS LIBRARY, POMODORY & SHARE PIN
         // ==========================================
-        let sheetTools = [];
-        let selectedRating = 5;
+        let sheetItems = [];
 
-        function cleanSheetUrl(raw) {
-            if (!raw) return '';
-            let s = String(raw).trim();
-            s = s.replace(/^=IMAGE\((["']?)(.*?)\1\)$/i, '$2');
-            s = s.replace(/^<img[^>]*src=["']?([^"'>]+)["']?[^>]*>/i, '$1');
-            s = s.replace(/['">]+$/g, '').replace(/^['">]+/g, '').trim();
-            if (!/^https?:\/\//i.test(s)) return '';
-            if (/cdn\.fbsbx\.com|facebook\.com|fbcdn\.net|lookaside/i.test(s)) return '';
-            return s;
-        }
-
-        async function loadGoogleSheetTools() {
+        async function loadGoogleSheetLibrary() {
             try {
                 const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json`;
                 const res = await fetch(url);
-                if (!res.ok) return;
-                const txt = await res.text();
-                const start = txt.indexOf('({') + 1;
-                const end = txt.lastIndexOf('})') + 1;
-                const json = JSON.parse(txt.slice(start, end));
+                const text = await res.text();
+                const start = text.indexOf('({') + 1;
+                const end = text.lastIndexOf('})') + 1;
+                const json = JSON.parse(text.slice(start, end));
                 const rows = json?.table?.rows || [];
-                const found = [];
+                const parsed = [];
 
-                rows.forEach(r => {
-                    const cells = r.c || [];
-                    const val = i => (cells[i] ? (cells[i].v ?? cells[i].f ?? '') : '');
-                    const sec = String(val(0) || '').trim();
-                    if (!sec || sec.toLowerCase() === 'section type') return;
-                    if (/watch|notif|broadcast/i.test(sec)) return;
+                rows.forEach(row => {
+                    const cells = row.c || [];
+                    const val = (i) => (cells[i] ? (cells[i].v ?? cells[i].f ?? '') : '');
+                    const section = String(val(0) || '').trim();
+                    if (!section || section.toLowerCase() === 'section type') return;
 
-                    for (let i = 1; i + 1 < cells.length; i += 3) {
-                        const name = String(val(i) || '').trim();
-                        const link = String(val(i + 1) || '').trim();
-                        const img = cleanSheetUrl(val(i + 2));
-                        if (name) found.push({ section: sec, name, link: link || '#', image: img });
+                    for (let c = 1; c + 1 < cells.length; c += 3) {
+                        const name = String(val(c) || '').trim();
+                        const link = String(val(c + 1) || '').trim();
+                        if (name) parsed.push({ section, name, link: link || '#' });
                     }
                 });
 
-                sheetTools = found;
-                const badge = document.getElementById('library-badge-count');
-                if (badge) badge.textContent = String(found.length);
-                renderSheetToolsGrid();
+                sheetItems = parsed;
+                renderLibrarySheetItems();
             } catch (_) {}
         }
 
-        function renderSheetToolsGrid() {
-            const grid = document.getElementById('tool-library-grid');
+        function renderLibrarySheetItems() {
+            const badge = document.getElementById('library-count-badge');
+            const grid = document.getElementById('sheet-library-grid');
+            if (badge) badge.textContent = String(sheetItems.length);
             if (!grid) return;
-            if (!sheetTools.length) {
-                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-400 py-3">No external tools listed.</p>`;
+
+            if (!sheetItems.length) {
+                grid.innerHTML = `<p class="col-span-full text-xs text-zinc-400 py-3">No items in library.</p>`;
                 return;
             }
-            grid.innerHTML = sheetTools.map(t => `
-                <a href="${escapeHtml(t.link)}" target="_blank" rel="noopener" class="p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition flex items-center gap-2.5 min-w-0">
-                    <div class="w-8 h-8 rounded-xl bg-codenix-600/15 text-codenix-600 dark:text-codenix-300 flex items-center justify-center text-[11px] font-bold shrink-0 overflow-hidden">
-                        ${t.image ? `<img src="${escapeHtml(t.image)}" alt="" onerror="this.remove()" class="w-full h-full object-cover">` : escapeHtml(t.name.slice(0, 2).toUpperCase())}
-                    </div>
+
+            grid.innerHTML = sheetItems.map(item => `
+                <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener" class="flex items-center justify-between gap-2 p-3 rounded-2xl bg-zinc-50 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border hover:border-codenix-500 transition">
                     <div class="min-w-0">
-                        <p class="text-xs font-semibold truncate">${escapeHtml(t.name)}</p>
-                        <p class="text-[10px] text-zinc-400 truncate">${escapeHtml(t.section)}</p>
+                        <p class="text-xs font-semibold truncate">${escapeHtml(item.name)}</p>
+                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(item.section)}</p>
                     </div>
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
                 </a>
             `).join('');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
         }
 
         function openLibraryModal() {
-            renderSheetToolsGrid();
             const m = document.getElementById('library-modal');
             m?.classList.remove('hidden');
             m?.classList.add('flex');
@@ -1940,23 +1697,11 @@
             m?.classList.remove('flex');
         }
 
-        function openSettingsModal() {
-            const m = document.getElementById('settings-modal');
-            m?.classList.remove('hidden');
-            m?.classList.add('flex');
-        }
-
-        function closeSettingsModal() {
-            const m = document.getElementById('settings-modal');
-            m?.classList.add('hidden');
-            m?.classList.remove('flex');
-        }
-
-        let pomSeconds = 25 * 60;
-        let pomTimer = null;
+        let pomoSec = 25 * 60;
+        let pomoTimer = null;
 
         function openPomodoryModal() {
-            renderPomDisplay();
+            renderPomo();
             const m = document.getElementById('pomodory-modal');
             m?.classList.remove('hidden');
             m?.classList.add('flex');
@@ -1968,70 +1713,43 @@
             m?.classList.remove('flex');
         }
 
-        function renderPomDisplay() {
+        function renderPomo() {
             const el = document.getElementById('pomodory-display');
             if (!el) return;
-            const mm = String(Math.floor(pomSeconds / 60)).padStart(2, '0');
-            const ss = String(pomSeconds % 60).padStart(2, '0');
-            el.textContent = `${mm}:${ss}`;
+            const m = String(Math.floor(pomoSec / 60)).padStart(2, '0');
+            const s = String(pomoSec % 60).padStart(2, '0');
+            el.textContent = `${m}:${s}`;
         }
 
         function setPomodoryMinutes(mins) {
-            clearInterval(pomTimer);
-            pomTimer = null;
-            pomSeconds = mins * 60;
-            const btn = document.getElementById('pomodory-start-btn');
+            clearInterval(pomoTimer);
+            pomoTimer = null;
+            pomoSec = mins * 60;
+            const btn = document.getElementById('pomodory-toggle-btn');
             if (btn) btn.textContent = 'Start';
-            renderPomDisplay();
+            renderPomo();
         }
 
         function togglePomodoryTimer() {
-            const btn = document.getElementById('pomodory-start-btn');
-            if (pomTimer) {
-                clearInterval(pomTimer);
-                pomTimer = null;
+            const btn = document.getElementById('pomodory-toggle-btn');
+            if (pomoTimer) {
+                clearInterval(pomoTimer);
+                pomoTimer = null;
                 if (btn) btn.textContent = 'Resume';
                 return;
             }
             if (btn) btn.textContent = 'Pause';
-            pomTimer = setInterval(() => {
-                if (pomSeconds > 0) {
-                    pomSeconds--;
-                    renderPomDisplay();
+            pomoTimer = setInterval(() => {
+                if (pomoSec > 0) {
+                    pomoSec--;
+                    renderPomo();
                 } else {
-                    clearInterval(pomTimer);
-                    pomTimer = null;
+                    clearInterval(pomoTimer);
+                    pomoTimer = null;
                     if (btn) btn.textContent = 'Start';
-                    showToast('Timer finished');
+                    showToast('Timer complete');
                 }
             }, 1000);
-        }
-
-        function resetPomodoryTimer() {
-            setPomodoryMinutes(25);
-        }
-
-        let screenStream = null;
-        async function toggleShareNix() {
-            if (screenStream) {
-                screenStream.getTracks().forEach(t => t.stop());
-                screenStream = null;
-                showToast('Screen sharing stopped');
-                return;
-            }
-            if (!navigator.mediaDevices?.getDisplayMedia) {
-                showToast('Screen sharing not supported');
-                return;
-            }
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-                const v = document.getElementById('sharenix-video');
-                if (v) v.srcObject = screenStream;
-                screenStream.getVideoTracks()[0]?.addEventListener('ended', () => {
-                    screenStream = null;
-                });
-                showToast('Screen sharing active');
-            } catch (_) {}
         }
 
         function openShareModal() {
@@ -2054,7 +1772,7 @@
             }
             const conv = getActiveConversation();
             if (!conv || !state.user) return;
-            const slug = 'share-' + Math.random().toString(36).slice(2, 9);
+            const slug = 'c-' + Math.random().toString(36).slice(2, 9);
             try {
                 await supabaseClient.from('nixy_shared_chats').insert({
                     slug,
@@ -2064,20 +1782,21 @@
                     title: conv.title,
                     messages_snapshot: conv.messages
                 });
-                document.getElementById('share-link-output').value = `${window.location.origin}${window.location.pathname}?share=${slug}`;
+                const url = `${window.location.origin}${window.location.pathname}?share=${slug}`;
+                document.getElementById('share-link-output').value = url;
                 document.getElementById('share-result-box').classList.remove('hidden');
-                showToast('Link ready');
+                showToast('Share link created');
             } catch (_) {
-                showToast('Could not share');
+                showToast('Could not create link');
             }
         }
 
         function copyShareUrl() {
-            const el = document.getElementById('share-link-output');
-            if (!el) return;
-            el.select();
+            const out = document.getElementById('share-link-output');
+            if (!out) return;
+            out.select();
             document.execCommand('copy');
-            showToast('Copied');
+            showToast('Link copied');
         }
 
         async function verifySharedPin() {
@@ -2085,13 +1804,9 @@
             const slug = window.__pendingShareSlug;
             if (!pin || !slug) return;
             try {
-                const { data } = await supabaseClient
-                    .from('nixy_shared_chats')
-                    .select('*')
-                    .eq('slug', slug)
-                    .maybeSingle();
+                const { data } = await supabaseClient.from('nixy_shared_chats').select('*').eq('slug', slug).maybeSingle();
                 if (!data || data.pin_code !== pin) {
-                    showToast('Invalid PIN');
+                    showToast('Wrong PIN');
                     return;
                 }
                 document.getElementById('pin-unlock-modal').classList.add('hidden');
@@ -2102,102 +1817,12 @@
                     isTemporary: false
                 }];
                 state.activeConversationId = state.conversations[0].id;
+                updateHeaderTitle();
                 renderConversationList();
                 renderMessages();
             } catch (_) {
-                showToast('Error');
+                showToast('Error unlocking chat');
             }
-        }
-
-        function openFeedbackModal() {
-            const m = document.getElementById('feedback-modal');
-            m?.classList.remove('hidden');
-            m?.classList.add('flex');
-        }
-
-        function closeFeedbackModal() {
-            const m = document.getElementById('feedback-modal');
-            m?.classList.add('hidden');
-            m?.classList.remove('flex');
-        }
-
-        function setFeedbackRating(r) {
-            selectedRating = r;
-            document.querySelectorAll('#feedback-rating-stars button').forEach(btn => {
-                const s = Number(btn.dataset.star || 0);
-                btn.classList.toggle('text-amber-400', s <= r);
-                btn.classList.toggle('opacity-40', s > r);
-            });
-        }
-
-        async function submitQuickFeedback() {
-            const comment = (document.getElementById('feedback-comment-input')?.value || '').trim();
-            try {
-                if (state.user) {
-                    await supabaseClient.from('nixy_feedback').insert({
-                        user_id: state.user.id,
-                        email: state.user.email,
-                        rating: selectedRating,
-                        comment
-                    });
-                }
-            } catch (_) {}
-            const ta = document.getElementById('feedback-comment-input');
-            if (ta) ta.value = '';
-            closeFeedbackModal();
-            showToast('Feedback sent');
-        }
-
-        // ==========================================
-        // COMPOSER HELPERS & UTILITIES
-        // ==========================================
-        function handlePromptKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendPrompt(false);
-            }
-        }
-
-        function autoResizeTextarea(el) {
-            if (!el) return;
-            el.style.height = 'auto';
-            el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
-        }
-
-        function handleFileUploadSelection(e) {
-            const files = Array.from(e?.target?.files || []);
-            if (!files.length) return;
-            files.forEach(f => {
-                if (!state.uploadedFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
-                    state.uploadedFiles.push(f);
-                }
-            });
-            e.target.value = '';
-            renderUploadedFilesStrip();
-        }
-
-        function removeUploadedFile(idx) {
-            state.uploadedFiles.splice(idx, 1);
-            renderUploadedFilesStrip();
-        }
-
-        function renderUploadedFilesStrip() {
-            const strip = document.getElementById('uploaded-files-strip');
-            if (!strip) return;
-            if (!state.uploadedFiles.length) {
-                strip.classList.add('hidden');
-                strip.classList.remove('flex');
-                strip.innerHTML = '';
-                return;
-            }
-            strip.classList.remove('hidden');
-            strip.classList.add('flex');
-            strip.innerHTML = state.uploadedFiles.map((f, idx) => `
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-codenix-card border border-zinc-200 dark:border-codenix-border text-[11px] font-medium">
-                    <span class="truncate max-w-[150px]">${escapeHtml(f.name)}</span>
-                    <button type="button" onclick="removeUploadedFile(${idx})" class="text-zinc-400 hover:text-rose-500">×</button>
-                </span>
-            `).join('');
         }
 
         function toggleSidebar() {
@@ -2218,8 +1843,8 @@
             window.__toastTimer = setTimeout(() => box.classList.add('hidden'), 2400);
         }
 
-        function escapeHtml(s) {
-            return String(s || '')
+        function escapeHtml(str) {
+            return String(str || '')
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
