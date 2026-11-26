@@ -945,6 +945,76 @@
             cloudflareHealthy: null
         };
 
+        // ==========================================
+        // LANGUAGE & TRANSLATIONS
+        // ==========================================
+        const NIXY_TRANSLATIONS = {
+            en: { feedbackBtn: 'Feedback', usageBtn: 'Usage & Puter', shareBtn: 'Share (PIN)' },
+            ar: { feedbackBtn: 'التقييم', usageBtn: 'الاستخدام و Puter', shareBtn: 'مشاركة (PIN)' },
+            es: { feedbackBtn: 'Opinión', usageBtn: 'Uso y Puter', shareBtn: 'Compartir (PIN)' },
+            fr: { feedbackBtn: 'Avis', usageBtn: 'Usage et Puter', shareBtn: 'Partager (PIN)' },
+            de: { feedbackBtn: 'Feedback', usageBtn: 'Nutzung & Puter', shareBtn: 'Teilen (PIN)' },
+            zh: { feedbackBtn: '反馈', usageBtn: '用量与 Puter', shareBtn: '分享 (PIN)' }
+        };
+
+        function renderLangDropdownMenu(activeCode) {
+            const dd = document.getElementById('lang-dropdown');
+            if (!dd) return;
+            const items = [
+                ['en', 'English'],
+                ['ar', 'العربية'],
+                ['es', 'Español'],
+                ['fr', 'Français'],
+                ['de', 'Deutsch'],
+                ['zh', '中文']
+            ];
+            dd.innerHTML = items.map(([c, label]) => `
+                <button type="button" onclick="applyLanguage('${c}'); document.getElementById('lang-dropdown').classList.add('hidden');" class="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between ${c === activeCode ? 'bg-codenix-600/15 text-codenix-700 dark:text-codenix-300' : 'hover:bg-zinc-100 dark:hover:bg-codenix-black'}">
+                    <span>${label}</span>
+                    <span class="font-mono text-[10px] uppercase opacity-70">${c}</span>
+                </button>
+            `).join('');
+        }
+
+        function toggleLangDropdown(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('lang-dropdown')?.classList.toggle('hidden');
+        }
+
+        function detectPreferredLanguage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.LANG);
+                if (saved && NIXY_TRANSLATIONS[saved]) return saved;
+            } catch (_) {}
+            const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+                ? navigator.languages
+                : [navigator.language || 'en'];
+            for (const cand of candidates) {
+                const code = String(cand || '').toLowerCase().split('-')[0];
+                if (NIXY_TRANSLATIONS[code]) return code;
+            }
+            return 'en';
+        }
+
+        function applyLanguage(code) {
+            const langCode = NIXY_TRANSLATIONS[code] ? code : 'en';
+            try { localStorage.setItem(STORAGE_KEYS.LANG, langCode); } catch (_) {}
+            document.documentElement.lang = langCode;
+            document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
+            const badge = document.getElementById('current-lang-code');
+            if (badge) badge.textContent = langCode.toUpperCase();
+            const dict = NIXY_TRANSLATIONS[langCode] || NIXY_TRANSLATIONS.en;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (key && dict[key]) el.textContent = dict[key];
+            });
+            renderLangDropdownMenu(langCode);
+        }
+
+        document.addEventListener('click', () => {
+            document.getElementById('lang-dropdown')?.classList.add('hidden');
+        });
+
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 persistSession: true,
@@ -1396,6 +1466,13 @@ EXECUTION RULES:
             strip.innerHTML = state.uploadedFiles.map((f, idx) => `
                 <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-codenix-600/15 border border-codenix-500/30 text-xs font-medium text-codenix-700 dark:text-codenix-200">
                     <i data-lucide="${f.isImage ? 'image' : 'file-text'}" class="w-3.5 h-3.5"></i>
+                    <span class="truncate max-w-[140px]">${escapeHtml(f.name)}</span>
+                    <button type="button" onclick="removeUploadedFile(${idx})" class="text-zinc-400 hover:text-rose-500 ml-0.5">&times;</button>
+                </div>
+            `).join('');
+            if (window.lucide?.createIcons) window.lucide.createIcons();
+        }
+
         function triggerHeroAction(actionType) {
             if (actionType === 'summarize_pdf') {
                 const input = document.getElementById('prompt-input');
