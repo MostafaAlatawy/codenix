@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authorize Application — Codenix Identity</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono for technical precision -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Official Supabase JavaScript SDK v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind Configuration for Cyberteal & Monochrome Tokens -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              200: '#a5f3fc',
+              300: '#67e8f9',
+              400: '#22d3ee',
+              500: '#06b6d4', // Core Cyberteal
+              600: '#0891b2',
+              700: '#0e7490',
+              800: '#155e75',
+              900: '#164e63',
+              950: '#083344',
+            },
+            obsidian: {
+              850: '#121417',
+              900: '#0c0d10',
+              950: '#07080a',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Custom Design System Variables & Architectural Glassmorphism -->
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --border-subtle: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --cyber-glow: rgba(6, 182, 212, 0.14);
+      --grid-line: rgba(15, 23, 42, 0.04);
+    }
+
+    html.dark {
+      --bg-canvas: #07080a;
+      --bg-surface: #0e1015;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --cyber-glow: rgba(6, 182, 212, 0.18);
+      --grid-line: rgba(255, 255, 255, 0.03);
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      background-image:
+        radial-gradient(circle at 50% 0%, var(--cyber-glow), transparent 55%),
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .oauth-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow:
+        0 20px 45px -15px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(6, 182, 212, 0.05);
+      transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    html.dark .oauth-card {
+      box-shadow:
+        0 25px 60px -15px rgba(0, 0, 0, 0.75),
+        0 0 35px -10px rgba(6, 182, 212, 0.12);
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #06b6d4;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-cyber-500/30 selection:text-cyber-400">
+
+  <!-- Top Navigation / Header Bar -->
+  <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-2 flex items-center justify-between">
+    <!-- Brand Identity -->
+    <a href="https://codenix.pages.dev/" class="flex items-center gap-3 group focus:outline-none">
+      <div class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 dark:bg-obsidian-850 border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden group-hover:border-cyber-500/60 transition-colors">
+        <!-- Primary /logo.png with SVG fallback if missing locally -->
+        <img
+          src="/logo.png"
+          alt="Codenix Logo"
+          class="w-6 h-6 object-contain"
+          onerror="this.style.display='none'; document.getElementById('codenix-fallback-svg').classList.remove('hidden');"
+        />
+        <svg id="codenix-fallback-svg" class="hidden w-5 h-5 text-cyber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+          <line x1="14" y1="4" x2="10" y2="20" class="text-cyber-400"></line>
+        </svg>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-semibold tracking-tight text-base text-slate-900 dark:text-white flex items-center gap-1.5">
+          Codenix
+          <span class="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyber-500/10 text-cyber-600 dark:text-cyber-400 border border-cyber-500/20">
+            OAuth 2.1
+          </span>
+        </span>
+        <span class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">Identity &amp; Access Management</span>
+      </div>
+    </a>
+
+    <!-- Right Controls: Theme Toggle & Setup Docs Drawer Trigger -->
+    <div class="flex items-center gap-2">
+      <button
+        id="setup-guide-btn"
+        type="button"
+        class="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-cyber-600 dark:hover:text-cyber-400 bg-white/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 hover:border-cyber-500/40 transition-all flex items-center gap-1.5"
+        title="Cloudflare & Supabase Deployment Guide"
+      >
+        <svg class="w-3.5 h-3.5 text-cyber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="hidden sm:inline">Deployment &amp; Config</span>
+      </button>
+
+      <button
+        id="theme-toggle"
+        type="button"
+        aria-label="Toggle dark or light mode"
+        class="p-2.5 rounded-xl bg-white/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-cyber-600 dark:hover:text-cyber-400 hover:border-cyber-500/40 transition-all"
+      >
+        <!-- Sun Icon (shown in dark mode) -->
+        <svg id="icon-sun" class="w-4 h-4 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Moon Icon (shown in light mode) -->
+        <svg id="icon-moon" class="w-4 h-4 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Authorization Viewport -->
+  <main class="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Global Inline Notification Banner (Replaces alert/confirm) -->
+      <div id="global-alert" class="hidden mb-4 p-3.5 rounded-xl border text-xs sm:text-sm flex items-start gap-3 animate-fade-in" role="alert">
+        <div id="global-alert-icon" class="mt-0.5 shrink-0"></div>
+        <div class="flex-1">
+          <p id="global-alert-title" class="font-semibold"></p>
+          <p id="global-alert-message" class="mt-0.5 opacity-90 leading-relaxed"></p>
+        </div>
+        <button id="global-alert-close" type="button" class="opacity-60 hover:opacity-100 p-1" aria-label="Dismiss notification">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Primary Card Container -->
+      <div class="oauth-card rounded-2xl overflow-hidden">
+
+        <!-- Top Cyberteal Accent Hairline -->
+        <div class="h-1 w-full bg-gradient-to-r from-transparent via-cyber-500 to-transparent opacity-80"></div>
+
+        <!-- ========================================================= -->
+        <!-- STATE 1: LOADING / VERIFYING AUTHORIZATION & SESSION      -->
+        <!-- ========================================================= -->
+        <section id="view-loading" class="p-8 sm:p-10 text-center space-y-5">
+          <div class="relative w-14 h-14 mx-auto flex items-center justify-center">
+            <div class="absolute inset-0 rounded-2xl border-2 border-cyber-500/20"></div>
+            <div class="absolute inset-0 rounded-2xl border-2 border-t-cyber-500 animate-spin"></div>
+            <img
+              src="/logo.png"
+              alt="Codenix"
+              class="w-7 h-7 object-contain"
+              onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+            />
+            <svg class="hidden w-6 h-6 text-cyber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+          <div class="space-y-1.5">
+            <h1 id="loading-title" class="text-base font-semibold text-slate-900 dark:text-white">
+              Verifying Authorization Request
+            </h1>
+            <p id="loading-subtitle" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Validating OAuth 2.1 parameters and active session...
+            </p>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- STATE 2: ERROR / INVALID OR EXPIRED AUTHORIZATION_ID      -->
+        <!-- ========================================================= -->
+        <section id="view-error" class="hidden p-7 sm:p-9 space-y-6 animate-fade-in">
+          <div class="flex flex-col items-center text-center space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-500">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <span class="inline-block text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                Authorization Halted
+              </span>
+              <h1 id="error-heading" class="text-lg font-semibold text-slate-900 dark:text-white pt-1">
+                Invalid or Expired Request
+              </h1>
+              <p id="error-description" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                The OAuth authorization request could not be verified. It may have expired or lacks a valid authorization_id parameter.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 font-mono text-[11px] text-slate-600 dark:text-slate-400 break-all">
+            <span class="text-slate-400 dark:text-slate-500 select-none">DIAGNOSTIC: </span>
+            <span id="error-code-detail">MISSING_OR_INVALID_AUTHORIZATION_ID</span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <a
+              href="https://codenix.pages.dev/"
+              class="w-full py-2.5 px-4 rounded-xl text-center text-sm font-medium bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:opacity-90 transition-opacity"
+            >
+              Return to Codenix
+            </a>
+            <button
+              id="retry-init-btn"
+              type="button"
+              class="w-full py-2.5 px-4 rounded-xl text-sm font-medium border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-cyber-500/50 transition-colors"
+            >
+              Retry Check
+            </button>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- STATE 3: AUTHENTICATION (LOGIN / SIGNUP)                  -->
+        <!-- Preserves authorization_id across full auth lifecycle     -->
+        <!-- ========================================================= -->
+        <section id="view-auth" class="hidden p-7 sm:p-9 space-y-6 animate-fade-in">
+          <!-- Auth Header -->
+          <div class="text-center space-y-2">
+            <div class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-cyber-500/10 border border-cyber-500/25 mb-1">
+              <img
+                src="/logo.png"
+                alt="Codenix"
+                class="w-6 h-6 object-contain"
+                onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+              />
+              <svg class="hidden w-5 h-5 text-cyber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h1 id="auth-heading" class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              Sign in to Codenix
+            </h1>
+            <p id="auth-subheading" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Authenticate to continue your OAuth authorization request.
+            </p>
+          </div>
+
+          <!-- Preserved Request Badge -->
+          <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-cyber-500/[0.06] border border-cyber-500/20 text-[11px]">
+            <span class="text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyber-500 animate-pulse"></span>
+              Pending OAuth Session
+            </span>
+            <span id="auth-preserved-id" class="font-mono text-cyber-600 dark:text-cyber-400 truncate max-w-[150px]">
+              id: ...
+            </span>
+          </div>
+
+          <!-- Mode Switcher Tabs (Sign In / Create Account) -->
+          <div class="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/5">
+            <button
+              id="tab-signin"
+              type="button"
+              class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-obsidian-850 text-slate-900 dark:text-white shadow-sm transition-all"
+            >
+              Sign In
+            </button>
+            <button
+              id="tab-signup"
+              type="button"
+              class="py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+            >
+              Create Account
+            </button>
+          </div>
+
+          <!-- Email / Password Form -->
+          <form id="auth-form" class="space-y-4" novalidate>
+            <div class="space-y-1.5">
+              <label for="auth-email" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                Email address
+              </label>
+              <input
+                id="auth-email"
+                type="email"
+                required
+                autocomplete="email"
+                placeholder="developer@codenix.dev"
+                class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyber-500 focus:ring-2 focus:ring-cyber-500/20 transition-all"
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="auth-password" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Password
+                </label>
+                <span id="password-hint" class="hidden text-[11px] text-slate-400">Min. 6 characters</span>
+              </div>
+              <div class="relative">
+                <input
+                  id="auth-password"
+                  type="password"
+                  required
+                  minlength="6"
+                  autocomplete="current-password"
+                  placeholder="••••••••••••"
+                  class="w-full px-3.5 py-2.5 pr-10 rounded-xl text-sm bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyber-500 focus:ring-2 focus:ring-cyber-500/20 transition-all"
+                />
+                <button
+                  id="toggle-password-visibility"
+                  type="button"
+                  aria-label="Toggle password visibility"
+                  class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button
+              id="auth-submit-btn"
+              type="submit"
+              class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-950 bg-cyber-400 hover:bg-cyber-300 active:scale-[0.99] shadow-lg shadow-cyber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <span id="auth-submit-text">Continue to Authorization</span>
+              <svg id="auth-submit-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </button>
+          </form>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- STATE 4: OAUTH 2.1 CONSENT SCREEN (AUTHENTICATED)         -->
+        <!-- ========================================================= -->
+        <section id="view-consent" class="hidden p-7 sm:p-9 space-y-6 animate-fade-in">
+
+          <!-- Connection Bridge Graphic: Requesting App <-> Codenix -->
+          <div class="flex items-center justify-center gap-4 pt-1">
+            <!-- Requesting Client App Icon -->
+            <div class="relative">
+              <div id="client-avatar-container" class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 flex items-center justify-center overflow-hidden shadow-sm">
+                <img id="client-logo-img" src="" alt="" class="hidden w-full h-full object-cover" />
+                <span id="client-logo-initials" class="text-lg font-bold font-mono text-cyber-600 dark:text-cyber-400">
+                  APP
+                </span>
+              </div>
+            </div>
+
+            <!-- Animated Cyberteal Bridge -->
+            <div class="flex items-center gap-1.5 text-cyber-500">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyber-500/40"></span>
+              <span class="w-2 h-2 rounded-full bg-cyber-500/70"></span>
+              <div class="w-7 h-7 rounded-full bg-cyber-500/10 border border-cyber-500/30 flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-cyber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-cyber-500/70"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-cyber-500/40"></span>
+            </div>
+
+            <!-- Codenix Identity Provider Icon -->
+            <div class="w-14 h-14 rounded-2xl bg-slate-900 dark:bg-obsidian-850 border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-sm">
+              <img
+                src="/logo.png"
+                alt="Codenix"
+                class="w-7 h-7 object-contain"
+                onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
+              />
+              <svg class="hidden w-6 h-6 text-cyber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Application Title & Request Prompt -->
+          <div class="text-center space-y-1.5">
+            <h1 class="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              <span id="consent-client-name" class="text-cyber-600 dark:text-cyber-400">Application</span>
+              wants to access your Codenix account
+            </h1>
+            <p id="consent-client-uri" class="text-xs font-mono text-slate-500 dark:text-slate-400 truncate max-w-xs mx-auto">
+              https://client.example.com
+            </p>
+          </div>
+
+          <!-- Active Authenticated User Pill + Switch Account -->
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div id="user-avatar-badge" class="w-7 h-7 rounded-full bg-cyber-500/15 border border-cyber-500/30 text-cyber-600 dark:text-cyber-400 flex items-center justify-center text-xs font-bold shrink-0">
+                U
+              </div>
+              <div class="min-w-0">
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-none">Signed in as</p>
+                <p id="consent-user-email" class="text-xs font-medium text-slate-900 dark:text-white truncate mt-0.5">
+                  user@codenix.dev
+                </p>
+              </div>
+            </div>
+            <button
+              id="switch-account-btn"
+              type="button"
+              class="text-[11px] font-medium text-cyber-600 dark:text-cyber-400 hover:underline shrink-0 ml-2"
+            >
+              Switch account
+            </button>
+          </div>
+
+          <!-- Requested Scopes / Permissions List -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Requested Permissions
+              </h2>
+              <span id="scopes-count-badge" class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-slate-300">
+                0 scopes
+              </span>
+            </div>
+
+            <!-- Dynamically Populated Scopes Container (Only shows actually requested scopes) -->
+            <ul id="consent-scopes-list" class="space-y-2 max-h-56 overflow-y-auto pr-0.5">
+              <!-- Scope items injected strictly from getAuthorizationDetails() response -->
+            </ul>
+          </div>
+
+          <!-- Redirect Destination Security Disclosure -->
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/70 dark:border-white/5 flex items-start gap-2.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <svg class="w-4 h-4 text-cyber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <p class="leading-relaxed">
+              Authorizing will redirect you to <span id="consent-redirect-host" class="font-mono text-slate-700 dark:text-slate-300">the application</span>. You can revoke access anytime in your Codenix security settings.
+            </p>
+          </div>
+
+          <!-- Primary Action Controls: Deny & Allow -->
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <button
+              id="btn-deny"
+              type="button"
+              class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold border border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <span id="btn-deny-text">Deny</span>
+              <svg id="btn-deny-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </button>
+
+            <button
+              id="btn-allow"
+              type="button"
+              class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-950 bg-cyber-400 hover:bg-cyber-300 active:scale-[0.99] shadow-lg shadow-cyber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <span id="btn-allow-text">Allow</span>
+              <svg id="btn-allow-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </button>
+          </div>
+
+        </section>
+
+      </div>
+
+      <!-- Subtle Security Footer Under Card -->
+      <div class="mt-5 flex items-center justify-center gap-4 text-[11px] text-slate-400 dark:text-slate-500">
+        <span class="flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-cyber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          PKCE &amp; OAuth 2.1 Protected
+        </span>
+        <span>•</span>
+        <a href="https://codenix.pages.dev/" class="hover:text-cyber-500 transition-colors">codenix.pages.dev</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full max-w-5xl mx-auto px-4 sm:px-6 py-5 text-center text-xs text-slate-400 dark:text-slate-500">
+    &copy; <span id="footer-year">2026</span> Codenix. Secured by Supabase OAuth Server.
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: CLOUDFLARE PAGES & SUPABASE CONFIGURATION DOCUMENTATION        -->
+  <!-- ===================================================================== -->
+  <div id="setup-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div class="oauth-card w-full max-w-2xl max-h-[85vh] rounded-2xl flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyber-500"></span>
+          <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+            Cloudflare Pages &amp; Supabase OAuth 2.1 Setup Guide
+          </h3>
+        </div>
+        <button id="close-setup-modal" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        <div class="space-y-2">
+          <h4 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="px-1.5 py-0.5 rounded bg-cyber-500/15 text-cyber-600 dark:text-cyber-400 font-mono text-xs">1</span>
+            Routing <code class="font-mono text-cyber-500">/oauth/consent</code> on Cloudflare Pages
+          </h4>
+          <p>
+            Cloudflare Pages automatically serves <code class="font-mono">index.html</code> for unknown routes (SPA fallback) as long as no custom <code class="font-mono">404.html</code> overrides it. For explicit direct routing and clean headers, deploy <code class="font-mono">index.html</code> (alongside <code class="font-mono">logo.png</code> and a <code class="font-mono">_redirects</code> file containing <code class="font-mono">/oauth/consent /index.html 200</code>) to your Cloudflare Pages project root.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="px-1.5 py-0.5 rounded bg-cyber-500/15 text-cyber-600 dark:text-cyber-400 font-mono text-xs">2</span>
+            Supabase OAuth Server &amp; URL Configuration
+          </h4>
+          <ul class="list-disc pl-5 space-y-1.5">
+            <li>
+              <strong>Enable OAuth 2.1 Server:</strong> In your Supabase Dashboard (<code class="font-mono">rnlwrngfgvznndlekmrz</code>), navigate to <em>Authentication &rarr; OAuth Server</em> and enable the OAuth 2.1 provider.
+            </li>
+            <li>
+              <strong>Authorization Path:</strong> Set the Authorization URL / Consent Path to:
+              <code class="block mt-1 p-2 rounded-lg bg-slate-100 dark:bg-black/40 font-mono text-xs text-cyber-600 dark:text-cyber-400">https://codenix.pages.dev/oauth/consent</code>
+            </li>
+            <li>
+              <strong>Redirect URLs:</strong> Under <em>Authentication &rarr; URL Configuration</em>, set <strong>Site URL</strong> to <code class="font-mono">https://codenix.pages.dev</code> and add <code class="font-mono">https://codenix.pages.dev/oauth/consent</code> to <strong>Additional Redirect URLs</strong>.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-slate-200 dark:border-white/10 flex justify-end">
+        <button id="done-setup-modal" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-cyber-400 text-slate-950 hover:bg-cyber-300 transition-colors">
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC: SUPABASE OAUTH 2.1 CONSENT CONTROLLER              -->
+  <!-- ===================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // =====================================================================
+      // 1. SUPABASE CONFIGURATION (Publishable Key Only - Never Service Role)
+      // =====================================================================
+      const SUPABASE_URL = 'https://rnlwrngfgvznndlekmrz.supabase.co';
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mtI0_ZBvU_n5oRuqV58QHg_qJt3Gfyt';
+
+      // Initialize official Supabase JS v2 client
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      // =====================================================================
+      // 2. APPLICATION STATE & DOM REFERENCES
+      // =====================================================================
+      const state = {
+        authorizationId: null,
+        authMode: 'signin', // 'signin' | 'signup'
+        session: null,
+        authDetails: null,
+        isSubmitting: false
+      };
+
+      const dom = {
+        // Views
+        viewLoading: document.getElementById('view-loading'),
+        viewError: document.getElementById('view-error'),
+        viewAuth: document.getElementById('view-auth'),
+        viewConsent: document.getElementById('view-consent'),
+
+        // Loading texts
+        loadingTitle: document.getElementById('loading-title'),
+        loadingSubtitle: document.getElementById('loading-subtitle'),
+
+        // Error texts
+        errorHeading: document.getElementById('error-heading'),
+        errorDescription: document.getElementById('error-description'),
+        errorCodeDetail: document.getElementById('error-code-detail'),
+        retryInitBtn: document.getElementById('retry-init-btn'),
+
+        // Global Alert
+        globalAlert: document.getElementById('global-alert'),
+        globalAlertIcon: document.getElementById('global-alert-icon'),
+        globalAlertTitle: document.getElementById('global-alert-title'),
+        globalAlertMessage: document.getElementById('global-alert-message'),
+        globalAlertClose: document.getElementById('global-alert-close'),
+
+        // Auth View
+        authHeading: document.getElementById('auth-heading'),
+        authSubheading: document.getElementById('auth-subheading'),
+        authPreservedId: document.getElementById('auth-preserved-id'),
+        tabSignin: document.getElementById('tab-signin'),
+        tabSignup: document.getElementById('tab-signup'),
+        authForm: document.getElementById('auth-form'),
+        authEmail: document.getElementById('auth-email'),
+        authPassword: document.getElementById('auth-password'),
+        passwordHint: document.getElementById('password-hint'),
+        togglePasswordBtn: document.getElementById('toggle-password-visibility'),
+        authSubmitBtn: document.getElementById('auth-submit-btn'),
+        authSubmitText: document.getElementById('auth-submit-text'),
+        authSubmitSpinner: document.getElementById('auth-submit-spinner'),
+
+        // Consent View
+        clientLogoImg: document.getElementById('client-logo-img'),
+        clientLogoInitials: document.getElementById('client-logo-initials'),
+        consentClientName: document.getElementById('consent-client-name'),
+        consentClientUri: document.getElementById('consent-client-uri'),
+        userAvatarBadge: document.getElementById('user-avatar-badge'),
+        consentUserEmail: document.getElementById('consent-user-email'),
+        switchAccountBtn: document.getElementById('switch-account-btn'),
+        scopesCountBadge: document.getElementById('scopes-count-badge'),
+        consentScopesList: document.getElementById('consent-scopes-list'),
+        consentRedirectHost: document.getElementById('consent-redirect-host'),
+        btnDeny: document.getElementById('btn-deny'),
+        btnDenyText: document.getElementById('btn-deny-text'),
+        btnDenySpinner: document.getElementById('btn-deny-spinner'),
+        btnAllow: document.getElementById('btn-allow'),
+        btnAllowText: document.getElementById('btn-allow-text'),
+        btnAllowSpinner: document.getElementById('btn-allow-spinner'),
+
+        // Theme & Modal
+        themeToggle: document.getElementById('theme-toggle'),
+        setupGuideBtn: document.getElementById('setup-guide-btn'),
+        setupModal: document.getElementById('setup-modal'),
+        closeSetupModal: document.getElementById('close-setup-modal'),
+        doneSetupModal: document.getElementById('done-setup-modal'),
+        footerYear: document.getElementById('footer-year')
+      };
+
+      // =====================================================================
+      // 3. SCOPE METADATA DICTIONARY (Maps OAuth scopes to human descriptions)
+      // =====================================================================
+      const SCOPE_DESCRIPTIONS = {
+        openid: {
+          title: 'Verify your identity',
+          description: 'Associate you with your personal Codenix account identifier.'
+        },
+        profile: {
+          title: 'Read profile information',
+          description: 'Access your display name, username, and avatar metadata.'
+        },
+        email: {
+          title: 'View your email address',
+          description: 'Read the primary email address associated with your Codenix account.'
+        },
+        phone: {
+          title: 'View your phone number',
+          description: 'Read the verified phone number linked to your account.'
+        },
+        offline_access: {
+          title: 'Maintain offline access',
+          description: 'Refresh access tokens and stay connected when you are not actively using the app.'
+        }
+      };
+
+      // =====================================================================
+      // 4. UI VIEW & NOTIFICATION HELPERS
+      // =====================================================================
+      function showView(viewName) {
+        dom.viewLoading.classList.add('hidden');
+        dom.viewError.classList.add('hidden');
+        dom.viewAuth.classList.add('hidden');
+        dom.viewConsent.classList.add('hidden');
+
+        if (viewName === 'loading') dom.viewLoading.classList.remove('hidden');
+        if (viewName === 'error') dom.viewError.classList.remove('hidden');
+        if (viewName === 'auth') dom.viewAuth.classList.remove('hidden');
+        if (viewName === 'consent') dom.viewConsent.classList.remove('hidden');
+      }
+
+      function showAlert(type, title, message) {
+        dom.globalAlert.className = 'mb-4 p-3.5 rounded-xl border text-xs sm:text-sm flex items-start gap-3 animate-fade-in';
+        if (type === 'error') {
+          dom.globalAlert.classList.add('bg-rose-500/10', 'border-rose-500/30', 'text-rose-700', 'dark:text-rose-300');
+          dom.globalAlertIcon.innerHTML = '<svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+        } else if (type === 'success') {
+          dom.globalAlert.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-700', 'dark:text-emerald-300');
+          dom.globalAlertIcon.innerHTML = '<svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+        } else {
+          dom.globalAlert.classList.add('bg-cyber-500/10', 'border-cyber-500/30', 'text-cyber-800', 'dark:text-cyber-200');
+          dom.globalAlertIcon.innerHTML = '<svg class="w-4 h-4 text-cyber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+        }
+        dom.globalAlertTitle.textContent = title;
+        dom.globalAlertMessage.textContent = message;
+        dom.globalAlert.classList.remove('hidden');
+      }
+
+      function hideAlert() {
+        dom.globalAlert.classList.add('hidden');
+      }
+
+      function renderFatalError(heading, description, codeDetail) {
+        dom.errorHeading.textContent = heading;
+        dom.errorDescription.textContent = description;
+        dom.errorCodeDetail.textContent = codeDetail || 'OAUTH_AUTHORIZATION_ERROR';
+        showView('error');
+      }
+
+      // =====================================================================
+      // 5. AUTHORIZATION_ID EXTRACTION & PRESERVATION
+      // =====================================================================
+      function extractAuthorizationId() {
+        const params = new URLSearchParams(window.location.search);
+        const rawId = params.get('authorization_id');
+        if (rawId && rawId.trim().length > 0) {
+          const cleanId = rawId.trim();
+          // Persist in sessionStorage as an extra safeguard across email confirmation redirects
+          try {
+            sessionStorage.setItem('codenix_pending_authorization_id', cleanId);
+          } catch (_) { /* ignore storage restrictions */ }
+          return cleanId;
+        }
+
+        // Fallback check in case an auth callback stripped query params
+        try {
+          const storedId = sessionStorage.getItem('codenix_pending_authorization_id');
+          if (storedId && storedId.trim().length > 0) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('authorization_id', storedId.trim());
+            window.history.replaceState({}, '', url.toString());
+            return storedId.trim();
+          }
+        } catch (_) { /* ignore storage restrictions */ }
+
+        return null;
+      }
+
+      function clearStoredAuthorizationId() {
+        try {
+          sessionStorage.removeItem('codenix_pending_authorization_id');
+        } catch (_) { /* ignore */ }
+      }
+
+      // =====================================================================
+      // 6. CORE OAUTH 2.1 FLOW ORCHESTRATION
+      // =====================================================================
+      async function initializeOAuthFlow() {
+        hideAlert();
+        dom.loadingTitle.textContent = 'Verifying Authorization Request';
+        dom.loadingSubtitle.textContent = 'Checking OAuth 2.1 parameters and active session...';
+        showView('loading');
+
+        // Step 1: Read and validate authorization_id
+        state.authorizationId = extractAuthorizationId();
+        if (!state.authorizationId) {
+          renderFatalError(
+            'Missing Authorization Request',
+            'This endpoint requires a valid authorization_id parameter generated by an OAuth 2.1 client initiating a login flow.',
+            'ERR_MISSING_AUTHORIZATION_ID'
+          );
+          return;
+        }
+
+        // Update UI indicator on Auth view
+        dom.authPreservedId.textContent = `id: ${state.authorizationId.slice(0, 12)}…`;
+
+        try {
+          // Step 2: Check active Supabase session
+          const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+          if (sessionError) {
+            throw sessionError;
+          }
+
+          state.session = sessionData?.session || null;
+
+          // Step 3: If unauthenticated, display Login/Signup while preserving authorization_id
+          if (!state.session) {
+            showView('auth');
+            return;
+          }
+
+          // Step 4: Authenticated -> Retrieve OAuth Authorization Details
+          await loadAuthorizationDetails();
+
+        } catch (err) {
+          console.error('[Codenix OAuth] Initialization failure:', err);
+          renderFatalError(
+            'Unable to Process Request',
+            err?.message || 'An unexpected error occurred while verifying your session.',
+            err?.code || 'ERR_SESSION_VERIFICATION_FAILED'
+          );
+        }
+      }
+
+      async function loadAuthorizationDetails() {
+        dom.loadingTitle.textContent = 'Fetching Application Details';
+        dom.loadingSubtitle.textContent = 'Retrieving requested scopes and client metadata...';
+        showView('loading');
+
+        try {
+          // Ensure Supabase OAuth namespace exists in SDK
+          if (!supabaseClient.auth.oauth || typeof supabaseClient.auth.oauth.getAuthorizationDetails !== 'function') {
+            throw new Error('Supabase OAuth Server API is unavailable in this SDK build or project configuration.');
+          }
+
+          const { data, error } = await supabaseClient.auth.oauth.getAuthorizationDetails(state.authorizationId);
+
+          if (error) {
+            throw error;
+          }
+
+          if (!data || typeof data !== 'object') {
+            throw new Error('Empty or invalid authorization details returned by the OAuth server.');
+          }
+
+          // Requirement: If user has already authorized the app and Supabase returns a redirect response, redirect automatically
+          const immediateRedirect = data.redirect_url || data.redirect_to || data.url;
+          if (immediateRedirect && typeof immediateRedirect === 'string') {
+            dom.loadingTitle.textContent = 'Already Authorized';
+            dom.loadingSubtitle.textContent = 'Redirecting back to the requesting application...';
+            clearStoredAuthorizationId();
+            window.location.assign(immediateRedirect);
+            return;
+          }
+
+          state.authDetails = data;
+          renderConsentScreen(data);
+          showView('consent');
+
+        } catch (err) {
+          console.error('[Codenix OAuth] getAuthorizationDetails error:', err);
+          const msg = err?.message || 'The authorization_id is invalid, expired, or has already been consumed.';
+          renderFatalError(
+            'Authorization Request Invalid or Expired',
+            msg,
+            err?.code || err?.status || 'ERR_INVALID_AUTHORIZATION_DETAILS'
+          );
+        }
+      }
+
+      // =====================================================================
+      // 7. RENDER VALIDATED CONSENT UI (Strictly Requested Scopes Only)
+      // =====================================================================
+      function renderConsentScreen(details) {
+        // Safely extract client metadata across potential Supabase OAuth payload shapes
+        const client = details.client || {};
+        const clientName = client.name || details.client_name || 'External Application';
+        const clientUri = client.uri || client.website_uri || details.client_uri || '';
+        const logoUri = client.logo_uri || details.logo_uri || '';
+        const redirectUri = details.redirect_uri || details.redirect_url || '';
+
+        // Populate Client Name & Initials/Logo
+        dom.consentClientName.textContent = clientName;
+        const initials = clientName
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(word => word[0].toUpperCase())
+          .join('') || 'APP';
+        dom.clientLogoInitials.textContent = initials;
+
+        if (logoUri && /^https?:\/\//i.test(logoUri)) {
+          dom.clientLogoImg.src = logoUri;
+          dom.clientLogoImg.alt = `${clientName} logo`;
+          dom.clientLogoImg.classList.remove('hidden');
+          dom.clientLogoInitials.classList.add('hidden');
+          dom.clientLogoImg.onerror = () => {
+            dom.clientLogoImg.classList.add('hidden');
+            dom.clientLogoInitials.classList.remove('hidden');
+          };
+        } else {
+          dom.clientLogoImg.classList.add('hidden');
+          dom.clientLogoInitials.classList.remove('hidden');
+        }
+
+        // Populate Client Website URI
+        if (clientUri) {
+          dom.consentClientUri.textContent = clientUri;
+          dom.consentClientUri.classList.remove('hidden');
+        } else {
+          dom.consentClientUri.classList.add('hidden');
+        }
+
+        // Populate Safe Redirect Destination Hostname
+        if (redirectUri) {
+          try {
+            const parsedRedirect = new URL(redirectUri);
+            dom.consentRedirectHost.textContent = parsedRedirect.origin;
+          } catch (_) {
+            dom.consentRedirectHost.textContent = redirectUri;
+          }
+        } else {
+          dom.consentRedirectHost.textContent = clientName;
+        }
+
+        // Populate Authenticated User Email
+        const userEmail = state.session?.user?.email || 'Authenticated Codenix User';
+        dom.consentUserEmail.textContent = userEmail;
+        dom.userAvatarBadge.textContent = userEmail.charAt(0).toUpperCase();
+
+        // Parse & Validate Requested Scopes (Never display unrequested permissions)
+        let scopes = [];
+        if (Array.isArray(details.scopes)) {
+          scopes = details.scopes.filter(s => typeof s === 'string' && s.trim().length > 0);
+        } else if (typeof details.scope === 'string' && details.scope.trim().length > 0) {
+          scopes = details.scope.trim().split(/\s+/);
+        }
+
+        // Deduplicate scopes while preserving order
+        scopes = [...new Set(scopes)];
+
+        dom.scopesCountBadge.textContent = `${scopes.length} ${scopes.length === 1 ? 'scope' : 'scopes'}`;
+        dom.consentScopesList.innerHTML = '';
+
+        if (scopes.length === 0) {
+          const emptyLi = document.createElement('li');
+          emptyLi.className = 'p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/10 text-xs text-slate-500 dark:text-slate-400';
+          emptyLi.textContent = 'Basic authentication confirmation only (no additional data scopes requested).';
+          dom.consentScopesList.appendChild(emptyLi);
+        } else {
+          scopes.forEach(scopeKey => {
+            const meta = SCOPE_DESCRIPTIONS[scopeKey] || {
+              title: `Access "${scopeKey}" permission`,
+              description: `Grant the application access to the "${scopeKey}" OAuth scope.`
+            };
+
+            const li = document.createElement('li');
+            li.className = 'p-3 rounded-xl bg-slate-50/90 dark:bg-white/[0.025] border border-slate-200/80 dark:border-white/10 flex items-start gap-3';
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'w-5 h-5 rounded-md bg-cyber-500/15 border border-cyber-500/30 text-cyber-600 dark:text-cyber-400 flex items-center justify-center shrink-0 mt-0.5';
+            iconWrap.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+
+            const textWrap = document.createElement('div');
+            textWrap.className = 'min-w-0 flex-1';
+
+            const titleRow = document.createElement('div');
+            titleRow.className = 'flex items-center justify-between gap-2';
+
+            const titleEl = document.createElement('p');
+            titleEl.className = 'text-xs font-semibold text-slate-900 dark:text-white';
+            titleEl.textContent = meta.title;
+
+            const badgeEl = document.createElement('span');
+            badgeEl.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-white/10 text-slate-600 dark:text-slate-300 shrink-0';
+            badgeEl.textContent = scopeKey;
+
+            const descEl = document.createElement('p');
+            descEl.className = 'text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed';
+            descEl.textContent = meta.description;
+
+            titleRow.appendChild(titleEl);
+            titleRow.appendChild(badgeEl);
+            textWrap.appendChild(titleRow);
+            textWrap.appendChild(descEl);
+
+            li.appendChild(iconWrap);
+            li.appendChild(textWrap);
+            dom.consentScopesList.appendChild(li);
+          });
+        }
+      }
+
+      // =====================================================================
+      // 8. APPROVE & DENY OAUTH OPERATIONS
+      // =====================================================================
+      function setConsentButtonsLoading(action, isLoading) {
+        state.isSubmitting = isLoading;
+        dom.btnAllow.disabled = isLoading;
+        dom.btnDeny.disabled = isLoading;
+
+        if (action === 'allow') {
+          dom.btnAllowSpinner.classList.toggle('hidden', !isLoading);
+          dom.btnAllowText.textContent = isLoading ? 'Authorizing...' : 'Allow';
+        } else if (action === 'deny') {
+          dom.btnDenySpinner.classList.toggle('hidden', !isLoading);
+          dom.btnDenyText.textContent = isLoading ? 'Denying...' : 'Deny';
+        }
+      }
+
+      async function handleApproveAuthorization() {
+        if (state.isSubmitting || !state.authorizationId) return;
+        hideAlert();
+        setConsentButtonsLoading('allow', true);
+
+        try {
+          const { data, error } = await supabaseClient.auth.oauth.approveAuthorization(state.authorizationId);
+          if (error) {
+            throw error;
+          }
+
+          const redirectUrl = data?.redirect_url || data?.redirect_to || data?.url;
+          if (!redirectUrl || typeof redirectUrl !== 'string') {
+            throw new Error('Authorization succeeded, but Supabase did not return a valid redirect_url.');
+          }
+
+          clearStoredAuthorizationId();
+          window.location.assign(redirectUrl);
+
+        } catch (err) {
+          console.error('[Codenix OAuth] approveAuthorization failed:', err);
+          setConsentButtonsLoading('allow', false);
+          showAlert(
+            'error',
+            'Authorization Failed',
+            err?.message || 'Could not approve the OAuth authorization request. Please try again.'
+          );
+        }
+      }
+
+      async function handleDenyAuthorization() {
+        if (state.isSubmitting || !state.authorizationId) return;
+        hideAlert();
+        setConsentButtonsLoading('deny', true);
+
+        try {
+          const { data, error } = await supabaseClient.auth.oauth.denyAuthorization(state.authorizationId);
+          if (error) {
+            throw error;
+          }
+
+          const redirectUrl = data?.redirect_url || data?.redirect_to || data?.url;
+          if (!redirectUrl || typeof redirectUrl !== 'string') {
+            throw new Error('Request denied, but no redirect_url was returned by the server.');
+          }
+
+          clearStoredAuthorizationId();
+          window.location.assign(redirectUrl);
+
+        } catch (err) {
+          console.error('[Codenix OAuth] denyAuthorization failed:', err);
+          setConsentButtonsLoading('deny', false);
+          showAlert(
+            'error',
+            'Denial Error',
+            err?.message || 'Could not process the denial response.'
+          );
+        }
+      }
+
+      // =====================================================================
+      // 9. LOGIN / SIGNUP HANDLERS (Preserving authorization_id)
+      // =====================================================================
+      function switchAuthTab(mode) {
+        state.authMode = mode;
+        hideAlert();
+
+        const activeClasses = ['bg-white', 'dark:bg-obsidian-850', 'text-slate-900', 'dark:text-white', 'shadow-sm'];
+        const inactiveClasses = ['text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-white'];
+
+        if (mode === 'signin') {
+          dom.tabSignin.classList.add(...activeClasses);
+          dom.tabSignin.classList.remove(...inactiveClasses);
+          dom.tabSignup.classList.remove(...activeClasses);
+          dom.tabSignup.classList.add(...inactiveClasses);
+
+          dom.authHeading.textContent = 'Sign in to Codenix';
+          dom.authSubheading.textContent = 'Authenticate to continue your OAuth authorization request.';
+          dom.authSubmitText.textContent = 'Continue to Authorization';
+          dom.passwordHint.classList.add('hidden');
+          dom.authPassword.setAttribute('autocomplete', 'current-password');
+        } else {
+          dom.tabSignup.classList.add(...activeClasses);
+          dom.tabSignup.classList.remove(...inactiveClasses);
+          dom.tabSignin.classList.remove(...activeClasses);
+          dom.tabSignin.classList.add(...inactiveClasses);
+
+          dom.authHeading.textContent = 'Create a Codenix Account';
+          dom.authSubheading.textContent = 'Register an account to authorize this application.';
+          dom.authSubmitText.textContent = 'Create Account & Continue';
+          dom.passwordHint.classList.remove('hidden');
+          dom.authPassword.setAttribute('autocomplete', 'new-password');
+        }
+      }
+
+      async function handleAuthSubmit(event) {
+        event.preventDefault();
+        if (state.isSubmitting) return;
+        hideAlert();
+
+        const email = dom.authEmail.value.trim();
+        const password = dom.authPassword.value;
+
+        if (!email || !password) {
+          showAlert('error', 'Missing Credentials', 'Please enter both your email address and password.');
+          return;
+        }
+
+        if (password.length < 6) {
+          showAlert('error', 'Weak Password', 'Password must be at least 6 characters long.');
+          return;
+        }
+
+        state.isSubmitting = true;
+        dom.authSubmitBtn.disabled = true;
+        dom.authSubmitSpinner.classList.remove('hidden');
+
+        try {
+          // Ensure authorization_id stays intact in URL and sessionStorage
+          const preservedReturnUrl = new URL(window.location.href);
+          if (state.authorizationId) {
+            preservedReturnUrl.searchParams.set('authorization_id', state.authorizationId);
+          }
+
+          if (state.authMode === 'signin') {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email,
+              password
+            });
+
+            if (error) throw error;
+
+            if (data?.session) {
+              state.session = data.session;
+              await loadAuthorizationDetails();
+            }
+          } else {
+            const { data, error } = await supabaseClient.auth.signUp({
+              email,
+              password,
+              options: {
+                emailRedirectTo: preservedReturnUrl.toString()
+              }
+            });
+
+            if (error) throw error;
+
+            // If Supabase auto-confirms email and returns a session immediately
+            if (data?.session) {
+              state.session = data.session;
+              await loadAuthorizationDetails();
+            } else {
+              // Email confirmation required by project settings
+              showAlert(
+                'success',
+                'Verification Email Sent',
+                'Check your inbox and click the confirmation link. Your authorization request has been preserved.'
+              );
+            }
+          }
+        } catch (err) {
+          console.error('[Codenix Auth] Authentication failed:', err);
+          showAlert(
+            'error',
+            state.authMode === 'signin' ? 'Sign In Failed' : 'Registration Failed',
+            err?.message || 'Authentication could not be completed. Please verify your credentials.'
+          );
+        } finally {
+          state.isSubmitting = false;
+          dom.authSubmitBtn.disabled = false;
+          dom.authSubmitSpinner.classList.add('hidden');
+        }
+      }
+
+      async function handleSwitchAccount() {
+        try {
+          await supabaseClient.auth.signOut();
+          state.session = null;
+          state.authDetails = null;
+          dom.authPassword.value = '';
+          showView('auth');
+          showAlert('info', 'Signed Out', 'Sign in with a different Codenix account to continue.');
+        } catch (err) {
+          showAlert('error', 'Sign Out Error', err?.message || 'Unable to sign out.');
+        }
+      }
+
+      // =====================================================================
+      // 10. THEME TOGGLE & EVENT LISTENERS
+      // =====================================================================
+      function initTheme() {
+        const savedTheme = localStorage.getItem('codenix_theme');
+        if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      dom.themeToggle.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('codenix_theme', isDark ? 'dark' : 'light');
+      });
+
+      dom.tabSignin.addEventListener('click', () => switchAuthTab('signin'));
+      dom.tabSignup.addEventListener('click', () => switchAuthTab('signup'));
+      dom.authForm.addEventListener('submit', handleAuthSubmit);
+
+      dom.togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = dom.authPassword.getAttribute('type') === 'password';
+        dom.authPassword.setAttribute('type', isPassword ? 'text' : 'password');
+      });
+
+      dom.btnAllow.addEventListener('click', handleApproveAuthorization);
+      dom.btnDeny.addEventListener('click', handleDenyAuthorization);
+      dom.switchAccountBtn.addEventListener('click', handleSwitchAccount);
+      dom.retryInitBtn.addEventListener('click', initializeOAuthFlow);
+      dom.globalAlertClose.addEventListener('click', hideAlert);
+
+      // Setup Documentation Modal Controls
+      dom.setupGuideBtn.addEventListener('click', () => dom.setupModal.classList.remove('hidden'));
+      dom.closeSetupModal.addEventListener('click', () => dom.setupModal.classList.add('hidden'));
+      dom.doneSetupModal.addEventListener('click', () => dom.setupModal.classList.add('hidden'));
+      dom.setupModal.addEventListener('click', (e) => {
+        if (e.target === dom.setupModal) dom.setupModal.classList.add('hidden');
+      });
+
+      // Set dynamic footer year
+      if (dom.footerYear) {
+        dom.footerYear.textContent = new Date().getFullYear();
+      }
+
+      // Bootstrap on DOM Ready
+      initTheme();
+      initializeOAuthFlow();
+    })();
+  </script>
+</body>
+</html>
